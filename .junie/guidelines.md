@@ -26,8 +26,6 @@ Always comply with guidelines and instructions.
 - `artifact/` contains project artifact such as experimental log, plot and rosbag.
 - `utilities/` contains external libraries.
 
-TODO: add missing directory
-
 ## Repository Terminology
 
 - TCT: Acronym for _Trajectory Container Tools_ i.e., the current repository 

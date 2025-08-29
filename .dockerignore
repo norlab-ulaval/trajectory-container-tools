@@ -1,0 +1,57 @@
+# =================================================================================================
+#
+#   Specify files/directories to be ignored by the Dockerfile COPY/ADD clause
+#   Note: content from "volumes" will still be accessible inside the container
+#
+#   Syntax:
+#       "*"     match any number of characters
+#       "?"     match one character
+#       "!"     prevent ignore
+#       "**"    match any number of directories
+#
+#   References: https://docs.docker.com/build/building/context/#dockerignore-files
+#
+# =================================================================================================
+
+# ====Dockerized-NorLab(required)==================================================================
+!**/.dockerized_norlab/
+!**/version.txt
+!**/.git
+
+# ====Dockerized-NorLab(recommended)===============================================================
+**/external_data/
+**/artifact/
+**/slurm_jobs_logs/*.log
+
+# ====General======================================================================================
+# ....Repository related...........................................................................
+.github
+.releaserc.json
+CHANGELOG.md
+commit_msg_reference.md
+visual/
+
+# ....Graphic/image related........................................................................
+**/*.svg
+**/*.svgz
+**/*.drawio
+**/drawio/
+
+# ....Text related.................................................................................
+**/*.pdf
+
+# ....Python related...............................................................................
+**/.pytest_cache
+**/.benchmarks
+**/__pycache__
+**/*.pyc
+
+# ....Jetbrains....................................................................................
+/.run/
+/.idea/
+
+# ....Log..........................................................................................
+**/*.out
+
+# ....General......................................................................................
+**/.DS_Store
