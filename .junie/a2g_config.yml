@@ -1,0 +1,17 @@
+# A2G Core Configuration
+A2G:
+  consumer-project: "template-norlab-project"
+  workflow: "supervised"  # supervised | autonomous
+
+# The following specialized guidelines are activated for this A2G-consumer-project
+specialized_guidelines:
+  - "guidelines.markdown.md"
+  - "guidelines.n2st.md" 
+  - "guidelines.nbs.md"
+  - "guidelines.python.md"
+  - "guidelines.shell_script.md"
+
+# Repository Protected Branches
+branches:
+  bleeding_edge: "dev"
+  release: "main"

@@ -1,0 +1,28 @@
+# =================================================================================================
+# Files or directories with designated code owner.
+#
+# Note:
+#   - Each line is a file pattern followed by one or more owners.
+#   - Branch with branch protection rule "Require review from Code Owners"
+#     will automatically trigger a request to a designated code owner
+#
+# Reference: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# =================================================================================================
+
+# ....Repository wide code owner...................................................................
+# These owners will be the default owners for everything in the repo.
+*       @TNP_GIT_USER_NAME_PLACEHOLDER
+
+# ....Core directories and files...................................................................
+#/src/ @TNP_GIT_USER_NAME_PLACEHOLDER
+#/tests/ @TNP_GIT_USER_NAME_PLACEHOLDER
+#/README.md @TNP_GIT_USER_NAME_PLACEHOLDER
+#/.env* @TNP_GIT_USER_NAME_PLACEHOLDER
+
+# ....DevOps related...............................................................................
+#/.github/ @TNP_GIT_USER_NAME_PLACEHOLDER
+#/build_system/ @TNP_GIT_USER_NAME_PLACEHOLDER
+#/.gitignore @TNP_GIT_USER_NAME_PLACEHOLDER
+#/.gitmodules @TNP_GIT_USER_NAME_PLACEHOLDER
+#/.dockerignore @TNP_GIT_USER_NAME_PLACEHOLDER
