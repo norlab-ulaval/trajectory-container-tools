@@ -14,29 +14,22 @@
 <br>
 
 [//]: # ( ==== Title ================================================= ) 
-[//]: # (TODO: change the title)
-# _trajectory-container-tools_
+# _Trajectory Container Tools_
 
 [//]: # ( ==== Hyperlink ============================================= ) 
+
 <sup>
-    <a href="http://132.203.26.125:8111">NorLab TeamCity GUI</a>
-    (VPN/intranet access) &nbsp; • &nbsp;
-    <a href="https://hub.docker.com/repositories/norlabulaval">norlabulaval</a>
-    (Docker Hub) &nbsp;
+    <a href="https://github.com/norlab-ulaval/dockerized-norlab-project">Dockerized-NorLab project app (DNA)</a>
+    &nbsp; • &nbsp;
+    <a href="https://hub.docker.com/repositories/norlabulaval">NorLab Docker Hub</a> 
+    &nbsp; • &nbsp;
+    <a href="http://132.203.26.125:8111">NorLab TeamCity (vpn/intranet)</a> 
 </sup>
 <br>
 <br>
 
 [//]: # ( ==== Description =========================================== ) 
-[//]: # (TODO: Change the description)
-**Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in egestas magna, vel molestie
-mauris.**
-<br>
-<br>
-Sed vehicula felis at felis posuere efficitur quis sit amet arcu. Proin egestas urna vulputate
-lorem pharetra, in posuere ipsum posuere. Fusce condimentum mi et urna aliquam, non euismod quam
-fermentum.
-
+**A library for managing trajectory related data. Provide trajectory dataclasses of various type, factory function, rosbag extractor, pandas dataframe extractor and various utilities.**
 <br>
 
 [//]: # ( ==== Badges ================================================ ) 
@@ -74,19 +67,7 @@ Maintainer <a href="https://github.com/RedLeader962">RedLeader962</a>
 ### Clone repository
 
 ```shell
-git clone --recurse-submodule https://github.com/norlab-ulaval/trajectory-container-tools.git
+git clone https://github.com/norlab-ulaval/trajectory-container-tools.git
 ```
-
-#### Execute configuration steps from [template-norlab-project/README.md](https://github.com/norlab-ulaval/template-norlab-project/tree/main/README.md)
-- [ ] Step 1 › Generate the new repository
-- [ ] Step 2 › Configure the _GitHub_ repository settings
-- [ ] Step 3 › Release automation: enable semantic versioning tools
-- [ ] Step 4 › Make it your own
-
-### My game changer project
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in egestas magna, vel molestie mauris. Sed vehicula felis at felis posuere efficitur quis sit amet arcu. Proin egestas urna vulputate lorem pharetra, in posuere ipsum posuere. Fusce condimentum mi et urna aliquam, non euismod quam fermentum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in egestas magna, vel molestie mauris. Sed vehicula felis at felis posuere efficitur quis sit amet arcu. Proin egestas urna vulputate lorem pharetra, in posuere ipsum posuere. Fusce condimentum mi et urna aliquam, non euismod quam fermentum. 
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in egestas magna, vel molestie mauris. Sed vehicula felis at felis posuere efficitur quis sit amet arcu. Proin egestas urna vulputate lorem pharetra, in posuere ipsum posuere. Fusce condimentum mi et urna aliquam, non euismod quam fermentum.
 
 

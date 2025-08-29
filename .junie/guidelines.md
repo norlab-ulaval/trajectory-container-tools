@@ -1,10 +1,10 @@
 # Repository Guidelines
 
-TODO_REPO_NAME guidelines and instructions
+_Trajectory Container Tools (TCT)_ guidelines and instructions
 
 ## Repository Description
 
-TODO: Add repository description
+A library for managing trajectory related data. Provide trajectory dataclasses of various type, factory function, rosbag extractor, pandas dataframe extractor and various utilities.
 
 ## Prime directive:
 
@@ -30,4 +30,4 @@ TODO: add missing directory
 
 ## Repository Terminology
 
-TODO: add new terminology to limit AI agent confusion. 
+- TCT: Acronym for _Trajectory Container Tools_ i.e., the current repository 
