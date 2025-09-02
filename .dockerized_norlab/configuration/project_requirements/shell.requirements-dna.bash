@@ -3,8 +3,8 @@
 # DNA shell requirements install
 #
 # Notes:
-# - This file is used in .dockerized_norlab/configuration/Dockerfile via pip install
-# - It is executed before python.requirements.txt
+# - This file is used in DNA Dockerfile.project-core-pre
+# - It is executed before python.requirements-dna.txt
 # - N2ST library is available in script i.e., shell script function prefixed 'n2st::'
 #
 # =================================================================================================

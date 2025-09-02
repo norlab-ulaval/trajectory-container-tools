@@ -5,6 +5,7 @@ A2G:
 
 # Specialized Guidelines Activation
 specialized_guidelines:
+  - "guidelines.dna.md"
   - "guidelines.markdown.md"
   - "guidelines.python.md"
 
