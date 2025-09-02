@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trajectory-container-tools"
+version = "0.1.0"
+description = "Trajectory Container Tools for Robotic Deep Reinforcement Learning"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    {name = "RedLeader Research", email = "research@redleader.com"}
+]
+keywords = ["robotics", "reinforcement-learning", "trajectory", "dataclass"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "numpy",
+    "pandas", 
+    "dataclasses-json",
+    "rosbags",  # For ROS bag functionality
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "black",
+    "flake8",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
