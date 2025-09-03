@@ -14,12 +14,11 @@ from trajectory_container_tools.dataclasses import (
 
 
 @pytest.fixture(scope="function")
-def setup_dataset() -> pd.DataFrame:
-    # # For debug puposes
-    # assert os.getcwd() == "/home/non-interactive-ros2/tmp/RedLeader-research-codebase/src"
-
+def setup_panda_dataframe() -> pd.DataFrame:
     slip_dataset_all_path = (
-        "../tests/rosbag_test_data/marmotte/ga_hard_snow_25_01_a/slip_dataset_all.pkl"
+        # "../tests/rosbag_test_data/marmotte/ga_hard_snow_25_01_a/slip_dataset_all.pkl"
+        # "../external_data/dataframe_test_data/marmotte/ga_hard_snow_25_01_a/slip_dataset_all.pkl"
+        "../tests/test_data/dataframe_test_data/marmotte/ga_hard_snow_25_01_a/slip_dataset_all.pkl"
     )
 
     assert os_path.exists(slip_dataset_all_path)
@@ -27,35 +26,35 @@ def setup_dataset() -> pd.DataFrame:
 
 
 class TestExtractDataframeFeature:
-    def test_StatePose_working(self, setup_dataset):
+    def test_StatePose_working(self, setup_panda_dataframe):
         fn = "body_vel_disturption"
         check_property = "x"
 
         container = dtd.extract_single_feature_from_dataframe(
-            dataset=setup_dataset,
+            dataset=setup_panda_dataframe,
             feature_name=fn,
             data_container_type=StatePose2D,
         )
 
-        df = setup_dataset.filter(like=f"{fn}_{check_property}")
+        df = setup_panda_dataframe.filter(like=f"{fn}_{check_property}")
         assert container.feature_name is fn
         assert container.trajectory_len == df.shape[1]
 
-    def test_CmdSkidSteer_working(self, setup_dataset):
+    def test_CmdSkidSteer_working(self, setup_panda_dataframe):
         fn = "cmd"
         check_property = "left"
 
         container = dtd.extract_single_feature_from_dataframe(
-            dataset=setup_dataset,
+            dataset=setup_panda_dataframe,
             feature_name=fn,
             data_container_type=CmdSkidSteer,
         )
 
-        df = setup_dataset.filter(like=f"{fn}_{check_property}")
+        df = setup_panda_dataframe.filter(like=f"{fn}_{check_property}")
         assert container.feature_name is fn
         assert container.trajectory_len == df.shape[1]
 
-    def test_bad_argument(self, setup_dataset):
+    def test_bad_argument(self, setup_panda_dataframe):
         fn = "body_vel_disturption"
 
         mock_value = np.arange(10)
@@ -69,28 +68,28 @@ class TestExtractDataframeFeature:
 
         with pytest.raises(AttributeError):
             container = dtd.extract_single_feature_from_dataframe(
-                dataset=setup_dataset, feature_name=fn, data_container_type=state_pose
+                dataset=setup_panda_dataframe, feature_name=fn, data_container_type=state_pose
             )
 
-    def test_fail_no_existing_feature(self, setup_dataset):
+    def test_fail_no_existing_feature(self, setup_panda_dataframe):
         with pytest.raises(ValueError):
             dtd.extract_single_feature_from_dataframe(
-                dataset=setup_dataset,
+                dataset=setup_panda_dataframe,
                 feature_name="bodyy_vel_ddisturption",
                 data_container_type=StatePose2D,
             )
 
-    def test_no_existing_feature_dimension(self, setup_dataset):
+    def test_no_existing_feature_dimension(self, setup_panda_dataframe):
         with pytest.raises(ValueError):
             dtd.extract_single_feature_from_dataframe(
-                dataset=setup_dataset,
+                dataset=setup_panda_dataframe,
                 feature_name="body_vel_disturption",
                 data_container_type=CmdStandard,
             )
 
-    def test_missing_timestep(self, setup_dataset):
+    def test_missing_timestep(self, setup_panda_dataframe):
         col_label = "body_vel_disturption"
-        df_missing = setup_dataset.drop(f"{col_label}_x_9", axis=1)
+        df_missing = setup_panda_dataframe.drop(f"{col_label}_x_9", axis=1)
 
         with pytest.raises(ValueError):
             dtd.extract_single_feature_from_dataframe(
@@ -111,10 +110,10 @@ class TestExtractDataframeMultifeature:
         return feature_config
 
     def test_aggregate_multiple_features_from_dataframe_working(
-        self, setup_dataset, setup_configuration_dict_OK
+        self, setup_panda_dataframe, setup_configuration_dict_OK
     ):
         feats = dtd.aggregate_multiple_features_from_dataframe(
-            dataset_frame=setup_dataset,
+            dataset_frame=setup_panda_dataframe,
             dataset_info="marmotte-ga_hard_snow_25_01_a",
             features_config=setup_configuration_dict_OK,
         )
@@ -148,14 +147,14 @@ class TestExtractDataframeMultifeature:
         print(feats)
 
     def test_aggregate_multiple_features_from_dataframe_misspecification(
-        self, setup_dataset, setup_configuration_dict_OK
+        self, setup_panda_dataframe, setup_configuration_dict_OK
     ):
         setup_configuration_dict_bad = setup_configuration_dict_OK.copy()
         setup_configuration_dict_bad["icp"] = ("StatePose3D",)
 
         with pytest.raises(KeyError):
             feats = dtd.aggregate_multiple_features_from_dataframe(
-                dataset_frame=setup_dataset,
+                dataset_frame=setup_panda_dataframe,
                 dataset_info="marmotte-ga_hard_snow_25_01_a",
                 features_config=setup_configuration_dict_bad,
             )
@@ -164,10 +163,10 @@ class TestExtractDataframeMultifeature:
 
     @pytest.mark.skip(reason="Feature nice to have. Not implemented yet")
     def test_aggregate_multiple_features_from_dataframe_single_dimension_feature_no_index(
-        self, setup_dataset
+        self, setup_panda_dataframe
     ):
         feats = dtd.aggregate_multiple_features_from_dataframe(
-            dataset_frame=setup_dataset,
+            dataset_frame=setup_panda_dataframe,
             dataset_info="marmotte-ga_hard_snow_25_01_a",
             features_config={"calib": ("calib_step", "step")},
         )

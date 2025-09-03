@@ -24,7 +24,6 @@ dependencies = [
     "numpy",
     "pandas", 
     "tqdm",
-    "rclpy",  # For ROS functionality
     "rosbags",  # For ROS bag functionality
 ]
 
