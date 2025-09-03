@@ -35,14 +35,38 @@ class NavMsgsOdometry(RosBagFeatureDataclass):
     twist_covariance: np.ndarray
 
 
+# @dataclass()
+# class NavMsgsOdometry(RosBagFeatureDataclass):
+#     pose_pose_position_x: np.ndarray
+#     pose_pose_position_y: np.ndarray
+#     pose_pose_position_z: np.ndarray
+#     pose_pose_orientation_x: np.ndarray
+#     pose_pose_orientation_y: np.ndarray
+#     pose_pose_orientation_z: np.ndarray
+#     pose_pose_orientation_w: np.ndarray
+#     pose_covariance: np.ndarray
+#     twist_twist_linear_x: np.ndarray
+#     twist_twist_linear_y: np.ndarray
+#     twist_twist_linear_z: np.ndarray
+#     twist_twist_angular_x: np.ndarray
+#     twist_twist_angular_y: np.ndarray
+#     twist_twist_angular_z: np.ndarray
+#     twist_covariance: np.ndarray
+
+
 @dataclass()
 class AckermannMsgsAckermannDriveStamped(RosBagFeatureDataclass):
-    drive_steering_angle: np.ndarray
-    drive_steering_angle_velocity: np.ndarray
+    drive_steeringAngle: np.ndarray
+    drive_steeringAngleVelocity: np.ndarray
     drive_speed: np.ndarray
     drive_acceleration: np.ndarray
     drive_jerk: np.ndarray
 
+@dataclass()
+class AckermannMsgsAckermannDriveStampedMinimal(RosBagFeatureDataclass):
+    drive_steeringAngle: np.ndarray
+    drive_steeringAngleVelocity: np.ndarray
+    drive_speed: np.ndarray
 
 @dataclass()
 class Tf2MsgsTFMessage(RosBagFeatureDataclass):
@@ -63,12 +87,12 @@ class SensorMsgsImu(RosBagFeatureDataclass):
     orientation_y: np.ndarray
     orientation_z: np.ndarray
     orientation_w: np.ndarray
-    orientation_covariance: np.ndarray
-    angular_velocity_x: np.ndarray
-    angular_velocity_y: np.ndarray
-    angular_velocity_z: np.ndarray
-    angular_velocity_covariance: np.ndarray
-    linear_acceleration_x: np.ndarray
-    linear_acceleration_y: np.ndarray
-    linear_acceleration_z: np.ndarray
-    linear_acceleration_covariance: np.ndarray
+    orientationCovariance: np.ndarray
+    angularVelocity_x: np.ndarray
+    angularVelocity_y: np.ndarray
+    angularVelocity_z: np.ndarray
+    angularVelocityCovariance: np.ndarray
+    linearAcceleration_x: np.ndarray
+    linearAcceleration_y: np.ndarray
+    linearAcceleration_z: np.ndarray
+    linearAccelerationCovariance: np.ndarray

@@ -1,10 +1,11 @@
 # coding=utf-8
 import os
+import re
 from pathlib import Path
 from tqdm import tqdm
 import numpy as np
 from dataclasses import fields as fields, make_dataclass
-from typing import Dict, List, Tuple, Type, Union
+from typing import Dict, List, Optional, Tuple, Type, Union
 
 from rosbags.rosbag2 import Reader
 from rosbags.serde import deserialize_cdr
@@ -27,7 +28,7 @@ from .utils.data_sanity_checks import timestamp_sanity_check
 
 def aggregate_multiple_features_from_rosbag(
     rosbag_path: Path,
-    dataset_info: str,
+    dataset_info: Optional[str],
     features_config: Dict[str, Union[Type[RosBagFeatureDataclass], Tuple[str, ...]]],
 ) -> AbstractMultifeatureDataclass:
     """Extract multiple features (i.e. topics) from a rosbag_path based on a configuration
@@ -39,8 +40,7 @@ def aggregate_multiple_features_from_rosbag(
     to lookout in the rosbag topic list and agregate them in a *multifeature* dataclass.
 
     Feature dimensions such as 'pose.position.x' or 'twist.linear.y' are specified either by
-    using existing
-    `RosBagFeatureDataclass` subclass such as: `NavMsgsOdometry`,
+    using existing `RosBagFeatureDataclass` subclass such as `NavMsgsOdometry`,
     `AckermannMsgsAckermannDriveStamped`, `Tf2MsgsTFMessage`, `SensorMsgsImu` or by using tuple
     of strings such as `('<NewFeatureDataclassTypeName>', '<topic_property_name_1>',
     '<topic_property_name_2>', ...)`.
@@ -48,16 +48,15 @@ def aggregate_multiple_features_from_rosbag(
     `NewFeatureDataclassTypeName` is the ros topic type in camelback notation, without the
     `/msg` directory e.g. tf2_msgs/msg/TFMessage = Tf2MsgsTFMessage.
 
-    Topic property `transform_translation_x` would convert to ros topic msg
-    `topic_message.transform.translation.x`
+    Topic property name `drive_steeringAngleVelocity` would convert to ros topic msg `drive.steering_angle_velocity`. The parsing rule for topic property name is the following underscore `_` convert to dot `.` and `CamelCase` convert to `snake_case`.
 
         >>> feature_config = {
-        >>>             '/pf/pose/odom': NavMsgsOdometry,
-        >>>             '/odom':         NavMsgsOdometry,
-        >>>             '/tf':           ('Tf2MsgsTFMessage', 'transform_translation_x',
-        >>>                                                   'transform_translation_y',
-        >>>                                                   'transform_translation_z')
-        >>>             }
+        >>>     '/pf/pose/odom': NavMsgsOdometry,
+        >>>     '/odom':         NavMsgsOdometry,
+        >>>     '/tf':           ('Tf2MsgsTFMessage', 'transform_translation_x',
+        >>>                                           'transform_translation_y',
+        >>>                                           'transform_translation_z')
+        >>> }
 
     :param rosbag_path: Path to rosbag
     :param dataset_info: Any relevant information on the rosbag (location, robot, condition)
@@ -96,6 +95,8 @@ def aggregate_multiple_features_from_rosbag(
                 feature_name=feature_name,
                 data_container_type=feature_dataclass,
             )
+        else:
+            raise
 
         features_type.append((f"topic{feature_name.replace('/', '_')}", type(feature)))
         features.append(feature)
@@ -194,8 +195,14 @@ def extract_single_feature_from_rosbag(
                                 attribute_parent = msg
 
                                 # Recurse classe attribute
-                                # Example: msg.pose.pose.position.x
+                                # Example:
+                                #  - 'msg_pose_pose_position_x' -> 'msg.pose.pose.position.x'
+                                #  - 'drive_SteeringAngleVelocity' -> 'drive.steering_angle_velocity'
                                 for each_child in attribute_list:
+
+                                    # Handle case where key is multi-word e.g., 'SteeringAngleVelocity' -> 'steering_angle_velocity'
+                                    each_child = _camelcase_to_snake_case(each_child)
+
                                     attribute_parent = getattr(attribute_parent, each_child)
 
                                 tmp_container[each_property_name].append(attribute_parent)
@@ -234,8 +241,7 @@ def extract_single_feature_from_rosbag(
 
                 except AssertionError as e:
                     raise ValueError(
-                        "(!) There's a problem with the `rosbag` timestamp"
-                        f" `{each_property_name}`.\n<< {e}"
+                        "(!) There's a problem with the `rosbag` timestamp" f" `{each_property_name}`.\n"
                     )
 
         except ValueError as e:
@@ -273,3 +279,7 @@ def _fix_sequence_ordering_base_on_timestamps(
         if isinstance(each_property, np.ndarray):
             trajectory_dict[each_property_name] = each_property[sorted_ts_idx]
     return trajectory_dict
+
+
+def _camelcase_to_snake_case(name: str) -> str:
+    return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()

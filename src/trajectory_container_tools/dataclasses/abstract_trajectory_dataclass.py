@@ -7,6 +7,8 @@ from dataclasses import dataclass, field, fields
 import numpy as np
 from typing import List, Tuple, Union
 
+from rclpy.time import Time
+
 from trajectory_container_tools.utils.general import extract_class_name_from_type
 
 
@@ -38,7 +40,7 @@ class AbstractTrajectoryDataclass(abc.ABC):
     @classmethod
     def trajectory_metadata_field(cls) -> List[str]:
         """
-        List field that are declared as trajectory wide metadata i.e. not per timestep.
+        List fields that are declared as trajectory wide metadata i.e. not per timestep.
         Usefulll for skipping field of type ndarray that are not trajectory timestep information.
 
         This method provides a default implementation for specifying the fields
@@ -242,7 +244,11 @@ class AbstractTrajectoryDataclass(abc.ABC):
             elif k == "_iter_index" or k == "transposed":
                 pass
             elif isinstance(v, np.ndarray):
-                repr_str += f"{m_sp}{item_space}{k}: {extract_class_name_from_type(v)} {v.shape}\n"
+                if v.ndim > 0 and isinstance(v[0], Time):
+                    range_str = f"range(nanosec) : {np.min(v).nanoseconds} -> {np.max(v).nanoseconds}"
+                else:
+                    range_str = f"range: {np.min(v)} -> {np.max(v)}"
+                repr_str += f"{m_sp}{item_space}{k}: {extract_class_name_from_type(v)} {v.shape} | {range_str}\n"
             elif isinstance(v, AbstractTrajectoryDataclass):
                 indent_v = []
                 for each_line in str(v).splitlines():

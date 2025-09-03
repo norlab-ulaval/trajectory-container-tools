@@ -16,8 +16,6 @@ from trajectory_container_tools.dataclasses import (
 @pytest.fixture(scope="function")
 def setup_panda_dataframe() -> pd.DataFrame:
     slip_dataset_all_path = (
-        # "../tests/rosbag_test_data/marmotte/ga_hard_snow_25_01_a/slip_dataset_all.pkl"
-        # "../external_data/dataframe_test_data/marmotte/ga_hard_snow_25_01_a/slip_dataset_all.pkl"
         "../tests/test_data/dataframe_test_data/marmotte/ga_hard_snow_25_01_a/slip_dataset_all.pkl"
     )
 

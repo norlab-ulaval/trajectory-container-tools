@@ -22,10 +22,10 @@ Always comply with _A2G Framework Guidelines_, _Repository Guidelines_ and _AI o
 - `.junie/` contains AI agent related files.
 - `.junie/ai_agent_guidelines` contains _AI Agent Guidelines (A2G)_ with entrypoint at
   `.junie/ai_agent_guidelines/README.md`.
+- `notebooks/` contains Jupyter notebook for interactive examples.
 - `src/` contains repository source code.
 - `tests/` contains tests files.
 - `artifact/` contains project artifact such as experimental log, plot and rosbag.
-- `utilities/` contains external libraries.
 
 ## Repository Terminology
 

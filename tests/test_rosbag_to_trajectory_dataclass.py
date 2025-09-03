@@ -36,11 +36,11 @@ class TestExtractROSBagFeature:
         fn = "/aaaaaaackermann_cmddd"
 
         mock_value = np.arange(10)
-        state_pose = AckermannMsgsAckermannDriveStamped(
+        bad_argument = AckermannMsgsAckermannDriveStamped(
             feature_name=fn,
             header_FrameId="",
-            drive_steering_angle=mock_value,
-            drive_steering_angle_velocity=mock_value,
+            drive_steeringAngle=mock_value,
+            drive_steeringAngleVelocity=mock_value,
             drive_speed=mock_value,
             drive_acceleration=mock_value,
             drive_jerk=mock_value,
@@ -49,10 +49,11 @@ class TestExtractROSBagFeature:
         )
 
         with pytest.raises(AttributeError):
+            # noinspection PyTypeChecker
             container = extract_single_feature_from_rosbag(
                 rosbag_path=setup_rosbag_from_tests_dir.bag_path,
                 feature_name=fn,
-                data_container_type=state_pose,
+                data_container_type=bad_argument,
             )
 
     def test_fail_no_existing_feature(self, setup_rosbag_from_tests_dir):
