@@ -16,13 +16,11 @@ WORKDIR ${DN_PROJECT_PATH:?'environment variable is not set'}
 # ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓
 # ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓
 
-# Example
+COPY  . "${DN_PROJECT_PATH:?err}/"
 RUN <<EOF
-    # ....Examples.................................................................................
-    {
-        echo "...Sanity check............................" && \
-        echo "python version: $(n2st::which_python3_version)" && \
-        python -c "import pytest" && \
-        echo "..........................................." ;
-    } || n2st::print_msg_error_and_exit "Failed sanity check!"
+  n2st::print_msg "Install trajectory-container-tools via pyproject.toml..."
+  cd "${DN_PROJECT_PATH}"
+  python -m pip install --editable . \
+    || n2st::print_msg_error_and_exit "Failed trajectory-container-tools install via pyproject.toml!"
 EOF
+

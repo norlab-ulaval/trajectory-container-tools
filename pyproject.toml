@@ -23,14 +23,14 @@ classifiers = [
 dependencies = [
     "numpy",
     "pandas", 
-    "dataclasses-json",
+    "tqdm",
+    "rclpy",  # For ROS functionality
     "rosbags",  # For ROS bag functionality
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest",
-    "pytest-cov",
     "black",
     "flake8",
 ]
