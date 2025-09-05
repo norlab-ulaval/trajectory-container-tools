@@ -91,9 +91,9 @@ class TestExtractROSBagFeature:
 
         print(container)
 
-        assert container.pose.feature_name == "Nested PoseWithCovariance"
-        assert container.twist.feature_name == "Nested TwistWithCovariance"
-        assert container.pose.pose.feature_name == "Nested Pose"
+        assert container.pose.feature_name is None
+        assert container.twist.feature_name is None
+        assert container.pose.pose.feature_name is None
         assert isinstance(container.pose.pose.position_x, np.ndarray)
         assert container.pose.pose.trajectory_len == container.trajectory_len
         assert len(container.pose.pose.position_x) == container.trajectory_len
@@ -111,7 +111,7 @@ class TestExtractROSBagFeature:
                 drive_acceleration=mock_value,
                 drive_jerk=mock_value,
                 timestamps=mock_value,
-                timestep_index=mock_value,
+                # timestep_index=mock_value,
                 )
 
         with pytest.raises(AttributeError):

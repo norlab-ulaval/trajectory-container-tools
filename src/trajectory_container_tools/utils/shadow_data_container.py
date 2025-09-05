@@ -1,23 +1,21 @@
 # coding=utf-8
 from dataclasses import fields as fields
-from typing import Dict, List, Type, Union, TypeAlias
+from typing import Dict, List, Optional, Type, Union, TypeAlias
 
 import numpy as np
 
 from ..trj_dataclasses.rosbag_feature_dataclass import \
     RosBagFeatureDataclass
-from ..trj_dataclasses.base_trajectory_dataclass import (
-    BaseTrajectoryDataclass
-    )
+from ..trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
 from .data_sanity_checks import timestamp_causal_ordering_sanity_check
-from .general import extract_class_name_from_type
 
 ShadowDataContainer: TypeAlias = Dict[str, Union[None, List, np.ndarray, Dict, Union[
-    Type[RosBagFeatureDataclass], Type[BaseTrajectoryDataclass]]]]
+    Type[RosBagFeatureDataclass], Type[NestedBaseTrajectoryDataclass]]]]
 
 
 def instanciate_shadow_data_container(
-        data_container_type: Union[Type[RosBagFeatureDataclass], Type[BaseTrajectoryDataclass]]
+        data_container_type: Union[
+            Type[RosBagFeatureDataclass], Type[NestedBaseTrajectoryDataclass]]
         ) -> ShadowDataContainer:
     """
     Instantiates a shadow data container for storing data corresponding to the given
@@ -26,12 +24,11 @@ def instanciate_shadow_data_container(
 
     :param data_container_type: The data container type for which the shadow
         data container is to be instantiated. It should be either `RosBagFeatureDataclass`
-        or `BaseTrajectoryDataclass` or their derived types.
+        or `NestedBaseTrajectoryDataclass` or their derived types.
     :return: A shadow data container.
     """
 
     container_properties = fields(data_container_type)
-    # dim_name = data_container_type.get_dimension_names()
     shadow_data_container: ShadowDataContainer = {each_field.name: None for each_field in
                                                   container_properties}
 
@@ -45,7 +42,7 @@ def instanciate_shadow_data_container(
             # Note: Using a list to temporary aggregate data and then convert to numpy array when
             #       done is faster than directly append to a numpy array
             shadow_data_container[each_property_name] = {'type': np.ndarray, 'data': []}
-        elif issubclass(dimension_type, (RosBagFeatureDataclass, BaseTrajectoryDataclass)):
+        elif issubclass(dimension_type, (RosBagFeatureDataclass, NestedBaseTrajectoryDataclass)):
             shadow_data_container[each_property_name] = instanciate_shadow_data_container(
                     dimension_type)
         else:
@@ -56,41 +53,53 @@ def instanciate_shadow_data_container(
     return shadow_data_container
 
 
-# (CRITICAL) ToDo: unit-test (ref task RLRP-83) Is indirectly tested for now
 def post_process_shadown_data_container(
         shadow_data_container: ShadowDataContainer,
-        data_container_type: Union[Type[RosBagFeatureDataclass], Type[BaseTrajectoryDataclass]],
-        feature_name: str) -> ShadowDataContainer:
+        data_container_type: Union[
+            Type[RosBagFeatureDataclass], Type[NestedBaseTrajectoryDataclass]],
+        feature_name: Optional[str]) -> ShadowDataContainer:
+    """
+    Post-processes the shadow data container by modifying its structure and data based on the
+    provided container type and feature name. The function manipulates and transforms the data
+    to ensure compatibility with the expected format of the given data container type.
 
-    # dim_name = data_container_type.get_dimension_names()
+    :param shadow_data_container: A shadow data container object that holds the information to
+        process. It contains raw data and metadata that need to be transformed.
+    :param data_container_type: The type of the data container to transform the shadow data
+        container into. It can either be `RosBagFeatureDataclass` or `NestedBaseTrajectoryDataclass`.
+    :param feature_name: Optional feature name used for specific processing of the shadow data
+        container if applicable.
+    :return: An updated shadow data container with the processed structure and data according to
+        the specified `data_container_type`.
+    """
+    # (NICE TO HAVE) ToDo: unit-test (ref task RLRP-83) Is indirectly tested for now
+
+    del shadow_data_container['timestep_index']
+
+    if issubclass(data_container_type, NestedBaseTrajectoryDataclass):
+        del shadow_data_container['feature_name']
 
     if issubclass(data_container_type, RosBagFeatureDataclass):
         shadow_data_container["timestamps"] = shadow_data_container["timestamps"]['data']
         validate_timestamp_integrity(data_container_type, feature_name, shadow_data_container)
         del shadow_data_container['type']
 
-        timestep_index = np.arange(len(shadow_data_container["timestamps"]))
-        if shadow_data_container["timestep_index"] is None:
-            shadow_data_container["timestep_index"] = timestep_index
-
     for k, v in shadow_data_container.items():
-        if k == "timestep_index":
-            pass
-        elif k == "feature_name":
-            shadow_data_container["feature_name"] = feature_name
+        if k == "feature_name":
+            if not issubclass(data_container_type, NestedBaseTrajectoryDataclass):
+                # Nested trj container should not populate 'feature_name'
+                shadow_data_container["feature_name"] = feature_name
         elif isinstance(v, dict) and v.get('type') is not None:
             target_type = v.get('type')
             if issubclass(target_type, np.ndarray):
                 # Case: e.g., 'timestamp' dimension
                 assert isinstance(v['data'], list)
                 shadow_data_container[k] = np.array(v['data'])
-            elif issubclass(target_type, BaseTrajectoryDataclass):
-                # (Priority) ToDo: fix the nested container 'feature_name' logic (ref task RLRP-83)
+            elif issubclass(target_type, NestedBaseTrajectoryDataclass):
                 ppsdc = post_process_shadown_data_container(
                         v,
                         target_type,
-                        f"Nested {extract_class_name_from_type(target_type)}")
-                del ppsdc['timestep_index']
+                        None)
                 del ppsdc['type']
                 shadow_data_container[k] = target_type(**ppsdc)
         elif isinstance(v, list):
@@ -126,7 +135,8 @@ def validate_timestamp_integrity(
         timestamp_causal_ordering_sanity_check(shadow_data_container)
 
     except AssertionError as e:
-        raise ValueError(f"[TCT error] There's a problem with the `rosbag` timestamp `{feature_name}`.")
+        raise ValueError(
+                f"[TCT error] There's a problem with the `rosbag` timestamp `{feature_name}`.")
     return shadow_data_container
 
 
@@ -151,5 +161,3 @@ def fix_sequence_ordering_base_on_timestamps(
         if isinstance(each_property, np.ndarray):
             trajectory_dict[each_property_name] = each_property[sorted_ts_idx]
     return trajectory_dict
-
-

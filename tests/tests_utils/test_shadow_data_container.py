@@ -44,8 +44,8 @@ class TestInstanciateShadowDataContainer:
                 'feature_name':   None,
                 'timestep_index': None,
                 'pose':           {
-                        'feature_name':   None,
                         'type':           Pose,
+                        'feature_name':   None,
                         'timestep_index': None,
                         'position_x':     {'data': [], 'type': np.ndarray},
                         'position_y':     {'data': [], 'type': np.ndarray},

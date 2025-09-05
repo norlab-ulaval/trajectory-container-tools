@@ -246,9 +246,9 @@ class AbstractTrajectoryDataclass(abc.ABC):
         m_sp += t_sp
 
         v = self.__dict__.get("feature_name")
-        repr_str += f"{m_sp}feature_name: {v}\n"
+        if v is not None:
+            repr_str += f"{m_sp}feature_name: {v}\n"
 
-        # v = self.__dict__.get("timestep_index")
         repr_str += f"{m_sp}trajectory_len: {self.trajectory_len}\n"
         repr_str += f"{m_sp}transposed: {self.transposed}\n"
         repr_str += f"{m_sp}dimensions:\n"

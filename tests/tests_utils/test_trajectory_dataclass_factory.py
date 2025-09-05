@@ -117,7 +117,7 @@ class TestTrajectoryDataclassFactoryROSbagCase:
             pose_xx=mock_value,
             pose_yy=mock_value,
             pose_zz=mock_value,
-            timestep_index=mock_value,
+            # timestep_index=mock_value,
             header_FrameId=999,
             timestamps=mock_value,
         )
