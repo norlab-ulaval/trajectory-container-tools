@@ -4,9 +4,7 @@ from typing import Optional
 
 import numpy as np
 
-from trajectory_container_tools.trj_dataclasses.abstract_trajectory_dataclass import (
-    AbstractTrajectoryDataclass,
-)
+from .abstract_trajectory_dataclass import AbstractTrajectoryDataclass
 
 
 @dataclass()
@@ -16,11 +14,3 @@ class BaseTrajectoryDataclass(AbstractTrajectoryDataclass):
     @property
     def _init_trj_axe(self) -> int:
         return 0
-
-
-
-
-
-
-
-

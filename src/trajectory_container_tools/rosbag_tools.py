@@ -1,7 +1,8 @@
 # coding=utf-8
 import os
-import re
 from pathlib import Path
+
+from rclpy.time import Time as RosTime
 from tqdm import tqdm
 import numpy as np
 from dataclasses import make_dataclass
@@ -22,9 +23,9 @@ from .utils.factory import (
     TrjDataClassFeatureSpecification,
     trajectory_dataclass_factory,
     )
-from .utils.general import set_timestamp
+from .utils.general import camelcase_to_snake_case, extract_class_name_from_type
 from .utils.shadow_data_container import (
-    ShadowDataContainer, data_container_type_to_str, instanciate_shadow_data_container,
+    ShadowDataContainer, instanciate_shadow_data_container,
     post_process_shadown_data_container, validate_timestamp_integrity,
     )
 
@@ -79,7 +80,7 @@ def aggregate_multiple_features_from_rosbag(
         if isinstance(feature_dataclass, tuple):
             if len(feature_dataclass) == 1:
                 raise KeyError(
-                        "(!) Check your `features_config` dict. You forgot to specify the '"
+                        "[TCT error] Check your `features_config` dict. You forgot to specify the '"
                         f"{feature_name}' dimensions."
                         )
 
@@ -146,82 +147,74 @@ def extract_single_feature_from_rosbag(
     try:
         if not issubclass(data_container_type, RosBagFeatureDataclass):
             raise ValueError(
-                    f"(!) `{data_container_type}` must be a subclass of `RosBagFeatureDataclass`"
+                    f"[TCT error] `{data_container_type}` must be a subclass of `RosBagFeatureDataclass`"
                     )
     except TypeError as e:
         raise AttributeError(
-                f"(!) `{data_container_type}` must not be instanciated, just pass the class as "
+                f"[TCT error] `{data_container_type}` must not be instanciated, just pass the class as "
                 "attribute."
                 )
     else:
-        try:
-            # ... Create and initialize temporary container .......................................
-            shadow_data_container = instanciate_shadow_data_container(data_container_type)
+        # ... Create and initialize temporary container ...........................................
+        shadow_data_container = instanciate_shadow_data_container(data_container_type)
 
-            # .... Crawl topic msgs ...............................................................
-            with Reader(rosbag_path) as reader:
-                connections = [conn for conn in reader.connections if conn.topic == feature_name]
-                _selected_topic_msg_count = len(connections)
-                if _selected_topic_msg_count == 0:
-                    raise ValueError(
-                            f"(!) Topic `{feature_name}` does not exist in "
-                            f"{os.path.basename(rosbag_path)} "
-                            )
+        # .... Crawl topic msgs ...................................................................
+        with Reader(rosbag_path) as reader:
+            connections = [conn for conn in reader.connections if conn.topic == feature_name]
+            _selected_topic_msg_count = len(connections)
+            if _selected_topic_msg_count == 0:
+                raise ValueError(
+                        f"[TCT error] Topic `{feature_name}` does not exist in "
+                        f"{os.path.basename(rosbag_path)} "
+                        )
 
-                print(f"\n[Rosbag crawler in progress]\n")
-                progressbar = tqdm(total=_selected_topic_msg_count)
-                for connection, timestamp, rawdata in reader.messages(
-                        connections=connections, start=start, stop=stop
-                        ):
-                    progressbar.update(1)
+            print(f"[TCT] extract single feature from rosbag › seeking {feature_name}")
+            if _dataclass_type_is_type_name(data_container_type, "Tf2MsgsTFMessage"):
+                print("[TCT] Skipping msg type 'transforms'")
 
-                    # ⚠️ Note: "deserialize_cdr(rawdata, connection.msgtype)" is deprecated
-                    # msg = deserialize_cdr(rawdata, connection.msgtype)
-                    # (CRITICAL) inprogress: validate refactoring (ref task RLRP-83)
-                    typestore = get_typestore(Stores[f"ros2_{os.getenv('ROS_DISTRO')}".upper()])
-                    msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
+            progressbar = tqdm(total=_selected_topic_msg_count)
+            for connection, timestamp, rawdata in reader.messages(
+                    connections=connections, start=start, stop=stop
+                    ):
+                progressbar.update(1)
 
-                    # Note: this is a quick hack for dealing with topic msg with embedded msg type
-                    #       (ref task RLRP-95)
-                    if _dataclass_type_is_type_name(data_container_type, "Tf2MsgsTFMessage"):
-                        msg = getattr(msg, "transforms")
-                        msg = msg.pop()
+                typestore = get_typestore(Stores[f"ros2_{os.getenv('ROS_DISTRO')}".upper()])
+                msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
 
-                    # ... Fetch properties from rosbag ............................................
-                    shadow_data_container = _collect_properties_from_rosbag(
-                            data_container_type,
-                            feature_name, msg,
-                            timestamp, shadow_data_container)
+                # Note: this is a quick hack for dealing with topic msg with embedded msg type
+                #       (ref task RLRP-95)
+                if _dataclass_type_is_type_name(data_container_type, "Tf2MsgsTFMessage"):
+                    msg = getattr(msg, "transforms")
+                    msg = msg.pop()
 
-                progressbar.close()
+                # ... Fetch properties from rosbag ................................................
+                shadow_data_container = _collect_properties_from_rosbag(
+                        data_container_type,
+                        feature_name, msg,
+                        timestamp, shadow_data_container)
 
-                # .... Convert properties to numpy arrays .........................................
-                # for each_property_name in data_container_type.get_dimension_names():
-                #     if each_property_name in ["header_FrameId", "childFrameId"]:
-                #         pass
-                #     else:
-                #         # (CRITICAL) ToDo: implement shadow data container depth search
-                #         # mechanism (ref task RLRP-83)
-                #         # (CRITICAL) ToDo: implement nested ndarray type conditional execution
-                #         # logic (ref task RLRP-83)
-                #         shadow_data_container[each_property_name] = np.array(
-                #                 shadow_data_container[each_property_name]
-                #                 )
-                shadow_data_container = post_process_shadown_data_container(shadow_data_container,
-                                                                            data_container_type,
-                                                                            feature_name)
+            progressbar.close()
 
-                # .... Validate data integrity ....................................................
-                shadow_data_container = validate_timestamp_integrity(data_container_type, feature_name,
-                                                                     shadow_data_container)
+            shadow_data_container = post_process_shadown_data_container(shadow_data_container,
+                                                                        data_container_type,
+                                                                        feature_name)
 
-        except ValueError as e:
-            raise
-
-    # (CRITICAL) ToDo: implement nested trj dataclass instanciation case (ref task RLRP-83)
+            # .... Validate data integrity ........................................................
+            shadow_data_container = validate_timestamp_integrity(data_container_type, feature_name,
+                                                                 shadow_data_container)
 
     # noinspection PyArgumentList
     return data_container_type(**shadow_data_container)
+
+
+def set_timestamp(msg, bag_timestamp, use_msg_header_time: bool = True) -> int:
+    # (NICE TO HAVE) ToDo: unit-test (curently indirectly tested)
+    if use_msg_header_time:
+        _timestamp = RosTime(seconds=msg.header.stamp.sec, nanoseconds=msg.header.stamp.nanosec)
+    else:
+        _timestamp = bag_timestamp
+
+    return _timestamp
 
 
 def _collect_properties_from_rosbag(
@@ -243,56 +236,39 @@ def _collect_properties_from_rosbag(
                 shadow_data_container[each_property_name]['data'].append(
                         set_timestamp(msg, timestamp, use_msg_header_time=True)
                         )
-            elif issubclass(shadow_data_container[each_property_name]['type'], (RosBagFeatureDataclass, BaseTrajectoryDataclass)):
-                attribute_list = str(each_property_name).split("_")
-                attribute_parent = msg
-
-                # Recurse classe attribute
-                # Example:
-                #  - 'msg_pose_pose_position_x' -> 'msg.pose.pose.position.x'
-                #  - 'drive_SteeringAngleVelocity' ->
-                #  'drive.steering_angle_velocity'
-                for each_child in attribute_list:
-
-                    # Handle case where key is multi-word e.g.,
-                    # 'SteeringAngleVelocity' -> 'steering_angle_velocity'
-                    each_child = _camelcase_to_snake_case(each_child)
-
-                    attribute_parent = getattr(attribute_parent, each_child)
-
-                shadow_data_container[each_property_name] = _collect_properties_from_rosbag(
-                        data_container_type=shadow_data_container[each_property_name]['type'],
-                        feature_name=each_property_name,
-                        msg=attribute_parent,
-                        timestamp=timestamp,
-                        shadow_data_container=shadow_data_container[each_property_name])
-            elif issubclass(shadow_data_container[each_property_name]['type'], (list, np.ndarray)):
-                attribute_list = str(each_property_name).split("_")
-                attribute_parent = msg
-
-                # Recurse classe attribute
-                # Example:
-                #  - 'msg_pose_pose_position_x' -> 'msg.pose.pose.position.x'
-                #  - 'drive_SteeringAngleVelocity' ->
-                #  'drive.steering_angle_velocity'
-                for each_child in attribute_list:
-
-                    # Handle case where key is multi-word e.g.,
-                    # 'SteeringAngleVelocity' -> 'steering_angle_velocity'
-                    each_child = _camelcase_to_snake_case(each_child)
-
-                    attribute_parent = getattr(attribute_parent, each_child)
-
-                shadow_data_container[each_property_name]['data'].append(attribute_parent)
             else:
-                raise NotImplementedError("(Priority) ToDo: implement (ref task RLR-83P)")
+                attribute_list = str(each_property_name).split("_")
+                attribute_parent = msg
+
+                # Recurse classe attribute
+                # Example:
+                #  - 'msg_pose_pose_position_x' -> 'msg.pose.pose.position.x'
+                #  - 'drive_SteeringAngleVelocity' -> 'drive.steering_angle_velocity'
+                for each_child in attribute_list:
+
+                    # Handle case where key is multi-word e.g.,
+                    # 'SteeringAngleVelocity' -> 'steering_angle_velocity'
+                    each_child = camelcase_to_snake_case(each_child)
+
+                    attribute_parent = getattr(attribute_parent, each_child)
+
+                if issubclass(shadow_data_container[each_property_name]['type'], (RosBagFeatureDataclass, BaseTrajectoryDataclass)):
+                    shadow_data_container[each_property_name] = _collect_properties_from_rosbag(
+                            data_container_type=shadow_data_container[each_property_name]['type'],
+                            feature_name=each_property_name,
+                            msg=attribute_parent,
+                            timestamp=timestamp,
+                            shadow_data_container=shadow_data_container[each_property_name])
+                elif issubclass(shadow_data_container[each_property_name]['type'], (list, np.ndarray)):
+                    shadow_data_container[each_property_name]['data'].append(attribute_parent)
+                else:
+                    shadow_data_container[each_property_name]['data'] = attribute_parent
 
         except KeyError as e:
             raise KeyError(
-                    f"(!) The property `{each_property_name}` does not exist in "
+                    f"[TCT error] The property `{each_property_name}` does not exist in "
                     f"{feature_name}. Check that property `{each_property_name}` "
-                    "in "
-                    f"{str(data_container_type)} exist in `{feature_name}`."
+                    "in " f"{str(data_container_type)} exist in `{feature_name}`."
                     )
 
     return shadow_data_container
@@ -301,22 +277,4 @@ def _collect_properties_from_rosbag(
 def _dataclass_type_is_type_name(
         data_container_type_: Type, type_as_str: str
         ):
-    return data_container_type_to_str(data_container_type_) == type_as_str
-
-
-def _camelcase_to_snake_case(name: str) -> str:
-    """ Converts a string from camelCase to snake_case.
-
-    This function processes a string assumed to be in camelCase format and transforms
-    it into snake_case format by inserting underscores before uppercase letters and
-    lowercasing all characters.
-
-        >>> _camelcase_to_snake_case("drive_steeringAngleVelocity")
-        >>> # drive_steering_angle_velocity
-        >>> _camelcase_to_snake_case("drive_SteeringAngleVelocity")
-        >>> # drive__steering_angle_velocity
-
-    :param name: The camelCase formatted string that needs to be converted to snake_case.
-    :return: A string formatted in snake_case.
-    """
-    return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
+    return extract_class_name_from_type(data_container_type_) == type_as_str

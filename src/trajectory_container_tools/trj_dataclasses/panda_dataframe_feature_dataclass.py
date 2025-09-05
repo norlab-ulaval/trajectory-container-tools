@@ -5,6 +5,8 @@ import numpy as np
 
 from ..trj_dataclasses.abstract_trajectory_dataclass import AbstractTrajectoryDataclass
 
+# Note: nested trajectory-dataclass is not yet supported for dataframe extraction.
+#       Use flat layout for now
 
 # ::: Marmotte slip Dataframe dataset related :::::::::::::::::::::::::::::::::::::::::::::::::::::
 @dataclass()
@@ -36,20 +38,12 @@ class CmdSkidSteer(DataframeFeatureDataclass):
 
 @dataclass()
 class Velocity(CmdStandard):
+    # Same properties as CmdStandard
     pass
 
 
 @dataclass()
 class VelocitySkidSteer(CmdSkidSteer):
+    # Same properties as CmdSkidSteer
     pass
 
-
-
-
-@dataclass()
-class DisturbanceQueryState:
-    # (NICE TO HAVE) ToDo: validate nested trajectory dataclass
-    state_pose_k: StatePose2D
-    velocity_skid_steer_k_previous: VelocitySkidSteer
-    cmd_skid_steer_k: CmdSkidSteer
-    cmd_skid_steer_k_previous: CmdSkidSteer

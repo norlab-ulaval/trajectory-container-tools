@@ -6,13 +6,24 @@ import pandas as pd
 from rclpy.time import Time as ROSTime
 
 
-# (Priority) ToDo: unit-test (its tested indirectly at the moment)
-def timestamp_sanity_check(shadow_data_container: dict) -> None:
+def timestamp_causal_ordering_sanity_check(shadow_data_container: dict) -> List[int]:
+    """ Checks the causal order of timestamps in the given data container to ensure they are
+    sequentially increasing.
 
+    This sanity check function validates that each timestamp in the timestamps array is less
+    than the next timestamp. If a causal order violation is detected, the function identifies
+    and reports the offending indices of the timestamps and raises an assertion error.
+
+    :param shadow_data_container: A dictionary containing a "timestamps" entry which is a list of ROS time instances.
+    :return: The list of offending timestamps indexes.
+    :raises AssertionError: Raises an AssertionError if the "timestamps" array is empty
+        or if any timestamp violates the causal ordering.
+    """
     timestamps_ = shadow_data_container["timestamps"]
-    assert len(timestamps_) > 0, "timestamp array is empty!"
+    assert len(timestamps_) > 0, "[TCT error] timestamp array is empty!"
 
     offending_idx = []
+    error_msg_collect = ""
     for ts_idx in np.arange(start=1, stop=len(timestamps_)):
         previous_timestamp: ROSTime = timestamps_[ts_idx - 1]
         current_timestamp: ROSTime = timestamps_[ts_idx]
@@ -22,18 +33,24 @@ def timestamp_sanity_check(shadow_data_container: dict) -> None:
             assert previous_timestamp < current_timestamp
         except AssertionError as e:
             offending_idx.append(ts_idx)
-            print(f"[{ts_idx}] {previous_timestamp} !< {current_timestamp}")
+            error_msg_collect += f"    timestamps[{ts_idx}] {previous_timestamp} !< {current_timestamp}\n"
 
     if len(offending_idx) > 0:
-        print(f"\nNumber of offending timestamp {len(offending_idx)}/{len(timestamps_)}\n")
-        raise AssertionError
+        print(f"[TCT error] Timestamp causal ordering violations:\n"
+              f"{error_msg_collect}")
 
-    return None
+        error_msg = (
+                f"[TCT error] Timestamp causal ordering sanity check failed! "
+                f"Number of offending timestamp {len(offending_idx)}/{len(timestamps_)}"
+        )
+        raise AssertionError(error_msg)
+
+    return offending_idx
 
 
-def timestep_indexing_sanity_check(
-    the_dataframe: pd.DataFrame, unindexed_column_label: str
-) -> np.ndarray:
+def dataframe_timestep_indexing_sanity_check(
+        the_dataframe: pd.DataFrame, unindexed_column_label: str
+        ) -> np.ndarray:
     """Utility for validating timestep index in column label by checking if it is either
     missing a step or not monotonicaly increassing.
 
@@ -57,11 +74,11 @@ def timestep_indexing_sanity_check(
     index_has_constant_increment = column_nb == delta
 
     is_timestep_index_good_to_go = all(
-        (index_is_monoticaly_increasing, index_has_constant_increment)
-    )
+            (index_is_monoticaly_increasing, index_has_constant_increment)
+            )
     if not is_timestep_index_good_to_go:
         raise IndexError(
-            f"(!) The timestep index is either missing a step or not monotonicaly increassing"
-        )
+                f"[TCT error] The timestep index is either missing a step or not monotonicaly increassing"
+                )
 
     return timestep_index

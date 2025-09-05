@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 
 import numpy as np
 
-from trajectory_container_tools import AbstractTrajectoryDataclass
+from ..trj_dataclasses.abstract_trajectory_dataclass import AbstractTrajectoryDataclass
 
 
 def containers_timestep_alignment_sanity_check(

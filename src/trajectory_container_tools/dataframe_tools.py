@@ -11,7 +11,7 @@ from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclas
     DataframeFeatureDataclass
 
 from trajectory_container_tools.utils.data_sanity_checks import (
-    timestep_indexing_sanity_check,
+    dataframe_timestep_indexing_sanity_check,
 )
 from trajectory_container_tools.utils.factory import (
     TrjDataClassFeatureSpecification,
@@ -29,12 +29,12 @@ def aggregate_multiple_features_from_dataframe(
 
     Requirement: the dataframe must contain one trajectory or a batch of trajectories (one per row)
     with some features (column) containing a timestep index in there name
-    eg: `feature_1, feature_2 ...
+    e.g., `feature_1, feature_2, feature_3 ...
 
 
     The `features_config` specify the feature name to lookout in the `rosbag` header and
     agregate them in a `Multifeature` dataclass. Feature dimensions such as 'x', 'y' 'z' are
-    specified either by using existing `DataframeFeatureDataclass` subclass such as:
+    specified either by using existing `DataframeFeatureDataclass` subclass such as
         `StatePose2D`, `CmdStandard`, `CmdSkidSteer`, `Velocity`, `VelocitySkidSteer`
     or by using tuple of strings such as ('<new feature dataclass type name>', '<dimension
         names 1>', '<dimension names 2>', ...).
@@ -57,7 +57,7 @@ def aggregate_multiple_features_from_dataframe(
         if isinstance(feature_dataclass, tuple):
             if len(feature_dataclass) == 1:
                 raise KeyError(
-                    "(!) Check your `features_config` dict. You forgot to specify the '"
+                    "[TCT error] Check your `features_config` dict. You forgot to specify the '"
                     f"{feature_name}' "
                     "dimensions."
                 )
@@ -93,18 +93,15 @@ def aggregate_multiple_features_from_dataframe(
 def extract_single_feature_from_dataframe(
     dataset: pd.DataFrame, feature_name: str, data_container_type: Type[DataframeFeatureDataclass]
 ) -> DataframeFeatureDataclass:
-    # (Priority) ToDo: implement >> a variation of `extract_single_feature_from_dataframe()` for
-    # extracting topics from a dataframe organized one timestep per row
-    #   Note: `bagpy` is not compatible with ROS2
     """
     Dataframe feature extractor automation function.
 
     Requirement: the dataframe must contain one trajectory or a batch of trajectories (one per row)
     with some features (column) containing a timestep index in there name
-    eg: `feature_1, feature_2 ...
+    e.g., `feature_1, feature_2, feature_3 ...
 
     Usage:
-     1. Suposing the dataframe head contain column `body_vel_disturption_x_0` to
+     1. Suposing the dataframe head contains column `body_vel_disturption_x_0` to
      `body_vel_disturption_x_39`.
      2. The `feature_name` and `data_container_type` properties specify which data will be
      extracted from the `dataset_frame`.
@@ -116,20 +113,23 @@ def extract_single_feature_from_dataframe(
     :param dataset:
     :param feature_name:
     :param data_container_type:
-
-    (NICE TO HAVE) ToDo: implement extract arbitrary trajectory length (ref task SWMRD-12
-    Implement feature extractor) with param: `extract_trajectory_timesteps: Optional[slice] = None`
     """
+    # Note: `bagpy` is not compatible with ROS2
+    # (NICE TO HAVE) ToDo: implement nested trajectory-dataclass support for dataframe extraction
+    # (NICE TO HAVE) ToDo: implement >> a variation of `extract_single_feature_from_dataframe()`
+    #                       for extracting topics from a dataframe organized one timestep per row.
+    # (NICE TO HAVE) ToDo: implement extract arbitrary trajectory length (ref task SWMRD-12)
+    #     with param: `extract_trajectory_timesteps: Optional[slice] = None`
 
     try:
         if not issubclass(data_container_type, DataframeFeatureDataclass):
             raise ValueError(
-                f"(!) `{data_container_type}` must be a subclass of "
+                f"[TCT error] `{data_container_type}` must be a subclass of "
                 f"`DataframeFeatureDataclass`"
             )
     except TypeError as e:
         raise AttributeError(
-            f"(!) `{data_container_type}` must not be instanciated, just pass the class as "
+            f"[TCT error] `{data_container_type}` must not be instanciated, just pass the class as "
             "attribute."
         )
     else:
@@ -137,7 +137,7 @@ def extract_single_feature_from_dataframe(
             df_features = dataset.filter(like=feature_name)
             if df_features.empty:
                 raise ValueError(
-                    f"(!) The parameter `{feature_name}` does not exist in `dataset_frame` "
+                    f"[TCT error] The parameter `{feature_name}` does not exist in `dataset_frame` "
                     "as a column header prefix"
                 )
 
@@ -152,19 +152,19 @@ def extract_single_feature_from_dataframe(
                 df_property = df_features.filter(regex=f"{df_header_field}_\\d+")
                 if df_property.empty:
                     raise ValueError(
-                        f"(!) The column `{df_header_field}` does not exist in "
+                        f"[TCT error] The column `{df_header_field}` does not exist in "
                         "`dataset_frame`."
                         f"Check that property `{each_property}` in {str(data_container_type)} "
                         f"is a `{feature_name}` postfix in the dataset_frame"
                     )
 
                 try:
-                    timestep_index = timestep_indexing_sanity_check(df_property, df_header_field)
+                    timestep_index = dataframe_timestep_indexing_sanity_check(df_property, df_header_field)
                     if tmp_container["timestep_index"] is None:
                         tmp_container["timestep_index"] = timestep_index
                 except IndexError as e:
                     raise ValueError(
-                        "(!) There is a problem with the `dataset_frame` column label "
+                        "[TCT error] There is a problem with the `dataset_frame` column label "
                         f"`{df_header_field}_` timestep index. "
                         f"<< {e}"
                     )

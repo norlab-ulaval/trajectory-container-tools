@@ -4,9 +4,8 @@ import pytest
 
 import numpy as np
 
-from trajectory_container_tools.utils.data_sanity_checks import timestamp_sanity_check
-from trajectory_container_tools.utils.shadow_data_container import \
-    (
+from trajectory_container_tools.utils.data_sanity_checks import timestamp_causal_ordering_sanity_check
+from trajectory_container_tools.utils.shadow_data_container import (
     fix_sequence_ordering_base_on_timestamps, instanciate_shadow_data_container,
     )
 from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
@@ -23,7 +22,7 @@ class TestInstanciateShadowDataContainer:
         assert isinstance(sdc, dict)
         assert sdc == {
                 'type':           Pose,
-                'feature_name': None,
+                'feature_name':   None,
                 'timestep_index': None,
                 'position_x':     {'data': [], 'type': np.ndarray},
                 'position_y':     {'data': [], 'type': np.ndarray},
@@ -42,10 +41,10 @@ class TestInstanciateShadowDataContainer:
         assert isinstance(sdc, dict)
         assert sdc == {
                 'type':           PoseWithCovariance,
-                'feature_name': None,
+                'feature_name':   None,
                 'timestep_index': None,
                 'pose':           {
-                        'feature_name': None,
+                        'feature_name':   None,
                         'type':           Pose,
                         'timestep_index': None,
                         'position_x':     {'data': [], 'type': np.ndarray},
@@ -61,6 +60,7 @@ class TestInstanciateShadowDataContainer:
 
         # print(sdc)
 
+
 class TestTrajectorySequenceOrderingLogic:
 
     def test_fix_sequence_ordering_base_on_timestamps_case_input_ordered(
@@ -71,7 +71,7 @@ class TestTrajectorySequenceOrderingLogic:
                 data_container_type_=RosBagFeatureDataclass,
                 )
 
-        timestamp_sanity_check(fixed_trajectory_dict)
+        timestamp_causal_ordering_sanity_check(fixed_trajectory_dict)
 
     def test_fix_sequence_ordering_base_on_timestamps_case_input_unordered(
             self, mock_trajectory_dict_unordered, mock_trajectory_dict_ordered
@@ -81,8 +81,8 @@ class TestTrajectorySequenceOrderingLogic:
                 data_container_type_=RosBagFeatureDataclass,
                 )
 
-        timestamp_sanity_check(fixed_trajectory_dict)
+        timestamp_causal_ordering_sanity_check(fixed_trajectory_dict)
 
         assert fixed_trajectory_dict == mock_trajectory_dict_ordered
 
-        print(fixed_trajectory_dict)
+        # print(fixed_trajectory_dict)

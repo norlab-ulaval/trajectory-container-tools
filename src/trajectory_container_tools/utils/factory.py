@@ -62,11 +62,11 @@ def trajectory_dataclass_factory(
             raise AttributeError
     except KeyError as e:
         raise KeyError(
-            f"(!) The key {e} is missing from the `specification` dictionary passed in argument."
+            f"[TCT error] The key {e} is missing from the `specification` dictionary passed in argument."
         )
     except AttributeError as e:
         raise AttributeError(
-            "(!) The `specification` dictionary must contain key "
+            "[TCT error] The `specification` dictionary must contain key "
             "'new_feature_dataclass_type' with value of type "
             f"string and key `dimension_names` with value of type tuple of string. {e}"
         )

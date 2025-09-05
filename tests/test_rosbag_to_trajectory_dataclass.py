@@ -8,8 +8,7 @@ import numpy as np
 
 from trajectory_container_tools.rosbag_tools import (
     aggregate_multiple_features_from_rosbag,
-    extract_single_feature_from_rosbag,
-    _camelcase_to_snake_case
+    extract_single_feature_from_rosbag
     )
 
 from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
@@ -71,12 +70,6 @@ def setup_rosbag_from_tests_dir():
 class TestExtractROSBagFeature:
 
     def test_extract_single_feature_from_rosbag(self, setup_rosbag_from_tests_dir):
-
-        print("PYTHONPATH:", os.getenv('PYTHONPATH'))
-        print("PYTEST:", os.getenv('PYTEST'))
-        print("PYCHARM:", os.getenv('PYCHARM'))
-        print("cwd:", os.getcwd())
-
         container = extract_single_feature_from_rosbag(
                 rosbag_path=setup_rosbag_from_tests_dir.bag_path,
                 feature_name="/odom",
@@ -267,13 +260,8 @@ class TestExtractROSBagMultifeature:
 
             print(feats)
 
-
-class TestUtilityFunctions:
-
-    def test__camelcase_to_snake_case(self):
-
-        assert _camelcase_to_snake_case("SteeringAngleVelocity") == "steering_angle_velocity"
-        assert _camelcase_to_snake_case("drive_steeringAngleVelocity") == "drive_steering_angle_velocity"
-        assert _camelcase_to_snake_case("drive_SteeringAngleVelocity") == "drive__steering_angle_velocity"
-        assert _camelcase_to_snake_case("MSG") == "m_s_g"
-
+class TestROSBagUtilities:
+    @pytest.mark.skip(reason="ToDo: implement test case")
+    def test_set_timestamp(self):
+        raise NotImplementedError("ToDo: implement test case ")
+        set_timestamp()

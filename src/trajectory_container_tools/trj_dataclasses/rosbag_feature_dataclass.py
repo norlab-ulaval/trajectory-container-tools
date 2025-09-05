@@ -31,7 +31,7 @@ class Pose(BaseTrajectoryDataclass):
 class PoseWithCovariance(BaseTrajectoryDataclass):
     pose: Pose
     covariance: np.ndarray
-#     # feature_name: str = field(default="geometry_msgs/PoseWithCovariance", init=False)
+    #feature_name: str = field(default="geometry_msgs/PoseWithCovariance", init=True)
 #     feature_name: str = field(default="Nested PoseWithCovariance", init=False)
 
 @dataclass()
@@ -52,31 +52,31 @@ class TwistWithCovariance(BaseTrajectoryDataclass):
 #     feature_name: str = field(default="Nested TwistWithCovariance", init=False)
 
 
-# (CRITICAL) New version ToDo: on task end >> UN-MUTE next bloc ↓↓
 @dataclass()
 class NavMsgsOdometry(RosBagFeatureDataclass):
+    # NavMsgsOdometry nested data container version
     pose: PoseWithCovariance
     twist: TwistWithCovariance
 
 
-# # (CRITICAL) Legacy version ToDo: on task end >> delete next bloc ↓↓
-# @dataclass()
-# class NavMsgsOdometry(RosBagFeatureDataclass):
-#     pose_pose_position_x: np.ndarray
-#     pose_pose_position_y: np.ndarray
-#     pose_pose_position_z: np.ndarray
-#     pose_pose_orientation_x: np.ndarray
-#     pose_pose_orientation_y: np.ndarray
-#     pose_pose_orientation_z: np.ndarray
-#     pose_pose_orientation_w: np.ndarray
-#     pose_covariance: np.ndarray
-#     twist_twist_linear_x: np.ndarray
-#     twist_twist_linear_y: np.ndarray
-#     twist_twist_linear_z: np.ndarray
-#     twist_twist_angular_x: np.ndarray
-#     twist_twist_angular_y: np.ndarray
-#     twist_twist_angular_z: np.ndarray
-#     twist_covariance: np.ndarray
+@dataclass()
+class NavMsgsOdometryFlat(RosBagFeatureDataclass):
+    # NavMsgsOdometry flat data container version
+    pose_pose_position_x: np.ndarray
+    pose_pose_position_y: np.ndarray
+    pose_pose_position_z: np.ndarray
+    pose_pose_orientation_x: np.ndarray
+    pose_pose_orientation_y: np.ndarray
+    pose_pose_orientation_z: np.ndarray
+    pose_pose_orientation_w: np.ndarray
+    pose_covariance: np.ndarray
+    twist_twist_linear_x: np.ndarray
+    twist_twist_linear_y: np.ndarray
+    twist_twist_linear_z: np.ndarray
+    twist_twist_angular_x: np.ndarray
+    twist_twist_angular_y: np.ndarray
+    twist_twist_angular_z: np.ndarray
+    twist_covariance: np.ndarray
 
 
 @dataclass()

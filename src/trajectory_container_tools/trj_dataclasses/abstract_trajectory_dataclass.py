@@ -9,7 +9,7 @@ from typing import List, Tuple, Type, Union
 
 from rclpy.time import Time
 
-from trajectory_container_tools.utils.general import extract_class_name_from_type
+from ..utils.general import extract_class_name_from_instance
 
 
 @dataclass()
@@ -184,7 +184,7 @@ class AbstractTrajectoryDataclass(abc.ABC):
 
             if not self.get_dimension_names():
                 raise TypeError(
-                    f"(!) AbstractTrajectoryDataclass is an abstract baseclass, it must be "
+                    f"[TCT error] AbstractTrajectoryDataclass is an abstract baseclass, it must be "
                     f"subclassed in order to be instanciated."
                 )
 
@@ -213,12 +213,12 @@ class AbstractTrajectoryDataclass(abc.ABC):
                         if data_property_trajectory_len != self.trajectory_len:
                             raise ValueError(
                                 f"{data_property_trajectory_len} != {self.trajectory_len}\n"
-                                f"(!) Topic `{self.feature_name}` with container `{each_name}`"
+                                f"[TCT error] Topic `{self.feature_name}` with container `{each_name}`"
                                 " received numpy arrays which do not match the trajectory "
                                 "length"
                             )
                     else:
-                        raise TypeError(f"(!) Property `{each_name}` is not a numpy ndarray")
+                        raise TypeError(f"[TCT error] Property `{each_name}` is not a numpy ndarray")
 
         except Exception as e:
             raise e
@@ -240,7 +240,7 @@ class AbstractTrajectoryDataclass(abc.ABC):
         t_sp = " " * 10
         m_sp = " " * 3
         item_space = " " * 3
-        dataclass_name = extract_class_name_from_type(self)
+        dataclass_name = extract_class_name_from_instance(self)
         repr_str = f"\n{t_sp}{dataclass_name}(\n"
         v: Union[np.ndarray, AbstractTrajectoryDataclass, str, int, float]
         m_sp += t_sp
@@ -248,22 +248,20 @@ class AbstractTrajectoryDataclass(abc.ABC):
         v = self.__dict__.get("feature_name")
         repr_str += f"{m_sp}feature_name: {v}\n"
 
-        v = self.__dict__.get("timestep_index")
+        # v = self.__dict__.get("timestep_index")
         repr_str += f"{m_sp}trajectory_len: {self.trajectory_len}\n"
         repr_str += f"{m_sp}transposed: {self.transposed}\n"
         repr_str += f"{m_sp}dimensions:\n"
 
         for k, v in self.__dict__.items():
-            if k == "_iter_index" or k == "transposed":
+            if k in ["_iter_index", "transposed", "feature_name", "timestep_index"]:
                 pass
-            # elif isinstance(v, np.ndarray) and not np.issubclass_(v.dtype, (float, int)):
-            #     repr_str += f"{m_sp}{item_space}{k}: {extract_class_name_from_type(v)} {str(v)}\n"
             elif isinstance(v, np.ndarray):
                 if v.ndim > 0 and isinstance(v[0], Time):
-                    range_str = f"range(nanosec) : {np.min(v).nanoseconds} -> {np.max(v).nanoseconds}"
+                    range_str = f"range(nanosec) {np.min(v).nanoseconds} ⟶ {np.max(v).nanoseconds}"
                 else:
-                    range_str = f"range: {np.min(v)} -> {np.max(v)}"
-                repr_str += f"{m_sp}{item_space}{k}: {extract_class_name_from_type(v)} {v.shape} | {range_str}\n"
+                    range_str = f"range {np.min(v)} ⟶ {np.max(v)}"
+                repr_str += f"{m_sp}{item_space}{k}: ({extract_class_name_from_instance(v)}) shape {v.shape} {range_str}\n"
             elif isinstance(v, AbstractTrajectoryDataclass):
                 indent_v = []
                 for each_line in str(v).splitlines():
@@ -271,7 +269,7 @@ class AbstractTrajectoryDataclass(abc.ABC):
                 indent_v = "".join(indent_v)
                 repr_str += f"{m_sp}{item_space}{k}:{indent_v}"
             else:
-                repr_str += f"{m_sp}{item_space}{k}: {extract_class_name_from_type(v)} {v}\n"
+                repr_str += f"{m_sp}{item_space}{k}: ({extract_class_name_from_instance(v)}) {v}\n"
         repr_str += f"{m_sp})"
         return repr_str
 

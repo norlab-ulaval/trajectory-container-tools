@@ -131,7 +131,7 @@ def mock_trajectory_dict_ordered(
         timestamps_.append(RosTime(seconds=ordered_trajectory_dict["timestamps"][each_idx]))
 
     ordered_trajectory_dict["timestamps"] = np.array(timestamps_)
-    print(ordered_trajectory_dict)
+    # print(ordered_trajectory_dict)
 
     return ordered_trajectory_dict
 
@@ -150,7 +150,7 @@ def mock_trajectory_dict_unordered(
             each = each[unordered_idx]
 
     # print(unordered_idx)
-    print(unordered_trajectory_dict)
+    # print(unordered_trajectory_dict)
 
     return unordered_trajectory_dict
 

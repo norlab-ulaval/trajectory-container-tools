@@ -76,7 +76,7 @@ class TestTrajectoryDataclassFactoryDataframeCase:
         assert hasattr(mock_cls_instance, "yy")
         assert hasattr(mock_cls_instance, "yaww")
 
-        print("\n" * 2, mock_cls_instance)
+        # print(mock_cls_instance)
 
 
 # ====Rosbag topics cases==========================================================================
@@ -136,4 +136,4 @@ class TestTrajectoryDataclassFactoryROSbagCase:
         assert hasattr(mock_cls_instance, "pose_yy")
         assert hasattr(mock_cls_instance, "pose_zz")
 
-        print("\n" * 2, mock_cls_instance)
+        # print(mock_cls_instance)

@@ -154,7 +154,7 @@ class TestAbstractTrajectoryDataclassDataframeCase:
 
     def test_string_representation(self, setup_mock_feature_child, mock_DF_2_trj_DC):
         mdc = setup_mock_feature_child
-        print(mdc)
+        #print(mdc) # <- Don't comment this line
 
     def test_trajectory_len(self, setup_mock_feature_child, mock_DF_2_trj_DC):
         mdc = setup_mock_feature_child
@@ -174,7 +174,7 @@ class TestAbstractTrajectoryDataclassDataframeCase:
         assert mdc.cc.shape == (
                 mock_DF_2_trj_DC_range.c.shape[0] * mock_DF_2_trj_DC_range.c.shape[1],
                 )
-        print(mdc)
+        #print(mdc)
         # (Priority) ToDo: implement test asserting a range
 
     def test_get_item(self, setup_mock_feature_child_range, mock_DF_2_trj_DC_range):
@@ -194,8 +194,8 @@ class TestAbstractTrajectoryDataclassDataframeCase:
         assert np.array_equal(mdc_at_t0.cc, np.arange(mdc.cc.shape[0]))
         assert mdc_at_t0.timestep_index == mdc.timestep_index[0]
         # mdc.get_dimension_names()
-        print(mdc)
-        print(mdc_at_t0)
+        #print(mdc)
+        #print(mdc_at_t0)
 
     def test_iterator(self, setup_mock_feature_child_range, mock_DF_2_trj_DC_range):
         mdc = setup_mock_feature_child_range
@@ -209,7 +209,7 @@ class TestAbstractTrajectoryDataclassDataframeCase:
             assert np.array_equal(mdc_at_t.cc, np.arange(mdc.cc.shape[0]) + mdc.cc[0, t])
             assert mdc_at_t.timestep_index == mdc.timestep_index[t]
             # mdc.get_dimension_names()
-            print(mdc_at_t)
+            #print(mdc_at_t)
 
     def test_transpose(self, setup_mock_feature_child_range, mock_DF_2_trj_DC_range):
         t_ref = mock_DF_2_trj_DC_range
@@ -227,7 +227,7 @@ class TestAbstractTrajectoryDataclassDataframeCase:
         assert np.array_equal(mdc.aa, t_ref.a)
         assert np.array_equal(mdc.bb, t_ref.b)
         assert np.array_equal(mdc.cc, t_ref.c)
-        print(mdc)
+        #print(mdc)
 
         t_mdc = mdc.T
 
@@ -243,8 +243,8 @@ class TestAbstractTrajectoryDataclassDataframeCase:
         assert np.array_equal(t_mdc.aa, t_ref.a.T)
         assert np.array_equal(t_mdc.bb, t_ref.b.T)
         assert np.array_equal(t_mdc.cc, t_ref.c.T)
-        print(t_mdc)
-        print(t_mdc.get_dimension_names())
+        #print(t_mdc)
+        #print(t_mdc.get_dimension_names())
 
         t_mdc2 = t_mdc.T
 
@@ -260,8 +260,8 @@ class TestAbstractTrajectoryDataclassDataframeCase:
         assert np.array_equal(t_mdc2.aa, t_ref.a)
         assert np.array_equal(t_mdc2.bb, t_ref.b)
         assert np.array_equal(t_mdc2.cc, t_ref.c)
-        print(t_mdc2)
-        print(t_mdc2.get_dimension_names())
+        #print(t_mdc2)
+        #print(t_mdc2.get_dimension_names())
 
 
 class TestAbstractTrajectoryDataclassROSbagCase:
@@ -330,7 +330,7 @@ class TestAbstractTrajectoryDataclassROSbagCase:
 
     def test_string_representation(self, setup_mock_feature_child, mock_ROSbag_2_trj_DC):
         mdc = setup_mock_feature_child
-        print(mdc)
+        print(mdc) # <- Don't comment this line
 
     def test_trajectory_len(self, setup_mock_feature_child, mock_ROSbag_2_trj_DC):
         mdc = setup_mock_feature_child
@@ -348,7 +348,7 @@ class TestAbstractTrajectoryDataclassROSbagCase:
         # mdc.bb
         # mdc.cc
         # mdc.get_dimension_names()
-        print(mdc)
+        #print(mdc)
         # (Priority) ToDo: implement test asserting a range
 
     def test_get_item(self, setup_mock_feature_child_range, mock_ROSbag_2_trj_DC_range):
@@ -368,8 +368,8 @@ class TestAbstractTrajectoryDataclassROSbagCase:
         assert np.array_equal(mdc_at_t0.cc, np.arange(mdc.cc.shape[-1]))
         assert mdc_at_t0.timestep_index == mdc.timestep_index[0]
         # mdc.get_dimension_names()
-        print(mdc)
-        print(mdc_at_t0)
+        #print(mdc)
+        #print(mdc_at_t0)
 
     def test_iterator(self, setup_mock_feature_child_range, mock_ROSbag_2_trj_DC_range):
         mdc = setup_mock_feature_child_range
@@ -384,7 +384,7 @@ class TestAbstractTrajectoryDataclassROSbagCase:
             assert np.array_equal(mdc_at_t.cc, np.arange(cc_feature_size) + mdc.cc[t, 0])
             assert mdc_at_t.timestep_index == mdc.timestep_index[t]
             # mdc.get_dimension_names()
-            print(mdc_at_t)
+            #print(mdc_at_t)
 
     def test_transpose(self, setup_mock_feature_child_range, mock_ROSbag_2_trj_DC_range):
         t_ref = mock_ROSbag_2_trj_DC_range
@@ -402,7 +402,7 @@ class TestAbstractTrajectoryDataclassROSbagCase:
         assert np.array_equal(mdc.aa, t_ref.a)
         assert np.array_equal(mdc.bb, t_ref.b)
         assert np.array_equal(mdc.cc, t_ref.c)
-        print(mdc)
+        #print(mdc)
 
         t_mdc = mdc.T
 
@@ -418,8 +418,8 @@ class TestAbstractTrajectoryDataclassROSbagCase:
         assert np.array_equal(t_mdc.aa, t_ref.a.T)
         assert np.array_equal(t_mdc.bb, t_ref.b.T)
         assert np.array_equal(t_mdc.cc, t_ref.c.T)
-        print(t_mdc)
-        print(t_mdc.get_dimension_names())
+        #print(t_mdc)
+        #print(t_mdc.get_dimension_names())
 
         t_mdc2 = t_mdc.T
 
@@ -435,8 +435,8 @@ class TestAbstractTrajectoryDataclassROSbagCase:
         assert np.array_equal(t_mdc2.aa, t_ref.a)
         assert np.array_equal(t_mdc2.bb, t_ref.b)
         assert np.array_equal(t_mdc2.cc, t_ref.c)
-        print(t_mdc2)
-        print(t_mdc2.get_dimension_names())
+        #print(t_mdc2)
+        #print(t_mdc2.get_dimension_names())
 
 
 @pytest.mark.parametrize(
@@ -525,7 +525,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         if isinstance(mfc, MockTrajectoryComposedParent):
             assert mfc.child_one.aa.size == mfc.aa.size
 
-        print(mfc)
+        #print(mfc)
 
         for child_name, each_child in [("child_one", mfc.child_one), ("child_two", mfc.child_two)]:
             assert np.array_equal(
@@ -558,7 +558,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
                         aa=setup_mock_feature_child_range.a,
                         timestep_index=setup_mock_feature_child_range.timestep_index,
                         )
-            print(f"{exc_info=}")
+            #print(f"{exc_info=}")
             # assert exc_info.value.args == ("<The error message>",)
 
     def test_get_dimension_names(
@@ -579,7 +579,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
             self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC, t_nested_case
             ):
         mfc = setup_mock_feature_parent_range(t_nested_case)
-        print(mfc)
+        print(mfc) # <- Don't comment this line
 
     def test_trajectory_len(
             self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC, t_nested_case
@@ -602,7 +602,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
             assert each_child.aa.shape[0] == mfc.trajectory_len
             assert each_child.cc.shape[0] == mfc.trajectory_len * 36
 
-        print(mfc)
+        #print(mfc)
         # (Priority) ToDo: implement test asserting a range
 
     def test_get_item(
@@ -624,8 +624,8 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         assert np.array_equal(mdc_at_t0.child_one.cc, np.arange(mfc.child_one.cc.shape[-1]))
         assert mdc_at_t0.timestep_index == mfc.child_one.timestep_index[0]
         # mfc.get_dimension_names()
-        print(mfc)
-        print(mdc_at_t0)
+        #print(mfc)
+        #print(mdc_at_t0)
 
     def test_iterator(
             self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case
@@ -644,7 +644,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
                     )
             assert mdc_at_t.child_one.timestep_index == mfc.child_one.timestep_index[t]
             # mfc.get_dimension_names()
-            print(mdc_at_t)
+            #print(mdc_at_t)
 
     def test_transpose(
             self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case
@@ -686,12 +686,12 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         assert np.array_equal(mfc.child_two.aa, t_ref.a)
         assert np.array_equal(mfc.child_two.bb, t_ref.b)
         assert np.array_equal(mfc.child_two.cc, t_ref.c)
-        print(
-                f"{mfc}\n\n",
-                f"{mfc.get_dimension_names()}\n\n",
-                f"{mfc.child_one}\n\n",
-                f"{mfc.child_two}\n\n",
-                )
+        #print(
+        #        f"{mfc}\n\n",
+        #        f"{mfc.get_dimension_names()}\n\n",
+        #        f"{mfc.child_one}\n\n",
+        #        f"{mfc.child_two}\n\n",
+        #        )
 
         t_mdc = mfc.T
 
@@ -730,12 +730,12 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         assert np.array_equal(t_mdc.child_two.bb, t_ref.b.T)
         assert np.array_equal(t_mdc.child_two.cc, t_ref.c.T)
 
-        print(
-                f"{t_mdc}\n\n",
-                f"{t_mdc.get_dimension_names()}\n\n",
-                f"{t_mdc.child_one}\n\n",
-                f"{t_mdc.child_two}\n\n",
-                )
+        #print(
+        #        f"{t_mdc}\n\n",
+        #        f"{t_mdc.get_dimension_names()}\n\n",
+        #        f"{t_mdc.child_one}\n\n",
+        #        f"{t_mdc.child_two}\n\n",
+        #        )
 
         t_mdc2 = t_mdc.T
 
@@ -774,9 +774,9 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         assert np.array_equal(t_mdc2.child_two.bb, t_ref.b)
         assert np.array_equal(t_mdc2.child_two.cc, t_ref.c)
 
-        print(
-                f"{t_mdc2}\n\n",
-                f"{t_mdc2.get_dimension_names()}\n\n",
-                f"{t_mdc2.child_one}\n\n",
-                f"{t_mdc2.child_two}\n\n",
-                )
+        #print(
+        #        f"{t_mdc2}\n\n",
+        #        f"{t_mdc2.get_dimension_names()}\n\n",
+        #        f"{t_mdc2.child_one}\n\n",
+        #        f"{t_mdc2.child_two}\n\n",
+        #        )

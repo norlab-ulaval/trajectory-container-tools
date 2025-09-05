@@ -11,8 +11,9 @@ from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclas
     CmdStandard, StatePose2D, Velocity,
     )
 from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
-    AckermannMsgsAckermannDriveStamped, NavMsgsOdometry, SensorMsgsImu, Tf2MsgsTFMessage,
-    Pose, PoseWithCovariance, Twist, TwistWithCovariance
+    AckermannMsgsAckermannDriveStamped, NavMsgsOdometry, NavMsgsOdometryFlat, SensorMsgsImu,
+    Tf2MsgsTFMessage,
+    Pose, PoseWithCovariance, Twist, TwistWithCovariance,
     )
 
 
@@ -50,7 +51,7 @@ class TestTrajectoryDataclassFromDataframeCase:
 # ====Rosbag topics cases==========================================================================
 class TestTrajectoryDataclassFromROSBagCase:
 
-    def test_NavMsgsOdometry_init(self, mock_ROSbag_2_trj_DC):
+    def test_NavMsgsOdometry_init_nested_version(self, mock_ROSbag_2_trj_DC):
         md = mock_ROSbag_2_trj_DC
         dc_ = NavMsgsOdometry(
                 feature_name="/pf/pose/odom",
@@ -84,6 +85,32 @@ class TestTrajectoryDataclassFromROSBagCase:
                     ),
                     covariance=md.c,
                     )
+                )
+        print(dc_)
+        assert dc_._init_trj_axe == 0
+
+    def test_NavMsgsOdometry_init_flat_version(self, mock_ROSbag_2_trj_DC):
+        md = mock_ROSbag_2_trj_DC
+        dc_ = NavMsgsOdometryFlat(
+                feature_name="/pf/pose/odom",
+                header_FrameId=md.header_FrameId,
+                timestamps=md.timestamps,
+                timestep_index=md.ts_idx,
+                pose_pose_position_x=md.a,
+                pose_pose_position_y=md.a,
+                pose_pose_position_z=md.a,
+                pose_pose_orientation_x=md.a,
+                pose_pose_orientation_y=md.a,
+                pose_pose_orientation_z=md.a,
+                pose_pose_orientation_w=md.a,
+                pose_covariance=md.c,
+                twist_twist_linear_x=md.a,
+                twist_twist_linear_y=md.a,
+                twist_twist_linear_z=md.a,
+                twist_twist_angular_x=md.a,
+                twist_twist_angular_y=md.a,
+                twist_twist_angular_z=md.a,
+                twist_covariance=md.c,
                 )
         print(dc_)
         assert dc_._init_trj_axe == 0

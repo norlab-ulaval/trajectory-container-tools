@@ -1,34 +1,77 @@
 # coding=utf-8
+import re
+from typing import Type
+
 import numpy as np
-from rclpy.time import Time as RosTime
 
 
-def set_timestamp(msg, bag_timestamp, use_msg_header_time: bool = True) -> int:
-    if use_msg_header_time:
-        # _timestamp = msg.header.stamp.sec + msg.header.stamp.nanosec * 10e-9
-        # _timestamp = msg.header.stamp.sec * 10e9 + msg.header.stamp.nanosec
-        _timestamp = RosTime(seconds=msg.header.stamp.sec, nanoseconds=msg.header.stamp.nanosec)
-    else:
-        _timestamp = bag_timestamp
-    
-    return _timestamp
-
-
+# :::: Numpy utilities ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 def check_is_finite(x: np.ndarray) -> None:
     assert np.all(
-        np.isfinite(x)
-    ), f"non finite value(s) in {np.argwhere(np.isfinite(x) == False)=}"
+            np.isfinite(x)
+            ), f"Non finite value(s) in x{np.argwhere(np.isfinite(x) == False)}"
     return None
 
 
-def extract_class_name_from_type(the_object: object) -> str:
+# :::: String utilities :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+def extract_class_name_from_type(data_container_type: Type) -> str:
+    """ Extracts the class name from the type provided.
+
+    This function takes a type input and extracts the rightmost name from the class string
+    representation of the type. The function will only process objects of type `type` and will
+    raise an error otherwise.
+
+    Example:
+
+        >>> extract_class_name_from_type(np.ndarray)
+        >>> # "ndarray"
+
+    :param data_container_type: The type from which the class name will be extracted.
+    :return: The name of the class extracted from the provided type.
+    """
+    assert isinstance(data_container_type, type), (
+            f"Input arg need to be type \"type\" but \"{type(data_container_type)}\" was "
+            f"provided!")
+    return _extract_right_most_name_from_class_str(str(data_container_type))
+
+
+def extract_class_name_from_instance(the_object: object) -> str:
     """Take an object and return the class name as a string
 
     Example:
-        >>> aaa = np.ones((2,2))
-        >>> extract_class_name_from_type(aaa)
-        # "ndarray"
+
+        >>> extract_class_name_from_instance(np.ones((2,2)))
+        >>> # "ndarray"
 
     :param the_object: an instance
+    :return: the instance class name as a string
     """
-    return str(type(the_object)).strip("<'>").split(".")[-1]
+    if isinstance(the_object, (str, int, float, tuple, list)):
+        return _extract_right_most_name_from_class_str(str(type(the_object))).removeprefix(
+                "class ").strip("'")
+    else:
+        return _extract_right_most_name_from_class_str(str(type(the_object)))
+
+
+def camelcase_to_snake_case(name: str) -> str:
+    """ Converts a string from camelCase to snake_case.
+
+    This function processes a string assumed to be in camelCase format and transforms
+    it into snake_case format by inserting underscores before uppercase letters and
+    lowercasing all characters.
+
+    Example:
+
+        >>> camelcase_to_snake_case("drive_steeringAngleVelocity")
+        >>> # drive_steering_angle_velocity
+        >>> camelcase_to_snake_case("drive_SteeringAngleVelocity")
+        >>> # drive__steering_angle_velocity
+
+    :param name: The camelCase formatted string that needs to be converted to snake_case.
+    :return: A string formatted in snake_case.
+    """
+    return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
+
+
+def _extract_right_most_name_from_class_str(class_str: str):
+    return class_str.lstrip("<").rstrip("'>").split(".")[-1]
