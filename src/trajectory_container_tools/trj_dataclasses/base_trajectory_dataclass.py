@@ -4,7 +4,7 @@ from typing import Optional
 
 import numpy as np
 
-from trajectory_container_tools.dataclasses.abstract_trajectory_dataclass import (
+from trajectory_container_tools.trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractTrajectoryDataclass,
 )
 

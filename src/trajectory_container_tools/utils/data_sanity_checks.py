@@ -6,18 +6,16 @@ import pandas as pd
 from rclpy.time import Time as ROSTime
 
 
-def timestamp_sanity_check(intermediate_trj_container: dict) -> None:
-    # (Priority) ToDo: unit-test (its tested indirectly at the moment)
-    # (PRIORITY) ToDo: doc
+# (Priority) ToDo: unit-test (its tested indirectly at the moment)
+def timestamp_sanity_check(shadow_data_container: dict) -> None:
 
-    timestamps_ = intermediate_trj_container["timestamps"]
+    timestamps_ = shadow_data_container["timestamps"]
+    assert len(timestamps_) > 0, "timestamp array is empty!"
 
     offending_idx = []
     for ts_idx in np.arange(start=1, stop=len(timestamps_)):
         previous_timestamp: ROSTime = timestamps_[ts_idx - 1]
         current_timestamp: ROSTime = timestamps_[ts_idx]
-        # previous_timestamp = previous_timestamp.nanoseconds
-        # current_timestamp = current_timestamp.nanoseconds
         previous_timestamp = previous_timestamp.seconds_nanoseconds()
         current_timestamp = current_timestamp.seconds_nanoseconds()
         try:

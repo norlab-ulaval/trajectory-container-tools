@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ..dataclasses.abstract_trajectory_dataclass import AbstractTrajectoryDataclass
+from ..trj_dataclasses.abstract_trajectory_dataclass import AbstractTrajectoryDataclass
 
 
 # ::: Marmotte slip Dataframe dataset related :::::::::::::::::::::::::::::::::::::::::::::::::::::

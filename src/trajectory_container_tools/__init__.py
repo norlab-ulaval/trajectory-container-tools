@@ -2,6 +2,6 @@
 
 from .dataframe_tools import aggregate_multiple_features_from_dataframe
 from .rosbag_tools import aggregate_multiple_features_from_rosbag
-from .dataclasses.abstract_trajectory_dataclass import AbstractMultifeatureDataclass,AbstractTrajectoryDataclass
-from .dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
+from .trj_dataclasses.abstract_trajectory_dataclass import AbstractMultifeatureDataclass,AbstractTrajectoryDataclass
+from .trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
 

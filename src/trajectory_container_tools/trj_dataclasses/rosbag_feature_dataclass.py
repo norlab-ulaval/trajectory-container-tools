@@ -1,9 +1,10 @@
 # coding=utf-8
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
 from .abstract_trajectory_dataclass import AbstractTrajectoryDataclass
+from .base_trajectory_dataclass import BaseTrajectoryDataclass
 
 
 @dataclass()
@@ -15,26 +16,50 @@ class RosBagFeatureDataclass(AbstractTrajectoryDataclass):
     def _init_trj_axe(self) -> int:
         return 0
 
+@dataclass()
+class Pose(BaseTrajectoryDataclass):
+    position_x: np.ndarray
+    position_y: np.ndarray
+    position_z: np.ndarray
+    orientation_x: np.ndarray
+    orientation_y: np.ndarray
+    orientation_z: np.ndarray
+    orientation_w: np.ndarray
+    # feature_name: str = field(default="Nested Pose", init=False)
 
 @dataclass()
+class PoseWithCovariance(BaseTrajectoryDataclass):
+    pose: Pose
+    covariance: np.ndarray
+#     # feature_name: str = field(default="geometry_msgs/PoseWithCovariance", init=False)
+#     feature_name: str = field(default="Nested PoseWithCovariance", init=False)
+
+@dataclass()
+class Twist(BaseTrajectoryDataclass):
+    linear_x: np.ndarray
+    linear_y: np.ndarray
+    linear_z: np.ndarray
+    angular_x: np.ndarray
+    angular_y: np.ndarray
+    angular_z: np.ndarray
+#     feature_name: str = field(default="Nested Twist", init=False)
+
+@dataclass()
+class TwistWithCovariance(BaseTrajectoryDataclass):
+    twist: Twist
+    covariance: np.ndarray
+#     # feature_name: str = field(default="geometry_msgs/TwistWithCovariance", init=False)
+#     feature_name: str = field(default="Nested TwistWithCovariance", init=False)
+
+
+# (CRITICAL) New version ToDo: on task end >> UN-MUTE next bloc ↓↓
+@dataclass()
 class NavMsgsOdometry(RosBagFeatureDataclass):
-    pose_pose_position_x: np.ndarray
-    pose_pose_position_y: np.ndarray
-    pose_pose_position_z: np.ndarray
-    pose_pose_orientation_x: np.ndarray
-    pose_pose_orientation_y: np.ndarray
-    pose_pose_orientation_z: np.ndarray
-    pose_pose_orientation_w: np.ndarray
-    pose_covariance: np.ndarray
-    twist_twist_linear_x: np.ndarray
-    twist_twist_linear_y: np.ndarray
-    twist_twist_linear_z: np.ndarray
-    twist_twist_angular_x: np.ndarray
-    twist_twist_angular_y: np.ndarray
-    twist_twist_angular_z: np.ndarray
-    twist_covariance: np.ndarray
+    pose: PoseWithCovariance
+    twist: TwistWithCovariance
 
 
+# # (CRITICAL) Legacy version ToDo: on task end >> delete next bloc ↓↓
 # @dataclass()
 # class NavMsgsOdometry(RosBagFeatureDataclass):
 #     pose_pose_position_x: np.ndarray

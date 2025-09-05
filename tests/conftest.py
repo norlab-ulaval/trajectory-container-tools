@@ -1,7 +1,6 @@
 # coding=utf-8
 from dataclasses import asdict, dataclass
-from typing import AnyStr, Dict, Optional, Union
-import os
+from typing import Dict, Union
 
 import numpy as np
 import pytest
@@ -25,36 +24,36 @@ class MockDataContainer:
 def mock_DF_2_trj_DC() -> MockDataContainer:
     """Mock pandas dataframe to trajectory dataclass: case even data"""
     return MockDataContainer(
-        name="mock_data",
-        a=np.ones((10, TRJ_LEN)),
-        b=np.ones((10, TRJ_LEN)),
-        c=np.ones((10, TRJ_LEN)),
-        ts=np.arange(0, TRJ_LEN),
-    )
+            name="mock_data",
+            a=np.ones((10, TRJ_LEN)),
+            b=np.ones((10, TRJ_LEN)),
+            c=np.ones((10, TRJ_LEN)),
+            ts=np.arange(0, TRJ_LEN),
+            )
 
 
 @pytest.fixture(scope="function")
 def mock_DF_2_trj_DC_range() -> MockDataContainer:
     """Mock pandas dataframe to trajectory dataclass: case incremental data"""
     return MockDataContainer(
-        name="mock_data_incremental",
-        a=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
-        b=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
-        c=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
-        ts=np.arange(0, TRJ_LEN),
-    )
+            name="mock_data_incremental",
+            a=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
+            b=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
+            c=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
+            ts=np.arange(0, TRJ_LEN),
+            )
 
 
 @pytest.fixture(scope="function")
 def mock_DF_2_trj_DC_uneven_time_index() -> MockDataContainer:
     """Mock pandas dataframe to trajectory dataclass, case uneven dimensions across feature"""
     return MockDataContainer(
-        name="mock_data_uneven",
-        a=np.ones((10, TRJ_LEN)),
-        b=np.ones((10, TRJ_LEN)),
-        c=np.ones((9, 39)),
-        ts=np.arange(0, TRJ_LEN),
-    )
+            name="mock_data_uneven",
+            a=np.ones((10, TRJ_LEN)),
+            b=np.ones((10, TRJ_LEN)),
+            c=np.ones((9, 39)),
+            ts=np.arange(0, TRJ_LEN),
+            )
 
 
 # ====Mock rosbag topics cases=====================================================================
@@ -70,8 +69,8 @@ class MockROSbagDataContainer:
     c: np.ndarray
     header_FrameId: str = "map"
     timestamps: np.ndarray = np.arange(
-        TS_START, TS_STOP, (TS_STOP - TS_START) / TRJ_LEN, dtype=int
-    )
+            TS_START, TS_STOP, (TS_STOP - TS_START) / TRJ_LEN, dtype=int
+            )
     ts_idx: np.ndarray = np.arange(0, TRJ_LEN)
     trj_axe: int = 0
 
@@ -80,51 +79,51 @@ class MockROSbagDataContainer:
 def mock_ROSbag_2_trj_DC() -> MockROSbagDataContainer:
     """Mock rosbag to trajectory dataclass: case even data"""
     return MockROSbagDataContainer(
-        name="/mocked/topic/name",
-        a=np.ones((TRJ_LEN,)),
-        b=np.ones((TRJ_LEN,)),
-        c=np.ones((TRJ_LEN, 36)),
-    )
+            name="/mocked/topic/name",
+            a=np.ones((TRJ_LEN,)),
+            b=np.ones((TRJ_LEN,)),
+            c=np.ones((TRJ_LEN, 36)),
+            )
 
 
 @pytest.fixture(scope="function")
 def mock_ROSbag_2_trj_DC_range() -> MockROSbagDataContainer:
     """Mock rosbag to trajectory dataclass: case incremental data"""
     return MockROSbagDataContainer(
-        name="/mocked/topic/name",
-        a=np.arange(TRJ_LEN),
-        b=np.arange(TRJ_LEN),
-        c=np.arange(TRJ_LEN * 36).reshape((TRJ_LEN, 36)),
-    )
+            name="/mocked/topic/name",
+            a=np.arange(TRJ_LEN),
+            b=np.arange(TRJ_LEN),
+            c=np.arange(TRJ_LEN * 36).reshape((TRJ_LEN, 36)),
+            )
 
 
 @pytest.fixture(scope="function")
 def mock_ROSbag_2_trj_DC_longer_range() -> MockROSbagDataContainer:
     """Mock rosbag to trajectory dataclass: case incremental data"""
     return MockROSbagDataContainer(
-        name="/mocked/topic/name",
-        a=np.arange(TRJ_LEN + 9),
-        b=np.arange(TRJ_LEN + 9),
-        c=np.arange((TRJ_LEN + 9) * 36).reshape((TRJ_LEN + 9, 36)),
-    )
+            name="/mocked/topic/name",
+            a=np.arange(TRJ_LEN + 9),
+            b=np.arange(TRJ_LEN + 9),
+            c=np.arange((TRJ_LEN + 9) * 36).reshape((TRJ_LEN + 9, 36)),
+            )
 
 
 @pytest.fixture(scope="function")
 def mock_ROSbag_2_trj_DC_uneven_time_index() -> MockROSbagDataContainer:
     """Mock rosbag to trajectory dataclass, case uneven dimensions across feature"""
     return MockROSbagDataContainer(
-        name="/mocked/topic/name/",
-        a=np.ones((TRJ_LEN,)),
-        b=np.ones((TRJ_LEN,)),
-        c=np.ones((TRJ_LEN - 1, 36)),
-        timestamps=(np.arange(10)) * 10 + 1000,
-    )
+            name="/mocked/topic/name/",
+            a=np.ones((TRJ_LEN,)),
+            b=np.ones((TRJ_LEN,)),
+            c=np.ones((TRJ_LEN - 1, 36)),
+            timestamps=(np.arange(10)) * 10 + 1000,
+            )
 
 
 @pytest.fixture(scope="function")
 def mock_trajectory_dict_ordered(
-    mock_ROSbag_2_trj_DC_range,
-) -> Dict[str, Union[str, int, np.ndarray]]:
+        mock_ROSbag_2_trj_DC_range,
+        ) -> Dict[str, Union[str, int, np.ndarray]]:
     ordered_trajectory_dict = asdict(mock_ROSbag_2_trj_DC_range)
 
     timestamps_ = []
@@ -139,8 +138,8 @@ def mock_trajectory_dict_ordered(
 
 @pytest.fixture(scope="function")
 def mock_trajectory_dict_unordered(
-    mock_trajectory_dict_ordered,
-) -> Dict[str, Union[str, int, np.ndarray]]:
+        mock_trajectory_dict_ordered,
+        ) -> Dict[str, Union[str, int, np.ndarray]]:
     unordered_trajectory_dict = mock_trajectory_dict_ordered
 
     unordered_idx = np.arange(TRJ_LEN)
@@ -156,39 +155,5 @@ def mock_trajectory_dict_unordered(
     return unordered_trajectory_dict
 
 
-# ::: rosbag related ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
-@dataclass()
-class RosBagConfig:
-    bag_name: str
-    ts_fast_forward: Optional[float]
-    ts_window: Optional[float]
-    bag_path: AnyStr
-    selected_topic: list
-
-
-@pytest.fixture(scope="function")
-def setup_rosbag_from_tests_dir():
-    BAG = "2024-03-21_12-25-29"
-    # BAG = "2024-03-21_15-01-04"
-    ros_bag_config = RosBagConfig(
-            bag_name=BAG,
-            ts_fast_forward=None,
-            ts_window=None,
-            bag_path=os.path.realpath(
-                    os.path.join("../tests/test_data/rosbag_test_data/rosbag-vaul-f110-grand-salon-raw-msg",
-                                 BAG)
-                    ),
-            selected_topic=[
-                    "/odom",
-                    "/odometry/filtered",
-                    "/tf",
-                    "/scan",
-                    "/teleop",
-                    "/sensors/imu/raw",
-                    ],
-            )
-    # '/ackermann_cmd',
-    # '/pf/pose/odom',
-    return ros_bag_config

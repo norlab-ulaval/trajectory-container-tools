@@ -2,17 +2,17 @@
 import numpy as np
 import pytest
 
-from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
+from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
     DataframeFeatureDataclass,
 )
-from trajectory_container_tools.dataclasses.rosbag_feature_dataclass import (
+from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
     RosBagFeatureDataclass,
 )
 from trajectory_container_tools.utils.factory import (
     TrjDataClassFeatureSpecification,
     trajectory_dataclass_factory,
 )
-from trajectory_container_tools.dataclasses import abstract_trajectory_dataclass as atd
+from trajectory_container_tools.trj_dataclasses import abstract_trajectory_dataclass as atd
 
 
 # ====Pandas dataframe cases=======================================================================

@@ -1,23 +1,36 @@
 # coding=utf-8
+import os
 import os.path as os_path
 import pytest
 import numpy as np
 import pandas as pd
 
-from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
+from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
     CmdSkidSteer, CmdStandard, StatePose2D,
     )
 from trajectory_container_tools import dataframe_tools as dtd
-from trajectory_container_tools.dataclasses import (
+from trajectory_container_tools.trj_dataclasses import (
     abstract_trajectory_dataclass as atd,
 )
 
 
 @pytest.fixture(scope="function")
 def setup_panda_dataframe() -> pd.DataFrame:
-    slip_dataset_all_path = (
-        "../tests/test_data/dataframe_test_data/marmotte/ga_hard_snow_25_01_a/slip_dataset_all.pkl"
-    )
+    slip_dataset_all_path = os.path.join(
+                    "demo_data",
+                    "dataframe_test_data",
+                    "marmotte",
+                    "ga_hard_snow_25_01_a",
+                    "slip_dataset_all.pkl"
+            )
+
+    # .... Construct absolute path to demo data for tests execution ...............................
+    # Handle cases: pycharm-born dna run and shell-born dna run
+    dn_project_path = os.getenv('DN_PROJECT_PATH')
+    if os.path.exists(dn_project_path):
+        slip_dataset_all_path = os.path.join(dn_project_path, slip_dataset_all_path)
+    else:
+        slip_dataset_all_path = os.path.realpath(os.path.join('..', slip_dataset_all_path))
 
     assert os_path.exists(slip_dataset_all_path)
     return pd.read_pickle(slip_dataset_all_path)

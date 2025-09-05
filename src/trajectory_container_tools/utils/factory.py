@@ -4,10 +4,10 @@ from typing import Tuple, Type
 
 import numpy as np
 
-from ..dataclasses.abstract_trajectory_dataclass import (
+from ..trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractTrajectoryDataclass,
 )
-from ..dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
+from ..trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
 
 
 @dataclass()

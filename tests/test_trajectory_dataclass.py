@@ -2,16 +2,17 @@
 import numpy as np
 import pytest
 
-from trajectory_container_tools.dataclasses.math_gymnasium_trajectory_dataclass import (
+from trajectory_container_tools.trj_dataclasses.math_gymnasium_trajectory_dataclass import (
     MathEnvTrajectoryDataclass, StateAxDataclass, TimeAxDataclass,
     )
-from trajectory_container_tools.dataclasses.f110_gym_trajectory_dataclass import \
+from trajectory_container_tools.trj_dataclasses.f110_gym_trajectory_dataclass import \
     F110MotionDynamicDataclass
-from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
+from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
     CmdStandard, StatePose2D, Velocity,
     )
-from trajectory_container_tools.dataclasses.rosbag_feature_dataclass import (
+from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
     AckermannMsgsAckermannDriveStamped, NavMsgsOdometry, SensorMsgsImu, Tf2MsgsTFMessage,
+    Pose, PoseWithCovariance, Twist, TwistWithCovariance
     )
 
 
@@ -56,21 +57,33 @@ class TestTrajectoryDataclassFromROSBagCase:
                 header_FrameId=md.header_FrameId,
                 timestamps=md.timestamps,
                 timestep_index=md.ts_idx,
-                pose_pose_position_x=md.a,
-                pose_pose_position_y=md.a,
-                pose_pose_position_z=md.a,
-                pose_pose_orientation_x=md.a,
-                pose_pose_orientation_y=md.a,
-                pose_pose_orientation_z=md.a,
-                pose_pose_orientation_w=md.a,
-                pose_covariance=md.c,
-                twist_twist_linear_x=md.a,
-                twist_twist_linear_y=md.a,
-                twist_twist_linear_z=md.a,
-                twist_twist_angular_x=md.a,
-                twist_twist_angular_y=md.a,
-                twist_twist_angular_z=md.a,
-                twist_covariance=md.c,
+                pose=PoseWithCovariance(
+                    feature_name="Netsed PoseWithCovariance",
+                    pose=Pose(
+                        feature_name="Netsed Pose",
+                        position_x=md.a,
+                        position_y=md.a,
+                        position_z=md.a,
+                        orientation_x=md.a,
+                        orientation_y=md.a,
+                        orientation_z=md.a,
+                        orientation_w=md.a,
+                    ),
+                    covariance=md.c,
+                ),
+                twist=TwistWithCovariance(
+                    feature_name="Netsed TwistWithCovariance",
+                    twist=Twist(
+                        feature_name="Netsed Twist",
+                        linear_x=md.a,
+                        linear_y=md.a,
+                        linear_z=md.a,
+                        angular_x=md.a,
+                        angular_y=md.a,
+                        angular_z=md.a,
+                    ),
+                    covariance=md.c,
+                    )
                 )
         print(dc_)
         assert dc_._init_trj_axe == 0

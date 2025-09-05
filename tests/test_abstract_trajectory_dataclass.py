@@ -8,10 +8,10 @@ from dataclasses import dataclass, field
 
 from typing_extensions import Callable
 
-from trajectory_container_tools.dataclasses.abstract_trajectory_dataclass import (
+from trajectory_container_tools.trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractTrajectoryDataclass,
     )
-from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import \
+from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import \
     StatePose2D
 
 
@@ -125,10 +125,10 @@ class TestAbstractTrajectoryDataclassDataframeCase:
                 mfc.dd_metadata, np.array([99, 99, 99])
                 ), f"{mfc.dd_metadata=} != np.array([99, 99, 99])"  # test post_init_callback
 
+        # ★ post_init_feature_callback `aa_init` is a dynamicaly created field
         assert np.array_equal(
                 mfc.aa_init, mock_DF_2_trj_DC.a[..., 0]
                 ), f"{mfc.aa_init=} != {mock_DF_2_trj_DC.a[..., 0]=}"  # test
-        # post_init_feature_callback `aa_init` is a dynamicaly created field
 
     def test_class_feature_post_init_check(self, mock_DF_2_trj_DC_uneven_time_index):
         with pytest.raises(ValueError):

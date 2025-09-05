@@ -5,7 +5,7 @@ import datetime
 from copy import deepcopy
 from dataclasses import dataclass, field, fields
 import numpy as np
-from typing import List, Tuple, Union
+from typing import List, Tuple, Type, Union
 
 from rclpy.time import Time
 
@@ -122,6 +122,16 @@ class AbstractTrajectoryDataclass(abc.ABC):
                 field_name.append(each_field.name)
         return tuple(field_name)
 
+    # (CRITICAL) ToDo: unit-test (ref task RLRP-83)
+    @classmethod
+    def get_dimension_type(cls, dimension_name: str) -> Type:
+        container_properties = fields(cls)
+        dimension_type = None
+        for each_field in container_properties:
+            if each_field.name is dimension_name:
+                dimension_type = each_field.type
+        return dimension_type
+
     @property
     def _init_trj_axe(self) -> int:
         """
@@ -228,21 +238,26 @@ class AbstractTrajectoryDataclass(abc.ABC):
     def __str__(self):
         """User representation. Dynamically handle property added at run time"""
         t_sp = " " * 10
-        m_sp = " " * 4
+        m_sp = " " * 3
         item_space = " " * 3
         dataclass_name = extract_class_name_from_type(self)
         repr_str = f"\n{t_sp}{dataclass_name}(\n"
-        v: AbstractTrajectoryDataclass
+        v: Union[np.ndarray, AbstractTrajectoryDataclass, str, int, float]
         m_sp += t_sp
+
+        v = self.__dict__.get("feature_name")
+        repr_str += f"{m_sp}feature_name: {v}\n"
+
+        v = self.__dict__.get("timestep_index")
+        repr_str += f"{m_sp}trajectory_len: {self.trajectory_len}\n"
+        repr_str += f"{m_sp}transposed: {self.transposed}\n"
+        repr_str += f"{m_sp}dimensions:\n"
+
         for k, v in self.__dict__.items():
-            if k == "feature_name":
-                repr_str += f"{m_sp}feature_name: {v}\n"
-            elif k == "timestep_index":
-                repr_str += f"{m_sp}trajectory_len: {self.trajectory_len}\n"
-                repr_str += f"{m_sp}transposed: {self.transposed}\n"
-                repr_str += f"{m_sp}dimensions:\n"
-            elif k == "_iter_index" or k == "transposed":
+            if k == "_iter_index" or k == "transposed":
                 pass
+            # elif isinstance(v, np.ndarray) and not np.issubclass_(v.dtype, (float, int)):
+            #     repr_str += f"{m_sp}{item_space}{k}: {extract_class_name_from_type(v)} {str(v)}\n"
             elif isinstance(v, np.ndarray):
                 if v.ndim > 0 and isinstance(v[0], Time):
                     range_str = f"range(nanosec) : {np.min(v).nanoseconds} -> {np.max(v).nanoseconds}"

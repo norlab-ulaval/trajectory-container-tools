@@ -4,10 +4,10 @@ import pandas as pd
 from typing import Dict, Tuple, Type, Union
 from dataclasses import fields as fields, make_dataclass
 
-from trajectory_container_tools.dataclasses.abstract_trajectory_dataclass import (
+from trajectory_container_tools.trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
 )
-from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import \
+from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import \
     DataframeFeatureDataclass
 
 from trajectory_container_tools.utils.data_sanity_checks import (
