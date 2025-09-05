@@ -1,4 +1,3 @@
-
 # coding=utf-8
 import abc
 import datetime
@@ -122,7 +121,6 @@ class AbstractTrajectoryDataclass(abc.ABC):
                 field_name.append(each_field.name)
         return tuple(field_name)
 
-    # (CRITICAL) ToDo: unit-test (ref task RLRP-83)
     @classmethod
     def get_dimension_type(cls, dimension_name: str) -> Type:
         container_properties = fields(cls)
@@ -184,9 +182,10 @@ class AbstractTrajectoryDataclass(abc.ABC):
 
             if not self.get_dimension_names():
                 raise TypeError(
-                    f"[TCT error] AbstractTrajectoryDataclass is an abstract baseclass, it must be "
-                    f"subclassed in order to be instanciated."
-                )
+                        f"[TCT error] AbstractTrajectoryDataclass is an abstract baseclass, "
+                        f"it must be "
+                        f"subclassed in order to be instanciated."
+                        )
 
             for each_name in self.get_dimension_names():
                 if each_name in self.trajectory_metadata_field():
@@ -212,13 +211,15 @@ class AbstractTrajectoryDataclass(abc.ABC):
 
                         if data_property_trajectory_len != self.trajectory_len:
                             raise ValueError(
-                                f"{data_property_trajectory_len} != {self.trajectory_len}\n"
-                                f"[TCT error] Topic `{self.feature_name}` with container `{each_name}`"
-                                " received numpy arrays which do not match the trajectory "
-                                "length"
-                            )
+                                    f"{data_property_trajectory_len} != {self.trajectory_len}\n"
+                                    f"[TCT error] Topic `{self.feature_name}` with container `"
+                                    f"{each_name}`"
+                                    " received numpy arrays which do not match the trajectory "
+                                    "length"
+                                    )
                     else:
-                        raise TypeError(f"[TCT error] Property `{each_name}` is not a numpy ndarray")
+                        raise TypeError(
+                            f"[TCT error] Property `{each_name}` is not a numpy ndarray")
 
         except Exception as e:
             raise e
@@ -261,7 +262,8 @@ class AbstractTrajectoryDataclass(abc.ABC):
                     range_str = f"range(nanosec) {np.min(v).nanoseconds} ⟶ {np.max(v).nanoseconds}"
                 else:
                     range_str = f"range {np.min(v)} ⟶ {np.max(v)}"
-                repr_str += f"{m_sp}{item_space}{k}: ({extract_class_name_from_instance(v)}) shape {v.shape} {range_str}\n"
+                repr_str += (f"{m_sp}{item_space}{k}: ({extract_class_name_from_instance(v)}) "
+                             f"shape {v.shape} {range_str}\n")
             elif isinstance(v, AbstractTrajectoryDataclass):
                 indent_v = []
                 for each_line in str(v).splitlines():

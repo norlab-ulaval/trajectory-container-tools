@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from .abstract_trajectory_dataclass import AbstractTrajectoryDataclass
 from .base_trajectory_dataclass import BaseTrajectoryDataclass, NestedBaseTrajectoryDataclass
 
 
@@ -29,6 +28,33 @@ class RosBagFeatureDataclass(BaseTrajectoryDataclass):
 
 @dataclass()
 class Pose(NestedBaseTrajectoryDataclass):
+    """ Represents the pose of an object in 3D space.
+
+    This class models the translational and rotational parameters of an object's pose in a
+    three-dimensional coordinate system. The translational components are represented by the
+    `position_x`, `position_y`, and `position_z` attributes, corresponding to the x, y,
+    and z axes respectively. The rotational components are represented by the quaternion values
+    `orientation_x`, `orientation_y`, `orientation_z`, and `orientation_w`.
+
+    :ivar position_x: Array representing the x-coordinate(s) of the object's position.
+    :type position_x: np.ndarray
+    :ivar position_y: Array representing the y-coordinate(s) of the object's position.
+    :type position_y: np.ndarray
+    :ivar position_z: Array representing the z-coordinate(s) of the object's position.
+    :type position_z: np.ndarray
+    :ivar orientation_x: Array representing the x-component(s) of the object's orientation
+    quaternion.
+    :type orientation_x: np.ndarray
+    :ivar orientation_y: Array representing the y-component(s) of the object's orientation
+    quaternion.
+    :type orientation_y: np.ndarray
+    :ivar orientation_z: Array representing the z-component(s) of the object's orientation
+    quaternion.
+    :type orientation_z: np.ndarray
+    :ivar orientation_w: Array representing the w-component(s) of the object's orientation
+    quaternion.
+    :type orientation_w: np.ndarray
+    """
     position_x: np.ndarray
     position_y: np.ndarray
     position_z: np.ndarray
@@ -40,12 +66,44 @@ class Pose(NestedBaseTrajectoryDataclass):
 
 @dataclass()
 class PoseWithCovariance(NestedBaseTrajectoryDataclass):
+    """ Represents a pose with its covariance data.
+
+    This class is used to encapsulate a pose along with its associated covariance matrix,
+    which provides information about the uncertainty of the pose observations. The pose
+    describes position and orientation, and the covariance matrix quantifies the uncertainty in
+    these observations. It is useful in robotics, navigation, and computer vision applications
+    where pose estimation is required.
+
+    :ivar pose: The pose represented as a position and orientation.
+    :type pose: Pose
+    :ivar covariance: The covariance matrix associated with the pose,
+        representing the uncertainty in the pose observations.
+    :type covariance: numpy.ndarray
+    """
     pose: Pose
     covariance: np.ndarray
 
 
 @dataclass()
 class Twist(NestedBaseTrajectoryDataclass):
+    """ Represents a dataclass for trajectory containing linear and angular velocity components.
+
+    The `Twist` class is used to encapsulate the movement information for trajectories in terms
+    of linear and angular velocity  components along x, y, and z axes.
+
+    :ivar linear_x: Linear velocity component along the x-axis.
+    :type linear_x: np.ndarray
+    :ivar linear_y: Linear velocity component along the y-axis.
+    :type linear_y: np.ndarray
+    :ivar linear_z: Linear velocity component along the z-axis.
+    :type linear_z: np.ndarray
+    :ivar angular_x: Angular velocity component along the x-axis.
+    :type angular_x: np.ndarray
+    :ivar angular_y: Angular velocity component along the y-axis.
+    :type angular_y: np.ndarray
+    :ivar angular_z: Angular velocity component along the z-axis.
+    :type angular_z: np.ndarray
+    """
     linear_x: np.ndarray
     linear_y: np.ndarray
     linear_z: np.ndarray
@@ -56,6 +114,18 @@ class Twist(NestedBaseTrajectoryDataclass):
 
 @dataclass()
 class TwistWithCovariance(NestedBaseTrajectoryDataclass):
+    """ Represents a twist with an associated covariance matrix.
+
+    This dataclass encapsulates a twist (which typically includes linear and angular velocity
+    components) along with a covariance matrix. It is used in contexts where both the twist and
+    its uncertainty are required, such as motion modeling or state estimation in robotics and
+    related applications.
+
+    :ivar twist: The twist, including linear and angular components.
+    :type twist: Twist
+    :ivar covariance: The covariance matrix associated with the twist.
+    :type covariance: np.ndarray
+    """
     twist: Twist
     covariance: np.ndarray
 

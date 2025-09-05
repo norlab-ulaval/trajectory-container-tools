@@ -148,6 +148,10 @@ class TestAbstractTrajectoryDataclassDataframeCase:
         assert mfc.feature_name is mock_DF_2_trj_DC.name
         assert ("aa", "bb", "cc", "dd_metadata") == mfc.get_dimension_names()
 
+    def test_get_dimension_type(self, setup_mock_feature_child):
+        mfc = setup_mock_feature_child
+        assert issubclass(mfc.get_dimension_type("aa"), np.ndarray)
+
     def test_get_dimension_names_on_uninstiated_class(self):
         stp = StatePose2D
         stp.get_dimension_names()
@@ -323,6 +327,10 @@ class TestAbstractTrajectoryDataclassROSbagCase:
             assert each not in mfc.get_dimension_names()
         assert mfc.feature_name is mock_ROSbag_2_trj_DC.name
         assert ("aa", "bb", "cc", "dd_metadata") == mfc.get_dimension_names()
+
+    def test_get_dimension_type(self, setup_mock_feature_child):
+        mfc = setup_mock_feature_child
+        assert issubclass(mfc.get_dimension_type("aa"), np.ndarray)
 
     def test_get_dimension_names_on_uninstiated_class(self):
         stp = StatePose2D
@@ -574,6 +582,12 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         else:
             assert mfc.feature_name is "Parent nested only"
             assert ("child_one", "child_two") == mfc.get_dimension_names()
+
+    def test_get_dimension_type(self, setup_mock_feature_parent_range, t_nested_case):
+        mfc = setup_mock_feature_parent_range(t_nested_case)
+        if t_nested_case == "nested-and-ndarray":
+            assert issubclass(mfc.get_dimension_type("aa"), np.ndarray)
+        assert issubclass(mfc.get_dimension_type("child_one"), MockTrajectoryChildRosBagCase)
 
     def test_string_representation(
             self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC, t_nested_case

@@ -80,7 +80,8 @@ def aggregate_multiple_features_from_rosbag(
         if isinstance(feature_dataclass, tuple):
             if len(feature_dataclass) == 1:
                 raise KeyError(
-                        "[TCT error] Check your `features_config` dict. You forgot to specify the '"
+                        "[TCT error] Check your `features_config` dict. You forgot to specify "
+                        "the '"
                         f"{feature_name}' dimensions."
                         )
 
@@ -147,12 +148,13 @@ def extract_single_feature_from_rosbag(
     try:
         if not issubclass(data_container_type, RosBagFeatureDataclass):
             raise ValueError(
-                    f"[TCT error] `{data_container_type}` must be a subclass of `RosBagFeatureDataclass`"
+                    f"[TCT error] `{data_container_type}` must be a subclass of "
+                    f"`RosBagFeatureDataclass`"
                     )
     except TypeError as e:
         raise AttributeError(
-                f"[TCT error] `{data_container_type}` must not be instanciated, just pass the class as "
-                "attribute."
+                f"[TCT error] `{data_container_type}` must not be instanciated, just pass the "
+                f"class as attribute."
                 )
     else:
         # ... Create and initialize temporary container ...........................................
@@ -252,14 +254,16 @@ def _collect_properties_from_rosbag(
 
                     attribute_parent = getattr(attribute_parent, each_child)
 
-                if issubclass(shadow_data_container[each_property_name]['type'], (RosBagFeatureDataclass, BaseTrajectoryDataclass)):
+                if issubclass(shadow_data_container[each_property_name]['type'],
+                              (RosBagFeatureDataclass, BaseTrajectoryDataclass)):
                     shadow_data_container[each_property_name] = _collect_properties_from_rosbag(
                             data_container_type=shadow_data_container[each_property_name]['type'],
                             feature_name=each_property_name,
                             msg=attribute_parent,
                             timestamp=timestamp,
                             shadow_data_container=shadow_data_container[each_property_name])
-                elif issubclass(shadow_data_container[each_property_name]['type'], (list, np.ndarray)):
+                elif issubclass(shadow_data_container[each_property_name]['type'],
+                                (list, np.ndarray)):
                     shadow_data_container[each_property_name]['data'].append(attribute_parent)
                 else:
                     shadow_data_container[each_property_name]['data'] = attribute_parent
