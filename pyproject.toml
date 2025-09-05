@@ -1,10 +1,11 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0", "setuptools-scm>=8", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "trajectory-container-tools"
-version = "0.1.0"
+dynamic = ["version"]
+
 description = "Trajectory Container Tools for Robotic Deep Reinforcement Learning"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -22,7 +23,7 @@ classifiers = [
 ]
 dependencies = [
     "numpy",
-    "pandas", 
+    "pandas",
     "tqdm",
     "rosbags",  # For ROS bag functionality
 ]
@@ -35,13 +36,14 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = [
+    ".",
+    "src"
+]
 exclude = [
     "*/build",
     "*/install",
     "*/log"
 ]
 
-
-[tool.setuptools.package-dir]
-"" = "src"
+[tool.setuptools_scm]

@@ -11,6 +11,16 @@
 #
 # =================================================================================================
 
+
+# Jupyter notebook authoring applications
+# https://jupyterlab.readthedocs.io/en/latest/
+jupyterlab
+
+# Single-command clean up for Python bytecode files (i.e. __pycache__; .*pyc;*.pytest_cache;)
+# to prevent cache related error in remote development setup
+# https://github.com/bittner/pyclean
 pyclean
 
-jupyterlab
+# pyproject.toml dynamic version management
+# https://pypi.org/project/setuptools-scm
+setuptools-scm
