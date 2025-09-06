@@ -23,4 +23,8 @@ pyclean
 
 # pyproject.toml dynamic version management
 # https://pypi.org/project/setuptools-scm
-setuptools-scm
+# Require adding the following to pyproject.toml
+#   >>> [build-system]
+#   >>> requires = ["setuptools>=61.0", "setuptools-scm>=8"]
+#   >>> [tool.setuptools_scm]
+#setuptools-scm

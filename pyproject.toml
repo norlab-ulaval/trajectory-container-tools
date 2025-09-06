@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "setuptools-scm>=8", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -10,7 +10,7 @@ description = "Trajectory Container Tools for Robotic Deep Reinforcement Learnin
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [
-    {name = "RedLeader Research", email = "research@redleader.com"}
+    { name = "RedLeader Research", email = "research@redleader.com" }
 ]
 keywords = ["robotics", "reinforcement-learning", "trajectory", "dataclass"]
 classifiers = [
@@ -25,7 +25,7 @@ dependencies = [
     "numpy",
     "pandas",
     "tqdm",
-    "rosbags",  # For ROS bag functionality
+    "rosbags", # For ROS bag functionality
 ]
 
 [project.optional-dependencies]
@@ -36,14 +36,17 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
+# Recommended Following a src-layout repository structure where "." is the repository root
+# and "src" is the source code location.
 where = [
     ".",
     "src"
 ]
+# Recommended directory exclusion to prevent build faillure for cases where python projects
+# are collocated along side ros2 projects in the same repository.
 exclude = [
+    #"src/ros2_packages*", # <-- uncomment and update with your ros pkg path
     "*/build",
     "*/install",
     "*/log"
 ]
-
-[tool.setuptools_scm]
