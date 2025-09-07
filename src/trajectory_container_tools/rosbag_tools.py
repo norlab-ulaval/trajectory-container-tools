@@ -133,22 +133,16 @@ def aggregate_multiple_features_from_rosbag(
                     specification=feat_spec, trj_dataclass_subclass=RosBagFeatureDataclass
                     )
 
-            feature = extract_single_feature_from_rosbag(
-                    rosbag_path=rosbag_path,
-                    feature_name=feature_name,
-                    data_container_type=feature_dataclass,
-                    start=start,
-                    stop=stop
-                    )
+            feature = extract_single_feature_from_rosbag(rosbag_path=rosbag_path,
+                                                         feature_name=feature_name,
+                                                         data_container_type=feature_dataclass,
+                                                         start=start, stop=stop)
 
         elif issubclass(feature_dataclass, RosBagFeatureDataclass):
-            feature = extract_single_feature_from_rosbag(
-                    rosbag_path=rosbag_path,
-                    feature_name=feature_name,
-                    data_container_type=feature_dataclass,
-                    start=start,
-                    stop=stop
-                    )
+            feature = extract_single_feature_from_rosbag(rosbag_path=rosbag_path,
+                                                         feature_name=feature_name,
+                                                         data_container_type=feature_dataclass,
+                                                         start=start, stop=stop)
         else:
             raise
 
@@ -163,27 +157,43 @@ def aggregate_multiple_features_from_rosbag(
     return rosbag_multifeature(dataset_info, *features)
 
 
-def extract_single_feature_from_rosbag(
-        rosbag_path: Path,
-        feature_name: str,
-        data_container_type: Type[RosBagFeatureDataclass],
-        start: Optional[int] = None,
-        stop: Optional[int] = None,
-        ) -> RosBagFeatureDataclass:
+def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
+                                       data_container_type: Type[RosBagFeatureDataclass],
+                                       start: Optional[int] = None, stop: Optional[int] = None,
+                                       enable_multiprocessing=True, n_jobs=-1,
+                                       chunk_size=2000) -> RosBagFeatureDataclass:
     """
-    Rosbag feature extractor automation function.
+    Extracts a specific feature from a ROS bag file and returns it in a structured data container.
+
+    This function retrieves messages from a specified topic within a ROS bag, processes them, and
+    organizes the extracted data into a provided custom dataclass that inherits from the
+    `RosBagFeatureDataclass`. Optionally supports multiprocessing for large numpy array
+    post-processing performance. Handles data integrity checks and enables customization for
+    specialized message types.
 
     Usage:
-    TODO
 
-    :param rosbag_path:
-    :param feature_name: the ros2 topic name to extract
-    :param data_container_type: the ros2 topic type as a RosBagFeatureDataclass child
-    :param start: The rosbag timestamp where to start in nanosecond
-    :param stop: The rosbag timestamp where to stop in nanosecond
+        >>> from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import
+        NavMsgsOdometry
+        >>>
+        >>> extract_single_feature_from_rosbag(
+        >>>     rosbag_path=Path("</path/to/rosbag>"),
+        >>>     feature_name="/odom",
+        >>>     data_container_type=NavMsgsOdometry)
 
+    :param rosbag_path: Path to the input ROS bag file.
+    :param feature_name: Name of the topic to extract data from.
+    :param data_container_type: Custom dataclass type inheriting from `RosBagFeatureDataclass`
+        used to construct the final structured data container.
+    :param start: Optional start time for filtering messages, measured in nanoseconds.
+    :param stop: Optional stop time for filtering messages, measured in nanoseconds.
+    :param enable_multiprocessing: Enables/disables multiprocessing for large numpy array
+        post-processing.
+    :param n_jobs: Number of parallel processes to use when multiprocessing is enabled, where -1
+        uses all available cores.
+    :param chunk_size: Number of messages to process per task in multiprocessing mode.
+    :return: An instance of the `data_container_type` containing the processed feature data.
     """
-
     try:
         if not issubclass(data_container_type, RosBagFeatureDataclass):
             raise ValueError(
@@ -210,11 +220,12 @@ def extract_single_feature_from_rosbag(
                         f"{os.path.basename(rosbag_path)} "
                         )
 
-            print(f"[TCT] extract single feature from rosbag › seeking {feature_name}")
+            print(f"[TCT] Extract single feature from rosbag › seeking {feature_name}")
             if _dataclass_type_is_type_name(data_container_type, "Tf2MsgsTFMessage"):
                 print("[TCT] Skipping msg type 'transforms'")
 
-            progressbar = tqdm(total=_selected_topic_msg_count)
+            progressbar = tqdm(total=_selected_topic_msg_count,
+                               desc="[TCT] Collect properties from rosbag")
             for connection, timestamp, rawdata in reader.messages(
                     connections=connections, start=start, stop=stop
                     ):
@@ -239,7 +250,11 @@ def extract_single_feature_from_rosbag(
 
             shadow_data_container = post_process_shadown_data_container(shadow_data_container,
                                                                         data_container_type,
-                                                                        feature_name)
+                                                                        feature_name,
+                                                                        enable_multiprocessing,
+                                                                        n_jobs,
+                                                                        chunk_size
+                                                                        )
 
             # .... Validate data integrity ........................................................
             shadow_data_container = validate_timestamp_integrity(data_container_type, feature_name,

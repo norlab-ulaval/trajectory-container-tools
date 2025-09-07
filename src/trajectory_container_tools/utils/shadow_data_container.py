@@ -3,7 +3,10 @@ from dataclasses import fields as fields
 from typing import Dict, List, Optional, Type, Union, TypeAlias
 
 import numpy as np
+from tqdm import tqdm
 
+from .general import extract_class_name_from_type
+from .optimization import process_large_arrays_parallel
 from ..trj_dataclasses.rosbag_feature_dataclass import \
     RosBagFeatureDataclass
 from ..trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
@@ -53,30 +56,46 @@ def instanciate_shadow_data_container(
     return shadow_data_container
 
 
-def post_process_shadown_data_container(
-        shadow_data_container: ShadowDataContainer,
-        data_container_type: Union[
-            Type[RosBagFeatureDataclass], Type[NestedBaseTrajectoryDataclass]],
-        feature_name: Optional[str]) -> ShadowDataContainer:
+def post_process_shadown_data_container(shadow_data_container: ShadowDataContainer,
+                                        data_container_type: Union[
+                                            Type[RosBagFeatureDataclass], Type[
+                                                NestedBaseTrajectoryDataclass]],
+                                        feature_name: Optional[str],
+                                        enable_multiprocessing: bool = True,
+                                        n_jobs=-1,
+                                        chunk_size=1000) -> ShadowDataContainer:
     """
-    Post-processes the shadow data container by modifying its structure and data based on the
-    provided container type and feature name. The function manipulates and transforms the data
-    to ensure compatibility with the expected format of the given data container type.
+    Post-processes a ShadowDataContainer containing various data elements while ensuring proper
+    handling of nested data types and arrays.
 
-    :param shadow_data_container: A shadow data container object that holds the information to
-        process. It contains raw data and metadata that need to be transformed.
-    :param data_container_type: The type of the data container to transform the shadow data
-        container into. It can either be `RosBagFeatureDataclass` or `NestedBaseTrajectoryDataclass`.
-    :param feature_name: Optional feature name used for specific processing of the shadow data
-        container if applicable.
-    :return: An updated shadow data container with the processed structure and data according to
-        the specified `data_container_type`.
+    This function processes a ShadowDataContainer by removing unused keys, validating data
+    integrity based on the provided data container type, and managing different cases for nested
+    and array-like data. It supports parallel processing for large arrays.
+
+    :param shadow_data_container: The data container shadowing data_container_type.
+    :param data_container_type: The expected type of data container. It must
+        be a class type that is either RosBagFeatureDataclass or NestedBaseTrajectoryDataclass.
+    :param feature_name: The name of the specific feature process by non-nested data container.
+    :param enable_multiprocessing: Process large array in parallel or sequentially otherwise.
+        Default to True.
+    :param chunk_size: The size of chunks for processing large arrays in parallel. Default to 1000.
+    :param n_jobs: The number of parallel jobs for processing arrays.
+        Default is -1, which typically uses all available processors.
+    :return: The processed ShadowDataContainer with the updated structure and values.
     """
-    # (NICE TO HAVE) ToDo: unit-test (ref task RLRP-83) Is indirectly tested for now
+    # (NICE TO HAVE) ToDo: unit-test explicitly (ref task RLRP-83). Its indirectly tested for now.
+    # (NICE TO HAVE) ToDo: Optimize speed and memory management 💎.
+
+    progressbar = tqdm(total=len(shadow_data_container.keys()),
+                       desc=f"[TCT] Post-process rosbag data for "
+                            f"{extract_class_name_from_type(data_container_type)}")
 
     del shadow_data_container['timestep_index']
 
-    if issubclass(data_container_type, NestedBaseTrajectoryDataclass):
+    if not issubclass(data_container_type, NestedBaseTrajectoryDataclass):
+        shadow_data_container["feature_name"] = feature_name
+    else:
+        # Nested trj container should not populate 'feature_name'
         del shadow_data_container['feature_name']
 
     if issubclass(data_container_type, RosBagFeatureDataclass):
@@ -85,26 +104,35 @@ def post_process_shadown_data_container(
         del shadow_data_container['type']
 
     for k, v in shadow_data_container.items():
-        if k == "feature_name":
-            if not issubclass(data_container_type, NestedBaseTrajectoryDataclass):
-                # Nested trj container should not populate 'feature_name'
-                shadow_data_container["feature_name"] = feature_name
-        elif isinstance(v, dict) and v.get('type') is not None:
+        if isinstance(v, dict) and v.get('type') is not None:
             target_type = v.get('type')
             if issubclass(target_type, np.ndarray):
-                # Case: e.g., 'timestamp' dimension
                 assert isinstance(v['data'], list)
-                shadow_data_container[k] = np.array(v['data'])
+                shadow_data_container[k] = process_large_arrays_parallel(v['data'],
+                                                                         enable_multiprocessing,
+                                                                         n_jobs=n_jobs,
+                                                                         chunk_size=chunk_size)
             elif issubclass(target_type, NestedBaseTrajectoryDataclass):
-                ppsdc = post_process_shadown_data_container(
-                        v,
-                        target_type,
-                        None)
+                ppsdc = post_process_shadown_data_container(v,
+                                                            data_container_type=target_type,
+                                                            feature_name=None,
+                                                            enable_multiprocessing=enable_multiprocessing,
+                                                            n_jobs=n_jobs,
+                                                            chunk_size=chunk_size)
                 del ppsdc['type']
                 shadow_data_container[k] = target_type(**ppsdc)
         elif isinstance(v, list):
-            shadow_data_container[k] = np.array(v)
+            if k == "timestamps":
+                shadow_data_container[k] = np.array(v)
+            else:
+                shadow_data_container[k] = process_large_arrays_parallel(v,
+                                                                         enable_multiprocessing,
+                                                                         n_jobs=n_jobs,
+                                                                         chunk_size=chunk_size)
 
+        progressbar.update(1)
+
+    progressbar.close()
     return shadow_data_container
 
 
