@@ -1,11 +1,49 @@
 # coding=utf-8
+from typing import Union
+
 from matplotlib import pyplot as plt
 
+from .general import extract_class_name_from_instance
+from .. import AbstractMultifeatureDataclass
+from ..trj_dataclasses.base_trajectory_dataclass import (
+    BaseTrajectoryDataclass,
+    BaseReverseAxisTrajectoryDataclass,
+    )
 
-def plot_trajectory_2d(trajectory_data):
-    """Plot 2D trajectory with start and end points."""
-    x_pos = trajectory_data.topic_odom.pose_pose_position_x
-    y_pos = trajectory_data.topic_odom.pose_pose_position_y
+
+def plot_trajectory_2d(
+        trajectory_data: Union[BaseTrajectoryDataclass, BaseReverseAxisTrajectoryDataclass],
+        x_axis_topic: str = "topic_odom.pose.pose.position_x",
+        y_axis_topic: str = "topic_odom.pose.pose.position_y"):
+    """
+    Plots a 2D trajectory of position data using specified x and y axis topics.
+
+    This function visualizes the trajectory based on the attributes of the input
+    data class. The x-axis and y-axis attributes are derived from the data class
+    using the provided topic strings. The plot includes the trajectory line, start
+    and end points, direction arrows along the path, and labels for visualization.
+
+    :param trajectory_data: A data container (either `BaseTrajectoryDataclass` or
+        `BaseReverseAxisTrajectoryDataclass`) holding the trajectory attributes.
+    :param x_axis_topic: The hierarchical string path to identify the x-axis attribute
+        in `trajectory_data`. Default is "topic_odom.pose.pose.position_x".
+    :param y_axis_topic: The hierarchical string path to identify the y-axis attribute
+        in `trajectory_data`. Default is "topic_odom.pose.pose.position_y".
+    :return: A tuple containing the matplotlib figure and axes objects with the plotted
+        trajectory.
+    """
+
+    nested_container = trajectory_data
+    for each_x_axis_attribute in x_axis_topic.split('.'):
+        nested_container = nested_container.__getattribute__(each_x_axis_attribute) #topic_odom.pose.pose.position_x
+
+    x_pos = nested_container
+
+    nested_container = trajectory_data
+    for each_y_axis_attribute in y_axis_topic.split('.'):
+        nested_container = nested_container.__getattribute__(each_y_axis_attribute) #topic_odom.pose.pose.position_y
+
+    y_pos = nested_container
 
     fig, ax = plt.subplots(figsize=(10, 8))
 
@@ -28,11 +66,14 @@ def plot_trajectory_2d(trajectory_data):
 
     ax.set_xlabel('X Position (m)', fontsize=12)
     ax.set_ylabel('Y Position (m)', fontsize=12)
-    ax.set_title(trajectory_data.dataset_info, fontsize=14)
+
+    if isinstance(trajectory_data, AbstractMultifeatureDataclass):
+        ax.set_title(f"{trajectory_data.dataset_info}", fontsize=14)
+    else:
+        ax.set_title(extract_class_name_from_instance(trajectory_data), fontsize=14)
+
     ax.legend()
     ax.grid(True, alpha=0.3)
     ax.set_aspect('equal')
 
     return fig, ax
-
-

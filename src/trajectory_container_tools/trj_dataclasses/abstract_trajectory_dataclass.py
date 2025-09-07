@@ -4,7 +4,7 @@ import datetime
 from copy import deepcopy
 from dataclasses import dataclass, field, fields
 import numpy as np
-from typing import List, Tuple, Type, Union
+from typing import Any, List, Tuple, Type, Union
 
 from rclpy.time import Time
 
@@ -61,24 +61,24 @@ class AbstractTrajectoryDataclass(abc.ABC):
         # Note: "header_FrameId" and "childFrameId" are rosbag generated field
         return ["header_FrameId", "childFrameId"]
 
-    def post_init_callback(self):
-        """Overide methode to execute custom computation on feature dataclass prior to
-        `__post_init__` execution.
+    def on_begin_post_init_callback(self) -> None:
+        """Overide this methode to execute custom computation on feature dataclass at the begining
+         of `__post_init__` method execution.
         Note: The method scope include all field.
 
         Example:
             >>> @dataclass
             >>> class StatePose2DSteadyState(StatePose2D):
-            >>>     def post_init_callback(self):
-            >>>         feature = self.__getattribute__("<feature-name>")
-            >>>         self.__setattr__(f"<other-feature>", np.cumsum(feature))
+            >>>     def on_begin_post_init_callback(self):
+            >>>         feature = self.get_dynamic_field("<feature-name>")
+            >>>         self.set_dynamic_field(f"<other-feature>", np.cumsum(feature))
             >>>         return None
 
         """
         pass
 
-    def post_init_feature_callback(self, feature_name):
-        """Overide methode to execute feature aware custom computation.
+    def post_init_feature_callback(self, feature_name: str) -> None:
+        """Overide this methode to execute feature aware custom computation.
         Usefull for post-processing dynamicaly declare field.
 
         Note:
@@ -92,16 +92,66 @@ class AbstractTrajectoryDataclass(abc.ABC):
             >>> @dataclass
             >>> class StatePose2DSteadyState(StatePose2D):
             >>>     def post_init_feature_callback(self, feature_name):
-            >>>         feature = self.__getattribute__(feature_name)
+            >>>         feature = self.get_dynamic_field(feature_name)
             >>>         if isinstance(feature, np.ndarray):
             >>>             feature_ini = feature[0, ...]
             >>>             if self.current_trj_axe == -1:
             >>>                 feature_ini = feature[..., 0]
-            >>>             self.__setattr__(f"{feature_name}_init", feature_ini)
+            >>>             self.set_dynamic_field(f"{feature_name}_init", feature_ini)
             >>>         return None
 
         """
         pass
+
+    def on_exit_post_init_callback(self) -> None:
+        """Overide this methode to execute custom computation on feature dataclass at the end
+         of `__post_init__` method execution.
+        Note: The method scope include all field.
+
+        Example:
+            >>> @dataclass
+            >>> class StatePose2DSteadyState(StatePose2D):
+            >>>     def on_exit_post_init_callback(self):
+            >>>         feature = self.get_dynamic_field("<feature-name>")
+            >>>         assert len(feature) > 0
+            >>>         return None
+
+        """
+        # (CRITICAL) ToDo: unit-test (ref task TCT-39)
+        pass
+
+    def get_dynamic_field(self, feature_name: str) -> Any:
+        # (CRITICAL) ToDo: unit-test (ref task TCT-39)
+        return self.__getattribute__(feature_name)
+
+    def set_dynamic_field(self, feature_name: str, value: Any) -> None:
+        # (CRITICAL) ToDo: unit-test (ref task TCT-39)
+        self.__setattr__(feature_name, value)
+        return None
+
+    def fetch_nested_attribute(self, nested_attribute_list: str) -> Any:
+        """ Retrieves a nested attribute from an object based on a dot-separated string.
+
+        This function allows accessing nested attributes of an object dynamically, based on a
+        string representation of the attribute's hierarchical structure.
+        It takes a dot-separated attribute name, traverses the object's nested levels
+        sequentially, and retrieves the final attribute
+        e.g., "topic_odom.pose.pose.position_x" would sequentialy crawl into nested container
+        "topic_odom" -> "pose" -> "pose" -> "position_x".
+
+        Example:
+
+            >>> position_x_value = self.fetch_nested_attribute("topic_odom.pose.pose.position_x")
+
+        :param nested_attribute_list: A dot-separated string representing the hierarchical
+          structure of the attribute to retrieve.
+        :return: The value of the resolved nested attribute.
+        """
+        # (CRITICAL) ToDo: unit-test (ref task TCT-39)
+        nested_attribute = self
+        for each in nested_attribute_list.split('.'):
+            nested_attribute = nested_attribute.get_dynamic_field(each)
+        return nested_attribute
 
     @classmethod
     def get_dimension_names(cls) -> Tuple[str, ...]:
@@ -177,52 +227,48 @@ class AbstractTrajectoryDataclass(abc.ABC):
         self._iter_index: int = 0
         self.transposed: bool = False
 
-        try:
-            self.post_init_callback()
+        self.on_begin_post_init_callback()
 
-            if not self.get_dimension_names():
-                raise TypeError(
-                        f"[TCT error] AbstractTrajectoryDataclass is an abstract baseclass, "
-                        f"it must be "
-                        f"subclassed in order to be instanciated."
-                        )
+        if not self.get_dimension_names():
+            raise TypeError(
+                    f"[TCT error] AbstractTrajectoryDataclass is an abstract baseclass, "
+                    f"it must be subclassed in order to be instanciated."
+                    )
 
-            for each_name in self.get_dimension_names():
-                if each_name in self.trajectory_metadata_field():
-                    pass
+        for each_name in self.get_dimension_names():
+            if each_name in self.trajectory_metadata_field():
+                pass
+            else:
+                self.post_init_feature_callback(feature_name=each_name)
+
+                data_property = self.__getattribute__(each_name)
+
+                if isinstance(data_property, AbstractTrajectoryDataclass):
+
+                    # Init timestep_index with nested dataclass trajectory_len
+                    if self.timestep_index is None:
+                        self.timestep_index = np.arange(data_property.trajectory_len)
+
+                elif isinstance(data_property, np.ndarray):
+                    data_property: np.ndarray
+                    data_property_trajectory_len = data_property.shape[self._init_trj_axe]
+
+                    # Init timestep_index with dataclass trajectory_len
+                    if self.timestep_index is None:
+                        self.timestep_index = np.arange(data_property_trajectory_len)
+
+                    if data_property_trajectory_len != self.trajectory_len:
+                        raise ValueError(
+                                f"{data_property_trajectory_len} != {self.trajectory_len}\n"
+                                f"[TCT error] Topic `{self.feature_name}` with container `"
+                                f"{each_name}`" " received numpy arrays which do not match "
+                                "the trajectory length"
+                                )
                 else:
-                    self.post_init_feature_callback(feature_name=each_name)
-
-                    data_property = self.__getattribute__(each_name)
-
-                    if isinstance(data_property, AbstractTrajectoryDataclass):
-
-                        # Init timestep_index with nested dataclass trajectory_len
-                        if self.timestep_index is None:
-                            self.timestep_index = np.arange(data_property.trajectory_len)
-
-                    elif isinstance(data_property, np.ndarray):
-                        data_property: np.ndarray
-                        data_property_trajectory_len = data_property.shape[self._init_trj_axe]
-
-                        # Init timestep_index with dataclass trajectory_len
-                        if self.timestep_index is None:
-                            self.timestep_index = np.arange(data_property_trajectory_len)
-
-                        if data_property_trajectory_len != self.trajectory_len:
-                            raise ValueError(
-                                    f"{data_property_trajectory_len} != {self.trajectory_len}\n"
-                                    f"[TCT error] Topic `{self.feature_name}` with container `"
-                                    f"{each_name}`"
-                                    " received numpy arrays which do not match the trajectory "
-                                    "length"
-                                    )
-                    else:
-                        raise TypeError(
+                    raise TypeError(
                             f"[TCT error] Property `{each_name}` is not a numpy ndarray")
 
-        except Exception as e:
-            raise e
+        self.on_exit_post_init_callback()
 
         return None
 
@@ -341,7 +387,7 @@ class AbstractMultifeatureDataclass(abc.ABC):
         self.aggregated_date = datetime.datetime.now()
 
     def __str__(self):
-        """User representation. Handle dynamically property added at run time"""
+        """User representation. Handle dynamical property added at run time"""
         t_sp = " " * 0
         m_sp = " " * 3
         repr_str = f"\n{t_sp}Multifeature(\n"

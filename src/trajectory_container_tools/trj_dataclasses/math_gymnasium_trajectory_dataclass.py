@@ -19,7 +19,7 @@ class AxBaseDataclass(BaseTrajectoryDataclass):
         check_is_finite(self.obs + self.obs_noise)
         return self.obs + self.obs_noise
 
-    def post_init_callback(self) -> None:
+    def on_begin_post_init_callback(self) -> None:
         if not self.noise:
             self.noise = np.zeros_like(self.obs)
             self.obs_noise = np.zeros_like(self.obs)

@@ -30,6 +30,45 @@ from .utils.shadow_data_container import (
     )
 
 
+def show_available_rosbag_topics(rosbag_path: Union[str, Path]) -> Path:
+    """ Display available topics and messages in a specified ROS bag file.
+
+    This function reads a ROS bag file from the specified path and lists all the available
+    topics along with their message types. Additionally, it provides the total number of
+    messages in the ROS bag. If the provided path is unreachable and the function is running in a
+    Dockerized-NorLab docker container, it attempts to resolve the correct path.
+
+    :param rosbag_path: Path to the ROS bag file (absolute or relative).
+    :return: the updated ros bag path if the input was a relative path
+    """
+    # .... Construct absolute path to selected ros bag ............................................
+    # Handle cases: pycharm-born dna run and shell-born dna run
+
+    try:
+        assert os.path.exists(rosbag_path)
+    except AssertionError:
+        dn_project_path = os.getenv('DN_PROJECT_PATH')
+        if os.path.exists(dn_project_path):
+            # Case running in a Dockerized-NorLab docker container
+            rosbag_path = os.path.join(dn_project_path, rosbag_path)
+
+        assert os.path.exists(rosbag_path), f"[TCT] rosbag path is unreachable at {rosbag_path}"
+
+    rosbag_path = os.path.realpath(rosbag_path)
+
+    # .... Introspect ros bag contents ............................................................
+    print(f"Using ROS bag: {rosbag_path}")
+    assert os.path.exists(rosbag_path)
+
+    with Reader(rosbag_path) as reader:
+        print("Available topics:")
+        for connection in reader.connections:
+            print(f"  {connection.topic}: {connection.msgtype}")
+        print(f"Total messages: {reader.message_count}")
+
+    return Path(rosbag_path)
+
+
 def aggregate_multiple_features_from_rosbag(
         rosbag_path: Path,
         dataset_info: Optional[str],
@@ -234,6 +273,8 @@ def _collect_properties_from_rosbag(
                         shadow_data_container[each_property_name] = msg.header.frame_id
                     elif each_property_name == "childFrameId":
                         shadow_data_container[each_property_name] = msg.child_frame_id
+            # elif each_property_name in data_container_type.trajectory_metadata_field():
+            #     pass
             elif each_property_name == "timestamps":
                 shadow_data_container[each_property_name]['data'].append(
                         set_timestamp(msg, timestamp, use_msg_header_time=True)

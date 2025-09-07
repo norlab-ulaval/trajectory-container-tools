@@ -3,18 +3,27 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ..trj_dataclasses.abstract_trajectory_dataclass import AbstractTrajectoryDataclass
+from .base_trajectory_dataclass import BaseReverseAxisTrajectoryDataclass
 
+
+# /////////////////////////////////////////////////////////////////////////////////////////////////
 # Note: nested trajectory-dataclass is not yet supported for dataframe extraction.
-#       Use flat layout for now
+#       Use flat layout in the mean time
+# /////////////////////////////////////////////////////////////////////////////////////////////////
 
-# ::: Marmotte slip Dataframe dataset related :::::::::::::::::::::::::::::::::::::::::::::::::::::
 @dataclass()
-class DataframeFeatureDataclass(AbstractTrajectoryDataclass):
+class DataframeFeatureDataclass(BaseReverseAxisTrajectoryDataclass):
+    """
+    Represents a dataclass for handling trajectory data fetched from a Panda dataframe.
 
-    @property
-    def _init_trj_axe(self) -> int:
-        return -1
+    This class is utilized as a specialized data structure that inherits features from the
+    BaseReverseAxisTrajectoryDataclass, aiming to encapsulate and manage properties related to
+    dataframe features.
+
+    It can be extended or utilized wherever structured data for dataframe processing or
+    trajectory computation is necessary.
+    """
+    pass
 
 
 @dataclass()
@@ -46,4 +55,3 @@ class Velocity(CmdStandard):
 class VelocitySkidSteer(CmdSkidSteer):
     # Same properties as CmdSkidSteer
     pass
-

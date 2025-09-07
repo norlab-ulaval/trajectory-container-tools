@@ -30,7 +30,7 @@ class MockTrajectoryChildDFcase(AbstractTrajectoryDataclass):
     def trajectory_metadata_field(cls):
         return super().trajectory_metadata_field() + ["dd_metadata"]
 
-    def post_init_callback(self):
+    def on_begin_post_init_callback(self):
         feature = self.__getattribute__("dd_metadata")
         self.__setattr__("dd_metadata", feature + 99)
         return None
@@ -57,7 +57,7 @@ class MockTrajectoryChildRosBagCase(AbstractTrajectoryDataclass):
     def trajectory_metadata_field(cls):
         return super().trajectory_metadata_field() + ["dd_metadata"]
 
-    def post_init_callback(self):  # self.dd_metadata += 99
+    def on_begin_post_init_callback(self):  # self.dd_metadata += 99
         feature = self.__getattribute__("dd_metadata")
         self.__setattr__("dd_metadata", feature + 99)
         return None
@@ -123,7 +123,7 @@ class TestAbstractTrajectoryDataclassDataframeCase:
 
         assert np.array_equal(
                 mfc.dd_metadata, np.array([99, 99, 99])
-                ), f"{mfc.dd_metadata=} != np.array([99, 99, 99])"  # test post_init_callback
+                ), f"{mfc.dd_metadata=} != np.array([99, 99, 99])"  # test on_begin_post_init_callback
 
         # ★ post_init_feature_callback `aa_init` is a dynamicaly created field
         assert np.array_equal(
@@ -303,7 +303,7 @@ class TestAbstractTrajectoryDataclassROSbagCase:
 
         assert np.array_equal(
                 mfc.dd_metadata, np.array([99, 99, 99])
-                ), f"{mfc.dd_metadata=} != np.array([99, 99, 99])"  # test post_init_callback
+                ), f"{mfc.dd_metadata=} != np.array([99, 99, 99])"  # test on_begin_post_init_callback
 
         assert np.array_equal(
                 mfc.aa_init, mock_ROSbag_2_trj_DC.a[0, ...]
@@ -538,7 +538,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         for child_name, each_child in [("child_one", mfc.child_one), ("child_two", mfc.child_two)]:
             assert np.array_equal(
                     each_child.dd_metadata, np.array([99, 99, 99])
-                    ), (  # test post_init_callback
+                    ), (  # test on_begin_post_init_callback
                     f"{child_name}.dd_metadata={each_child.dd_metadata} != np.array([99, 99, 99])"
             )
 
