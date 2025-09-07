@@ -33,12 +33,23 @@ class MockTrajectoryChildDFcase(AbstractTrajectoryDataclass):
     def on_begin_post_init_callback(self):
         feature = self.__getattribute__("dd_metadata")
         self.__setattr__("dd_metadata", feature + 99)
+
+        # Create test attribute for post-init-callback logic
+        self.__setattr__("test_on_begin_post_init_callback", True)
+        self.__setattr__("test_post_init_feature_callback", False)
+        self.__setattr__("test_on_exit_post_init_callback", False)
         return None
 
     def post_init_feature_callback(self, feature_name):
         feature = self.__getattribute__(feature_name)
         feature_ini = feature[..., 0]
         self.__setattr__(f"{feature_name}_init", feature_ini)
+
+        self.__setattr__("test_post_init_feature_callback", True)
+        return None
+
+    def on_exit_post_init_callback(self) -> None:
+        self.__setattr__("test_on_exit_post_init_callback", True)
         return None
 
 
@@ -60,12 +71,23 @@ class MockTrajectoryChildRosBagCase(AbstractTrajectoryDataclass):
     def on_begin_post_init_callback(self):  # self.dd_metadata += 99
         feature = self.__getattribute__("dd_metadata")
         self.__setattr__("dd_metadata", feature + 99)
+
+        # Create test attribute for post-init-callback logic
+        self.__setattr__("test_on_begin_post_init_callback", True)
+        self.__setattr__("test_post_init_feature_callback", False)
+        self.__setattr__("test_on_exit_post_init_callback", False)
         return None
 
     def post_init_feature_callback(self, feature_name):
         feature = self.__getattribute__(feature_name)
         feature_ini = feature[0, ...]
         self.__setattr__(f"{feature_name}_init", feature_ini)
+
+        self.__setattr__("test_post_init_feature_callback", True)
+        return None
+
+    def on_exit_post_init_callback(self) -> None:
+        self.__setattr__("test_on_exit_post_init_callback", True)
         return None
 
 
@@ -79,6 +101,21 @@ class MockTrajectoryComposedParent(AbstractTrajectoryDataclass):
     def _init_trj_axe(self) -> int:
         return 0
 
+    def on_begin_post_init_callback(self):  # self.dd_metadata += 99
+        # Create test attribute for post-init-callback logic
+        self.__setattr__("test_on_begin_post_init_callback", True)
+        self.__setattr__("test_post_init_feature_callback", False)
+        self.__setattr__("test_on_exit_post_init_callback", False)
+        return None
+
+    def post_init_feature_callback(self, feature_name):
+        self.__setattr__("test_post_init_feature_callback", True)
+        return None
+
+    def on_exit_post_init_callback(self) -> None:
+        self.__setattr__("test_on_exit_post_init_callback", True)
+        return None
+
 
 @dataclass
 class MockTrajectoryComposedParentNestedOnly(AbstractTrajectoryDataclass):
@@ -88,6 +125,21 @@ class MockTrajectoryComposedParentNestedOnly(AbstractTrajectoryDataclass):
     @property
     def _init_trj_axe(self) -> int:
         return 0
+
+    def on_begin_post_init_callback(self):  # self.dd_metadata += 99
+        # Create test attribute for post-init-callback logic
+        self.__setattr__("test_on_begin_post_init_callback", True)
+        self.__setattr__("test_post_init_feature_callback", False)
+        self.__setattr__("test_on_exit_post_init_callback", False)
+        return None
+
+    def post_init_feature_callback(self, feature_name):
+        self.__setattr__("test_post_init_feature_callback", True)
+        return None
+
+    def on_exit_post_init_callback(self) -> None:
+        self.__setattr__("test_on_exit_post_init_callback", True)
+        return None
 
 
 class TestAbstractTrajectoryDataclassDataframeCase:
@@ -129,6 +181,11 @@ class TestAbstractTrajectoryDataclassDataframeCase:
         assert np.array_equal(
                 mfc.aa_init, mock_DF_2_trj_DC.a[..., 0]
                 ), f"{mfc.aa_init=} != {mock_DF_2_trj_DC.a[..., 0]=}"  # test
+
+        # Check each post-init-callback overriden method was hit
+        assert mfc.__getattribute__("test_on_begin_post_init_callback") == True
+        assert mfc.__getattribute__("test_post_init_feature_callback") == True
+        assert mfc.__getattribute__("test_on_exit_post_init_callback") == True
 
     def test_class_feature_post_init_check(self, mock_DF_2_trj_DC_uneven_time_index):
         with pytest.raises(ValueError):
@@ -330,6 +387,11 @@ class TestAbstractTrajectoryDataclassROSbagCase:
                 mfc.aa_init, mock_ROSbag_2_trj_DC.a[0, ...]
                 ), f"{mfc.aa_init=} != {mock_ROSbag_2_trj_DC.a[0, ...]=}"  # test
         # post_init_feature_callback `aa_init` is a dynamicaly created field
+
+        # Check each post-init-callback overriden method was hit
+        assert mfc.__getattribute__("test_on_begin_post_init_callback") == True
+        assert mfc.__getattribute__("test_post_init_feature_callback") == True
+        assert mfc.__getattribute__("test_on_exit_post_init_callback") == True
 
     def test_class_feature_post_init_check(self, mock_ROSbag_2_trj_DC_uneven_time_index):
         with pytest.raises(ValueError):
@@ -589,6 +651,14 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
                     f"{child_name}.aa_init={each_child.aa_init}"
                     f" != {mock_ROSbag_2_trj_DC_range.a[0, ...]=}"
             )
+
+        # Check each post-init-callback overriden method was hit
+        assert mfc.__getattribute__("test_on_begin_post_init_callback") == True
+        assert mfc.__getattribute__("test_post_init_feature_callback") == True
+        assert mfc.__getattribute__("test_on_exit_post_init_callback") == True
+        assert mfc.child_one.__getattribute__("test_on_begin_post_init_callback") == True
+        assert mfc.child_one.__getattribute__("test_post_init_feature_callback") == True
+        assert mfc.child_one.__getattribute__("test_on_exit_post_init_callback") == True
 
     def test_class_feature_post_init_check(
             self, setup_mock_feature_child_range, mock_ROSbag_2_trj_DC_longer_range, t_nested_case

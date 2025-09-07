@@ -163,7 +163,6 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
             >>>         return None
 
         """
-        # (CRITICAL) ToDo: unit-test (ref task TCT-39)
         pass
 
     @classmethod
