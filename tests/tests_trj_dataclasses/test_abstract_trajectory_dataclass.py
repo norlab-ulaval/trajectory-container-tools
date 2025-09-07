@@ -152,6 +152,27 @@ class TestAbstractTrajectoryDataclassDataframeCase:
         mfc = setup_mock_feature_child
         assert issubclass(mfc.get_dimension_type("aa"), np.ndarray)
 
+    def test_set_dynamic_field(self, setup_mock_feature_child):
+        mfc = setup_mock_feature_child
+
+        # Case override field
+        mfc.set_dynamic_field("aa", None)
+        assert mfc.aa is None
+
+        # Case create new field
+        mfc.set_dynamic_field("new_field", "new-field-value")
+        assert mfc.new_field == "new-field-value"
+
+    def test_get_dynamic_field(self, setup_mock_feature_child, mock_DF_2_trj_DC):
+        mfc = setup_mock_feature_child
+        assert np.allclose(mfc.get_dynamic_field("aa"),
+                           mock_DF_2_trj_DC.a)
+
+    def test_fetch_nested_attribute(self, setup_mock_feature_child, mock_DF_2_trj_DC):
+        # Note: should work even if the trj data container has a flat structure
+        mfc = setup_mock_feature_child
+        assert np.allclose(mfc.fetch_nested_attribute("aa"), mock_DF_2_trj_DC.a)
+
     def test_get_dimension_names_on_uninstiated_class(self):
         stp = StatePose2D
         stp.get_dimension_names()
@@ -331,6 +352,27 @@ class TestAbstractTrajectoryDataclassROSbagCase:
     def test_get_dimension_type(self, setup_mock_feature_child):
         mfc = setup_mock_feature_child
         assert issubclass(mfc.get_dimension_type("aa"), np.ndarray)
+
+    def test_set_dynamic_field(self, setup_mock_feature_child):
+        mfc = setup_mock_feature_child
+
+        # Case override field
+        mfc.set_dynamic_field("aa", None)
+        assert mfc.aa is None
+
+        # Case create new field
+        mfc.set_dynamic_field("new_field", "new-field-value")
+        assert mfc.new_field == "new-field-value"
+
+    def test_get_dynamic_field(self, setup_mock_feature_child, mock_ROSbag_2_trj_DC):
+        mfc = setup_mock_feature_child
+        assert np.allclose(mfc.get_dynamic_field("aa"),
+                           mock_ROSbag_2_trj_DC.a)
+
+    def test_fetch_nested_attribute(self, setup_mock_feature_child, mock_ROSbag_2_trj_DC):
+        # Note: should work even if the trj data container has a flat structure
+        mfc = setup_mock_feature_child
+        assert np.allclose(mfc.fetch_nested_attribute("aa"), mock_ROSbag_2_trj_DC.a)
 
     def test_get_dimension_names_on_uninstiated_class(self):
         stp = StatePose2D
@@ -588,6 +630,39 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         if t_nested_case == "nested-and-ndarray":
             assert issubclass(mfc.get_dimension_type("aa"), np.ndarray)
         assert issubclass(mfc.get_dimension_type("child_one"), MockTrajectoryChildRosBagCase)
+
+    def test_set_dynamic_field(self, setup_mock_feature_parent_range, t_nested_case):
+        mfc = setup_mock_feature_parent_range(t_nested_case)
+
+        # Case override nested field
+        mfc.child_one.set_dynamic_field("aa", None)
+        assert mfc.child_one.aa is None
+
+        # Case create new nested field
+        mfc.child_one.set_dynamic_field("new_field", "new-field-value")
+        assert mfc.child_one.new_field == "new-field-value"
+
+        if t_nested_case == "nested-and-ndarray":
+            # Case override top field
+            mfc.set_dynamic_field("aa", "mock-value")
+            assert mfc.aa == "mock-value"
+
+            # Case create new top field
+            mfc.set_dynamic_field("new_field", "new-field-value")
+            assert mfc.new_field == "new-field-value"
+
+    def test_get_dynamic_field(self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case):
+        mfc = setup_mock_feature_parent_range(t_nested_case)
+        assert np.allclose(mfc.child_one.get_dynamic_field("aa"),
+                           mock_ROSbag_2_trj_DC_range.a)
+        if t_nested_case == "nested-and-ndarray":
+            assert np.allclose(mfc.get_dynamic_field("aa"), mock_ROSbag_2_trj_DC_range.a)
+
+    def test_fetch_nested_attribute(self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case):
+        mfc = setup_mock_feature_parent_range(t_nested_case)
+        assert np.allclose(mfc.fetch_nested_attribute("child_one.aa"), mock_ROSbag_2_trj_DC_range.a)
+        if t_nested_case == "nested-and-ndarray":
+            assert np.allclose(mfc.fetch_nested_attribute("aa"), mock_ROSbag_2_trj_DC_range.a)
 
     def test_string_representation(
             self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC, t_nested_case
