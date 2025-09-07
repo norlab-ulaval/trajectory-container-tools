@@ -121,10 +121,21 @@ class AbstractTrajectoryDataclass(abc.ABC):
         pass
 
     def get_dynamic_field(self, feature_name: str) -> Any:
+        """ Retrieves the value of a dynamicaly declared attribute from the object.
+
+        :param feature_name: The name of the attribute to retrieve.
+        :return: The value of the requested attribute.
+        """
         # (CRITICAL) ToDo: unit-test (ref task TCT-39)
         return self.__getattribute__(feature_name)
 
     def set_dynamic_field(self, feature_name: str, value: Any) -> None:
+        """ Updates or creates a dynamic attribute on an object.
+
+        :param feature_name: The name of the attribute to update or create.
+        :param value: The value to assign to the attribute.
+        :return: None
+        """
         # (CRITICAL) ToDo: unit-test (ref task TCT-39)
         self.__setattr__(feature_name, value)
         return None
@@ -148,10 +159,7 @@ class AbstractTrajectoryDataclass(abc.ABC):
         :return: The value of the resolved nested attribute.
         """
         # (CRITICAL) ToDo: unit-test (ref task TCT-39)
-        nested_attribute = self
-        for each in nested_attribute_list.split('.'):
-            nested_attribute = nested_attribute.get_dynamic_field(each)
-        return nested_attribute
+        return _fetch_nested_attribute(self, nested_attribute_list)
 
     @classmethod
     def get_dimension_names(cls) -> Tuple[str, ...]:
@@ -386,6 +394,47 @@ class AbstractMultifeatureDataclass(abc.ABC):
     def __post_init__(self):
         self.aggregated_date = datetime.datetime.now()
 
+    def get_dynamic_field(self, feature_name: str) -> Any:
+        """ Retrieves the value of a dynamicaly declared attribute from the object.
+
+        :param feature_name: The name of the attribute to retrieve.
+        :return: The value of the requested attribute.
+        """
+        # (CRITICAL) ToDo: unit-test (ref task TCT-39)
+        return self.__getattribute__(feature_name)
+
+    def set_dynamic_field(self, feature_name: str, value: Any) -> None:
+        """ Updates or creates a dynamic attribute on an object.
+
+        :param feature_name: The name of the attribute to update or create.
+        :param value: The value to assign to the attribute.
+        :return: None
+        """
+        # (CRITICAL) ToDo: unit-test (ref task TCT-39)
+        self.__setattr__(feature_name, value)
+        return None
+
+    def fetch_nested_attribute(self, nested_attribute_list: str) -> Any:
+        """ Retrieves a nested attribute from an object based on a dot-separated string.
+
+        This function allows accessing nested attributes of an object dynamically, based on a
+        string representation of the attribute's hierarchical structure.
+        It takes a dot-separated attribute name, traverses the object's nested levels
+        sequentially, and retrieves the final attribute
+        e.g., "topic_odom.pose.pose.position_x" would sequentialy crawl into nested container
+        "topic_odom" -> "pose" -> "pose" -> "position_x".
+
+        Example:
+
+            >>> position_x_value = self.fetch_nested_attribute("topic_odom.pose.pose.position_x")
+
+        :param nested_attribute_list: A dot-separated string representing the hierarchical
+          structure of the attribute to retrieve.
+        :return: The value of the resolved nested attribute.
+        """
+        # (CRITICAL) ToDo: unit-test (ref task TCT-39)
+        return _fetch_nested_attribute(self, nested_attribute_list)
+
     def __str__(self):
         """User representation. Handle dynamical property added at run time"""
         t_sp = " " * 0
@@ -408,3 +457,10 @@ class AbstractMultifeatureDataclass(abc.ABC):
     def summary(self) -> None:
         print(self)
         return None
+
+
+def _fetch_nested_attribute(self_, nested_attribute_list: str) -> Any:
+    nested_attribute = self_
+    for each in nested_attribute_list.split('.'):
+        nested_attribute = nested_attribute.get_dynamic_field(each)
+    return nested_attribute

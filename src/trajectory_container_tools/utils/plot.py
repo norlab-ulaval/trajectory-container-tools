@@ -33,17 +33,8 @@ def plot_trajectory_2d(
         trajectory.
     """
 
-    nested_container = trajectory_data
-    for each_x_axis_attribute in x_axis_topic.split('.'):
-        nested_container = nested_container.__getattribute__(each_x_axis_attribute) #topic_odom.pose.pose.position_x
-
-    x_pos = nested_container
-
-    nested_container = trajectory_data
-    for each_y_axis_attribute in y_axis_topic.split('.'):
-        nested_container = nested_container.__getattribute__(each_y_axis_attribute) #topic_odom.pose.pose.position_y
-
-    y_pos = nested_container
+    x_pos = trajectory_data.fetch_nested_attribute(x_axis_topic)
+    y_pos = trajectory_data.fetch_nested_attribute(y_axis_topic)
 
     fig, ax = plt.subplots(figsize=(10, 8))
 
@@ -75,5 +66,8 @@ def plot_trajectory_2d(
     ax.legend()
     ax.grid(True, alpha=0.3)
     ax.set_aspect('equal')
+
+    plt.tight_layout()
+    plt.show()
 
     return fig, ax

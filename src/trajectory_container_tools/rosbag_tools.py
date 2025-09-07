@@ -201,6 +201,7 @@ def extract_single_feature_from_rosbag(
 
         # .... Crawl topic msgs ...................................................................
         with Reader(rosbag_path) as reader:
+
             connections = [conn for conn in reader.connections if conn.topic == feature_name]
             _selected_topic_msg_count = len(connections)
             if _selected_topic_msg_count == 0:
