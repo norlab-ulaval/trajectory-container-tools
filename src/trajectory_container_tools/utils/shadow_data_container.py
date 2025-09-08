@@ -5,10 +5,8 @@ from typing import Dict, List, Optional, Type, Union, TypeAlias
 import numpy as np
 from tqdm import tqdm
 
-from .general import extract_class_name_from_type
-from .optimization import process_large_arrays_parallel
-from ..trj_dataclasses.rosbag_feature_dataclass import \
-    RosBagFeatureDataclass
+from .general import extract_class_name_from_type, setup_progressbar
+from ..trj_dataclasses.rosbag_feature_dataclass import RosBagFeatureDataclass
 from ..trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
 from .data_sanity_checks import timestamp_causal_ordering_sanity_check
 
@@ -61,78 +59,63 @@ def post_process_shadown_data_container(shadow_data_container: ShadowDataContain
                                             Type[RosBagFeatureDataclass], Type[
                                                 NestedBaseTrajectoryDataclass]],
                                         feature_name: Optional[str],
-                                        enable_multiprocessing: bool = True,
-                                        n_jobs=-1,
-                                        chunk_size=1000) -> ShadowDataContainer:
+                                        progressbar_enabled=True) -> ShadowDataContainer:
     """
     Post-processes a ShadowDataContainer containing various data elements while ensuring proper
     handling of nested data types and arrays.
 
     This function processes a ShadowDataContainer by removing unused keys, validating data
     integrity based on the provided data container type, and managing different cases for nested
-    and array-like data. It supports parallel processing for large arrays.
+    and array-like data.
 
     :param shadow_data_container: The data container shadowing data_container_type.
     :param data_container_type: The expected type of data container. It must
         be a class type that is either RosBagFeatureDataclass or NestedBaseTrajectoryDataclass.
     :param feature_name: The name of the specific feature process by non-nested data container.
-    :param enable_multiprocessing: Process large array in parallel or sequentially otherwise.
-        Default to True.
-    :param chunk_size: The size of chunks for processing large arrays in parallel. Default to 1000.
-    :param n_jobs: The number of parallel jobs for processing arrays.
-        Default is -1, which typically uses all available processors.
+    :param progressbar_enabled:
     :return: The processed ShadowDataContainer with the updated structure and values.
     """
     # (NICE TO HAVE) ToDo: unit-test explicitly (ref task RLRP-83). Its indirectly tested for now.
-    # (NICE TO HAVE) inprogress: Optimize speed and memory management 💎.
-
-    progressbar = tqdm(total=len(shadow_data_container.keys()),
-                       desc=f"[TCT] Post-process rosbag data for "
-                            f"{extract_class_name_from_type(data_container_type)}")
-
-    del shadow_data_container['timestep_index']
 
     if not issubclass(data_container_type, NestedBaseTrajectoryDataclass):
         shadow_data_container["feature_name"] = feature_name
     else:
         # Nested trj container should not populate 'feature_name'
         del shadow_data_container['feature_name']
+    del shadow_data_container['timestep_index']
 
     if issubclass(data_container_type, RosBagFeatureDataclass):
         shadow_data_container["timestamps"] = shadow_data_container["timestamps"]['data']
         validate_timestamp_integrity(data_container_type, feature_name, shadow_data_container)
         del shadow_data_container['type']
 
+    if progressbar_enabled:
+        print(
+            f"[TCT] Post-process rosbag data and configure "
+            f"{extract_class_name_from_type(data_container_type)} container")
+        progressbar = setup_progressbar(len(list(shadow_data_container.items())))
+
     for k, v in shadow_data_container.items():
         if isinstance(v, dict) and v.get('type') is not None:
             target_type = v.get('type')
             if issubclass(target_type, np.ndarray):
                 assert isinstance(v['data'], list)
-                shadow_data_container[k] = process_large_arrays_parallel(v['data'],
-                                                                         enable_multiprocessing,
-                                                                         n_jobs=n_jobs,
-                                                                         chunk_size=chunk_size)
+                shadow_data_container[k] = np.array(v['data'])
             elif issubclass(target_type, NestedBaseTrajectoryDataclass):
-                ppsdc = post_process_shadown_data_container(v,
-                                                            data_container_type=target_type,
+                ppsdc = post_process_shadown_data_container(v, data_container_type=target_type,
                                                             feature_name=None,
-                                                            enable_multiprocessing=enable_multiprocessing,
-                                                            n_jobs=n_jobs,
-                                                            chunk_size=chunk_size)
+                                                            progressbar_enabled=False
+                                                            )
                 del ppsdc['type']
                 shadow_data_container[k] = target_type(**ppsdc)
         elif isinstance(v, list):
-            if k == "timestamps":
-                shadow_data_container[k] = np.array(v)
-            else:
-                shadow_data_container[k] = process_large_arrays_parallel(v,
-                                                                         enable_multiprocessing,
-                                                                         n_jobs=n_jobs,
-                                                                         chunk_size=chunk_size)
+            shadow_data_container[k] = np.array(v)
 
-        progressbar.update(1)
+        if progressbar_enabled:
+            progressbar.update(1)
 
-    progressbar.close()
+    if progressbar_enabled:
+        progressbar.close()
     return shadow_data_container
 
 

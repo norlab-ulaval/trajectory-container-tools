@@ -38,30 +38,14 @@ def profiler_run():
 
     assert os.path.exists(rosbag_path)
 
-    print(f"\n\n{detect_docker_cpu_limits()}\n\n")
+    detect_docker_cpu_limits()
 
     container: Union[NavMsgsOdometry, RosBagFeatureDataclass]
-    for each_chunck_size in [5000, 1000]:
-        for each_job in [6, 3]:
-            print(f"\n\n[TCT] === each_chunck_size: {each_chunck_size}, each_job: {each_job} ==========")
-            container = extract_single_feature_from_rosbag(
-                    rosbag_path=Path(rosbag_path),
-                    feature_name="/odom",
-                    data_container_type=NavMsgsOdometry,
-                    enable_multiprocessing=True,
-                    chunk_size=each_chunck_size,
-                    n_jobs=each_job
-                    )
 
-    print(f"\n\n[TCT] === multiprocess disabled ====================================================")
-    container = extract_single_feature_from_rosbag(
-            rosbag_path=Path(rosbag_path),
-            feature_name="/odom",
-            data_container_type=NavMsgsOdometry,
-            enable_multiprocessing=False,
-            chunk_size=0,
-            n_jobs=0
-            )
+    print(f"\n[TCT] === Profiling run ====================================================")
+    container = extract_single_feature_from_rosbag(rosbag_path=Path(rosbag_path),
+                                                   feature_name="/odom",
+                                                   data_container_type=NavMsgsOdometry)
 
     # Minimum logic to validate run success
     print(container)

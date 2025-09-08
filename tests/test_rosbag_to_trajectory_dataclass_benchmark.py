@@ -25,9 +25,9 @@ def setup_rosbag_from_external_data_dir() -> Path:
     # BAG = "2024-03-21_14-52-35"  # ★★ 8408 timestpes
     # BAG = "2024-03-21_15-01-04" # empty
     # BAG = "2024-03-21_15-03-19" # empty
-    # BAG = "2024-03-21_15-14-09"  # ★★ 63063 timesteps
+    BAG = "2024-03-21_15-14-09"  # ★★ 63063 timesteps
     # BAG = "2024-03-21_15-26-13" # ★ 35128 timesteps
-    BAG = "2024-03-21_15-35-28" # ★ 179236 timesteps
+    # BAG = "2024-03-21_15-35-28" # ★ 179236 timesteps
     rosbag_path = os.path.join("external_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
 
     # .... Construct absolute path to demo data for tests execution ...............................
@@ -43,44 +43,34 @@ def setup_rosbag_from_external_data_dir() -> Path:
     return Path(rosbag_path)
 
 
-def benchmark_extract_single_feature_from_rosbag(bag_path: Path, t_enable_multiprocessing: bool,
-                                                 t_n_jobs: int, t_chunk_size: int):
+def benchmark_extract_single_feature_from_rosbag(bag_path: Path, ):
     """Standalone function for benchmarking - avoids pickling issues with Joblib"""
-    return extract_single_feature_from_rosbag(
-            rosbag_path=bag_path,
-            feature_name="/odom",
-            data_container_type=NavMsgsOdometry,
-            enable_multiprocessing=t_enable_multiprocessing,
-            n_jobs=t_n_jobs,
-            chunk_size=t_chunk_size,
-            )
+    return extract_single_feature_from_rosbag(rosbag_path=bag_path, feature_name="/odom",
+                                              data_container_type=NavMsgsOdometry)
 
 
-@pytest.mark.parametrize(
-        argnames="t_enable_multiprocessing, t_n_jobs, t_chunk_size",
-        argvalues=[
-                (True, 8, 50000),
-                (True, 4, 50000),
-                (True, 8, 20000),
-                (True, 4, 20000),
-                (False, 0, 0)
-                ],
-        ids=[
-                'Multiprocessing enabled, n_jobs 8, chunk size 50000',
-                'Multiprocessing enabled, n_jobs 4, chunk size 50000',
-                'Multiprocessing enabled, n_jobs 8, chunk size 20000',
-                'Multiprocessing enabled, n_jobs 4, chunk size 20000',
-                'Multiprocessing disabled']
-        )
-def test_extract_rosbag_benchmark(benchmark, setup_rosbag_from_external_data_dir,
-                                  t_enable_multiprocessing, t_n_jobs, t_chunk_size):
+# @pytest.mark.parametrize(
+#         argnames="t_enable_multiprocessing, t_n_jobs, t_chunk_size",
+#         argvalues=[
+#                 (True, 8, 50000),
+#                 (True, 4, 50000),
+#                 (True, 8, 20000),
+#                 (True, 4, 20000),
+#                 (False, 0, 0)
+#                 ],
+#         ids=[
+#                 'Multiprocessing enabled, n_jobs 8, chunk size 50000',
+#                 'Multiprocessing enabled, n_jobs 4, chunk size 50000',
+#                 'Multiprocessing enabled, n_jobs 8, chunk size 20000',
+#                 'Multiprocessing enabled, n_jobs 4, chunk size 20000',
+#                 'Multiprocessing disabled']
+#         )
+def test_extract_rosbag_benchmark(benchmark, setup_rosbag_from_external_data_dir):
     container: Union[NavMsgsOdometry, RosBagFeatureDataclass]
 
     container = benchmark(benchmark_extract_single_feature_from_rosbag,
                           bag_path=setup_rosbag_from_external_data_dir,
-                          t_enable_multiprocessing=t_enable_multiprocessing,
-                          t_n_jobs=t_n_jobs,
-                          t_chunk_size=t_chunk_size)
+                          )
 
     # Minimum logic to validate run success
     print(container)

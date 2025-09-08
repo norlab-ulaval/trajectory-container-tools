@@ -1,14 +1,15 @@
 # coding=utf-8
 from pickle import PicklingError
 import multiprocessing as mp
+from typing import Any, Callable
+
 import psutil
 from joblib import Parallel, delayed
 import os
 import numpy as np
 
 
-def process_large_arrays_parallel(data_list, enable: bool = True, n_jobs=-1, chunk_size=1000,
-                                  debug: bool = False):
+def process_large_arrays_parallel(data_list, enable: bool = True, n_jobs=-1, chunk_size=1000, debug: bool = False, array_func: Callable = np.array):
     """
     Processes a large list of data into a numpy array, with optional parallelization and chunking.
 
@@ -23,6 +24,7 @@ def process_large_arrays_parallel(data_list, enable: bool = True, n_jobs=-1, chu
     :param chunk_size: The size of each chunk in which the data will be divided. Defaults to 1000.
     :param n_jobs: The number of parallel jobs to run.
         Defaults to -1, which uses all available CPUs.
+    :param array_func: A numpy function. Default to np.array
     :param debug: Show debug information
     :return: A numpy array representing the processed input list.
     """
@@ -42,7 +44,7 @@ def process_large_arrays_parallel(data_list, enable: bool = True, n_jobs=-1, chu
             verbose = 8
 
         chunk_results = Parallel(n_jobs=n_jobs, backend='loky', verbose=verbose)(
-                delayed(np.array)(chunk) for chunk in chunks
+                delayed(array_func)(chunk) for chunk in chunks
                 )
 
         return np.concatenate(chunk_results)
@@ -92,12 +94,10 @@ def detect_docker_cpu_limits():
     is_docker = os.path.exists('/.dockerenv') or os.path.exists('/proc/1/cgroup')
 
     print((
-            f"\n"
-            f"  Multiprocessing CPU count: {mp_cpu_count}"
-            f"  OS CPU count: {os_cpu_count}"
-            f"  Docker CPU limit: {docker_cpu_limit}"
-            f"  Running in Docker: {is_docker}"
-            f"\n"
+            f"      Multiprocessing CPU count: {mp_cpu_count}\n"
+            f"      OS CPU count: {os_cpu_count}\n"
+            f"      Docker CPU limit: {docker_cpu_limit}\n"
+            f"      Running in Docker: {is_docker}"
     ))
 
     # Determine optimal worker count

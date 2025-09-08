@@ -1,8 +1,9 @@
 # coding=utf-8
 import re
-from typing import Type
+from typing import NoReturn, Type
 
 import numpy as np
+from tqdm import tqdm
 
 
 # :::: Numpy utilities ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -75,3 +76,9 @@ def camelcase_to_snake_case(name: str) -> str:
 
 def _extract_right_most_name_from_class_str(class_str: str):
     return class_str.lstrip("<").rstrip("'>").split(".")[-1]
+
+
+def setup_progressbar(feature_msg_len: int) -> tqdm:
+    progressbar = tqdm(total=feature_msg_len, desc="       ↳ ",
+                       bar_format="{desc}{percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}")
+    return progressbar

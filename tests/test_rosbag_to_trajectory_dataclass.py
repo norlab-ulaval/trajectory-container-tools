@@ -76,8 +76,8 @@ class TestExtractROSBagFeature:
 
     def test_extract_single_feature_from_rosbag(self, setup_rosbag_from_tests_dir):
         container = extract_single_feature_from_rosbag(
-                rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name="/odom",
-                data_container_type=NavMsgsOdometry)
+            rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name="/odom",
+            data_container_type=NavMsgsOdometry)
 
         print(container)
 
@@ -87,8 +87,8 @@ class TestExtractROSBagFeature:
     def test_populate_nested_trajectory_dataclass(self, setup_rosbag_from_tests_dir):
         container: Union[NavMsgsOdometry, RosBagFeatureDataclass]
         container = extract_single_feature_from_rosbag(
-                rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name="/odom",
-                data_container_type=NavMsgsOdometry)
+            rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name="/odom",
+            data_container_type=NavMsgsOdometry)
 
         print(container)
 
@@ -118,8 +118,8 @@ class TestExtractROSBagFeature:
         with pytest.raises(AttributeError):
             # noinspection PyTypeChecker
             container = extract_single_feature_from_rosbag(
-                    rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name=fn,
-                    data_container_type=bad_argument)
+                rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name=fn,
+                data_container_type=bad_argument)
 
     def test_fail_no_existing_feature(self, setup_rosbag_from_tests_dir):
         with pytest.raises(ValueError):
