@@ -221,6 +221,8 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
                     list(reader.messages(connections=connections, start=start, stop=stop)))
             print(f"[TCT] Collect topic {feature_name} msg from rosbag")
             progressbar = setup_progressbar(feature_msg_len)
+
+            # (NICE TO HAVE) ToDo: Move rosbag msg reader logic to recursive loop leaf (ref task TCT-40)
             for connection, timestamp, rawdata in reader.messages(connections=connections,
                                                                   start=start, stop=stop):
                 progressbar.update(1)
@@ -252,16 +254,6 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
     return data_container_type(**shadow_data_container)
 
 
-def set_timestamp(msg, bag_timestamp, use_msg_header_time: bool = True) -> int:
-    # (NICE TO HAVE) ToDo: unit-test (curently indirectly tested)
-    if use_msg_header_time:
-        _timestamp = RosTime(seconds=msg.header.stamp.sec, nanoseconds=msg.header.stamp.nanosec)
-    else:
-        _timestamp = bag_timestamp
-
-    return _timestamp
-
-
 def _collect_properties_from_rosbag(
         data_container_type: Union[Type[RosBagFeatureDataclass], Type[BaseTrajectoryDataclass]],
         feature_name: str,
@@ -271,32 +263,28 @@ def _collect_properties_from_rosbag(
 
     for each_property_name in data_container_type.get_dimension_names():
         try:
-            # (NICE TO HAVE) ToDo: assess moving rosbag reader here for collecting non-trj data
-            # (ref task TCT-39)
             if each_property_name in ["header_FrameId", "childFrameId"]:
+                # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling non-trj data
                 if shadow_data_container[each_property_name] is None:
                     if each_property_name == "header_FrameId":
                         shadow_data_container[each_property_name] = msg.header.frame_id
                     elif each_property_name == "childFrameId":
                         shadow_data_container[each_property_name] = msg.child_frame_id
-            # elif each_property_name in data_container_type.trajectory_metadata_field():
-            #     pass
             elif each_property_name == "timestamps":
+                # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling trj data
                 shadow_data_container[each_property_name]['data'].append(
-                        set_timestamp(msg, timestamp, use_msg_header_time=True)
+                        _set_timestamp(msg, timestamp, use_msg_header_time=True)
                         )
             else:
                 attribute_list = str(each_property_name).split("_")
                 attribute_parent = msg
-
-                # Recurse classe attribute
-                # Example:
-                #  - 'msg_pose_pose_position_x' -> 'msg.pose.pose.position.x'
-                #  - 'drive_SteeringAngleVelocity' -> 'drive.steering_angle_velocity'
                 for each_child in attribute_list:
+                    # Recurse classes attribute e.g.,:
+                    #  - 'msg_pose_pose_position_x' -> 'msg.pose.pose.position.x'
+                    #  - 'drive_SteeringAngleVelocity' -> 'drive.steering_angle_velocity'
 
                     # Handle case where key is multi-word e.g.,
-                    # 'SteeringAngleVelocity' -> 'steering_angle_velocity'
+                    #  'SteeringAngleVelocity' -> 'steering_angle_velocity'
                     each_child = camelcase_to_snake_case(each_child)
 
                     attribute_parent = getattr(attribute_parent, each_child)
@@ -311,12 +299,10 @@ def _collect_properties_from_rosbag(
                             shadow_data_container=shadow_data_container[each_property_name])
                 elif issubclass(shadow_data_container[each_property_name]['type'],
                                 (list, np.ndarray)):
-                    # (NICE TO HAVE) ToDo: assess moving rosbag reader here for collecting trj
-                    # data (ref task TCT-39)
+                    # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling trj data
                     shadow_data_container[each_property_name]['data'].append(attribute_parent)
                 else:
-                    # (NICE TO HAVE) ToDo: assess moving rosbag reader here for collecting trj
-                    # data (ref task TCT-39)
+                    # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling trj data
                     shadow_data_container[each_property_name]['data'] = attribute_parent
 
         except KeyError as e:
@@ -327,6 +313,16 @@ def _collect_properties_from_rosbag(
                     )
 
     return shadow_data_container
+
+
+def _set_timestamp(msg, bag_timestamp, use_msg_header_time: bool = True) -> int:
+    # (NICE TO HAVE) ToDo: unit-test (curently indirectly tested)
+    if use_msg_header_time:
+        _timestamp = RosTime(seconds=msg.header.stamp.sec, nanoseconds=msg.header.stamp.nanosec)
+    else:
+        _timestamp = bag_timestamp
+
+    return _timestamp
 
 
 def _dataclass_type_is_type_name(
