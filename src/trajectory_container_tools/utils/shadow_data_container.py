@@ -84,7 +84,7 @@ def post_process_shadown_data_container(shadow_data_container: ShadowDataContain
     :return: The processed ShadowDataContainer with the updated structure and values.
     """
     # (NICE TO HAVE) ToDo: unit-test explicitly (ref task RLRP-83). Its indirectly tested for now.
-    # (NICE TO HAVE) ToDo: Optimize speed and memory management 💎.
+    # (NICE TO HAVE) inprogress: Optimize speed and memory management 💎.
 
     progressbar = tqdm(total=len(shadow_data_container.keys()),
                        desc=f"[TCT] Post-process rosbag data for "
@@ -159,8 +159,8 @@ def validate_timestamp_integrity(
             shadow_data_container = fix_sequence_ordering_base_on_timestamps(
                     shadow_data_container, data_container_type
                     )
-
-        timestamp_causal_ordering_sanity_check(shadow_data_container)
+            # Re-check after the fix attempt
+            timestamp_causal_ordering_sanity_check(shadow_data_container)
 
     except AssertionError as e:
         raise ValueError(

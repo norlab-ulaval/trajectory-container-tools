@@ -8,7 +8,7 @@ import pandas as pd
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
     CmdSkidSteer, CmdStandard, StatePose2D,
     )
-from trajectory_container_tools import dataframe_tools as dtd
+from trajectory_container_tools import dataframe_to_tct as dtd
 from trajectory_container_tools.trj_dataclasses import (
     abstract_trajectory_dataclass as atd,
 )

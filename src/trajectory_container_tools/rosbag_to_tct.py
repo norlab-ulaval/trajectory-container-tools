@@ -1,15 +1,18 @@
 # coding=utf-8
 import os
+from collections import namedtuple
 from pathlib import Path
-
-from rclpy.time import Time as RosTime
-from tqdm import tqdm
-import numpy as np
 from dataclasses import make_dataclass
 from typing import Any, Dict, Optional, Tuple, Type, Union
 
+from joblib import Parallel, delayed
+from rosbags.highlevel import AnyReader
+from tqdm import tqdm
+import numpy as np
+
 from rosbags.rosbag2 import Reader
 from rosbags.typesys import Stores, get_typestore
+from rclpy.time import Time as RosTime
 
 from .trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
@@ -23,6 +26,7 @@ from .utils.factory import (
     TrjDataClassFeatureSpecification,
     trajectory_dataclass_factory,
     )
+from .utils.optimization import detect_docker_cpu_limits
 from .utils.general import camelcase_to_snake_case, extract_class_name_from_type
 from .utils.shadow_data_container import (
     ShadowDataContainer, instanciate_shadow_data_container,
@@ -161,7 +165,7 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
                                        data_container_type: Type[RosBagFeatureDataclass],
                                        start: Optional[int] = None, stop: Optional[int] = None,
                                        enable_multiprocessing=True, n_jobs=-1,
-                                       chunk_size=2000) -> RosBagFeatureDataclass:
+                                       chunk_size=5000) -> RosBagFeatureDataclass:
     """
     Extracts a specific feature from a ROS bag file and returns it in a structured data container.
 
@@ -210,11 +214,13 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
         shadow_data_container = instanciate_shadow_data_container(data_container_type)
 
         # .... Crawl topic msgs ...................................................................
-        with Reader(rosbag_path) as reader:
+        # with Reader(rosbag_path) as reader:
+        typestore = get_typestore(Stores[f"ros2_{os.getenv('ROS_DISTRO')}".upper()])
+        with AnyReader([rosbag_path], default_typestore=typestore) as reader:
 
             connections = [conn for conn in reader.connections if conn.topic == feature_name]
-            _selected_topic_msg_count = len(connections)
-            if _selected_topic_msg_count == 0:
+            selected_topic_msg_count = len(connections)
+            if selected_topic_msg_count == 0:
                 raise ValueError(
                         f"[TCT error] Topic `{feature_name}` does not exist in "
                         f"{os.path.basename(rosbag_path)} "
@@ -222,23 +228,45 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
 
             print(f"[TCT] Extract single feature from rosbag › seeking {feature_name}")
             if _dataclass_type_is_type_name(data_container_type, "Tf2MsgsTFMessage"):
+                # This is a one-time warning (ref task TCT-11)
                 print("[TCT] Skipping msg type 'transforms'")
 
-            progressbar = tqdm(total=_selected_topic_msg_count,
+            progressbar = tqdm(total=reader.message_count,
                                desc="[TCT] Collect properties from rosbag")
             for connection, timestamp, rawdata in reader.messages(
                     connections=connections, start=start, stop=stop
                     ):
                 progressbar.update(1)
 
-                typestore = get_typestore(Stores[f"ros2_{os.getenv('ROS_DISTRO')}".upper()])
-                msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
+                # msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
+                msg = reader.deserialize(rawdata, connection.msgtype)
 
-                # Note: this is a quick hack for dealing with topic msg with embedded msg type
-                #       (ref task RLRP-95)
+                # Note: this is a tmp quick-hack for dealing with Tf2MsgsTFMessage topic msg with
+                #       embedded msg type (ref task TCT-11)
+                # (NICE TO HAVE) ToDo: add nested logic to Tf2MsgsTFMessage and delete quick-hack (ref task TCT-11)
                 if _dataclass_type_is_type_name(data_container_type, "Tf2MsgsTFMessage"):
                     msg = getattr(msg, "transforms")
                     msg = msg.pop()
+
+                # .... compute cpu and intervalle chunk ...........................................
+                # cpu_count = detect_docker_cpu_limits()
+                # duration_per_cpu = reader.duration // cpu_count
+                # trajectory_cpu_splits = []
+                # trajectory_cpu_interval = namedtuple('TrajectoryCpuInterval',
+                #                                      ['order', 'start', 'stop'])
+                # interval_start = reader.start_time
+                # interval_stop = interval_start + duration_per_cpu
+                # for each in range(cpu_count):
+                #     trajectory_cpu_splits.append(
+                #             trajectory_cpu_interval(order=each, start=interval_start,
+                #                                     stop=interval_stop))
+                #     interval_start += duration_per_cpu
+                #     interval_stop += duration_per_cpu
+                #
+                # assert interval_stop <= reader.end_time
+
+                # (CRITICAL) ToDo: refator algo to perform each row full trajectory first instead of each row timestep first i.e., move rosbag reader lower and container key iteration higher (ref task TCT-39)
+                # raise NotImplementedError("(CRITICAL) ToDo: implement <-- we are here")
 
                 # ... Fetch properties from rosbag ................................................
                 shadow_data_container = _collect_properties_from_rosbag(
@@ -248,17 +276,19 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
 
             progressbar.close()
 
-            shadow_data_container = post_process_shadown_data_container(shadow_data_container,
-                                                                        data_container_type,
-                                                                        feature_name,
-                                                                        enable_multiprocessing,
-                                                                        n_jobs,
-                                                                        chunk_size
-                                                                        )
+        # .... Post-process rosbag data and create data container .................................
+        if enable_multiprocessing:
+            # Detect actual available CPUs in Docker environment
+            if n_jobs == -1:
+                n_jobs = detect_docker_cpu_limits()
 
-            # .... Validate data integrity ........................................................
-            shadow_data_container = validate_timestamp_integrity(data_container_type, feature_name,
-                                                                 shadow_data_container)
+        shadow_data_container = post_process_shadown_data_container(shadow_data_container,
+                                                                    data_container_type,
+                                                                    feature_name,
+                                                                    enable_multiprocessing,
+                                                                    n_jobs,
+                                                                    chunk_size
+                                                                    )
 
     # noinspection PyArgumentList
     return data_container_type(**shadow_data_container)
@@ -283,6 +313,7 @@ def _collect_properties_from_rosbag(
 
     for each_property_name in data_container_type.get_dimension_names():
         try:
+            # (CRITICAL) ToDo: assess moving rosbag reader here for collecting non-trj data (ref task TCT-39)
             if each_property_name in ["header_FrameId", "childFrameId"]:
                 if shadow_data_container[each_property_name] is None:
                     if each_property_name == "header_FrameId":
@@ -321,8 +352,10 @@ def _collect_properties_from_rosbag(
                             shadow_data_container=shadow_data_container[each_property_name])
                 elif issubclass(shadow_data_container[each_property_name]['type'],
                                 (list, np.ndarray)):
+                    # (CRITICAL) ToDo: assess moving rosbag reader here for collecting trj data (ref task TCT-39)
                     shadow_data_container[each_property_name]['data'].append(attribute_parent)
                 else:
+                    # (CRITICAL) ToDo: assess moving rosbag reader here for collecting trj data (ref task TCT-39)
                     shadow_data_container[each_property_name]['data'] = attribute_parent
 
         except KeyError as e:
