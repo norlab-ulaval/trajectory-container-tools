@@ -52,7 +52,6 @@
 <br>
 
 [//]: # ( ==== Maintainer ============================================ ) 
-[//]: # (TODO: Change the maintainer name)
 <sub>
 Maintainer <a href="https://github.com/RedLeader962">RedLeader962</a>
 </sub>
@@ -62,12 +61,157 @@ Maintainer <a href="https://github.com/RedLeader962">RedLeader962</a>
 </div>
 
 [//]: # ( ==== Body ================================================== ) 
-[//]: # (TODO: Make it your own)
 
-### Clone repository
 
-```shell
-git clone https://github.com/norlab-ulaval/trajectory-container-tools.git
+## What it does
+
+**Trajectory Container Tools (TCT)** is a Python library designed to simplify the management and analysis of trajectory data from various sources. It provides:
+
+- **Trajectory Dataclasses**: 
+  - Type-safety for different trajectory formats (e.g., 2D/3D poses, velocities, commands)
+  - Timesteps iterable object over the trajectory horizon
+  - Data causality validation i.e., guarantee to have strictly monotonicaly increassing timestamps
+- **Data Converters**: Extract trajectory data from pandas DataFrames and ROS bags
+- **Factory Functions**: Dynamically create trajectory containers based on configuration
+- **Utilities**: Timestamps ordering validation, container timestamp alignment check, plotting, and filtering tools
+
+Whether you're working with robotics research, autonomous systems, or trajectory analysis, TCT provides a unified interface for handling trajectory data across different formats and sources.
+
+## Why
+
+### 🎯 **Unified Data Interface**
+- Aggregate data in one trajectory wide iterable object
+- Type-safe dataclasses ensure data integrity and provide clear structure
+- Work with trajectory data from multiple sources (DataFrames, ROS bags, direct instantiation) using a consistent API
+
+### 🔧 **Flexible & Extensible**  
+- Factory pattern allows dynamic creation of trajectory containers
+- Easy to extend with custom trajectory types and post-processing callback logic
+- Support for both single trajectories and multi-feature datasets
+
+### 🚀 **Research-Ready**
+- Built for robotics and AI research workflows
+- Optimized for batch processing and analysis
+- Integration with common research tools (pandas, matplotlib, ROS2)
+
+### ✅ **Data Validation**
+- Automatic sanity checks for trajectory data consistency
+- Timestamp validation and monotonicity checks
+- Dimension and shape validation
+
+## How Does It Work?
+
+TCT follows a simple three-step process:
+
+### 1. **Data Source** → 2. **Converter** → 3. **Trajectory Container**
+
+#### From direct instantiation 
+```python
+from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import StatePose2D
+
+trajectory = StatePose2D(feature_name="odom pose",
+                         x=np.arange(100, dtype=float),
+                         y=np.arange(100, dtype=float),
+                         yaw=np.arange(100, dtype=float),
+                         timestep_index=np.arange(100, dtype=int),
+                         )
 ```
+             
+#### From ROS bag
+```python
+from trajectory_container_tools.rosbag_to_tct import aggregate_multiple_features_from_rosbag
+from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import NavMsgsOdometry,
+    AckermannMsgsAckermannDriveStamped
+
+dataset_info = f"Warthog Mont-Morency {datetime.now()}"
+features_config = {"/odom": NavMsgsOdometry, "/teleop": AckermannMsgsAckermannDriveStamped}
+
+trajectory = aggregate_multiple_features_from_rosbag(rosbag_path, dataset_info, features_config)
+
+len(trajectory.topic_odom.pose)
+# 3120
+```
+
+#### From pandas DataFrame
+```python
+from datetime import datetime
+import numpy as np
+from trajectory_container_tools.dataframe_to_tct import aggregate_multiple_features_from_dataframe
+from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import StatePose2DSteadyState
+
+dataset_info = f"Warthog Mont-Morency {datetime.now()}"
+features_config = {'icp_vel': StatePose2DSteadyState, 'idd_vel': StatePose2DSteadyState, }
+
+trajectory = aggregate_multiple_features_from_dataframe(dataframe, dataset_info, features_config)
+
+assert trajectory.idd_vel.x.shape == trajectory.icp_vel.x.shape
+# True
+```
+
+#### Create your own custom data trajectory container
+```python
+from trajectory_container_tools.trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
+
+
+class CustomStatePose2D(BaseTrajectoryDataclass)
+    x: np.ndarray
+    y: np.ndarray
+    yaw: np.ndarray
+
+```
+
+## Getting started
+
+### Option 1: Clone and Install with pip
+
+```bash
+# Clone the repository
+git clone https://github.com/norlab-ulaval/trajectory-container-tools.git
+cd trajectory-container-tools
+
+# Install in development mode
+pip install -e .
+
+# Or install from PyPI (when available)
+pip install trajectory-container-tools
+```
+
+### Option 2: Using DNA (Dockerized-NorLab Application)
+
+```bash
+# Build and run the container
+cd trajectory-container-tools
+dna build develop
+dna up
+```
+
+The DNA approach provides a containerized environment with all dependencies pre-installed, ideal for reproducible research and development.
+
+## Examples
+
+Interactive Jupyter notebook examples:
+
+- **[Dataclass Usage Examples](notebooks/dataclass_usage_example.ipynb)** - Direct trajectory container instantiation
+- **[ROS Bag Usage Examples](notebooks/rosbag_usage_example.ipynb)** - Extract trajectory data from ROS bags
+- **[DataFrame Usage Examples](notebooks/dataframe_usage_example.ipynb)** - Convert pandas DataFrames to trajectory containers
+
+## Documentation
+
+📚 **[Full Documentation](documentation/README.md)**
+
+- [ROS Bag Usage](documentation/rosbag_usage.md)  
+- [Pandas DataFrame Usage](documentation/dataframe_usage.md)
+- [Direct Instantiation](documentation/direct_instantiation.md)
+
+[//]: # (## Contributing)
+
+[//]: # ()
+[//]: # (We welcome contributions! Please see our [contribution guidelines]&#40;CONTRIBUTING.md&#41; for details.)
+
+[//]: # ()
+[//]: # (## License)
+
+[//]: # ()
+[//]: # (This project is licensed under the MIT License - see the [LICENSE]&#40;LICENSE&#41; file for details.)
 
 
