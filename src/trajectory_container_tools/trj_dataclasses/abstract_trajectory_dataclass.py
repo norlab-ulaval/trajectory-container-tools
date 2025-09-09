@@ -210,6 +210,9 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
     def trajectory_len(self) -> int:
         return self.timestep_index.size
 
+    def __len__(self):
+        return self.trajectory_len
+
     def ravel_dimensions_in_place(self) -> None:
         """
         Ravels all NumPy ndarray attributes associated with the object's dimensions in-place.
