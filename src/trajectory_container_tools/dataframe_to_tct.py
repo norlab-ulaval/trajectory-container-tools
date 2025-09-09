@@ -1,4 +1,6 @@
 # coding=utf-8
+import os
+from pathlib import Path
 
 import pandas as pd
 from typing import Dict, Tuple, Type, Union
@@ -6,24 +8,63 @@ from dataclasses import fields as fields, make_dataclass
 
 from trajectory_container_tools.trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
-)
+    )
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import \
     DataframeFeatureDataclass
 
 from trajectory_container_tools.utils.data_sanity_checks import (
     dataframe_timestep_indexing_sanity_check,
-)
+    )
 from trajectory_container_tools.utils.factory import (
     TrjDataClassFeatureSpecification,
     trajectory_dataclass_factory,
-)
+    )
+
+
+def unpack_dataframe_and_show_topic(dataframe_path: Union[str, Path]) -> Tuple[pd.DataFrame, Path]:
+    """
+    Unpack a dataframe from a given file path. Display its columns and content for convenience.
+
+    This function processes a given path to a dataframe file, resolves the absolute path,
+    handles potential Docker environment adjustments, loads the dataframe, and prints its
+    available column labels and a preview of its content. The function finally returns the
+    loaded dataframe and its resolved absolute path.
+
+    :param dataframe_path: Path to the dataframe file.
+    :return: A tuple containing the unpacked dataframe as a `pd.DataFrame` object
+        and the resolved absolute `Path` of the dataframe file.
+    """
+    # .... Construct absolute path to selected dataframe bag ......................................
+    # Handle cases: pycharm-born dna run and shell-born dna run
+    try:
+        assert os.path.exists(dataframe_path)
+    except AssertionError:
+        dn_project_path = os.getenv('DN_PROJECT_PATH')
+        if os.path.exists(dn_project_path):
+            # Case running in a Dockerized-NorLab docker container
+            dataframe_path = os.path.join(dn_project_path, dataframe_path)
+
+        assert os.path.exists(
+            dataframe_path), f"[TCT] dataframe path is unreachable at {dataframe_path}"
+
+    dataframe_path = Path(os.path.realpath(dataframe_path))
+
+    # .... Introspect dataframe header ............................................................
+    print(f"Using dataframe bag: {dataframe_path}")
+    assert os.path.exists(dataframe_path)
+
+    print("Available column label:")
+    dataframe_ = pd.read_pickle(dataframe_path)
+    print(dataframe_.head())
+
+    return dataframe_, Path(dataframe_path)
 
 
 def aggregate_multiple_features_from_dataframe(
-    dataset_frame: pd.DataFrame,
-    dataset_info: str,
-    features_config: Dict[str, Union[Type[DataframeFeatureDataclass], Tuple[str, ...]]],
-) -> AbstractMultifeatureDataclass:
+        dataset_frame: pd.DataFrame,
+        dataset_info: str,
+        features_config: Dict[str, Union[Type[DataframeFeatureDataclass], Tuple[str, ...]]],
+        ) -> AbstractMultifeatureDataclass:
     """Extract multiple features from a dataset (formated in a dataframe) based on a
     configuration dictionary.
 
@@ -57,42 +98,44 @@ def aggregate_multiple_features_from_dataframe(
         if isinstance(feature_dataclass, tuple):
             if len(feature_dataclass) == 1:
                 raise KeyError(
-                    "[TCT error] Check your `features_config` dict. You forgot to specify the '"
-                    f"{feature_name}' "
-                    "dimensions."
-                )
+                        "[TCT error] Check your `features_config` dict. You forgot to specify "
+                        "the '"
+                        f"{feature_name}' "
+                        "dimensions."
+                        )
 
             new_type, *dims = feature_dataclass
             feat_spec = TrjDataClassFeatureSpecification(
-                new_feature_dataclass_type=new_type, dimension_names=tuple(dims)
-            )
+                    new_feature_dataclass_type=new_type, dimension_names=tuple(dims)
+                    )
             feature_dataclass = trajectory_dataclass_factory(
                     specification=feat_spec,
                     trj_dataclass_subclass=DataframeFeatureDataclass)
             feature = extract_single_feature_from_dataframe(
-                dataset=dataset_frame,
-                feature_name=feature_name,
-                data_container_type=feature_dataclass,
-            )
+                    dataset=dataset_frame,
+                    feature_name=feature_name,
+                    data_container_type=feature_dataclass,
+                    )
         elif issubclass(feature_dataclass, DataframeFeatureDataclass):
             feature = extract_single_feature_from_dataframe(
-                dataset=dataset_frame,
-                feature_name=feature_name,
-                data_container_type=feature_dataclass,
-            )
+                    dataset=dataset_frame,
+                    feature_name=feature_name,
+                    data_container_type=feature_dataclass,
+                    )
 
         features_type.append((feature_name, type(feature)))
         features.append(feature)
 
     multifeature = make_dataclass(
-        "multifeature", bases=(AbstractMultifeatureDataclass,), fields=features_type
-    )
+            "multifeature", bases=(AbstractMultifeatureDataclass,), fields=features_type
+            )
     return multifeature(dataset_info, *features)
 
 
 def extract_single_feature_from_dataframe(
-    dataset: pd.DataFrame, feature_name: str, data_container_type: Type[DataframeFeatureDataclass]
-) -> DataframeFeatureDataclass:
+        dataset: pd.DataFrame, feature_name: str,
+        data_container_type: Type[DataframeFeatureDataclass]
+        ) -> DataframeFeatureDataclass:
     """
     Dataframe feature extractor automation function.
 
@@ -124,22 +167,24 @@ def extract_single_feature_from_dataframe(
     try:
         if not issubclass(data_container_type, DataframeFeatureDataclass):
             raise ValueError(
-                f"[TCT error] `{data_container_type}` must be a subclass of "
-                f"`DataframeFeatureDataclass`"
-            )
+                    f"[TCT error] `{data_container_type}` must be a subclass of "
+                    f"`DataframeFeatureDataclass`"
+                    )
     except TypeError as e:
         raise AttributeError(
-            f"[TCT error] `{data_container_type}` must not be instanciated, just pass the class as "
-            "attribute."
-        )
+                f"[TCT error] `{data_container_type}` must not be instanciated, just pass the "
+                f"class as "
+                "attribute."
+                )
     else:
         try:
             df_features = dataset.filter(like=feature_name)
             if df_features.empty:
                 raise ValueError(
-                    f"[TCT error] The parameter `{feature_name}` does not exist in `dataset_frame` "
-                    "as a column header prefix"
-                )
+                        f"[TCT error] The parameter `{feature_name}` does not exist in "
+                        f"`dataset_frame` "
+                        "as a column header prefix"
+                        )
 
             container_properties = fields(data_container_type)[
                 1:
@@ -152,22 +197,23 @@ def extract_single_feature_from_dataframe(
                 df_property = df_features.filter(regex=f"{df_header_field}_\\d+")
                 if df_property.empty:
                     raise ValueError(
-                        f"[TCT error] The column `{df_header_field}` does not exist in "
-                        "`dataset_frame`."
-                        f"Check that property `{each_property}` in {str(data_container_type)} "
-                        f"is a `{feature_name}` postfix in the dataset_frame"
-                    )
+                            f"[TCT error] The column `{df_header_field}` does not exist in "
+                            "`dataset_frame`."
+                            f"Check that property `{each_property}` in {str(data_container_type)} "
+                            f"is a `{feature_name}` postfix in the dataset_frame"
+                            )
 
                 try:
-                    timestep_index = dataframe_timestep_indexing_sanity_check(df_property, df_header_field)
+                    timestep_index = dataframe_timestep_indexing_sanity_check(df_property,
+                                                                              df_header_field)
                     if tmp_container["timestep_index"] is None:
                         tmp_container["timestep_index"] = timestep_index
                 except IndexError as e:
                     raise ValueError(
-                        "[TCT error] There is a problem with the `dataset_frame` column label "
-                        f"`{df_header_field}_` timestep index. "
-                        f"<< {e}"
-                    )
+                            "[TCT error] There is a problem with the `dataset_frame` column label "
+                            f"`{df_header_field}_` timestep index. "
+                            f"<< {e}"
+                            )
 
                 tmp_container[each_property] = df_property.to_numpy()
 

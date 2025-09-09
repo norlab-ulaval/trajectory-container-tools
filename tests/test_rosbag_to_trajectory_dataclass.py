@@ -9,7 +9,7 @@ import numpy as np
 
 from trajectory_container_tools.rosbag_to_tct import (
     aggregate_multiple_features_from_rosbag,
-    extract_single_feature_from_rosbag,
+    check_rosbag_path_and_show_available_topics, extract_single_feature_from_rosbag,
     )
 
 from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
@@ -42,22 +42,12 @@ def setup_rosbag_from_tests_dir():
             "rosbag-vaul-f110-grand-salon-raw-msg",
             BAG)
 
-    # .... Construct absolute path to demo data for tests execution ...............................
-    # Handle cases: pycharm-born dna run and shell-born dna run
-    dn_project_path = os.getenv('DN_PROJECT_PATH')
-    if os.path.exists(dn_project_path):
-        rosbag_path = os.path.join(dn_project_path, rosbag_path)
-    else:
-        rosbag_path = os.path.realpath(os.path.join('..', rosbag_path))
-
-    assert os.path.exists(rosbag_path)
-
     # .... Setup rosbag test configuration ........................................................
     ros_bag_config = RosBagConfig(
             bag_name=BAG,
             ts_fast_forward=None,
             ts_window=None,
-            bag_path=Path(rosbag_path),
+            bag_path=check_rosbag_path_and_show_available_topics(rosbag_path),
             selected_topic=[
                     "/teleop",
                     "/sensors/imu/raw",

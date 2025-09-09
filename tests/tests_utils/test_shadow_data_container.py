@@ -1,11 +1,9 @@
 # coding=utf-8
 
 import pytest
-
 import numpy as np
 
-from trajectory_container_tools.utils.data_sanity_checks import \
-    (
+from trajectory_container_tools.utils.data_sanity_checks import (
     fix_sequence_ordering_base_on_timestamps, timestamp_causal_ordering_sanity_check,
     )
 from trajectory_container_tools.utils.shadow_data_container import (
@@ -70,8 +68,8 @@ class TestTrajectorySequenceOrderingLogic:
             self, mock_trajectory_dict_ordered
             ):
         fixed_trajectory_dict = fix_sequence_ordering_base_on_timestamps(
-            shadow_data_container=mock_trajectory_dict_ordered,
-            data_container_type_=RosBagFeatureDataclass)
+                shadow_data_container=mock_trajectory_dict_ordered,
+                data_container_type_=RosBagFeatureDataclass)
 
         timestamp_causal_ordering_sanity_check(fixed_trajectory_dict)
 
@@ -79,8 +77,8 @@ class TestTrajectorySequenceOrderingLogic:
             self, mock_trajectory_dict_unordered, mock_trajectory_dict_ordered
             ):
         fixed_trajectory_dict = fix_sequence_ordering_base_on_timestamps(
-            shadow_data_container=mock_trajectory_dict_unordered,
-            data_container_type_=RosBagFeatureDataclass)
+                shadow_data_container=mock_trajectory_dict_unordered,
+                data_container_type_=RosBagFeatureDataclass)
 
         timestamp_causal_ordering_sanity_check(fixed_trajectory_dict)
 

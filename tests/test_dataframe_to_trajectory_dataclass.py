@@ -5,6 +5,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
+from trajectory_container_tools.dataframe_to_tct import unpack_dataframe_and_show_topic
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
     CmdSkidSteer, CmdStandard, StatePose2D,
     )
@@ -24,16 +25,8 @@ def setup_panda_dataframe() -> pd.DataFrame:
                     "slip_dataset_all.pkl"
             )
 
-    # .... Construct absolute path to demo data for tests execution ...............................
-    # Handle cases: pycharm-born dna run and shell-born dna run
-    dn_project_path = os.getenv('DN_PROJECT_PATH')
-    if os.path.exists(dn_project_path):
-        slip_dataset_all_path = os.path.join(dn_project_path, slip_dataset_all_path)
-    else:
-        slip_dataset_all_path = os.path.realpath(os.path.join('..', slip_dataset_all_path))
-
-    assert os_path.exists(slip_dataset_all_path)
-    return pd.read_pickle(slip_dataset_all_path)
+    dataframe_, dataframe_real_path = unpack_dataframe_and_show_topic(slip_dataset_all_path)
+    return dataframe_
 
 
 class TestExtractDataframeFeature:

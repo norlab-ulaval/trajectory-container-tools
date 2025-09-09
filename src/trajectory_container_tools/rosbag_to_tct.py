@@ -31,7 +31,7 @@ from .utils.shadow_data_container import (
     )
 
 
-def show_available_rosbag_topics(rosbag_path: Union[str, Path]) -> Path:
+def check_rosbag_path_and_show_available_topics(rosbag_path: Union[str, Path]) -> Path:
     """ Display available topics and messages in a specified ROS bag file.
 
     This function reads a ROS bag file from the specified path and lists all the available
@@ -40,11 +40,10 @@ def show_available_rosbag_topics(rosbag_path: Union[str, Path]) -> Path:
     Dockerized-NorLab docker container, it attempts to resolve the correct path.
 
     :param rosbag_path: Path to the ROS bag file (absolute or relative).
-    :return: the updated ros bag path if the input was a relative path
+    :return: the real ros bag path if the input was a relative path
     """
     # .... Construct absolute path to selected ros bag ............................................
     # Handle cases: pycharm-born dna run and shell-born dna run
-
     try:
         assert os.path.exists(rosbag_path)
     except AssertionError:
@@ -76,6 +75,7 @@ def aggregate_multiple_features_from_rosbag(
         features_config: Dict[str, Union[Type[RosBagFeatureDataclass], Tuple[str, ...]]],
         start: Optional[int] = None,
         stop: Optional[int] = None,
+        typestore: Optional[Typestore] = None
         ) -> AbstractMultifeatureDataclass:
     """Extract multiple features (i.e. topics) from a rosbag_path based on a configuration
     dictionary.
@@ -106,18 +106,22 @@ def aggregate_multiple_features_from_rosbag(
         >>>                                           'transform_translation_z')
         >>> }
 
-    :param rosbag_path: Path to rosbag
-    :param dataset_info: Any relevant information on the rosbag (location, robot, condition)
-    :param features_config: The features to agregate from the rosbag as a configuration dictionary
-    :param start: The rosbag timestamp where to start in nanosecond
-    :param stop: The rosbag timestamp where to stop in nanosecond
+    :param rosbag_path: Path to rosbag.
+    :param dataset_info: Any relevant information on the rosbag (location, robot, condition).
+    :param features_config: The features to agregate from the rosbag as a configuration dictionary.
+    :param start: The rosbag timestamp where to start in nanosecond.
+    :param stop: The rosbag timestamp where to stop in nanosecond.
+    :param typestore: Optional overrides the custom TCT rosbag typestore.
+    :return: An instance of the `AbstractMultifeatureDataclass` containing the processed data
+        for all features.
     """
 
     features = []
     features_type = []
 
-    typestore = get_rosbag_typestore_auto_distro()
-    typestore = register_ros2_non_native_msg(typestore)
+    if not typestore:
+        typestore = get_rosbag_typestore_auto_distro()
+        typestore = register_ros2_non_native_msg(typestore)
 
     for feature_name, feature_dataclass in features_config.items():
         if isinstance(feature_dataclass, tuple):
@@ -193,7 +197,7 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
         used to construct the final structured data container.
     :param start: Optional start time for filtering messages, measured in nanoseconds.
     :param stop: Optional stop time for filtering messages, measured in nanoseconds.
-    :param typestore: Optional rosbag typestore
+    :param typestore: Optional overrides the custom TCT rosbag typestore.
     :return: An instance of the `data_container_type` containing the processed feature data.
     """
     try:

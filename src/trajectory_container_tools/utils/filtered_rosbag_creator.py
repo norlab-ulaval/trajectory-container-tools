@@ -7,6 +7,7 @@ from typing import List, Optional, Union
 
 from tqdm import tqdm
 
+from trajectory_container_tools import check_rosbag_path_and_show_available_topics
 from trajectory_container_tools.utils.ros2_non_native_msg import register_ros2_non_native_msg
 from trajectory_container_tools.utils.ros2_utils import get_rosbag_typestore_auto_distro
 
@@ -104,16 +105,7 @@ if __name__ == '__main__':
 
     target_rosbag_path = os.path.join("demo_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
 
-    # .... Construct absolute path to demo data for tests execution
-    # ...................................
-    # Handle cases: pycharm-born dna run and shell-born dna run
-    dn_project_path = os.getenv('DN_PROJECT_PATH')
-    if os.path.exists(dn_project_path):
-        rosbag_path = os.path.join(dn_project_path, rosbag_path)
-    else:
-        rosbag_path = os.path.realpath(os.path.join('..', rosbag_path))
-
-    assert os.path.exists(rosbag_path)
+    rosbag_path = check_rosbag_path_and_show_available_topics(rosbag_path)
 
     create_filtered_rosbag(input_rosbag_path=rosbag_path,
                            output_rosbag_path=F"{target_rosbag_path}-offending-timestamps",

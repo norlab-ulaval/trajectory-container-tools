@@ -7,7 +7,7 @@ from trajectory_container_tools.trj_dataclasses.abstract_trajectory_dataclass im
     AbstractMultifeatureDataclass,
     )
 from trajectory_container_tools.utils.optimization import detect_docker_cpu_limits
-from trajectory_container_tools.rosbag_to_tct import show_available_rosbag_topics
+from trajectory_container_tools.rosbag_to_tct import check_rosbag_path_and_show_available_topics
 from trajectory_container_tools.utils.ros2_non_native_msg import register_ros2_non_native_msg
 from trajectory_container_tools.rosbag_to_tct import (
     aggregate_multiple_features_from_rosbag,
@@ -30,8 +30,8 @@ def profiler_run():
     # rosbag_start=1711047206000000000
     # rosbag_stop=1711047237203288917
 
-    # # BAG = "2024-03-21_15-14-09" # ★★ 63063 timesteps
-    # # BAG = "2024-03-21_15-26-13" # ★ 35128 timesteps
+    # BAG = "2024-03-21_15-14-09" # ★★ 63063 timesteps
+    # BAG = "2024-03-21_15-26-13" # ★ 35128 timesteps
     BAG = "2024-03-21_15-35-28"  # ★ 179236 timesteps
     rosbag_path = os.path.join("external_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
 
@@ -44,22 +44,13 @@ def profiler_run():
     # rosbag_path = os.path.join("demo_data", "rosbag_test_data",
     #                            "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
 
-    # .... Construct absolute path to demo data for tests execution ...............................
-    # Handle cases: pycharm-born dna run and shell-born dna run
-    dn_project_path = os.getenv('DN_PROJECT_PATH')
-    if os.path.exists(dn_project_path):
-        rosbag_path = os.path.join(dn_project_path, rosbag_path)
-    else:
-        rosbag_path = os.path.realpath(os.path.join('..', rosbag_path))
-
-    assert os.path.exists(rosbag_path)
-
+    # ..............................................................................................
     detect_docker_cpu_limits()
 
     # Register non-native ros message
     register_ros2_non_native_msg()
 
-    rosbag_path = show_available_rosbag_topics(rosbag_path)
+    rosbag_path = check_rosbag_path_and_show_available_topics(rosbag_path)
 
     print(f"\n[TCT] === Profiling run ====================================================")
     container: Union[NavMsgsOdometry, RosBagFeatureDataclass, AbstractMultifeatureDataclass]
@@ -82,9 +73,9 @@ def profiler_run():
     # .... Aggregate Multiple Features From Rosbag ................................................
     # Basic configuration - extract odometry
     features_config_1 = {
-            # "/odom": NavMsgsOdometry,
-            "/teleop": AckermannMsgsAckermannDriveStamped,
-            # "/sensors/imu/raw": SensorMsgsImu,
+            "/odom": NavMsgsOdometry,
+            # "/teleop": AckermannMsgsAckermannDriveStamped,
+            "/sensors/imu/raw": SensorMsgsImu,
             }
     # "/scan",
     # "/robot_description",

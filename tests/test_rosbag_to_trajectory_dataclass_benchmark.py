@@ -1,12 +1,15 @@
 # coding=utf-8
 import os
 from pathlib import Path
-from typing import Union
+from typing import Optional, Tuple, Union
 
 import numpy as np
 import pytest
 
-from trajectory_container_tools import extract_single_feature_from_rosbag
+from trajectory_container_tools import (
+    check_rosbag_path_and_show_available_topics,
+    extract_single_feature_from_rosbag,
+    )
 from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
     NavMsgsOdometry,
     RosBagFeatureDataclass,
@@ -14,7 +17,7 @@ from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import 
 
 
 @pytest.fixture(scope="function")
-def setup_rosbag_from_external_data_dir() -> Path:
+def setup_rosbag_from_external_data_dir() -> Tuple[Path, Optional[int], Optional[int]]:
     # .... Path to ROS bag in 'external_data' directory ...........................................
 
     # BAG = "2024-03-21_12-19-00" # small circle
@@ -29,8 +32,7 @@ def setup_rosbag_from_external_data_dir() -> Path:
     # # BAG = "2024-03-21_15-35-28" # ★ 179236 timesteps
     # rosbag_path = os.path.join( "external_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
 
-    # .... Path to ROS bag in 'demo_data' directory
-    # ................................................
+    # .... Path to ROS bag in 'demo_data' directory ...............................................
 
     BAG = "2024-03-21_14-52-35-filtered"
     # BAG = "2024-03-21_14-52-35-offending-timestamps"
@@ -39,17 +41,7 @@ def setup_rosbag_from_external_data_dir() -> Path:
     rosbag_path = os.path.join("demo_data", "rosbag_test_data",
                                "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
 
-    # .... Construct absolute path to demo data for tests execution ...............................
-    # Handle cases: pycharm-born dna run and shell-born dna run
-    dn_project_path = os.getenv('DN_PROJECT_PATH')
-    if os.path.exists(dn_project_path):
-        rosbag_path = os.path.join(dn_project_path, rosbag_path)
-    else:
-        rosbag_path = os.path.realpath(os.path.join('..', rosbag_path))
-
-    assert os.path.exists(rosbag_path)
-
-    return Path(rosbag_path), rosbag_start, rosbag_stop
+    return check_rosbag_path_and_show_available_topics(rosbag_path), rosbag_start, rosbag_stop
 
 
 def benchmark_extract_single_feature_from_rosbag(bag_path: Path, rosbag_start: int,
