@@ -184,7 +184,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         return tuple(field_name)
 
     @classmethod
-    def get_dimension_type(cls, dimension_name: str) -> Type:
+    def get_dimension_type(cls, dimension_name: str) -> Type[Any]:
         container_properties = fields(cls)
         dimension_type = None
         for each_field in container_properties:

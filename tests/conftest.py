@@ -130,6 +130,7 @@ def mock_trajectory_dict_ordered(
     for each_idx in np.arange(len(ordered_trajectory_dict["timestamps"])):
         timestamps_.append(RosTime(seconds=ordered_trajectory_dict["timestamps"][each_idx]))
 
+    ordered_trajectory_dict["feature_name"] = "/mock_ROSbag_2_trj_DC_range"
     ordered_trajectory_dict["timestamps"] = np.array(timestamps_)
     # print(ordered_trajectory_dict)
 

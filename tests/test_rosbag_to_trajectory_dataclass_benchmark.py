@@ -15,20 +15,29 @@ from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import 
 
 @pytest.fixture(scope="function")
 def setup_rosbag_from_external_data_dir() -> Path:
-    # .... Path to ROS bag in 'external_data' directory
-    # ............................................
-    # For EDA and benchmark purposes only
+    # .... Path to ROS bag in 'external_data' directory ...........................................
 
     # BAG = "2024-03-21_12-19-00" # small circle
     # BAG = "2024-03-21_12-23-53" # medium spiral
-    # BAG = "2024-03-21_12-25-29" # empty
-    # BAG = "2024-03-21_14-52-35"  # ★★ 8408 timestpes
-    # BAG = "2024-03-21_15-01-04" # empty
-    # BAG = "2024-03-21_15-03-19" # empty
-    BAG = "2024-03-21_15-14-09"  # ★★ 63063 timesteps
-    # BAG = "2024-03-21_15-26-13" # ★ 35128 timesteps
-    # BAG = "2024-03-21_15-35-28" # ★ 179236 timesteps
-    rosbag_path = os.path.join("external_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
+
+    # BAG = "2024-03-21_14-52-35" # ★★ 8408 timesteps
+    # rosbag_start=1711047206000000000
+    # rosbag_stop=1711047237203288917
+
+    # # BAG = "2024-03-21_15-14-09" # ★★ 63063 timesteps
+    # # BAG = "2024-03-21_15-26-13" # ★ 35128 timesteps
+    # # BAG = "2024-03-21_15-35-28" # ★ 179236 timesteps
+    # rosbag_path = os.path.join( "external_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
+
+    # .... Path to ROS bag in 'demo_data' directory
+    # ................................................
+
+    BAG = "2024-03-21_14-52-35-filtered"
+    # BAG = "2024-03-21_14-52-35-offending-timestamps"
+    rosbag_start = None
+    rosbag_stop = None
+    rosbag_path = os.path.join("demo_data", "rosbag_test_data",
+                               "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
 
     # .... Construct absolute path to demo data for tests execution ...............................
     # Handle cases: pycharm-born dna run and shell-born dna run
@@ -40,13 +49,17 @@ def setup_rosbag_from_external_data_dir() -> Path:
 
     assert os.path.exists(rosbag_path)
 
-    return Path(rosbag_path)
+    return Path(rosbag_path), rosbag_start, rosbag_stop
 
 
-def benchmark_extract_single_feature_from_rosbag(bag_path: Path, ):
+def benchmark_extract_single_feature_from_rosbag(bag_path: Path, rosbag_start: int,
+                                                 rosbag_stop: int):
     """Standalone function for benchmarking - avoids pickling issues with Joblib"""
     return extract_single_feature_from_rosbag(rosbag_path=bag_path, feature_name="/odom",
-                                              data_container_type=NavMsgsOdometry)
+                                              data_container_type=NavMsgsOdometry,
+                                              start=rosbag_start,
+                                              stop=rosbag_stop
+                                              )
 
 
 # @pytest.mark.parametrize(
@@ -67,9 +80,12 @@ def benchmark_extract_single_feature_from_rosbag(bag_path: Path, ):
 #         )
 def test_extract_rosbag_benchmark(benchmark, setup_rosbag_from_external_data_dir):
     container: Union[NavMsgsOdometry, RosBagFeatureDataclass]
+    rosbag_path, rosbag_start, rosbag_stop = setup_rosbag_from_external_data_dir
 
     container = benchmark(benchmark_extract_single_feature_from_rosbag,
-                          bag_path=setup_rosbag_from_external_data_dir,
+                          bag_path=rosbag_path,
+                          rosbag_start=rosbag_start,
+                          rosbag_stop=rosbag_stop,
                           )
 
     # Minimum logic to validate run success

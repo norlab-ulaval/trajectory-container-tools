@@ -36,7 +36,7 @@ def plot_trajectory_2d(
     x_pos = trajectory_data.fetch_nested_attribute(x_axis_topic)
     y_pos = trajectory_data.fetch_nested_attribute(y_axis_topic)
 
-    fig, ax = plt.subplots(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(10, 10))
 
     # Plot trajectory
     ax.plot(x_pos, y_pos, 'b-', linewidth=2, alpha=0.8, label='Trajectory')

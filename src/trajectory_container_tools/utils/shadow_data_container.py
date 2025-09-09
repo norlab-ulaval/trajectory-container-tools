@@ -11,7 +11,8 @@ from ..trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryData
 from .data_sanity_checks import timestamp_causal_ordering_sanity_check
 
 ShadowDataContainer: TypeAlias = Dict[str, Union[None, List, np.ndarray, Dict, Union[
-    Type[RosBagFeatureDataclass], Type[NestedBaseTrajectoryDataclass]]]]
+    Type[RosBagFeatureDataclass], Type[NestedBaseTrajectoryDataclass]], Union[
+    RosBagFeatureDataclass, NestedBaseTrajectoryDataclass]]]
 
 
 def instanciate_shadow_data_container(
@@ -86,13 +87,13 @@ def post_process_shadown_data_container(shadow_data_container: ShadowDataContain
 
     if issubclass(data_container_type, RosBagFeatureDataclass):
         shadow_data_container["timestamps"] = shadow_data_container["timestamps"]['data']
-        validate_timestamp_integrity(data_container_type, feature_name, shadow_data_container)
         del shadow_data_container['type']
 
+    progressbar: Optional[tqdm] = None
     if progressbar_enabled:
         print(
-            f"[TCT] Post-process rosbag data and configure "
-            f"{extract_class_name_from_type(data_container_type)} container")
+                f"[TCT] Post-process rosbag data and configure "
+                f"{extract_class_name_from_type(data_container_type)} container")
         progressbar = setup_progressbar(len(list(shadow_data_container.items())))
 
     for k, v in shadow_data_container.items():
@@ -114,61 +115,12 @@ def post_process_shadown_data_container(shadow_data_container: ShadowDataContain
         if progressbar_enabled:
             progressbar.update(1)
 
+    if issubclass(data_container_type, RosBagFeatureDataclass):
+        timestamp_causal_ordering_sanity_check(shadow_data_container)
+
     if progressbar_enabled:
         progressbar.close()
     return shadow_data_container
 
 
-def validate_timestamp_integrity(
-        data_container_type: type[RosBagFeatureDataclass],
-        feature_name: str,
-        shadow_data_container: ShadowDataContainer) -> ShadowDataContainer:
-    """
-    Validates the integrity of the timestamp for a specific `rosbag` feature by ensuring timestamps
-    are properly aligned and ordering is correct. If issues are detected in the sequence's
-    timestamp order, it attempts to fix them and rechecks the sanity of timestamps. This
-    validation process ensures the shadow data container content does not break causality.
 
-    :param data_container_type: The container type used for the `rosbag` data feature.
-    :param feature_name: The name of the feature being validated.
-    :param shadow_data_container: The shadow data container which holds the data
-        being validated and possibly corrected.
-    :return: A validated shadow data container with corrections applied as necessary.
-    """
-    try:
-        try:
-            timestamp_causal_ordering_sanity_check(shadow_data_container)
-        except AssertionError:
-            shadow_data_container = fix_sequence_ordering_base_on_timestamps(
-                    shadow_data_container, data_container_type
-                    )
-            # Re-check after the fix attempt
-            timestamp_causal_ordering_sanity_check(shadow_data_container)
-
-    except AssertionError as e:
-        raise ValueError(
-                f"[TCT error] There's a problem with the `rosbag` timestamp `{feature_name}`.")
-    return shadow_data_container
-
-
-def fix_sequence_ordering_base_on_timestamps(
-        trajectory_dict: Dict[str, Union[str, int, np.ndarray]],
-        data_container_type_: Type[RosBagFeatureDataclass],
-        ) -> Dict[str, Union[str, int, np.ndarray]]:
-    # data_container_type: Type[RosBagFeatureDataclass],
-    """Fix trajectory data sequence ordering with respect to timestamps values
-
-    Note that the 'trajectory_dict' object is an intermediate step before instanciating a
-    'AbstractTrajectoryDataclass' object
-
-    :param trajectory_dict: a dictionary of trajectory data
-    :param data_container_type_: the type of AbstractTrajectoryDataclass subclass
-    :return: the fixed trajectory_dict
-    """
-    ts_: np.ndarray = trajectory_dict["timestamps"]
-    sorted_ts_idx = ts_.argsort()
-    for each_property_name in data_container_type_.get_dimension_names():
-        each_property = trajectory_dict[each_property_name]
-        if isinstance(each_property, np.ndarray):
-            trajectory_dict[each_property_name] = each_property[sorted_ts_idx]
-    return trajectory_dict

@@ -4,12 +4,11 @@ from pathlib import Path
 from dataclasses import make_dataclass
 from typing import Any, Dict, Optional, Tuple, Type, Union
 
-from rosbags.highlevel import AnyReader
 import numpy as np
 
 from rosbags.rosbag2 import Reader
-from rosbags.typesys import Stores, get_typestore
 from rclpy.time import Time as RosTime
+from rosbags.typesys.store import Typestore
 
 from .trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
@@ -24,6 +23,8 @@ from .utils.factory import (
     trajectory_dataclass_factory,
     )
 from .utils.general import camelcase_to_snake_case, extract_class_name_from_type, setup_progressbar
+from .utils.ros2_non_native_msg import register_ros2_non_native_msg
+from .utils.ros2_utils import get_rosbag_typestore_auto_distro
 from .utils.shadow_data_container import (
     ShadowDataContainer, instanciate_shadow_data_container,
     post_process_shadown_data_container,
@@ -115,6 +116,9 @@ def aggregate_multiple_features_from_rosbag(
     features = []
     features_type = []
 
+    typestore = get_rosbag_typestore_auto_distro()
+    typestore = register_ros2_non_native_msg(typestore)
+
     for feature_name, feature_dataclass in features_config.items():
         if isinstance(feature_dataclass, tuple):
             if len(feature_dataclass) == 1:
@@ -136,13 +140,15 @@ def aggregate_multiple_features_from_rosbag(
             feature = extract_single_feature_from_rosbag(rosbag_path=rosbag_path,
                                                          feature_name=feature_name,
                                                          data_container_type=feature_dataclass,
-                                                         start=start, stop=stop)
+                                                         start=start, stop=stop,
+                                                         typestore=typestore)
 
         elif issubclass(feature_dataclass, RosBagFeatureDataclass):
             feature = extract_single_feature_from_rosbag(rosbag_path=rosbag_path,
                                                          feature_name=feature_name,
                                                          data_container_type=feature_dataclass,
-                                                         start=start, stop=stop)
+                                                         start=start, stop=stop,
+                                                         typestore=typestore)
         else:
             raise
 
@@ -160,7 +166,9 @@ def aggregate_multiple_features_from_rosbag(
 def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
                                        data_container_type: Type[RosBagFeatureDataclass],
                                        start: Optional[int] = None,
-                                       stop: Optional[int] = None) -> RosBagFeatureDataclass:
+                                       stop: Optional[int] = None,
+                                       typestore: Optional[Typestore] = None
+                                       ) -> RosBagFeatureDataclass:
     """
     Extracts a specific feature from a ROS bag file and returns it in a structured data container.
 
@@ -171,11 +179,13 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
 
     Usage:
 
-        >>> from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import
-        NavMsgsOdometry
+        >>> from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import \
+        >>>     NavMsgsOdometry
         >>>
-        >>> extract_single_feature_from_rosbag(rosbag_path=Path("</path/to/rosbag>"),
-        feature_name="/odom",data_container_type=NavMsgsOdometry)
+        >>> extract_single_feature_from_rosbag(
+        >>>     rosbag_path=Path("</path/to/rosbag>"),
+        >>>     feature_name="/odom",data_container_type=NavMsgsOdometry
+        >>> )
 
     :param rosbag_path: Path to the input ROS bag file.
     :param feature_name: Name of the topic to extract data from.
@@ -183,6 +193,7 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
         used to construct the final structured data container.
     :param start: Optional start time for filtering messages, measured in nanoseconds.
     :param stop: Optional stop time for filtering messages, measured in nanoseconds.
+    :param typestore: Optional rosbag typestore
     :return: An instance of the `data_container_type` containing the processed feature data.
     """
     try:
@@ -201,8 +212,11 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
         shadow_data_container = instanciate_shadow_data_container(data_container_type)
 
         # .... Crawl topic msgs ...................................................................
-        typestore = get_typestore(Stores[f"ros2_{os.getenv('ROS_DISTRO')}".upper()])
-        with AnyReader([rosbag_path], default_typestore=typestore) as reader:
+        if not typestore:
+            typestore = get_rosbag_typestore_auto_distro()
+            typestore = register_ros2_non_native_msg(typestore)
+
+        with Reader(rosbag_path) as reader:
 
             connections = [conn for conn in reader.connections if conn.topic == feature_name]
             selected_topic_msg_count = len(connections)
@@ -222,12 +236,13 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
             print(f"[TCT] Collect topic {feature_name} msg from rosbag")
             progressbar = setup_progressbar(feature_msg_len)
 
-            # (NICE TO HAVE) ToDo: Move rosbag msg reader logic to recursive loop leaf (ref task TCT-40)
+            # (NICE TO HAVE) ToDo: Move rosbag msg reader logic to recursive loop leaf (ref task
+            # TCT-40)
             for connection, timestamp, rawdata in reader.messages(connections=connections,
                                                                   start=start, stop=stop):
                 progressbar.update(1)
 
-                msg = reader.deserialize(rawdata, connection.msgtype)
+                msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
 
                 # Note: this is a tmp quick-hack for dealing with Tf2MsgsTFMessage topic msg with
                 #       embedded msg type (ref task TCT-11)
@@ -246,9 +261,10 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
             progressbar.close()
 
         # .... Post-process rosbag data and create data container .................................
-        shadow_data_container = post_process_shadown_data_container(shadow_data_container,
-                                                                    data_container_type,
-                                                                    feature_name)
+        shadow_data_container = post_process_shadown_data_container(
+                shadow_data_container,
+                data_container_type,
+                feature_name)
 
     # noinspection PyArgumentList
     return data_container_type(**shadow_data_container)
@@ -267,12 +283,12 @@ def _collect_properties_from_rosbag(
                 # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling non-trj data
                 if shadow_data_container[each_property_name] is None:
                     if each_property_name == "header_FrameId":
-                        shadow_data_container[each_property_name] = msg.header.frame_id
+                        shadow_data_container["header_FrameId"] = msg.header.frame_id
                     elif each_property_name == "childFrameId":
-                        shadow_data_container[each_property_name] = msg.child_frame_id
+                        shadow_data_container["childFrameId"] = msg.child_frame_id
             elif each_property_name == "timestamps":
                 # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling trj data
-                shadow_data_container[each_property_name]['data'].append(
+                shadow_data_container["timestamps"]['data'].append(
                         _set_timestamp(msg, timestamp, use_msg_header_time=True)
                         )
             else:
@@ -315,12 +331,12 @@ def _collect_properties_from_rosbag(
     return shadow_data_container
 
 
-def _set_timestamp(msg, bag_timestamp, use_msg_header_time: bool = True) -> int:
+def _set_timestamp(msg, bag_timestamp, use_msg_header_time: bool = True) -> RosTime:
     # (NICE TO HAVE) ToDo: unit-test (curently indirectly tested)
     if use_msg_header_time:
         _timestamp = RosTime(seconds=msg.header.stamp.sec, nanoseconds=msg.header.stamp.nanosec)
     else:
-        _timestamp = bag_timestamp
+        _timestamp = RosTime(nanoseconds=bag_timestamp)
 
     return _timestamp
 

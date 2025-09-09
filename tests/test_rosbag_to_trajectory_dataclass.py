@@ -14,7 +14,7 @@ from trajectory_container_tools.rosbag_to_tct import (
 
 from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
     AckermannMsgsAckermannDriveStamped, NavMsgsOdometry,
-    RosBagFeatureDataclass, Tf2MsgsTFMessage,
+    RosBagFeatureDataclass, Tf2MsgsTFMessage, SensorMsgsImu,
     )
 
 
@@ -34,8 +34,8 @@ def setup_rosbag_from_tests_dir():
     # ................................................
     # For test purposes
 
-    BAG = "2024-03-21_12-25-29"
-    # BAG = "2024-03-21_15-01-04"
+    BAG = "2024-03-21_14-52-35-filtered"
+    # BAG = "2024-03-21_14-52-35-offending-timestamps"
     rosbag_path = os.path.join(
             "demo_data",
             "rosbag_test_data",
@@ -59,12 +59,9 @@ def setup_rosbag_from_tests_dir():
             ts_window=None,
             bag_path=Path(rosbag_path),
             selected_topic=[
-                    "/odom",
-                    "/odometry/filtered",
-                    "/tf",
-                    "/scan",
                     "/teleop",
                     "/sensors/imu/raw",
+                    "/odom",
                     ],
             )
     # '/ackermann_cmd',
@@ -76,19 +73,19 @@ class TestExtractROSBagFeature:
 
     def test_extract_single_feature_from_rosbag(self, setup_rosbag_from_tests_dir):
         container = extract_single_feature_from_rosbag(
-            rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name="/odom",
-            data_container_type=NavMsgsOdometry)
+                rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name="/odom",
+                data_container_type=NavMsgsOdometry)
 
         print(container)
 
         assert container.feature_name is "/odom"
-        assert container.trajectory_len == 376
+        assert container.trajectory_len == 3120
 
     def test_populate_nested_trajectory_dataclass(self, setup_rosbag_from_tests_dir):
         container: Union[NavMsgsOdometry, RosBagFeatureDataclass]
         container = extract_single_feature_from_rosbag(
-            rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name="/odom",
-            data_container_type=NavMsgsOdometry)
+                rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name="/odom",
+                data_container_type=NavMsgsOdometry)
 
         print(container)
 
@@ -118,8 +115,8 @@ class TestExtractROSBagFeature:
         with pytest.raises(AttributeError):
             # noinspection PyTypeChecker
             container = extract_single_feature_from_rosbag(
-                rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name=fn,
-                data_container_type=bad_argument)
+                    rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name=fn,
+                    data_container_type=bad_argument)
 
     def test_fail_no_existing_feature(self, setup_rosbag_from_tests_dir):
         with pytest.raises(ValueError):
@@ -148,13 +145,12 @@ class TestExtractROSBagMultifeature:
     @pytest.fixture
     def setup_feature_config_new_type(self):
         feature_config: dict = {
-                "/odometry/filtered": NavMsgsOdometry,
-                "/odom":              NavMsgsOdometry,
-                "/tf":                (
-                        "Tf2MsgsTFMessage",
-                        "transform_translation_x",
-                        "transform_translation_y",
-                        "transform_translation_z",
+                "/odom": NavMsgsOdometry,
+                "/sensors/imu/raw":   (
+                        "SensorMsgsImuMinimal",
+                        "orientation_x",
+                        "orientation_y",
+                        "orientation_z",
                         ),
                 }
         return feature_config
@@ -164,9 +160,9 @@ class TestExtractROSBagMultifeature:
     @pytest.fixture
     def setup_feature_config_known_type(self):
         feature_config: dict = {
-                "/odometry/filtered": NavMsgsOdometry,
-                "/odom":              NavMsgsOdometry,
-                "/tf":                Tf2MsgsTFMessage,
+                "/teleop":          AckermannMsgsAckermannDriveStamped,
+                "/odom":            NavMsgsOdometry,
+                "/sensors/imu/raw": SensorMsgsImu,
                 }
         return feature_config
 
@@ -183,22 +179,18 @@ class TestExtractROSBagMultifeature:
 
         print(features_container)
 
-        assert isinstance(features_container.topic_tf, RosBagFeatureDataclass)
-        assert features_container.topic_tf.feature_name == "/tf"
-        assert features_container.topic_tf.get_dimension_names() == (
+        assert isinstance(features_container.topic_sensors_imu_raw, RosBagFeatureDataclass)
+        assert not isinstance(features_container.topic_sensors_imu_raw, SensorMsgsImu)
+        assert features_container.topic_sensors_imu_raw.feature_name == '/sensors/imu/raw'
+        assert features_container.topic_sensors_imu_raw.get_dimension_names() == (
                 "header_FrameId",
                 "timestamps",
-                "transform_translation_x",
-                "transform_translation_y",
-                "transform_translation_z",
+                "orientation_x",
+                "orientation_y",
+                "orientation_z",
                 )
 
-        assert isinstance(features_container.topic_odometry_filtered, NavMsgsOdometry)
-        assert features_container.topic_odometry_filtered.feature_name == "/odometry/filtered"
-        # assert isinstance(features_container.topic_sensors_imu_raw, SensorMsgsImu)
-        # assert features_container.topic_sensors_imu_raw.feature_name == '/sensors/imu/raw'
-
-        assert isinstance(features_container.topic_odom, RosBagFeatureDataclass)
+        assert isinstance(features_container.topic_odom, NavMsgsOdometry)
         assert features_container.topic_odom.feature_name == "/odom"
 
     def test_aggregate_multiple_features_from_rosbag_with_known_type(
@@ -212,25 +204,11 @@ class TestExtractROSBagMultifeature:
 
         print(features_container)
 
-        assert isinstance(features_container.topic_tf, RosBagFeatureDataclass)
-        assert features_container.topic_tf.feature_name == "/tf"
-        assert features_container.topic_tf.get_dimension_names() == (
-                "header_FrameId",
-                "timestamps",
-                "childFrameId",
-                "transform_translation_x",
-                "transform_translation_y",
-                "transform_translation_z",
-                "transform_rotation_x",
-                "transform_rotation_y",
-                "transform_rotation_z",
-                "transform_rotation_w",
-                )
+        assert isinstance(features_container.topic_teleop, AckermannMsgsAckermannDriveStamped)
+        assert features_container.topic_teleop.feature_name == "/teleop"
 
-        assert isinstance(features_container.topic_odometry_filtered, NavMsgsOdometry)
-        assert features_container.topic_odometry_filtered.feature_name == "/odometry/filtered"
-        # assert isinstance(features_container.topic_sensors_imu_raw, SensorMsgsImu)
-        # assert features_container.topic_sensors_imu_raw.feature_name == '/sensors/imu/raw'
+        assert features_container.topic_sensors_imu_raw.feature_name == '/sensors/imu/raw'
+        assert isinstance(features_container.topic_sensors_imu_raw, SensorMsgsImu)
 
         assert isinstance(features_container.topic_odom, RosBagFeatureDataclass)
         assert features_container.topic_odom.feature_name == "/odom"

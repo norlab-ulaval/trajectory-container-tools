@@ -1,0 +1,46 @@
+rosbag2_bagfile_information:
+  compression_format: ''
+  compression_mode: ''
+  custom_data: null
+  duration:
+    nanoseconds: 84868301288
+  files:
+  - duration:
+      nanoseconds: 84868301288
+    message_count: 20306
+    path: 2024-03-21_14-52-35-offending-timestamps.db3
+    starting_time:
+      nanoseconds_since_epoch: 1711047156279178635
+  message_count: 20306
+  relative_file_paths:
+  - 2024-03-21_14-52-35-offending-timestamps.db3
+  ros_distro: rosbags
+  starting_time:
+    nanoseconds_since_epoch: 1711047156279178635
+  storage_identifier: sqlite3
+  topics_with_message_count:
+  - message_count: 3409
+    topic_metadata:
+      name: /teleop
+      offered_qos_profiles: []
+      serialization_format: cdr
+      type: ackermann_msgs/msg/AckermannDriveStamped
+      type_description_hash: 
+        RIHS01_48ca7612a08d3bb72744fd98b71b7cf2ea24c6ad50fa4e1aa0bbad963c90d8cf
+  - message_count: 8489
+    topic_metadata:
+      name: /sensors/imu/raw
+      offered_qos_profiles: []
+      serialization_format: cdr
+      type: sensor_msgs/msg/Imu
+      type_description_hash: 
+        RIHS01_7d9a00ff131080897a5ec7e26e315954b8eae3353c3f995c55faf71574000b5b
+  - message_count: 8408
+    topic_metadata:
+      name: /odom
+      offered_qos_profiles: []
+      serialization_format: cdr
+      type: nav_msgs/msg/Odometry
+      type_description_hash: 
+        RIHS01_3cc97dc7fb7502f8714462c526d369e35b603cfc34d946e3f2eda2766dfec6e0
+  version: 9

@@ -29,6 +29,7 @@ class TestTimestampSanityCheck:
         mock_timestamps = [ROSTime(nanoseconds=each) for each in mock_timestamps]
 
         mock_container = {
+                "feature_name": "/mock_topic",
                 "timestamps": np.array(mock_timestamps)
                 }
 
@@ -56,10 +57,11 @@ class TestTimestampSanityCheck:
 
 #         print(f"{exc_info=}")
         expected_error_msg = (
-                f"[TCT error] Timestamp causal ordering sanity check failed! "
-                f"Number of offending timestamp 2/10"
+                f"Timestamp causal ordering sanity check failed! "
+                f"Number of offending timestamps 2/10\n"
+                f"[TCT error] Timestamp causal ordering violations:"
         )
-        assert exc_info.value.args == (expected_error_msg,)
+        assert expected_error_msg in exc_info.value.args[0]
 
 
 class TestTimestepIndexingSanityCheck:
