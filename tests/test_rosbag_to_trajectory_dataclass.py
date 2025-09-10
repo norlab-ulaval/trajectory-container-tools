@@ -203,7 +203,7 @@ class TestExtractROSBagMultifeature:
         assert isinstance(features_container.topic_odom, RosBagFeatureDataclass)
         assert features_container.topic_odom.feature_name == "/odom"
 
-    def test_extract_dataframe_multifeature_misspecification(
+    def test_extract_rosbag_multifeature_misspecification(
             self, setup_rosbag_from_tests_dir, setup_feature_config_known_type
             ):
         setup_feature_config_known_type_bad = setup_feature_config_known_type.copy()

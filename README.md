@@ -91,7 +91,6 @@ Whether you're working with robotics research, autonomous systems, or trajectory
 
 ### 🚀 **Research-Ready**
 - Built for robotics and AI research workflows
-- Optimized for batch processing and analysis
 - Integration with common research tools (pandas, matplotlib, ROS2)
 
 ### ✅ **Data Validation**

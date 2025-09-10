@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
-    DataframeFeatureDataclass,
+    BaseDataframeFeatureDataclass,
 )
 from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
     RosBagFeatureDataclass,
@@ -28,7 +28,7 @@ class TestTrajectoryDataclassFactoryDataframeCase:
     def test_spec_ok(self, setup_dataframe_style_config):
         trajectory_dataclass_factory(
             specification=setup_dataframe_style_config,
-            trj_dataclass_subclass=DataframeFeatureDataclass,
+            trj_dataclass_subclass=BaseDataframeFeatureDataclass,
         )
 
     def test_bad_spec(self):
@@ -38,7 +38,7 @@ class TestTrajectoryDataclassFactoryDataframeCase:
                     new_feature_dataclass_type="new_feature_dataclass",
                     dimension_names=("xx", "yy", 999),
                 ),
-                trj_dataclass_subclass=DataframeFeatureDataclass,
+                trj_dataclass_subclass=BaseDataframeFeatureDataclass,
             )
 
         # ToDo: assessment >> next bloc ↓↓ is not relevant since refactoring to
@@ -57,7 +57,7 @@ class TestTrajectoryDataclassFactoryDataframeCase:
     def test_output_ok(self, setup_dataframe_style_config):
         mock_cls = trajectory_dataclass_factory(
             specification=setup_dataframe_style_config,
-            trj_dataclass_subclass=DataframeFeatureDataclass,
+            trj_dataclass_subclass=BaseDataframeFeatureDataclass,
         )
         mock_value = np.arange(10)
         assert issubclass(mock_cls, atd.AbstractTrajectoryDataclass)

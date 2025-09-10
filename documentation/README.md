@@ -56,7 +56,6 @@ Comprehensive guide for extracting trajectory data from ROS bags:
 - Topic inspection and selection
 - Message type handling
 - Timestamp management
-- Batch processing workflows
 
 
 ---
@@ -70,7 +69,6 @@ Trajectory containers are type-safe dataclasses that store trajectory data with:
 - **Structured access** to trajectory dimensions (x, y, z, roll, pitch, yaw, etc.)
 - **Metadata management** (timestamps, dataset information)
 - **Data validation** (shape consistency, monotonic timestamps)
-- **Batch processing** support for multiple trajectories
 
 ### Factory Pattern
 
@@ -199,7 +197,6 @@ Create trajectory containers directly from data arrays:
 ### Optimization Tools (`utils/optimization.py`)
 - Performance optimization utilities
 - Memory management helpers
-- Batch processing optimizations
 
 ## API Reference
 
@@ -210,14 +207,14 @@ Create trajectory containers directly from data arrays:
 def aggregate_multiple_features_from_dataframe(
     dataset_frame: pd.DataFrame,
     dataset_info: str,
-    features_config: Dict[str, Union[Type[DataframeFeatureDataclass], Tuple[str, ...]]]
+    features_config: Dict[str, Union[Type[BaseDataframeFeatureDataclass], Tuple[str, ...]]]
 ) -> AbstractMultifeatureDataclass
 
 def extract_single_feature_from_dataframe(
     dataset: pd.DataFrame,
     feature_name: str,
-    data_container_type: Type[DataframeFeatureDataclass]
-) -> DataframeFeatureDataclass
+    data_container_type: Type[BaseDataframeFeatureDataclass]
+) -> BaseDataframeFeatureDataclass
 ```
 
 #### `trajectory_container_tools.rosbag_to_tct`

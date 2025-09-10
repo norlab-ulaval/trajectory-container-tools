@@ -94,14 +94,6 @@ trajectory = BaseTrajectoryDataclass(
     y=np.array([0, 1, 0, -1, 0]),
     timestamps=np.array([0.0, 0.1, 0.2, 0.3, 0.4])
 )
-
-# Batch trajectories (2D arrays: [batch_size, time_steps])
-batch_size, time_steps = 10, 50
-batch_trajectory = BaseTrajectoryDataclass(
-    x=np.random.randn(batch_size, time_steps),
-    y=np.random.randn(batch_size, time_steps),
-    timestamps=np.tile(np.arange(time_steps) * 0.1, (batch_size, 1))
-)
 ```
 
 #### `BaseReverseAxisTrajectoryDataclass`
@@ -362,66 +354,9 @@ print(f"Generated trajectory with {nav_trajectory.trajectory_len} timesteps")
 print(f"Duration: {nav_trajectory.timestamps[-1]:.1f} seconds")
 ```
 
-### Example 2: Batch Trajectory Processing
 
-```python
-def generate_batch_trajectories(num_trajectories=10, timesteps=100):
-    """Generate batch of robot trajectories with different parameters"""
-    
-    trajectories = []
-    
-    for i in range(num_trajectories):
-        # Randomize trajectory parameters
-        radius = np.random.uniform(2.0, 8.0)
-        freq = np.random.uniform(0.1, 1.0)
-        noise_level = np.random.uniform(0.05, 0.2)
-        duration = np.random.uniform(8.0, 15.0)
-        
-        t = np.linspace(0, duration, timesteps)
-        
-        # Generate trajectory
-        x = radius * np.cos(freq * t) + np.random.normal(0, noise_level, timesteps)
-        y = radius * np.sin(freq * t) + np.random.normal(0, noise_level, timesteps)
-        theta = freq * t + np.pi/2
-        
-        trajectory = BaseTrajectoryDataclass(
-            x=x, y=y, theta=theta,
-            timestamps=t,
-            trajectory_id=np.full(timesteps, i)  # Add trajectory ID
-        )
-        
-        trajectories.append(trajectory)
-    
-    return trajectories
 
-# Generate batch trajectories
-batch_trajectories = generate_batch_trajectories(num_trajectories=5, timesteps=200)
-
-# Visualize batch
-plt.figure(figsize=(10, 8))
-colors = plt.cm.viridis(np.linspace(0, 1, len(batch_trajectories)))
-
-for i, traj in enumerate(batch_trajectories):
-    plt.plot(traj.x, traj.y, color=colors[i], alpha=0.7, 
-             label=f'Trajectory {i+1}')
-
-plt.xlabel('X Position (m)')
-plt.ylabel('Y Position (m)')
-plt.title('Batch Robot Trajectories')
-plt.legend()
-plt.axis('equal')
-plt.grid(True)
-plt.show()
-
-# Analyze batch statistics
-x_ranges = [np.ptp(traj.x) for traj in batch_trajectories]  # Peak-to-peak
-y_ranges = [np.ptp(traj.y) for traj in batch_trajectories]
-
-print(f"X range statistics: mean={np.mean(x_ranges):.2f}, std={np.std(x_ranges):.2f}")
-print(f"Y range statistics: mean={np.mean(y_ranges):.2f}, std={np.std(y_ranges):.2f}")
-```
-
-### Example 3: Converting External Data Format
+### Example 2: Converting External Data Format
 
 ```python
 def convert_external_trajectory_data(external_data_dict):

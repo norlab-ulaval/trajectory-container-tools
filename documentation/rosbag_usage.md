@@ -10,7 +10,6 @@ This guide covers how to extract trajectory data from ROS bag files using Trajec
 - [Supported Message Types](#supported-message-types)
 - [Advanced Examples](#advanced-examples)
 - [Custom Message Types](#custom-message-types)
-- [Batch Processing](#batch-processing)
 - [Troubleshooting](#troubleshooting)
 
 ## Overview
@@ -19,7 +18,6 @@ The ROS bag converter extracts trajectory data from ROS 2 bag files and converts
 - Processing recorded robot trajectories from experiments
 - Converting ROS data for analysis and visualization
 - Integrating ROS workflows with trajectory analysis pipelines
-- Batch processing multiple bag files
 
 ## Prerequisites
 
@@ -262,46 +260,6 @@ class CustomRobotState(RosBagFeatureDataclass):
 features_config = {
     'robot_state': CustomRobotState
 }
-```
-
-## Batch Processing
-
-### Processing Multiple Bag Files
-
-```python
-from pathlib import Path
-import glob
-
-def process_multiple_rosbags(bag_directory, features_config):
-    """Process all rosbag files in a directory"""
-    bag_paths = glob.glob(str(Path(bag_directory) / "*.db3"))
-    results = {}
-    
-    for bag_file in bag_paths:
-        bag_path = Path(bag_file).parent
-        bag_name = Path(bag_file).stem
-        
-        try:
-            container = aggregate_multiple_features_from_rosbag(
-                rosbag_path=bag_path,
-                dataset_info=f"Batch processing: {bag_name}",
-                features_config=features_config
-            )
-            results[bag_name] = container
-            print(f"✓ Processed {bag_name}")
-            
-        except Exception as e:
-            print(f"✗ Failed to process {bag_name}: {e}")
-    
-    return results
-
-# Process all bags in experiments directory
-features_config = {'odometry': NavMsgsOdometry}
-all_trajectories = process_multiple_rosbags("experiments/", features_config)
-
-# Analyze results
-for bag_name, container in all_trajectories.items():
-    print(f"{bag_name}: {container.odometry.trajectory_len} timesteps")
 ```
 
 

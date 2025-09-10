@@ -266,10 +266,14 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
                 elif isinstance(data_property, np.ndarray):
                     data_property: np.ndarray
-                    data_property_trajectory_len = data_property.shape[self._init_trj_axe]
+                    data_property_trajectory_len = None
+                    if data_property.ndim <= 2:
+                        data_property_trajectory_len = data_property.shape[self._init_trj_axe]
+                    elif data_property.ndim == 3:
+                        data_property_trajectory_len = data_property.shape[1 - self._init_trj_axe]
 
                     # Init timestep_index with dataclass trajectory_len
-                    if self.timestep_index is None:
+                    if self.timestep_index is None and data_property_trajectory_len:
                         self.timestep_index = np.arange(data_property_trajectory_len)
 
                     if data_property_trajectory_len != self.trajectory_len:

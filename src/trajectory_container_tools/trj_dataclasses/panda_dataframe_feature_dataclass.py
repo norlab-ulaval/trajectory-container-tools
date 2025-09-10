@@ -1,9 +1,9 @@
 # coding=utf-8
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
-from .base_trajectory_dataclass import BaseReverseAxisTrajectoryDataclass
+from .abstract_trajectory_dataclass import AbstractTrajectoryDataclass
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -12,7 +12,7 @@ from .base_trajectory_dataclass import BaseReverseAxisTrajectoryDataclass
 # /////////////////////////////////////////////////////////////////////////////////////////////////
 
 @dataclass()
-class DataframeFeatureDataclass(BaseReverseAxisTrajectoryDataclass):
+class BaseDataframeFeatureDataclass(AbstractTrajectoryDataclass):
     """
     Represents a dataclass for handling trajectory data fetched from a Panda dataframe.
 
@@ -23,24 +23,40 @@ class DataframeFeatureDataclass(BaseReverseAxisTrajectoryDataclass):
     It can be extended or utilized wherever structured data for dataframe processing or
     trajectory computation is necessary.
     """
-    pass
+    timestep_index: np.ndarray
+
+    @property
+    def _init_trj_axe(self) -> int:
+        return -1
 
 
 @dataclass()
-class StatePose2D(DataframeFeatureDataclass):
+class NestedBaseDataframeFeatureDataclass(BaseDataframeFeatureDataclass):
+    """
+    # (NICE TO HAVE) ToDo: implement nested trajectory-dataclass support for dataframe extraction
+    """
+    feature_name: str = field(default=None, init=False)
+
+    def on_begin_post_init_callback(self):
+        super().on_begin_post_init_callback()
+        raise NotImplementedError("Nested trajectory for dataframe is not supported yet.")
+
+
+@dataclass()
+class StatePose2D(BaseDataframeFeatureDataclass):
     x: np.ndarray
     y: np.ndarray
     yaw: np.ndarray
 
 
 @dataclass()
-class CmdStandard(DataframeFeatureDataclass):
+class CmdStandard(BaseDataframeFeatureDataclass):
     linear_vel: np.ndarray
     angular_vel: np.ndarray
 
 
 @dataclass()
-class CmdSkidSteer(DataframeFeatureDataclass):
+class CmdSkidSteer(BaseDataframeFeatureDataclass):
     left: np.ndarray
     right: np.ndarray
 

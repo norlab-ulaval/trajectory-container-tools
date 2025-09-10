@@ -81,10 +81,14 @@ class TestTimestepIndexingSanityCheck:
         return _setup_dataframe_monotonic_col_label
 
     def test_base_case_pass(self, setup_dataframe_monotonic_col_label):
+        the_dataframe = setup_dataframe_monotonic_col_label()
         tisc = dataframe_timestep_indexing_sanity_check(
-                the_dataframe=setup_dataframe_monotonic_col_label(),
+                the_dataframe=the_dataframe,
                 unindexed_column_label=self.COL_LABEL,
                 )
+
+        print(the_dataframe)  # (Priority) ToDo: on task end >> delete this line ←
+
         assert type(tisc) is np.ndarray
 
     def test_index_start_non_zero(self, setup_dataframe_monotonic_col_label):

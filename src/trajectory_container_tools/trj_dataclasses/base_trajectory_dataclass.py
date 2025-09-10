@@ -72,7 +72,7 @@ class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
 
 # :::: Dataframe related ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 @dataclass()
-class BaseReverseAxisTrajectoryDataclass(AbstractTrajectoryDataclass):
+class BaseReverseAxisTrajectoryDataclass(BaseTrajectoryDataclass):
     """ Represents a base trajectory data structure with inverted array axes
     with respect to 'BaseTrajectoryDataclass'
 
@@ -101,11 +101,4 @@ class BaseReverseAxisTrajectoryDataclass(AbstractTrajectoryDataclass):
 
 @dataclass()
 class NestedBaseReverseAxisTrajectoryDataclass(BaseReverseAxisTrajectoryDataclass):
-    """
-    # (NICE TO HAVE) ToDo: implement nested trajectory-dataclass support for dataframe extraction
-    """
     feature_name: str = field(default=None, init=False)
-
-    def on_begin_post_init_callback(self):
-        super().on_begin_post_init_callback()
-        raise NotImplementedError("Nested trajectory for dataframe is not supported yet.")

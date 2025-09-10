@@ -17,7 +17,6 @@ This guide covers how to convert pandas DataFrames to trajectory containers usin
 
 The DataFrame converter allows you to transform structured pandas DataFrames into type-safe trajectory containers. This is ideal for:
 - Converting experimental datasets to standardized trajectory format
-- Processing batch trajectory data from simulations
 - Integrating with existing pandas-based workflows
 
 ## Prerequisites
@@ -26,7 +25,7 @@ The DataFrame converter allows you to transform structured pandas DataFrames int
 
 Your DataFrame must have one of these structures:
 
-**Option 1: Batch Trajectories (Recommended)**
+**Option 1: Batch Trajectories**
 - One trajectory per row
 - Features with timestep indices in column names: `feature_1`, `feature_2`, ..., `feature_N`
 - Each cell contains a single timestep value
@@ -212,11 +211,8 @@ control_linear_x = multi_feature_container.control_commands.linear_x
 from trajectory_container_tools.dataframe_to_tct import extract_single_feature_from_dataframe
 
 # Extract only pose data
-pose_container = extract_single_feature_from_dataframe(
-    dataset=df,
-    feature_name="odometry",
-    data_container_type=StatePose2D
-)
+pose_container = extract_single_feature_from_dataframe(dataset=df, feature_name="odometry",
+                                                       data_container_type=StatePose2D)
 
 print(f"Pose data shape: {pose_container.x.shape}")
 print(f"Available dimensions: {pose_container.get_dimension_names()}")
