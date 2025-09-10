@@ -14,6 +14,7 @@ from .trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
     )
 from .trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
+from .trj_dataclasses.primitive_dataclass import Header
 from .trj_dataclasses.rosbag_feature_dataclass import (
     NavMsgsOdometry,
     RosBagFeatureDataclass,
@@ -283,18 +284,18 @@ def _collect_properties_from_rosbag(
 
     for each_property_name in data_container_type.get_dimension_names():
         try:
-            if each_property_name in ["header_FrameId", "childFrameId"]:
+            if issubclass(shadow_data_container[each_property_name]['type'], Header):
                 # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling non-trj data
-                if shadow_data_container[each_property_name] is None:
-                    if each_property_name == "header_FrameId":
-                        shadow_data_container["header_FrameId"] = msg.header.frame_id
-                    elif each_property_name == "childFrameId":
-                        shadow_data_container["childFrameId"] = msg.child_frame_id
-            elif each_property_name == "timestamps":
-                # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling trj data
-                shadow_data_container["timestamps"]['data'].append(
+                if not shadow_data_container['header']["frame_id"]['data']:
+                    shadow_data_container['header']["frame_id"]['data'] = msg.header.frame_id
+                shadow_data_container['header']["timestamps"]['data'].append(
                         _set_timestamp(msg, timestamp, use_msg_header_time=True)
                         )
+                # if each_property_name == "frame_id":
+                # # elif each_property_name == "child_frame_id":
+                # #     shadow_data_container["child_frame_id"] = msg.child_frame_id
+                # elif each_property_name == "timestamps":
+                #     # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling trj data
             else:
                 attribute_list = str(each_property_name).split("_")
                 attribute_parent = msg

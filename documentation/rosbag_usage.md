@@ -177,7 +177,7 @@ odom_container = extract_single_feature_from_rosbag(
     data_container_type=NavMsgsOdometry
 )
 
-print(f"Odometry timestamps: {len(odom_container.timestamps)}")
+print(f"Odometry timestamps: {len(odom_container.header.timestamps)}")
 print(f"Position data shape: {odom_container.x.shape}")
 print(f"Available dimensions: {odom_container.get_dimension_names()}")
 

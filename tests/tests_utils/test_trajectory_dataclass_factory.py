@@ -5,6 +5,7 @@ import pytest
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
     BaseDataframeFeatureDataclass,
 )
+from trajectory_container_tools.trj_dataclasses.primitive_dataclass import Header
 from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
     RosBagFeatureDataclass,
 )
@@ -85,7 +86,7 @@ class TestTrajectoryDataclassFactoryROSbagCase:
     def setup_rosbag_style_config(self):
         spec = TrjDataClassFeatureSpecification(
             new_feature_dataclass_type="NewTopicMsgType",
-            dimension_names=("pose_xx", "pose_yy", "pose_zz", "header_FrameId", "timestamps"),
+            dimension_names=("pose_xx", "pose_yy", "pose_zz"),
         )
         return spec
 
@@ -114,23 +115,20 @@ class TestTrajectoryDataclassFactoryROSbagCase:
         assert not isinstance(mock_cls, atd.AbstractTrajectoryDataclass)
         mock_cls_instance = mock_cls(
             feature_name="mock_data",
+            header=Header(frame_id=999, timestamps=mock_value),
             pose_xx=mock_value,
             pose_yy=mock_value,
             pose_zz=mock_value,
-            header_FrameId=999,
-            timestamps=mock_value,
         )
         assert isinstance(mock_cls_instance, atd.AbstractTrajectoryDataclass)
         assert mock_cls.get_dimension_names() == (
-            "header_FrameId",
-            "timestamps",
+            "header",
             "pose_xx",
             "pose_yy",
             "pose_zz",
         )
         assert hasattr(mock_cls_instance, "feature_name")
-        assert hasattr(mock_cls_instance, "header_FrameId")
-        assert hasattr(mock_cls_instance, "timestamps")
+        assert hasattr(mock_cls_instance, "header")
         assert hasattr(mock_cls_instance, "pose_xx")
         assert hasattr(mock_cls_instance, "pose_yy")
         assert hasattr(mock_cls_instance, "pose_zz")

@@ -11,6 +11,7 @@ from trajectory_container_tools.rosbag_to_tct import (
     aggregate_multiple_features_from_rosbag,
     check_rosbag_path_and_show_available_topics, extract_single_feature_from_rosbag,
     )
+from trajectory_container_tools.trj_dataclasses.primitive_dataclass import Header
 
 from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
     AckermannMsgsAckermannDriveStamped, NavMsgsOdometry,
@@ -92,13 +93,12 @@ class TestExtractROSBagFeature:
         mock_value = np.arange(10)
         bad_argument = AckermannMsgsAckermannDriveStamped(
                 feature_name=fn,
-                header_FrameId="",
+                header=Header(frame_id="", timestamps=mock_value),
                 drive_steeringAngle=mock_value,
                 drive_steeringAngleVelocity=mock_value,
                 drive_speed=mock_value,
                 drive_acceleration=mock_value,
                 drive_jerk=mock_value,
-                timestamps=mock_value,
                 # timestep_index=mock_value,
                 )
 
@@ -135,8 +135,8 @@ class TestExtractROSBagMultifeature:
     @pytest.fixture
     def setup_feature_config_new_type(self):
         feature_config: dict = {
-                "/odom": NavMsgsOdometry,
-                "/sensors/imu/raw":   (
+                "/odom":            NavMsgsOdometry,
+                "/sensors/imu/raw": (
                         "SensorMsgsImuMinimal",
                         "orientation_x",
                         "orientation_y",
@@ -173,8 +173,7 @@ class TestExtractROSBagMultifeature:
         assert not isinstance(features_container.topic_sensors_imu_raw, SensorMsgsImu)
         assert features_container.topic_sensors_imu_raw.feature_name == '/sensors/imu/raw'
         assert features_container.topic_sensors_imu_raw.get_dimension_names() == (
-                "header_FrameId",
-                "timestamps",
+                "header",
                 "orientation_x",
                 "orientation_y",
                 "orientation_z",

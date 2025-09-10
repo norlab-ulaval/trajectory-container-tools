@@ -10,6 +10,7 @@ from trajectory_container_tools.trj_dataclasses.f110_gym_trajectory_dataclass im
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
     CmdStandard, StatePose2D, Velocity,
     )
+from trajectory_container_tools.trj_dataclasses.primitive_dataclass import Header
 from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
     AckermannMsgsAckermannDriveStamped, NavMsgsOdometry, NavMsgsOdometryFlat, SensorMsgsImu,
     Tf2MsgsTFMessage,
@@ -55,8 +56,7 @@ class TestTrajectoryDataclassFromROSBagCase:
         md = mock_ROSbag_2_trj_DC
         dc_ = NavMsgsOdometry(
                 feature_name="/pf/pose/odom",
-                header_FrameId=md.header_FrameId,
-                timestamps=md.timestamps,
+                header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
                 # timestep_index=md.ts_idx,
                 pose=PoseWithCovariance(
                     # feature_name="Netsed PoseWithCovariance",
@@ -93,9 +93,7 @@ class TestTrajectoryDataclassFromROSBagCase:
         md = mock_ROSbag_2_trj_DC
         dc_ = NavMsgsOdometryFlat(
                 feature_name="/pf/pose/odom",
-                header_FrameId=md.header_FrameId,
-                timestamps=md.timestamps,
-                # timestep_index=md.ts_idx,
+                header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
                 pose_pose_position_x=md.a,
                 pose_pose_position_y=md.a,
                 pose_pose_position_z=md.a,
@@ -119,8 +117,7 @@ class TestTrajectoryDataclassFromROSBagCase:
         md = mock_ROSbag_2_trj_DC
         dc_ = AckermannMsgsAckermannDriveStamped(
                 feature_name="/ackermann_cmd",
-                header_FrameId=md.header_FrameId,
-                timestamps=md.timestamps,
+                header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
                 # timestep_index=md.ts_idx,
                 drive_steeringAngle=md.a,
                 drive_steeringAngleVelocity=md.a,
@@ -135,8 +132,7 @@ class TestTrajectoryDataclassFromROSBagCase:
         md = mock_ROSbag_2_trj_DC
         dc_ = Tf2MsgsTFMessage(
                 feature_name="/ackermann_cmd",
-                header_FrameId=md.header_FrameId,
-                timestamps=md.timestamps,
+                header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
                 # timestep_index=md.ts_idx,
                 childFrameId="odom",
                 transform_translation_x=md.a,
@@ -154,8 +150,7 @@ class TestTrajectoryDataclassFromROSBagCase:
         md = mock_ROSbag_2_trj_DC
         dc_ = SensorMsgsImu(
                 feature_name="/ackermann_cmd",
-                header_FrameId=md.header_FrameId,
-                timestamps=md.timestamps,
+                header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
                 # timestep_index=md.ts_idx,
                 orientation_x=md.a,
                 orientation_y=md.a,

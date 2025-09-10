@@ -1,7 +1,7 @@
 # coding=utf-8
 import abc
 import datetime
-from copy import deepcopy
+from copy import copy, deepcopy
 from dataclasses import dataclass, field, fields
 import numpy as np
 from typing import Any, List, Tuple, Type, Union
@@ -283,9 +283,9 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                                 f"{each_name}`" " received numpy arrays which do not match "
                                 "the trajectory length"
                                 )
-                else:
-                    raise TypeError(
-                            f"[TCT error] Property `{each_name}` is not a numpy ndarray")
+                # else:
+                #     raise TypeError(
+                #             f"[TCT error] Property `{each_name}` is not a numpy ndarray")
 
         self.on_exit_post_init_callback()
 
@@ -351,6 +351,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
     def __getitem__(self, key):
         feature_dataclass_at_t = deepcopy(self)
+        # feature_dataclass_at_t = copy(self)
 
         feature_dataclass_at_t.__setattr__("timestep_index", self.timestep_index[key])
         for each_name in self.get_dimension_names():

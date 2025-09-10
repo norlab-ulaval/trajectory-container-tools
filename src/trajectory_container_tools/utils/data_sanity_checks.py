@@ -54,10 +54,15 @@ def timestamp_causal_ordering_sanity_check(shadow_data_container: dict,
         or if any timestamp violates the causal ordering.
     """
     # .... Pre-conditions .........................................................................
-    assert "timestamps" in shadow_data_container, "[TCT error] missing required key 'timestamps'!"
     assert "feature_name" in shadow_data_container, "[TCT error] missing required key 'feature_name'!"
+    if "timestamps" in shadow_data_container or "header" in shadow_data_container:
+        if "timestamps" in shadow_data_container:
+            timestamps_ = shadow_data_container["timestamps"]
+        else:
+            timestamps_ = shadow_data_container["header"].__getattribute__("timestamps")
+    else:
+        raise AssertionError("[TCT error] missing required key 'timestamps' or 'header'!")
 
-    timestamps_ = shadow_data_container["timestamps"]
     assert len(timestamps_) > 0, "[TCT error] timestamp array is empty!"
     assert isinstance(timestamps_[0], ROSTime), "[TCT error] timestamp are not ros time objects!"
 
@@ -164,7 +169,15 @@ def fix_sequence_ordering_base_on_timestamps(
     :param data_container_type_: the type of AbstractTrajectoryDataclass subclass
     :return: the fixed shadow_data_container
     """
-    ts_: np.ndarray = shadow_data_container["timestamps"]
+    ts_: np.ndarray
+    if "timestamps" in shadow_data_container or "header" in shadow_data_container:
+        if "timestamps" in shadow_data_container:
+            ts_ = shadow_data_container["timestamps"]
+        else:
+            ts_ = shadow_data_container["header"].__getattribute__("timestamps")
+    else:
+        raise AssertionError("[TCT error] missing required key 'timestamps' or 'header'!")
+
     assert isinstance(ts_, np.ndarray), "[TCT] timestamps where not converted to numpy array!"
 
     # If ts_ contains ROS2 Time objects, convert them to nanoseconds first
@@ -189,6 +202,9 @@ def _fix_container_array_timestamps(
         shadow_data_container: dict):
     for each_property_name in data_container_type_.get_dimension_names():
         each_property = shadow_data_container[each_property_name]
+        if not each_property.get_dimension_type(each_property_name):
+            return shadow_data_container
+
         if isinstance(each_property, np.ndarray):
             shadow_data_container[each_property_name] = each_property[sorted_ts_idx]
         elif isinstance(each_property, NestedBaseTrajectoryDataclass):

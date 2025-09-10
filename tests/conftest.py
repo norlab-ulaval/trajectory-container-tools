@@ -7,6 +7,8 @@ import pytest
 
 from rclpy.time import Time as RosTime
 
+from trajectory_container_tools.trj_dataclasses.primitive_dataclass import Header
+
 TRJ_LEN = 40
 
 
@@ -67,9 +69,11 @@ class MockROSbagDataContainer:
     a: np.ndarray
     b: np.ndarray
     c: np.ndarray
-    header_FrameId: str = "map"
-    timestamps: np.ndarray = np.arange(
-            TS_START, TS_STOP, (TS_STOP - TS_START) / TRJ_LEN, dtype=int
+    header: Header = Header(
+            frame_id="map",
+            timestamps=np.arange(
+                    TS_START, TS_STOP, (TS_STOP - TS_START) / TRJ_LEN, dtype=int
+                    )
             )
     ts_idx: np.ndarray = np.arange(0, TRJ_LEN)
     trj_axe: int = 0
@@ -116,7 +120,7 @@ def mock_ROSbag_2_trj_DC_uneven_time_index() -> MockROSbagDataContainer:
             a=np.ones((TRJ_LEN,)),
             b=np.ones((TRJ_LEN,)),
             c=np.ones((TRJ_LEN - 1, 36)),
-            timestamps=(np.arange(10)) * 10 + 1000,
+            header=Header(frame_id="map", timestamps=(np.arange(10)) * 10 + 1000)
             )
 
 
@@ -127,11 +131,15 @@ def mock_trajectory_dict_ordered(
     ordered_trajectory_dict = asdict(mock_ROSbag_2_trj_DC_range)
 
     timestamps_ = []
-    for each_idx in np.arange(len(ordered_trajectory_dict["timestamps"])):
-        timestamps_.append(RosTime(seconds=ordered_trajectory_dict["timestamps"][each_idx]))
+    for each_idx in np.arange(mock_ROSbag_2_trj_DC_range.header.trajectory_len):
+        timestamps_.append(
+                RosTime(seconds=mock_ROSbag_2_trj_DC_range.header.timestamps[each_idx]))
 
     ordered_trajectory_dict["feature_name"] = "/mock_ROSbag_2_trj_DC_range"
-    ordered_trajectory_dict["timestamps"] = np.array(timestamps_)
+    ordered_trajectory_dict["header"] = Header(
+            frame_id=mock_ROSbag_2_trj_DC_range.header.frame_id,
+            timestamps=np.array(timestamps_)
+            )
     # print(ordered_trajectory_dict)
 
     return ordered_trajectory_dict
@@ -154,7 +162,3 @@ def mock_trajectory_dict_unordered(
     # print(unordered_trajectory_dict)
 
     return unordered_trajectory_dict
-
-
-
-

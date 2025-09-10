@@ -4,22 +4,12 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from .base_trajectory_dataclass import BaseTrajectoryDataclass, NestedBaseTrajectoryDataclass
+from .primitive_dataclass import Header, Point, Quaternion
 
 
 @dataclass()
 class RosBagFeatureDataclass(BaseTrajectoryDataclass):
-    """ Represents RosBag feature data attributes and related metadata.
-
-    This data class is designed to hold attributes related to RosBag features, including frame
-    identifiers and time stamps, for trajectory processing.
-
-    :ivar header_FrameId: Identifier of the frame associated with the data.
-    :type header_FrameId: str
-    :ivar timestamps: Array of timestamps associated with the trajectory data.
-    :type timestamps: numpy.ndarray
-    """
-    header_FrameId: str
-    timestamps: np.ndarray
+    header: Header
 
     @property
     def _init_trj_axe(self) -> int:
@@ -29,6 +19,8 @@ class RosBagFeatureDataclass(BaseTrajectoryDataclass):
 @dataclass()
 class Pose(NestedBaseTrajectoryDataclass):
     """ Represents the pose of an object in 3D space.
+
+    Compatible ros2 message interface: geometry_msgs/msg/Pose
 
     This class models the translational and rotational parameters of an object's pose in a
     three-dimensional coordinate system. The translational components are represented by the
@@ -62,11 +54,16 @@ class Pose(NestedBaseTrajectoryDataclass):
     orientation_y: np.ndarray
     orientation_z: np.ndarray
     orientation_w: np.ndarray
+    # position: Point
+    # orientation: Quaternion
+
 
 
 @dataclass()
 class PoseWithCovariance(NestedBaseTrajectoryDataclass):
     """ Represents a pose with its covariance data.
+
+    Compatible ros2 message interface: geometry_msgs/msg/PoseWithCovariance
 
     This class is used to encapsulate a pose along with its associated covariance matrix,
     which provides information about the uncertainty of the pose observations. The pose
@@ -87,6 +84,8 @@ class PoseWithCovariance(NestedBaseTrajectoryDataclass):
 @dataclass()
 class Twist(NestedBaseTrajectoryDataclass):
     """ Represents a dataclass for trajectory containing linear and angular velocity components.
+
+    Compatible ros2 message interface: geometry_msgs/msg/Twist
 
     The `Twist` class is used to encapsulate the movement information for trajectories in terms
     of linear and angular velocity  components along x, y, and z axes.
@@ -116,6 +115,8 @@ class Twist(NestedBaseTrajectoryDataclass):
 class TwistWithCovariance(NestedBaseTrajectoryDataclass):
     """ Represents a twist with an associated covariance matrix.
 
+    Compatible ros2 message interface: geometry_msgs/msg/TwistWithCovariance
+
     This dataclass encapsulates a twist (which typically includes linear and angular velocity
     components) along with a covariance matrix. It is used in contexts where both the twist and
     its uncertainty are required, such as motion modeling or state estimation in robotics and
@@ -135,11 +136,14 @@ class TwistWithCovariance(NestedBaseTrajectoryDataclass):
 class NavMsgsOdometry(RosBagFeatureDataclass):
     """ Data container for navigation messages odometry (nested data container version).
 
+    Compatible ros2 message interface: nav_msgs/msg/Odometry
+
     This class serves as a structured container for navigation message data related to odometry
     in ROS. It captures the pose and twist information along with their covariance data. The
     purpose of this container is to facilitate organized and consistent handling of these
     odometry-related data structures. Useful in systems where readability and maintainability of
     the navigation-related data are critical.
+
 
     :ivar pose: Contains the pose along with its associated covariance information.
     :type pose: PoseWithCovariance
@@ -153,6 +157,8 @@ class NavMsgsOdometry(RosBagFeatureDataclass):
 @dataclass()
 class NavMsgsOdometryFlat(RosBagFeatureDataclass):
     """ Data container for navigation messages odometry (flat structure data container version).
+
+    Compatible ros2 message interface: nav_msgs/msg/Odometry
 
     This class provides a structured data representation of odometry messages with flattened
     arrays for position, orientation, linear and angular velocities, as well as their respective
@@ -210,6 +216,9 @@ class NavMsgsOdometryFlat(RosBagFeatureDataclass):
 # .... Command messages ...........................................................................
 @dataclass()
 class AckermannMsgsAckermannDriveStamped(RosBagFeatureDataclass):
+    """
+    Compatible ros2 message interface: ackermann_msgs/msg/AckermannDriveStamped
+    """
     drive_steeringAngle: np.ndarray
     drive_steeringAngleVelocity: np.ndarray
     drive_speed: np.ndarray
@@ -227,6 +236,9 @@ class AckermannMsgsAckermannDriveStampedMinimal(RosBagFeatureDataclass):
 # .... TF messages ................................................................................
 @dataclass()
 class Tf2MsgsTFMessage(RosBagFeatureDataclass):
+    """
+    Compatible ros2 message interface: tf2_msgs/msg/TFMessage
+    """
     childFrameId: str
     transform_translation_x: np.ndarray
     transform_translation_y: np.ndarray
@@ -240,6 +252,9 @@ class Tf2MsgsTFMessage(RosBagFeatureDataclass):
 # .... Sensor messages ............................................................................
 @dataclass()
 class SensorMsgsImu(RosBagFeatureDataclass):
+    """
+    Compatible ros2 message interface: sensor_msgs/msg/Imu
+    """
     orientation_x: np.ndarray
     orientation_y: np.ndarray
     orientation_z: np.ndarray
