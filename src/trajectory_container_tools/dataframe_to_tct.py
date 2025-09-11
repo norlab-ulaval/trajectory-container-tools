@@ -182,10 +182,14 @@ def extract_single_feature_from_dataframe(dataset: pd.DataFrame, feature_name: s
                         f"`dataset_frame` as a column header prefix"
                         )
 
+            # (NICE TO HAVE) ToDo: refactor using explicit key deletion
             container_properties = fields(data_container_type)[
                 1:
             ]  # Remove 'feature_name'
-            tmp_container = {each_field.name: None for each_field in container_properties}
+
+            # (NICE TO HAVE) ToDo: refactor using "shadow_data_container" module
+            # tmp_container = {each_field.name: None for each_field in container_properties}
+            tmp_container = {each_field: None for each_field in data_container_type.get_dimension_names()}
 
             for each_property in data_container_type.get_dimension_names():
                 if each_property == "timestamps":
@@ -207,8 +211,7 @@ def extract_single_feature_from_dataframe(dataset: pd.DataFrame, feature_name: s
                     try:
                         timestep_index = dataframe_timestep_indexing_sanity_check(df_property,
                                                                                   df_header_field)
-                        if tmp_container["timestep_index"] is None:
-                            tmp_container["timestep_index"] = timestep_index
+                        tmp_container["timesteps"] = timestep_index
                     except IndexError as e:
                         raise ValueError(
                                 "[TCT error] There is a problem with the `dataset_frame` column label "
@@ -218,8 +221,8 @@ def extract_single_feature_from_dataframe(dataset: pd.DataFrame, feature_name: s
                 elif not header_mix_label_and_timesteps:
                     if df_property.empty:
                         raise ValueError(empty_property_error_msg)
-                    if tmp_container["timestep_index"] is None:
-                        tmp_container["timestep_index"] = dataset.index.array
+                    if tmp_container["timesteps"] is None:
+                        tmp_container["timesteps"] = dataset.index.array
 
                 tmp_container[each_property] = df_property.to_numpy()
 

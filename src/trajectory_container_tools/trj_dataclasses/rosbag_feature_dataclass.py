@@ -1,5 +1,6 @@
 # coding=utf-8
 from dataclasses import dataclass, field
+from typing import List
 
 import numpy as np
 
@@ -247,6 +248,11 @@ class Tf2MsgsTFMessage(RosBagFeatureDataclass):
     transform_rotation_y: np.ndarray
     transform_rotation_z: np.ndarray
     transform_rotation_w: np.ndarray
+
+    @classmethod
+    def trajectory_metadata_field(cls) -> List[str]:
+        return super().trajectory_metadata_field() + ["childFrameId"]
+
 
 
 # .... Sensor messages ............................................................................

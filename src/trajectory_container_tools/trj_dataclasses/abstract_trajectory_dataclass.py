@@ -63,8 +63,12 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
     An abstract base dataclass for trajectory-related data manipulation
     """
 
+    _timesteps: np.ndarray = field(default=None, init=False)
+    _iter_index: int = field(default=0, init=False)
+    _transposed: bool = field(default=False, init=False)
     feature_name: str
-    timestep_index: np.ndarray
+    timesteps: np.ndarray # Can be explicitly set by user, TCT fct or automaticaly set post-init
+
 
     @classmethod
     def _dataclass_internal_field(cls) -> List[str]:
@@ -80,7 +84,12 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
         :return: A list containing the names of internal fields used in the data class.
         """
-        return ["feature_name", "timestep_index"]
+        return ["feature_name",
+                "timesteps",
+                "_timesteps",
+                "_iter_index",
+                "_transposed",
+                ]
 
     @classmethod
     def trajectory_metadata_field(cls) -> List[str]:
@@ -89,7 +98,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         Usefulll for skipping field of type ndarray that are not trajectory timestep information.
 
         This method provides a default implementation for specifying the fields
-        that should be excluded from certain process such as `__post_init__`, transpose `T` and
+        that should be excluded from certain processes such as `__post_init__`, transpose `T` and
         `ravel_dimensions_in_place`.
 
         Usage:
@@ -104,8 +113,9 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
         :return: A list of string names corresponding to the fields skipped.
         """
-        # Note: "header_FrameId" and "childFrameId" are rosbag generated field
-        return ["header_FrameId", "childFrameId"]
+        # Note: "header_FrameId" is a rosbag generated field
+        # (Priority) ToDo: refactor out to 'Header' primitive dataclass (ref task TCT-45)
+        return ["header_FrameId"]
 
     def on_begin_post_init_callback(self) -> None:
         """Overide this methode to execute custom computation on feature dataclass at the begining
@@ -208,7 +218,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
     @property
     def trajectory_len(self) -> int:
-        return self.timestep_index.size
+        return self._timesteps.size
 
     def __len__(self):
         return self.trajectory_len
@@ -254,25 +264,36 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
             else:
                 self.post_init_feature_callback(feature_name=each_name)
 
+                # .... Setup timestep indexing ....................................................
                 data_property = self.__getattribute__(each_name)
 
                 if isinstance(data_property, AbstractTrajectoryDataclass):
-
-                    # Init timestep_index with nested dataclass trajectory_len
-                    if self.timestep_index is None:
-                        self.timestep_index = np.arange(data_property.trajectory_len)
+                    # Case nested container: Init timesteps using nested entity trajectory_len
+                    if self.timesteps is None:
+                        self._timesteps = np.arange(data_property.trajectory_len)
+                        self.timesteps = self._timesteps
+                    else:
+                        assert isinstance(self.timesteps, np.ndarray)
+                        self._timesteps = self.timesteps
 
                 elif isinstance(data_property, np.ndarray):
+                    # Case leaf: initialize time-steps index
                     data_property: np.ndarray
                     data_property_trajectory_len = None
+
+                    # [Re-]Compute trajectory length from data arrays
                     if data_property.ndim <= 2:
                         data_property_trajectory_len = data_property.shape[self._init_trj_axe]
                     elif data_property.ndim == 3:
                         data_property_trajectory_len = data_property.shape[1 - self._init_trj_axe]
 
-                    # Init timestep_index with dataclass trajectory_len
-                    if self.timestep_index is None and data_property_trajectory_len:
-                        self.timestep_index = np.arange(data_property_trajectory_len)
+                    # Init timesteps with dataclass trajectory_len
+                    if self.timesteps is None and data_property_trajectory_len:
+                        self._timesteps = np.arange(data_property_trajectory_len)
+                        self.timesteps = self._timesteps
+                    elif self.timesteps is not None:
+                        assert isinstance(self.timesteps, np.ndarray)
+                        self._timesteps = self.timesteps
 
                     if data_property_trajectory_len != self.trajectory_len:
                         raise ValueError(
@@ -281,9 +302,6 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                                 f"{each_name}`" " received numpy arrays which do not match "
                                 "the trajectory length"
                                 )
-                # else:
-                #     raise TypeError(
-                #             f"[TCT error] Property `{each_name}` is not a numpy ndarray")
 
         self.on_exit_post_init_callback()
 
@@ -351,7 +369,8 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         feature_dataclass_at_t = deepcopy(self)
         # feature_dataclass_at_t = copy(self)
 
-        feature_dataclass_at_t.__setattr__("timestep_index", self.timestep_index[key])
+        feature_dataclass_at_t.__setattr__("_timesteps", self._timesteps[key])
+        feature_dataclass_at_t.__setattr__("timesteps", self._timesteps[key])
         for each_name in self.get_dimension_names():
             if each_name in self.trajectory_metadata_field():
                 pass
