@@ -63,7 +63,7 @@ class TestExtractDataframeFeature:
             x=mock_value,
             y=mock_value,
             yaw=mock_value,
-            timestep_index=mock_value,
+            timesteps=mock_value,
         )
 
         with pytest.raises(AttributeError):

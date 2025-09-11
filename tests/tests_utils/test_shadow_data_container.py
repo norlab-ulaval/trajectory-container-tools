@@ -23,8 +23,8 @@ class TestInstanciateShadowDataContainer:
         assert isinstance(sdc, dict)
         assert sdc == {
                 'type':           Pose,
-                'feature_name':   None,
-                'timestep_index': None,
+                # 'feature_name':   None,
+                # 'timesteps': None,
                 'position_x':     {'data': [], 'type': np.ndarray},
                 'position_y':     {'data': [], 'type': np.ndarray},
                 'position_z':     {'data': [], 'type': np.ndarray},
@@ -42,12 +42,12 @@ class TestInstanciateShadowDataContainer:
         assert isinstance(sdc, dict)
         assert sdc == {
                 'type':           PoseWithCovariance,
-                'feature_name':   None,
-                'timestep_index': None,
+                # 'feature_name':   None,
+                # 'timesteps': None,
                 'pose':           {
                         'type':           Pose,
-                        'feature_name':   None,
-                        'timestep_index': None,
+                        # 'feature_name':   None,
+                        # 'timesteps': None,
                         'position_x':     {'data': [], 'type': np.ndarray},
                         'position_y':     {'data': [], 'type': np.ndarray},
                         'position_z':     {'data': [], 'type': np.ndarray},

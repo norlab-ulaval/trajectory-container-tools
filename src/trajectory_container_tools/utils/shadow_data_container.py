@@ -31,9 +31,9 @@ def instanciate_shadow_data_container(
     :return: A shadow data container.
     """
 
-    container_properties = fields(data_container_type)
-    shadow_data_container: ShadowDataContainer = {each_field.name: None for each_field in
-                                                  container_properties}
+    # container_properties = fields(data_container_type)
+    shadow_data_container: ShadowDataContainer = {each_field: None for each_field in
+                                                  data_container_type.get_dimension_names()}
 
     shadow_data_container['type'] = data_container_type
 
@@ -79,12 +79,17 @@ def post_process_shadown_data_container(shadow_data_container: ShadowDataContain
     """
     # (NICE TO HAVE) ToDo: unit-test explicitly (ref task RLRP-83). Its indirectly tested for now.
 
-    if not issubclass(data_container_type, NestedBaseTrajectoryDataclass):
-        shadow_data_container["feature_name"] = feature_name
-    else:
-        # Nested trj container should not populate 'feature_name'
-        del shadow_data_container['feature_name']
-    del shadow_data_container['timestep_index']
+    for each in data_container_type._dataclass_internal_field():
+        if each == 'feature_name':
+            if not issubclass(data_container_type, NestedBaseTrajectoryDataclass):
+                shadow_data_container["feature_name"] = feature_name
+            else:
+                # Nested trj container should not populate 'feature_name'
+                if 'feature_name' in shadow_data_container:
+                    del shadow_data_container['feature_name']
+        else:
+            if each in shadow_data_container:
+                del shadow_data_container[each]
 
     # if issubclass(data_container_type, Header):
     #     shadow_data_container["frame_id"] = shadow_data_container["frame_id"]['data']

@@ -239,8 +239,6 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         return None
 
     def __post_init__(self):
-        self._iter_index: int = 0
-        self.transposed: bool = False
 
         self.on_begin_post_init_callback()
 
@@ -316,11 +314,11 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
             repr_str += f"{m_sp}feature_name: {v}\n"
 
         repr_str += f"{m_sp}trajectory_len: {self.trajectory_len}\n"
-        repr_str += f"{m_sp}transposed: {self.transposed}\n"
+        repr_str += f"{m_sp}transposed: {self._transposed}\n"
         repr_str += f"{m_sp}dimensions:\n"
 
         for k, v in self.__dict__.items():
-            if k in ["_iter_index", "transposed", "feature_name", "timestep_index"]:
+            if k in ["_iter_index", "_transposed", "feature_name", "_timesteps"]:
                 pass
             elif isinstance(v, np.ndarray):
                 if v.ndim > 0 and isinstance(v[0], Time):
@@ -342,9 +340,9 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
     @property
     def current_trj_axe(self):
-        if self._init_trj_axe == -1 and self.transposed == True:
+        if self._init_trj_axe == -1 and self._transposed == True:
             return 0
-        elif self._init_trj_axe == 0 and self.transposed == True:
+        elif self._init_trj_axe == 0 and self._transposed == True:
             return -1
         else:
             return self._init_trj_axe
@@ -394,7 +392,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 if isinstance(data_property, (np.ndarray, AbstractTrajectoryDataclass)):
                     self.__setattr__(each_name, data_property.T)
         # noinspection PyAttributeOutsideInit
-        self.transposed = not self.transposed
+        self._transposed = not self._transposed
         return self
 
 

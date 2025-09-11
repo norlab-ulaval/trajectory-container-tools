@@ -99,7 +99,7 @@ class TestExtractROSBagFeature:
                 drive_speed=mock_value,
                 drive_acceleration=mock_value,
                 drive_jerk=mock_value,
-                # timestep_index=mock_value,
+                # timesteps=mock_value,
                 )
 
         with pytest.raises(AttributeError):

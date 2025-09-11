@@ -112,7 +112,7 @@ trajectory = StatePose2D(feature_name="odom pose",
                          x=np.arange(100, dtype=float),
                          y=np.arange(100, dtype=float),
                          yaw=np.arange(100, dtype=float),
-                         timestep_index=np.arange(100, dtype=int),
+                         timesteps=np.arange(100, dtype=int),
                          )
 ```
              

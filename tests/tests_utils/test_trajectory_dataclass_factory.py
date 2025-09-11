@@ -68,7 +68,7 @@ class TestTrajectoryDataclassFactoryDataframeCase:
             xx=mock_value,
             yy=mock_value,
             yaww=mock_value,
-            timestep_index=mock_value,
+            timesteps=mock_value,
         )
         assert isinstance(mock_cls_instance, atd.AbstractTrajectoryDataclass)
         assert mock_cls.get_dimension_names() == ("xx", "yy", "yaww")

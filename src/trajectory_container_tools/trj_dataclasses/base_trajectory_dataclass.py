@@ -29,10 +29,10 @@ class BaseTrajectoryDataclass(AbstractTrajectoryDataclass):
         >>>     position_y: np.ndarray
         >>>     position_z: np.ndarray
 
-    :ivar timestep_index: Trajectory data temporal index.
-    :type timestep_index: Optional[np.ndarray]
+    :ivar timesteps: Trajectory data temporal index.
+    :type timesteps: Optional[np.ndarray]
     """
-    timestep_index: Optional[np.ndarray] = field(default=None, init=False)
+    timesteps: Optional[np.ndarray] = field(default=None, init=False)
 
     @property
     def _init_trj_axe(self) -> int:
