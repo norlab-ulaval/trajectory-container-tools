@@ -58,7 +58,6 @@ class Pose(NestedBaseTrajectoryDataclass):
     # orientation: Quaternion
 
 
-
 @dataclass()
 class PoseWithCovariance(NestedBaseTrajectoryDataclass):
     """ Represents a pose with its covariance data.
@@ -239,6 +238,7 @@ class Tf2MsgsTFMessage(RosBagFeatureDataclass):
     """
     Compatible ros2 message interface: tf2_msgs/msg/TFMessage
     """
+    # (Priority) ToDo: implement >> tf2_msgs/msg/Transform
     childFrameId: str
     transform_translation_x: np.ndarray
     transform_translation_y: np.ndarray
@@ -250,6 +250,8 @@ class Tf2MsgsTFMessage(RosBagFeatureDataclass):
 
 
 # .... Sensor messages ............................................................................
+# (Priority) ToDo: implement >> sensor_msgs/msg/LaserScan
+
 @dataclass()
 class SensorMsgsImu(RosBagFeatureDataclass):
     """
