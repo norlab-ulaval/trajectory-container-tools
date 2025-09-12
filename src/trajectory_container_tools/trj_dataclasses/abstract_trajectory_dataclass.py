@@ -283,7 +283,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                         self.timesteps_indices = self._timestep_indexes
                     elif self.timesteps_indices is not None:
                         assert isinstance(self.timesteps_indices, np.ndarray)
-                        self._timesteps_indices_vs_index_len_check()
+                        _timesteps_indices_vs_index_len_check(self.timesteps_indices, self._timestep_indexes)
                         timestep_indices_sanity_check(self.timesteps_indices)
 
                 elif isinstance(data_property, np.ndarray):
@@ -305,7 +305,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                         self.timesteps_indices = self._timestep_indexes
                     elif self.timesteps_indices is not None:
                         assert isinstance(self.timesteps_indices, np.ndarray)
-                        self._timesteps_indices_vs_index_len_check()
+                        _timesteps_indices_vs_index_len_check(self.timesteps_indices, self._timestep_indexes)
 
                     if data_property_trajectory_len != self.trajectory_len:
                         raise ValueError(
@@ -319,12 +319,6 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
         return None
 
-    def _timesteps_indices_vs_index_len_check(self) -> None:
-        ts_id_len = self.timesteps_indices.shape[-1]
-        ts_idx_len = self._timestep_indexes.shape[-1]
-        assert ts_idx_len == ts_id_len, (f"[TCT error] timesteps_indices expecte "
-                                         f"lemgth {ts_idx_len} != {ts_id_len}")
-        return None
 
     def __del__(self):
         try:
@@ -474,3 +468,10 @@ def _fetch_nested_attribute(self_, nested_attribute_list: str) -> Any:
     for each in nested_attribute_list.split('.'):
         nested_attribute = nested_attribute.get_dynamic_field(each)
     return nested_attribute
+
+def _timesteps_indices_vs_index_len_check(timesteps_indices: np.ndarray, _timestep_indexes: np.ndarray) -> None:
+    ts_id_len = timesteps_indices.shape[-1]
+    ts_idx_len = _timestep_indexes.shape[-1]
+    assert ts_idx_len == ts_id_len, (f"[TCT error] timesteps_indices expecte "
+                                     f"lemgth {ts_idx_len} != {ts_id_len}")
+    return None
