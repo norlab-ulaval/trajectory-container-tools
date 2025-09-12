@@ -289,7 +289,7 @@ def _collect_properties_from_rosbag(
                 if not shadow_data_container['header']["frame_id"]['data']:
                     shadow_data_container['header']["frame_id"]['data'] = msg.header.frame_id
                 shadow_data_container['header']["timestamps"]['data'].append(
-                        _set_timestamp(msg, timestamp, use_msg_header_time=True)
+                        _extract_timestamp(msg.header.stamp, timestamp, use_msg_timestamp=True, output_rostime=False)
                         )
             else:
                 attribute_list = str(each_property_name).split("_")
@@ -331,12 +331,23 @@ def _collect_properties_from_rosbag(
     return shadow_data_container
 
 
-def _set_timestamp(msg, bag_timestamp, use_msg_header_time: bool = True) -> RosTime:
+def _extract_timestamp(msg_timestamp, bag_timestamp: int, use_msg_timestamp: bool = True,
+                       output_rostime: bool = False) -> Union[int, RosTime]:
     # (NICE TO HAVE) ToDo: unit-test (curently indirectly tested)
-    if use_msg_header_time:
-        _timestamp = RosTime(seconds=msg.header.stamp.sec, nanoseconds=msg.header.stamp.nanosec)
+    NANOSECONDS_CONVERSION_CONSTANT = 10 ** 9
+    if output_rostime:
+        if use_msg_timestamp:
+            _timestamp = RosTime(seconds=msg_timestamp.sec,
+                                 nanoseconds=msg_timestamp.nanosec)
+        else:
+            _timestamp = RosTime(nanoseconds=bag_timestamp)
     else:
-        _timestamp = RosTime(nanoseconds=bag_timestamp)
+        if use_msg_timestamp:
+            nanoseconds = msg_timestamp.nanosec
+            seconds = msg_timestamp.sec
+            _timestamp = (seconds * NANOSECONDS_CONVERSION_CONSTANT) + nanoseconds
+        else:
+            _timestamp = bag_timestamp
 
     return _timestamp
 

@@ -2,17 +2,12 @@
 
 import numpy as np
 
-from trajectory_container_tools.utils.temporal_tools.sequence_ordering import (
-    fix_sequence_ordering_base_on_timestamps,
-    )
-from trajectory_container_tools.utils.temporal_tools.timestamps import \
-    timestamp_causal_ordering_sanity_check
 from trajectory_container_tools.utils.shadow_data_container import (
     instanciate_shadow_data_container,
     )
 from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
     Pose,
-    PoseWithCovariance, RosBagFeatureDataclass,
+    PoseWithCovariance,
     )
 
 
@@ -63,26 +58,3 @@ class TestInstanciateShadowDataContainer:
         # print(sdc)
 
 
-class TestTrajectorySequenceOrderingLogic:
-
-    def test_fix_sequence_ordering_base_on_timestamps_case_input_ordered(
-            self, mock_trajectory_dict_ordered
-            ):
-        fixed_trajectory_dict = fix_sequence_ordering_base_on_timestamps(
-                shadow_data_container=mock_trajectory_dict_ordered,
-                data_container_type_=RosBagFeatureDataclass)
-
-        timestamp_causal_ordering_sanity_check(fixed_trajectory_dict)
-
-    def test_fix_sequence_ordering_base_on_timestamps_case_input_unordered(
-            self, mock_trajectory_dict_unordered, mock_trajectory_dict_ordered
-            ):
-        fixed_trajectory_dict = fix_sequence_ordering_base_on_timestamps(
-                shadow_data_container=mock_trajectory_dict_unordered,
-                data_container_type_=RosBagFeatureDataclass)
-
-        timestamp_causal_ordering_sanity_check(fixed_trajectory_dict)
-
-        assert fixed_trajectory_dict == mock_trajectory_dict_ordered
-
-        # print(fixed_trajectory_dict)

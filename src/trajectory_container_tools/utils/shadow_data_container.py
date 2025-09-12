@@ -7,11 +7,11 @@ from tqdm import tqdm
 from .general import extract_class_name_from_type, setup_progressbar
 from ..trj_dataclasses.rosbag_feature_dataclass import RosBagFeatureDataclass
 from ..trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
-from .temporal_tools.timestamps import timestamp_causal_ordering_sanity_check
+from .temporal_tools.timestamps import Timestamps, timestamp_causal_ordering_sanity_check
 
 ShadowDataContainer: TypeAlias = Dict[str, Union[None, List, np.ndarray, Dict, Union[
-    Type[RosBagFeatureDataclass], Type[NestedBaseTrajectoryDataclass]], Union[
-    RosBagFeatureDataclass, NestedBaseTrajectoryDataclass]]]
+    Type[RosBagFeatureDataclass], Type[NestedBaseTrajectoryDataclass], Type[Timestamps]], Union[
+    RosBagFeatureDataclass, NestedBaseTrajectoryDataclass, Timestamps]]]
 
 
 def instanciate_shadow_data_container(
@@ -37,10 +37,10 @@ def instanciate_shadow_data_container(
 
     for each_property_name in data_container_type.get_dimension_names():
         dimension_type = data_container_type.get_dimension_type(each_property_name)
-        if issubclass(dimension_type, np.ndarray):
+        if issubclass(dimension_type, (np.ndarray, Timestamps)):
             # Note: Using a list to temporary aggregate data and then convert to numpy array when
             #       done is faster than directly append to a numpy array
-            shadow_data_container[each_property_name] = {'type': np.ndarray, 'data': []}
+            shadow_data_container[each_property_name] = {'type': dimension_type, 'data': []}
         elif issubclass(dimension_type, (RosBagFeatureDataclass, NestedBaseTrajectoryDataclass)):
             shadow_data_container[each_property_name] = instanciate_shadow_data_container(
                     dimension_type)
@@ -98,7 +98,8 @@ def post_process_shadown_data_container(shadow_data_container: ShadowDataContain
 
     for k, v in shadow_data_container.items():
         # if shadow_data_container["feature_name"]:
-        if k in data_container_type.trajectory_metadata_field() or k in data_container_type._dataclass_internal_field():
+        if (k in data_container_type.trajectory_metadata_field() or k in
+                data_container_type._dataclass_internal_field()):
             pass
         elif k == 'type':
             pass
@@ -107,6 +108,8 @@ def post_process_shadown_data_container(shadow_data_container: ShadowDataContain
             if issubclass(target_type, np.ndarray):
                 assert isinstance(v['data'], list)
                 shadow_data_container[k] = np.array(v['data'])
+            elif issubclass(target_type, Timestamps):
+                shadow_data_container[k] = Timestamps(v['data'])
             elif issubclass(target_type, NestedBaseTrajectoryDataclass):
                 ppsdc = post_process_shadown_data_container(v, data_container_type=target_type,
                                                             feature_name=None,
@@ -124,11 +127,11 @@ def post_process_shadown_data_container(shadow_data_container: ShadowDataContain
             progressbar.update(1)
 
     if issubclass(data_container_type, RosBagFeatureDataclass):
-        timestamp_causal_ordering_sanity_check(shadow_data_container)
+        shadow_data_container['header'].__getattribute__(
+            "timestamps").causal_ordering_sanity_check(feature_name,
+                                                       show_offending_in_nanoseconds=True)
+        # timestamp_causal_ordering_sanity_check(shadow_data_container, feature_name)
 
     if progressbar_enabled:
         progressbar.close()
     return shadow_data_container
-
-
-

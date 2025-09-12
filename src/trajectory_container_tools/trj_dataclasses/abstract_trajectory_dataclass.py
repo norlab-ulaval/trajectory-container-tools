@@ -6,8 +6,9 @@ from dataclasses import dataclass, field, fields
 import numpy as np
 from typing import Any, List, Tuple, Type, Union
 
-from rclpy.time import Time
+from rclpy.time import Time as ROStime
 
+from ..utils.temporal_tools.timestamps import Timestamps
 from ..utils.temporal_tools.timestep_indexing import timestep_indices_sanity_check
 from ..utils.general import extract_class_name_from_instance
 
@@ -274,10 +275,10 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 # .... Setup timestep indexing ....................................................
                 data_property = self.__getattribute__(each_name)
 
-                if isinstance(data_property, AbstractTrajectoryDataclass):
+                if isinstance(data_property, (AbstractTrajectoryDataclass, Timestamps)):
                     # Case nested container: Init timesteps using nested entity trajectory_len
                     if self._timestep_indexes is None:
-                        self._timestep_indexes = np.arange(data_property.trajectory_len)
+                        self._timestep_indexes = np.arange(len(data_property))
 
                     if self.timesteps_indices is None:
                         self.timesteps_indices = self._timestep_indexes
@@ -319,7 +320,6 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
         return None
 
-
     def __del__(self):
         try:
             for each_name in self.get_dimension_names():
@@ -354,9 +354,9 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 pass
             elif k == "timesteps_indices" and self._nested:
                 pass
-            elif isinstance(v, np.ndarray):
-                if v.ndim > 0 and isinstance(v[0], Time):
-                    range_str = f"range(nanosec) {np.min(v).nanoseconds} ⟶ {np.max(v).nanoseconds}"
+            elif isinstance(v, (np.ndarray, Timestamps)):
+                if isinstance(v, Timestamps):
+                    range_str = f"range(nanosec) {np.min(v.stamps)} ⟶ {np.max(v.stamps)}"
                 else:
                     range_str = f"range {np.min(v)} ⟶ {np.max(v)}"
                 repr_str += (f"{m_sp}{item_space}{k}: ({extract_class_name_from_instance(v)}) "
@@ -369,7 +369,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 repr_str += f"{m_sp}{item_space}{k}:{indent_v}"
             else:
                 repr_str += f"{m_sp}{item_space}{k}: ({extract_class_name_from_instance(v)}) {v}\n"
-        repr_str += f"{m_sp})"
+        repr_str += f"{t_sp})"
         return repr_str
 
     @property
@@ -383,7 +383,6 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
     def __getitem__(self, key):
         feature_dataclass_at_t = deepcopy(self)
-        # feature_dataclass_at_t = copy(self)
 
         feature_dataclass_at_t.__setattr__("_timestep_indexes", self._timestep_indexes[key])
         feature_dataclass_at_t.__setattr__("timesteps_indices", self.timesteps_indices[key])

@@ -69,8 +69,9 @@ Maintainer <a href="https://github.com/RedLeader962">RedLeader962</a>
 
 - **Trajectory Dataclasses**: 
   - Type-safety for different trajectory formats (e.g., 2D/3D poses, velocities, commands)
-  - Timesteps iterable object over the trajectory horizon
-  - Data causality validation i.e., guarantee to have strictly monotonicaly increassing timestamps
+  - Trajectory wide indexing and slicing
+  - Trajectory wide iterable i.e., timesteps iterable from t=0 to t=T
+  - Time logical and causal ordering validation i.e., guarantee to have strictly monotonicaly increassing timestep indices and timestamps
 - **Data Converters**: Extract trajectory data from pandas DataFrames and ROS bags
 - **Factory Functions**: Dynamically create trajectory containers based on configuration
 - **Utilities**: Timestamps ordering validation, container timestamp alignment check, plotting, and filtering tools

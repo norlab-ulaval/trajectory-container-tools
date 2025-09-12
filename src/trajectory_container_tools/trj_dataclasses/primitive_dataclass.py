@@ -5,6 +5,7 @@ from typing import Type
 import numpy as np
 
 from trajectory_container_tools.trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
+from trajectory_container_tools.utils.temporal_tools.timestamps import Timestamps
 
 
 @dataclass()
@@ -34,5 +35,5 @@ class Quaternion(NestedBaseTrajectoryDataclass):
 class Header(NestedBaseTrajectoryDataclass):
     # Compatible ros2 message interface: std_msgs/msg/Header
     frame_id: str
-    timestamps: np.ndarray
+    timestamps: Timestamps
 

@@ -1,12 +1,115 @@
 # coding=utf-8
-from typing import List
+from typing import Any, List, Tuple
 
 import numpy as np
-from rclpy.time import Time as ROSTime
 
 
-def timestamp_causal_ordering_sanity_check(shadow_data_container: dict,
-                                           nanoseconds: bool = True) -> List[int]:
+class Timestamps:
+    """
+    Handles timestamp management and provides iteration and validation methods
+    for processing timestamp arrays.
+
+    Align with ROS time format whitout requiring rclpy
+
+    The `Timestamps` class is designed to work with a one-dimensional NumPy array of positive
+    integer timestamps. It supports iteration, indexing, and validation to ensure the timestamps
+    are in logical and causal order. This class enforces basic constraints on the timestamps and
+    provides methods for further processing.
+    """
+    _stamps: np.ndarray[Any, np.dtype[int]]
+    _trajectory_len: int
+    _iter_index: int = 0
+
+    def __init__(self, stamps: np.ndarray[Any, np.dtype[int]]):
+        """
+        Represents a class initializer for managing and validating a sequence of timestamps.
+
+        The initializer takes a NumPy array of integer timestamps and performs validation to
+        ensure the data's integrity. Specifically, it ensures that the array is not empty and
+        that all timestamps are non-negative. If either validation check fails, an exception
+        is raised.
+
+        :param stamps: A NumPy array containing integer timestamps in nanosecond ros time format.
+
+        :raises ValueError: If the stamp array is empty.
+        :raises ValueError: If any value in the stamp array is negative.
+        """
+        self._trajectory_len = len(stamps)
+        if self._trajectory_len == 0:
+            raise ValueError("[TCT error] stamps array is empty!")
+
+        if np.min(stamps) < 0:
+            raise ValueError("[TCT error] stamps must be positive values")
+
+        self._stamps = np.array(stamps)
+
+    @property
+    def stamps(self) -> np.ndarray[Any, np.dtype[int]]:
+        return self._stamps
+
+    @property
+    def shape(self) -> Tuple:
+        return self._stamps.shape
+
+    def __len__(self):
+        return len(self._stamps)
+
+    def __iter__(self):
+        self._iter_index = 0
+        return self
+
+    def __next__(self):
+        if self._iter_index < self._trajectory_len:
+            item = self[self._iter_index]
+            self._iter_index += 1
+            return item
+        else:
+            raise StopIteration
+
+    def __getitem__(self, key) -> int:
+        return self._stamps[key]
+
+    def seconds_nanoseconds(self, key) -> Tuple[int, int]:
+        """
+        Converts the value associated with the given key into seconds and nanoseconds.
+
+        Usage:
+
+        >>> ts = Timestamps(np.array([1711047156311350031, 1711047156397750031]))
+        >>> ts.seconds_nanoseconds(0)
+        >>> # (1711047156, 311350031)
+
+        :param key: The key whose associated value will be converted to seconds and
+            nanoseconds. The key is used to access the data structure holding the value.
+        :return: A tuple containing two integers, where the first integer represents
+            seconds and the second represents nanoseconds.
+        """
+        return to_seconds_nanoseconds(self[key])
+
+    def causal_ordering_sanity_check(self, feature_name: str,
+                                     show_offending_in_nanoseconds: bool = True) -> List[int]:
+        """
+        Performs a sanity check for causal ordering based on timestamps of events.
+
+        This function verifies the causal ordering of events tied to a specific feature
+        within a dataset. It ensures that the temporal sequence adheres to the expected
+        causality rules and returns a list of IDs where violations occur, if any. The
+        option to display the offending timestamps in nanoseconds is provided for finer
+        granularity during debugging and analysis.
+
+        :param feature_name: Name of the feature whose causal ordering is to be verified.
+        :param show_offending_in_nanoseconds: Whether to display offending timestamps in
+          nanoseconds or (seconds, nanoseconds ), default is True.
+        :return: A list of integers representing IDs of events that violate causal ordering.
+        """
+        return timestamp_causal_ordering_sanity_check(self, feature_name,
+                                                      show_offending_in_nanoseconds)
+
+
+def timestamp_causal_ordering_sanity_check(
+        timestamp_object: Timestamps,
+        feature_name: str,
+        show_offending_in_nanoseconds: bool = True) -> List[int]:
     """ Checks the causal order of timestamps in the given data container to ensure they are
     sequentially increasing.
 
@@ -16,13 +119,13 @@ def timestamp_causal_ordering_sanity_check(shadow_data_container: dict,
 
     Usage example:
 
-    >>> mock_shadow_data_container = {
-    >>>     'feature_name': "/mock_teleop",
-    >>>     "timestamps": mock_trajectory_timestamp_in_ros_time,
-    >>> }
-    >>> offending_index = timestamp_causal_ordering_sanity_check(mock_shadow_data_container)
-    >>> # AssertionError: Timestamp causal ordering sanity check failed! Number of offending timestamps 4/3409
+    >>> mock_trajectory_timestamp_object: Timestamps
+    >>> offending_index = timestamp_causal_ordering_sanity_check(
+    >>>         mock_trajectory_timestamp_object, feature_name="The feature"
+    >>> )
+    >>> # AssertionError: Timestamp causal ordering sanity check failed!
     >>> # [TCT error] Timestamp causal ordering violations:
+    >>> #     Number of offending timestamps 4/3409
     >>> #
     >>> #     Offending /mock_teleop timestamps:
     >>> #     ——————————————————————————————————————————————————————————————————————————————
@@ -42,50 +145,33 @@ def timestamp_causal_ordering_sanity_check(shadow_data_container: dict,
     >>> #     ——————————————————————————————————————————————————————————————————————————————
     >>> assert len(offending_index) == 4
 
-    :param shadow_data_container: A dictionary containing a "timestamps" entry which is a list
-    of ROS time instances.
-    :param nanoseconds: Display in nanosecond or ( seconds nanoseconds ). Default nanoseconds
+    :param timestamp_object: A Timestance object fill with trajectory stamp in nanosecond.
+    :param feature_name: The name reported in the error message to help scope the problem root.
+    :param show_offending_in_nanoseconds: Display in nanosecond or ( seconds nanoseconds ).
+     Default nanoseconds
     :return: The list of offending timestamps indexes.
     :raises AssertionError: Raises an AssertionError if the "timestamps" array is empty
         or if any timestamp violates the causal ordering.
     """
-    # .... Pre-conditions .........................................................................
-    assert "feature_name" in shadow_data_container, ("[TCT error] missing required key "
-                                                     "'feature_name'!")
-    if "timestamps" in shadow_data_container or "header" in shadow_data_container:
-        if "timestamps" in shadow_data_container:
-            timestamps_ = shadow_data_container["timestamps"]
-        else:
-            timestamps_ = shadow_data_container["header"].__getattribute__("timestamps")
-    else:
-        raise AssertionError("[TCT error] missing required key 'timestamps' or 'header'!")
-
-    assert len(timestamps_) > 0, "[TCT error] timestamp array is empty!"
-    assert isinstance(timestamps_[0], ROSTime), "[TCT error] timestamp are not ros time objects!"
-
-    # .... Begin ..................................................................................
     offending_idx = []
     offending_ts = ""
-    for ts_idx in np.arange(start=1, stop=len(timestamps_)):
-        previous_timestamp: ROSTime = timestamps_[ts_idx - 1]
-        current_timestamp: ROSTime = timestamps_[ts_idx]
+    for ts_idx in np.arange(start=1, stop=len(timestamp_object)):
+        previous_timestamp = timestamp_object[ts_idx - 1]
+        current_timestamp = timestamp_object[ts_idx]
 
         try:
             assert previous_timestamp < current_timestamp
         except AssertionError:
-            if nanoseconds:
-                previous_timestamp = previous_timestamp.nanoseconds
-                current_timestamp = current_timestamp.nanoseconds
-            else:
-                previous_timestamp = previous_timestamp.seconds_nanoseconds()
-                current_timestamp = current_timestamp.seconds_nanoseconds()
+            if not show_offending_in_nanoseconds:
+                previous_timestamp = to_seconds_nanoseconds(previous_timestamp)
+                current_timestamp = to_seconds_nanoseconds(current_timestamp)
             offending_idx.append(ts_idx)
             offending_ts += (
                     f"    {str(previous_timestamp):>25} [{ts_idx - 1:>5}]     !<     "
                     f"{str(current_timestamp):>25} [{ts_idx:>5}]\n")
 
     if len(offending_idx) > 0:
-        if nanoseconds:
+        if show_offending_in_nanoseconds:
             timestamp_display = "nanoseconds"
         else:
             timestamp_display = "( seconds nanoseconds )"
@@ -95,23 +181,54 @@ def timestamp_causal_ordering_sanity_check(shadow_data_container: dict,
                 f"    {'—' * 78}"
         )
         error_msg = (
-                f"Timestamp causal ordering sanity check failed! "
-                f"Number of offending timestamps {len(offending_idx)}/{len(timestamps_)}\n"
-                f"[TCT error] Timestamp causal ordering violations:\n\n"
-                f"    Offending {shadow_data_container['feature_name']} timestamps:\n"
+                f"Timestamp causal ordering sanity check failed!\n"
+                f"[TCT error] Timestamp causal ordering violations:\n"
+                f"    Number of offending timestamps {len(offending_idx)}/"
+                f"{len(timestamp_object)}\n\n"
+                f"    Offending {feature_name} timestamps:\n"
                 f"{offending_ts_header}\n"
                 f"{offending_ts}\n"
                 f"    Rosbag timestamps metadate:\n"
                 f"    {'—' * 78}\n"
                 f"                            nanoseconds    ( seconds nanoseconds )\n"
-                f"          start: {timestamps_[0].nanoseconds:>22}  "
-                f"{str(timestamps_[0].seconds_nanoseconds()):>25} \n"
-                f"          stop:  {timestamps_[-1].nanoseconds:>22}  "
-                f"{str(timestamps_[-1].seconds_nanoseconds()):>25} \n"
+                f"          start: {timestamp_object[0]:>22}  "
+                f"{str(timestamp_object.seconds_nanoseconds(0)):>25} \n"
+                f"          stop:  {timestamp_object[-1]:>22}  "
+                f"{str(timestamp_object.seconds_nanoseconds(-1)):>25} \n"
                 f"      duration:  "
-                f"{(timestamps_[-1].nanoseconds - timestamps_[0].nanoseconds):>22}  \n"
+                f"{(timestamp_object[-1] - timestamp_object[0]):>22}  \n"
                 f"    {'—' * 78}\n"
         )
         raise AssertionError(error_msg)
 
     return offending_idx
+
+
+def to_seconds_nanoseconds(nanoseconds: int) -> Tuple[int, int]:
+    """
+    Get time as separate seconds and nanoseconds components.
+
+    Follow the ROS2 time convention
+
+    :returns: 2-tuple seconds and nanoseconds
+    """
+    NANOSECONDS_CONVERSION_CONSTANT = 10 ** 9
+    return (nanoseconds // NANOSECONDS_CONVERSION_CONSTANT, nanoseconds %
+            NANOSECONDS_CONVERSION_CONSTANT)
+
+
+def fetch_timestamps_from_shadow_data_container(shadow_data_container: dict) -> np.ndarray:
+    """
+    Temporary hack
+    Will be replaced by 'Timestamps' class (ref task TCT-49)
+    """
+    assert "feature_name" in shadow_data_container, ("[TCT error] missing required key "
+                                                     "'feature_name'!")
+    if "timestamps" in shadow_data_container or "header" in shadow_data_container:
+        if "timestamps" in shadow_data_container:
+            timestamps_ = shadow_data_container["timestamps"]
+        else:
+            timestamps_ = shadow_data_container["header"].__getattribute__("timestamps")
+    else:
+        raise AssertionError("[TCT error] missing required key 'timestamps' or 'header'!")
+    return timestamps_
