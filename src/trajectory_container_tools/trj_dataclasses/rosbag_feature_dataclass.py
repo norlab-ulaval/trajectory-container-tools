@@ -144,7 +144,6 @@ class NavMsgsOdometry(RosBagFeatureDataclass):
     odometry-related data structures. Useful in systems where readability and maintainability of
     the navigation-related data are critical.
 
-
     :ivar pose: Contains the pose along with its associated covariance information.
     :type pose: PoseWithCovariance
     :ivar twist: Contains the twist along with its associated covariance information.

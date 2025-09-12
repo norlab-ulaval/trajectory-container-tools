@@ -29,10 +29,7 @@ class BaseTrajectoryDataclass(AbstractTrajectoryDataclass):
         >>>     position_y: np.ndarray
         >>>     position_z: np.ndarray
 
-    :ivar timesteps: Trajectory data temporal index.
-    :type timesteps: Optional[np.ndarray]
     """
-    timesteps: Optional[np.ndarray] = field(default=None, init=False)
 
     @property
     def _init_trj_axe(self) -> int:
@@ -68,6 +65,7 @@ class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
     :type feature_name: str
     """
     feature_name: str = field(default=None, init=False)
+    _nested: str = field(default=True, init=False)
 
 
 # :::: Dataframe related ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

@@ -29,7 +29,7 @@ def containers_timestep_alignment_sanity_check(
     :param check_attribute: The attributes to check for alignment. Default is ("pose_x",
     "pose_y", "pose_theta").
 
-    :return: True if the timesteps for the specified attributes are aligned between the two
+    :return: True if the timesteps_indices for the specified attributes are aligned between the two
     containers, False otherwise.
     """
     assert isinstance(container_a, AbstractTrajectoryDataclass)

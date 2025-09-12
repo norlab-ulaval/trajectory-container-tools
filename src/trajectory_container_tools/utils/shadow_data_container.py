@@ -1,15 +1,13 @@
 # coding=utf-8
-from dataclasses import fields as fields
 from typing import Dict, List, Optional, Type, Union, TypeAlias
 
 import numpy as np
 from tqdm import tqdm
 
 from .general import extract_class_name_from_type, setup_progressbar
-from ..trj_dataclasses.primitive_dataclass import Header
 from ..trj_dataclasses.rosbag_feature_dataclass import RosBagFeatureDataclass
 from ..trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
-from .data_sanity_checks import timestamp_causal_ordering_sanity_check
+from .temporal_tools.timestamps import timestamp_causal_ordering_sanity_check
 
 ShadowDataContainer: TypeAlias = Dict[str, Union[None, List, np.ndarray, Dict, Union[
     Type[RosBagFeatureDataclass], Type[NestedBaseTrajectoryDataclass]], Union[
@@ -39,8 +37,6 @@ def instanciate_shadow_data_container(
 
     for each_property_name in data_container_type.get_dimension_names():
         dimension_type = data_container_type.get_dimension_type(each_property_name)
-        # if each_property_name in ["header_FrameId", "childFrameId"]:
-        #     shadow_data_container[each_property_name] = None
         if issubclass(dimension_type, np.ndarray):
             # Note: Using a list to temporary aggregate data and then convert to numpy array when
             #       done is faster than directly append to a numpy array
@@ -91,10 +87,6 @@ def post_process_shadown_data_container(shadow_data_container: ShadowDataContain
             if each in shadow_data_container:
                 del shadow_data_container[each]
 
-    # if issubclass(data_container_type, Header):
-    #     shadow_data_container["frame_id"] = shadow_data_container["frame_id"]['data']
-    #     shadow_data_container["timestamps"] = shadow_data_container["timestamps"]['data']
-    #     del shadow_data_container['type']
     del shadow_data_container['type']
 
     progressbar: Optional[tqdm] = None
@@ -125,8 +117,6 @@ def post_process_shadown_data_container(shadow_data_container: ShadowDataContain
                 shadow_data_container[k] = target_type(**ppsdc)
             else:
                 shadow_data_container[k] = v['data']
-        # elif isinstance(v, list):
-        #     shadow_data_container[k] = np.array(v)
         else:
             shadow_data_container[k] = v
 

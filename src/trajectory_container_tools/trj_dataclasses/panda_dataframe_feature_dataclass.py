@@ -23,7 +23,6 @@ class BaseDataframeFeatureDataclass(AbstractTrajectoryDataclass):
     It can be extended or utilized wherever structured data for dataframe processing or
     trajectory computation is necessary.
     """
-    timesteps: np.ndarray
 
     @property
     def _init_trj_axe(self) -> int:

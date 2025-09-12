@@ -291,11 +291,6 @@ def _collect_properties_from_rosbag(
                 shadow_data_container['header']["timestamps"]['data'].append(
                         _set_timestamp(msg, timestamp, use_msg_header_time=True)
                         )
-                # if each_property_name == "frame_id":
-                # # elif each_property_name == "child_frame_id":
-                # #     shadow_data_container["child_frame_id"] = msg.child_frame_id
-                # elif each_property_name == "timestamps":
-                #     # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling trj data
             else:
                 attribute_list = str(each_property_name).split("_")
                 attribute_parent = msg

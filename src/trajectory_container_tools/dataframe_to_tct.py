@@ -12,9 +12,8 @@ from trajectory_container_tools.trj_dataclasses.abstract_trajectory_dataclass im
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import \
     BaseDataframeFeatureDataclass
 
-from trajectory_container_tools.utils.data_sanity_checks import (
-    dataframe_timestep_indexing_sanity_check,
-    )
+from trajectory_container_tools.utils.temporal_tools.timestep_indexing import \
+    dataframe_timestep_indexing_sanity_check
 from trajectory_container_tools.utils.factory import (
     TrjDataClassFeatureSpecification,
     trajectory_dataclass_factory,
@@ -211,7 +210,7 @@ def extract_single_feature_from_dataframe(dataset: pd.DataFrame, feature_name: s
                     try:
                         timestep_index = dataframe_timestep_indexing_sanity_check(df_property,
                                                                                   df_header_field)
-                        tmp_container["timesteps"] = timestep_index
+                        tmp_container["timesteps_indices"] = timestep_index
                     except IndexError as e:
                         raise ValueError(
                                 "[TCT error] There is a problem with the `dataset_frame` column label "
@@ -221,8 +220,8 @@ def extract_single_feature_from_dataframe(dataset: pd.DataFrame, feature_name: s
                 elif not header_mix_label_and_timesteps:
                     if df_property.empty:
                         raise ValueError(empty_property_error_msg)
-                    if tmp_container["timesteps"] is None:
-                        tmp_container["timesteps"] = dataset.index.array
+                    if tmp_container["timesteps_indices"] is None:
+                        tmp_container["timesteps_indices"] = dataset.index.array
 
                 tmp_container[each_property] = df_property.to_numpy()
 
