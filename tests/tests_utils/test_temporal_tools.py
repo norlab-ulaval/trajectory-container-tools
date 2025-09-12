@@ -5,10 +5,11 @@ import pytest
 
 from rclpy.time import Time as ROSTime
 
-from trajectory_container_tools.utils.data_sanity_checks import (
-    timestamp_causal_ordering_sanity_check,
-    dataframe_timestep_indexing_sanity_check,
+from trajectory_container_tools.utils.temporal_tools.timestep_indexing import (
+    dataframe_timestep_indexing_sanity_check, timestep_indices_sanity_check,
     )
+from trajectory_container_tools.utils.temporal_tools.timestamps import \
+    timestamp_causal_ordering_sanity_check
 
 
 class TestTimestampSanityCheck:
@@ -30,7 +31,7 @@ class TestTimestampSanityCheck:
 
         mock_container = {
                 "feature_name": "/mock_topic",
-                "timestamps": np.array(mock_timestamps)
+                "timestamps":   np.array(mock_timestamps)
                 }
 
         return mock_container
@@ -55,7 +56,7 @@ class TestTimestampSanityCheck:
         with pytest.raises(AssertionError) as exc_info:
             assert timestamp_causal_ordering_sanity_check(setup_mock_timestamps) == [5, 9]
 
-#         print(f"{exc_info=}")
+        #         print(f"{exc_info=}")
         expected_error_msg = (
                 f"Timestamp causal ordering sanity check failed! "
                 f"Number of offending timestamps 2/10\n"
@@ -65,6 +66,42 @@ class TestTimestampSanityCheck:
 
 
 class TestTimestepIndexingSanityCheck:
+
+    def test_base_case_pass(self):
+        mock_trj_indices = np.arange(20)
+
+        # Case default arg
+        timestep_indices_sanity_check(timestep_index=mock_trj_indices,
+                                      trajectory_expected_len=None)
+
+        # Case explicit expected len
+        timestep_indices_sanity_check(timestep_index=mock_trj_indices,
+                                      trajectory_expected_len=len(mock_trj_indices))
+
+    def test_expect_error(self):
+        mock_trj_indices = np.arange(20)
+        mock_trj_indices[9] = mock_trj_indices[9] - 1
+        expected_error_msg = ('[TCT error] The timestep index is either missing a step or not '
+                              'monotonicaly increassing')
+
+        # Case default arg
+        with pytest.raises(IndexError) as exc_info:
+            timestep_indices_sanity_check(timestep_index=mock_trj_indices,
+                                          trajectory_expected_len=None)
+
+        print(f"{exc_info=}")
+        assert exc_info.value.args == (expected_error_msg,)
+
+        # Case explicit expected len
+        with pytest.raises(IndexError) as exc_info:
+            timestep_indices_sanity_check(timestep_index=mock_trj_indices,
+                                          trajectory_expected_len=len(mock_trj_indices))
+
+        print(f"{exc_info=}")
+        assert exc_info.value.args == (expected_error_msg,)
+
+
+class TestDataframeTimestepIndexingSanityCheck:
     COL_LABEL = "col_"
     ROW_NB = 10
     COL_NB = 40
@@ -84,7 +121,7 @@ class TestTimestepIndexingSanityCheck:
         the_dataframe = setup_dataframe_monotonic_col_label()
         tisc = dataframe_timestep_indexing_sanity_check(
                 the_dataframe=the_dataframe,
-                unindexed_column_label=self.COL_LABEL,
+                indexed_column_label=self.COL_LABEL,
                 )
 
         print(the_dataframe)  # (Priority) ToDo: on task end >> delete this line ←
@@ -92,15 +129,14 @@ class TestTimestepIndexingSanityCheck:
         assert type(tisc) is np.ndarray
 
     def test_index_start_non_zero(self, setup_dataframe_monotonic_col_label):
-        with pytest.raises(IndexError):
-            tisc = dataframe_timestep_indexing_sanity_check(
-                    the_dataframe=setup_dataframe_monotonic_col_label(start_index=2),
-                    unindexed_column_label=self.COL_LABEL,
-                    )
+        tisc = dataframe_timestep_indexing_sanity_check(
+                the_dataframe=setup_dataframe_monotonic_col_label(start_index=2),
+                indexed_column_label=self.COL_LABEL,
+                )
 
     def test_missing_step(self, setup_dataframe_monotonic_col_label):
         with pytest.raises(IndexError):
             df_missing = setup_dataframe_monotonic_col_label().drop(f"{self.COL_LABEL}9", axis=1)
             tisc = dataframe_timestep_indexing_sanity_check(
-                    the_dataframe=df_missing, unindexed_column_label=self.COL_LABEL
+                    the_dataframe=df_missing, indexed_column_label=self.COL_LABEL
                     )

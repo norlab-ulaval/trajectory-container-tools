@@ -104,7 +104,8 @@ TCT follows a simple three-step process:
 
 ### 1. **Data Source** → 2. **Converter** → 3. **Trajectory Container**
 
-#### From direct instantiation 
+#### From direct instantiation
+
 ```python
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import StatePose2D
 
@@ -112,7 +113,7 @@ trajectory = StatePose2D(feature_name="odom pose",
                          x=np.arange(100, dtype=float),
                          y=np.arange(100, dtype=float),
                          yaw=np.arange(100, dtype=float),
-                         timesteps=np.arange(100, dtype=int),
+                         timesteps_indices=np.arange(100, dtype=int),
                          )
 ```
              

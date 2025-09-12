@@ -310,7 +310,8 @@ TCT performs automatic validation for:
 ### Manual Validation
 
 ```python
-from trajectory_container_tools.utils.data_sanity_checks import dataframe_timestep_indexing_sanity_check
+
+from trajectory_container_tools.utils.temporal_tools.timestep_indexing import dataframe_timestep_indexing_sanity_check
 
 # Validate DataFrame structure before conversion
 feature_names = ['pose', 'velocity', 'commands']

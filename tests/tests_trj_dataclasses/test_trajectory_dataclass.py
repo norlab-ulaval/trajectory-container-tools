@@ -28,14 +28,14 @@ class TestTrajectoryDataclassFromDataframeCase:
 
     def test_StatePose2D_init(self, mock_DF_2_trj_DC):
         md = mock_DF_2_trj_DC
-        dc_ = StatePose2D(feature_name=md.name, x=md.a, y=md.b, yaw=md.c, timesteps=md.ts)
+        dc_ = StatePose2D(feature_name=md.name, x=md.a, y=md.b, yaw=md.c, timesteps_indices=md.ts)
         print(dc_)
         assert dc_._init_trj_axe == -1
 
     def test_CmdStandard_init(self, mock_DF_2_trj_DC):
         md = mock_DF_2_trj_DC
         dc_ = CmdStandard(
-                feature_name=md.name, linear_vel=md.a, angular_vel=md.b, timesteps=md.ts
+                feature_name=md.name, linear_vel=md.a, angular_vel=md.b, timesteps_indices=md.ts
                 )
         print(dc_)
         assert dc_._init_trj_axe == -1
@@ -43,7 +43,7 @@ class TestTrajectoryDataclassFromDataframeCase:
     def test_Velocity_init(self, mock_DF_2_trj_DC):
         md = mock_DF_2_trj_DC
         dc_ = Velocity(
-                feature_name=md.name, linear_vel=md.a, angular_vel=md.b, timesteps=md.ts
+                feature_name=md.name, linear_vel=md.a, angular_vel=md.b, timesteps_indices=md.ts
                 )
         print(dc_)
         assert dc_._init_trj_axe == -1
@@ -57,11 +57,8 @@ class TestTrajectoryDataclassFromROSBagCase:
         dc_ = NavMsgsOdometry(
                 feature_name="/pf/pose/odom",
                 header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
-                # timesteps=md.ts_idx,
                 pose=PoseWithCovariance(
-                    # feature_name="Netsed PoseWithCovariance",
                     pose=Pose(
-                        # feature_name="Netsed Pose",
                         position_x=md.a,
                         position_y=md.a,
                         position_z=md.a,
@@ -73,9 +70,7 @@ class TestTrajectoryDataclassFromROSBagCase:
                     covariance=md.c,
                 ),
                 twist=TwistWithCovariance(
-                    # feature_name="Netsed TwistWithCovariance",
                     twist=Twist(
-                        # feature_name="Netsed Twist",
                         linear_x=md.a,
                         linear_y=md.a,
                         linear_z=md.a,
@@ -118,7 +113,6 @@ class TestTrajectoryDataclassFromROSBagCase:
         dc_ = AckermannMsgsAckermannDriveStamped(
                 feature_name="/ackermann_cmd",
                 header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
-                # timesteps=md.ts_idx,
                 drive_steeringAngle=md.a,
                 drive_steeringAngleVelocity=md.a,
                 drive_speed=md.a,
@@ -133,7 +127,6 @@ class TestTrajectoryDataclassFromROSBagCase:
         dc_ = Tf2MsgsTFMessage(
                 feature_name="/ackermann_cmd",
                 header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
-                # timesteps=md.ts_idx,
                 childFrameId="odom",
                 transform_translation_x=md.a,
                 transform_translation_y=md.a,
@@ -151,7 +144,6 @@ class TestTrajectoryDataclassFromROSBagCase:
         dc_ = SensorMsgsImu(
                 feature_name="/ackermann_cmd",
                 header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
-                # timesteps=md.ts_idx,
                 orientation_x=md.a,
                 orientation_y=md.a,
                 orientation_z=md.a,
