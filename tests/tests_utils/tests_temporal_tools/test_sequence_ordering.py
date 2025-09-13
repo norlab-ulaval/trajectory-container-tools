@@ -19,7 +19,7 @@ class TestTrajectorySequenceOrderingLogic:
         ts = fixed_trajectory_dict["header"].timestamps
 
         # Validate the results
-        timestamp_causal_ordering_sanity_check(ts, feature_name="mock")
+        timestamp_causal_ordering_sanity_check(ts)
 
     def test_fix_sequence_ordering_base_on_timestamps_case_input_unordered(
             self, mock_trajectory_dict_unordered, mock_trajectory_dict_ordered
@@ -31,7 +31,7 @@ class TestTrajectorySequenceOrderingLogic:
         ts = fixed_trajectory_dict["header"].timestamps
 
         # Validate the results
-        timestamp_causal_ordering_sanity_check(ts, feature_name="mock")
+        timestamp_causal_ordering_sanity_check(ts)
 
         assert fixed_trajectory_dict == mock_trajectory_dict_ordered
 

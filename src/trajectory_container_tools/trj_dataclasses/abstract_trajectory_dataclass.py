@@ -6,11 +6,9 @@ from dataclasses import dataclass, field, fields
 import numpy as np
 from typing import Any, List, Tuple, Type, Union
 
-from rclpy.time import Time as ROStime
-
 from ..utils.temporal_tools.timestamps import Timestamps
 from ..utils.temporal_tools.timestep_indexing import timestep_indices_sanity_check
-from ..utils.general import extract_class_name_from_instance
+from ..utils.general import extract_class_name_from_instance, extract_first_union_type
 
 
 @dataclass()
@@ -133,6 +131,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         Example:
             >>> @dataclass
             >>> class StatePose2DSteadyState(StatePose2D):
+            >>>
             >>>     def on_begin_post_init_callback(self):
             >>>         feature = self.get_dynamic_field("<feature-name>")
             >>>         self.set_dynamic_field(f"<other-feature>", np.cumsum(feature))
@@ -155,6 +154,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
             >>>
             >>> @dataclass
             >>> class StatePose2DSteadyState(StatePose2D):
+            >>>
             >>>     def post_init_feature_callback(self, feature_name):
             >>>         feature = self.get_dynamic_field(feature_name)
             >>>         if isinstance(feature, np.ndarray):
@@ -175,6 +175,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         Example:
             >>> @dataclass
             >>> class StatePose2DSteadyState(StatePose2D):
+            >>>
             >>>     def on_exit_post_init_callback(self):
             >>>         feature = self.get_dynamic_field("<feature-name>")
             >>>         assert len(feature) > 0
@@ -203,11 +204,25 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
     @classmethod
     def get_dimension_type(cls, dimension_name: str) -> Type[Any]:
+        """
+        Retrieves the target type of specified dimension in a data container.
+
+        This method examines the fields of the data container class to find a field whose
+        name matches the given dimension name and extracts its type.
+
+        Support typing.Union: The cases where the trajectory dataclass specify a field type with
+        typing.Union[Type, ...], will be handled such that the primary Union type (i.e.,
+        the first one) will be selected. e.g., see module `trj_dataclasses.primitive_dataclass`
+        dataclass `Header`.
+
+        :param dimension_name: The name of the dimension to look up.
+        :return: The type associated with the specified dimension.
+        """
         container_properties = fields(cls)
         dimension_type = None
         for each_field in container_properties:
             if each_field.name is dimension_name:
-                dimension_type = each_field.type
+                dimension_type = extract_first_union_type(each_field.type)
         return dimension_type
 
     @property
@@ -276,6 +291,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 data_property = self.__getattribute__(each_name)
 
                 if isinstance(data_property, (AbstractTrajectoryDataclass, Timestamps)):
+
                     # Case nested container: Init timesteps using nested entity trajectory_len
                     if self._timestep_indexes is None:
                         self._timestep_indexes = np.arange(len(data_property))
@@ -284,7 +300,8 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                         self.timesteps_indices = self._timestep_indexes
                     elif self.timesteps_indices is not None:
                         assert isinstance(self.timesteps_indices, np.ndarray)
-                        _timesteps_indices_vs_index_len_check(self.timesteps_indices, self._timestep_indexes)
+                        _timesteps_indices_vs_index_len_check(self.timesteps_indices,
+                                                              self._timestep_indexes)
                         timestep_indices_sanity_check(self.timesteps_indices)
 
                 elif isinstance(data_property, np.ndarray):
@@ -306,12 +323,13 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                         self.timesteps_indices = self._timestep_indexes
                     elif self.timesteps_indices is not None:
                         assert isinstance(self.timesteps_indices, np.ndarray)
-                        _timesteps_indices_vs_index_len_check(self.timesteps_indices, self._timestep_indexes)
+                        _timesteps_indices_vs_index_len_check(self.timesteps_indices,
+                                                              self._timestep_indexes)
 
                     if data_property_trajectory_len != self.trajectory_len:
                         raise ValueError(
                                 f"{data_property_trajectory_len} != {self.trajectory_len}\n"
-                                f"[TCT error] Topic `{self.feature_name}` with container `"
+                                f"[TCT error] `{self.feature_name}` with container `"
                                 f"{each_name}`" " received numpy arrays which do not match "
                                 "the trajectory length"
                                 )
@@ -468,7 +486,9 @@ def _fetch_nested_attribute(self_, nested_attribute_list: str) -> Any:
         nested_attribute = nested_attribute.get_dynamic_field(each)
     return nested_attribute
 
-def _timesteps_indices_vs_index_len_check(timesteps_indices: np.ndarray, _timestep_indexes: np.ndarray) -> None:
+
+def _timesteps_indices_vs_index_len_check(timesteps_indices: np.ndarray,
+                                          _timestep_indexes: np.ndarray) -> None:
     ts_id_len = timesteps_indices.shape[-1]
     ts_idx_len = _timestep_indexes.shape[-1]
     assert ts_idx_len == ts_id_len, (f"[TCT error] timesteps_indices expecte "

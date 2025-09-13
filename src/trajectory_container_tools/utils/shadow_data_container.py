@@ -7,7 +7,10 @@ from tqdm import tqdm
 from .general import extract_class_name_from_type, setup_progressbar
 from ..trj_dataclasses.rosbag_feature_dataclass import RosBagFeatureDataclass
 from ..trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
-from .temporal_tools.timestamps import Timestamps, timestamp_causal_ordering_sanity_check
+from .temporal_tools.timestamps import (
+    TimestampCausalOrderingError, Timestamps,
+    timestamp_causal_ordering_sanity_check,
+    )
 
 ShadowDataContainer: TypeAlias = Dict[str, Union[None, List, np.ndarray, Dict, Union[
     Type[RosBagFeatureDataclass], Type[NestedBaseTrajectoryDataclass], Type[Timestamps]], Union[
@@ -126,12 +129,22 @@ def post_process_shadown_data_container(shadow_data_container: ShadowDataContain
         if progressbar_enabled:
             progressbar.update(1)
 
-    if issubclass(data_container_type, RosBagFeatureDataclass):
-        shadow_data_container['header'].__getattribute__(
-            "timestamps").causal_ordering_sanity_check(feature_name,
-                                                       show_offending_in_nanoseconds=True)
-        # timestamp_causal_ordering_sanity_check(shadow_data_container, feature_name)
-
     if progressbar_enabled:
         progressbar.close()
     return shadow_data_container
+
+
+def fetch_timestamps_from_shadow_data_container(shadow_data_container: dict) -> Timestamps:
+    assert "feature_name" in shadow_data_container, ("[TCT error] missing required key "
+                                                     "'feature_name'!")
+    if "timestamps" in shadow_data_container or "header" in shadow_data_container:
+        if "timestamps" in shadow_data_container:
+            timestamps_ = shadow_data_container["timestamps"]
+        else:
+            timestamps_ = shadow_data_container["header"].__getattribute__("timestamps")
+    else:
+        raise AssertionError("[TCT error] missing required key 'timestamps' or 'header'!")
+
+    assert isinstance(timestamps_,
+                      Timestamps), "[TCT] timestamps where not converted to a Timestamps object!"
+    return timestamps_

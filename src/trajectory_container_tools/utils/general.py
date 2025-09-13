@@ -1,6 +1,6 @@
 # coding=utf-8
 import re
-from typing import NoReturn, Type
+from typing import NoReturn, Type, Union, get_args, get_origin, get_type_hints
 
 import numpy as np
 from tqdm import tqdm
@@ -82,3 +82,12 @@ def setup_progressbar(feature_msg_len: int) -> tqdm:
     progressbar = tqdm(total=feature_msg_len, desc="       ↳ ",
                        bar_format="{desc}{percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}")
     return progressbar
+
+# :::: Typing utilities :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+def extract_first_union_type(type_hint: Type):
+    """Safely extract the first type from a Union, or return the type if not a Union."""
+    if get_origin(type_hint) is Union:
+        return get_args(type_hint)[0] # Return the first element of a Union of types.
+    else:
+        return type_hint  # Not a Union, return as-is.

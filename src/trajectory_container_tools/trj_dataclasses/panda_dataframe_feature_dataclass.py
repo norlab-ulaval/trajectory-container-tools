@@ -37,7 +37,6 @@ class NestedBaseDataframeFeatureDataclass(BaseDataframeFeatureDataclass):
     feature_name: str = field(default=None, init=False)
 
     def on_begin_post_init_callback(self):
-        super().on_begin_post_init_callback()
         raise NotImplementedError("Nested trajectory for dataframe is not supported yet.")
 
 

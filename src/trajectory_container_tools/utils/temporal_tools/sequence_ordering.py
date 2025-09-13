@@ -5,6 +5,11 @@ import numpy as np
 
 from trajectory_container_tools.trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
 from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import RosBagFeatureDataclass
+from trajectory_container_tools.utils.temporal_tools.timestamps import (
+    Timestamps,
+    )
+from trajectory_container_tools.utils.shadow_data_container import \
+    fetch_timestamps_from_shadow_data_container
 
 
 def fix_sequence_ordering_base_on_timestamps(
@@ -19,25 +24,9 @@ def fix_sequence_ordering_base_on_timestamps(
     :param data_container_type_: the type of AbstractTrajectoryDataclass subclass
     :return: the fixed shadow_data_container
     """
-    ts_: np.ndarray
-    if "timestamps" in shadow_data_container or "header" in shadow_data_container:
-        if "timestamps" in shadow_data_container:
-            ts_ = shadow_data_container["timestamps"]
-        else:
-            ts_ = shadow_data_container["header"].__getattribute__("timestamps")
-    else:
-        raise AssertionError("[TCT error] missing required key 'timestamps' or 'header'!")
+    ts_ = fetch_timestamps_from_shadow_data_container(shadow_data_container)
 
-    assert isinstance(ts_, np.ndarray), "[TCT] timestamps where not converted to numpy array!"
-
-    # If ts_ contains ROS2 Time objects, convert them to nanoseconds first
-    if len(ts_) > 0 and hasattr(ts_[0], 'nanoseconds'):
-        # Convert ROS2 Time objects to nanoseconds for sorting
-        ts_nanoseconds = np.array([t.nanoseconds for t in ts_])
-        sorted_ts_idx = ts_nanoseconds.argsort()
-    else:
-        # Assume ts_ already contains numeric timestamps
-        sorted_ts_idx = ts_.argsort()
+    sorted_ts_idx = ts_.stamps.argsort()
 
     shadow_data_container = _fix_container_array_timestamps(
             data_container_type_, sorted_ts_idx,

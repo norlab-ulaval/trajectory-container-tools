@@ -3,6 +3,10 @@ from typing import Any, List, Tuple
 
 import numpy as np
 
+class TimestampCausalOrderingError(Exception):
+    """Exception raised when a causal order violation is detected."""
+    pass
+
 
 class Timestamps:
     """
@@ -86,8 +90,7 @@ class Timestamps:
         """
         return to_seconds_nanoseconds(self[key])
 
-    def causal_ordering_sanity_check(self, feature_name: str,
-                                     show_offending_in_nanoseconds: bool = True) -> List[int]:
+    def causal_ordering_sanity_check(self, show_offending_in_nanoseconds: bool = True) -> List[int]:
         """
         Performs a sanity check for causal ordering based on timestamps of events.
 
@@ -97,19 +100,15 @@ class Timestamps:
         option to display the offending timestamps in nanoseconds is provided for finer
         granularity during debugging and analysis.
 
-        :param feature_name: Name of the feature whose causal ordering is to be verified.
         :param show_offending_in_nanoseconds: Whether to display offending timestamps in
           nanoseconds or (seconds, nanoseconds ), default is True.
         :return: A list of integers representing IDs of events that violate causal ordering.
         """
-        return timestamp_causal_ordering_sanity_check(self, feature_name,
-                                                      show_offending_in_nanoseconds)
+        return timestamp_causal_ordering_sanity_check(self, show_offending_in_nanoseconds)
 
 
-def timestamp_causal_ordering_sanity_check(
-        timestamp_object: Timestamps,
-        feature_name: str,
-        show_offending_in_nanoseconds: bool = True) -> List[int]:
+def timestamp_causal_ordering_sanity_check(timestamp_object: Timestamps,
+                                           show_offending_in_nanoseconds: bool = True) -> List[int]:
     """ Checks the causal order of timestamps in the given data container to ensure they are
     sequentially increasing.
 
@@ -120,14 +119,11 @@ def timestamp_causal_ordering_sanity_check(
     Usage example:
 
     >>> mock_trajectory_timestamp_object: Timestamps
-    >>> offending_index = timestamp_causal_ordering_sanity_check(
-    >>>         mock_trajectory_timestamp_object, feature_name="The feature"
-    >>> )
-    >>> # AssertionError: Timestamp causal ordering sanity check failed!
-    >>> # [TCT error] Timestamp causal ordering violations:
+    >>> offending_index = timestamp_causal_ordering_sanity_check(mock_trajectory_timestamp_object)
+    >>> # TimestampCausalOrderingError: Timestamp causal ordering violations:
     >>> #     Number of offending timestamps 4/3409
     >>> #
-    >>> #     Offending /mock_teleop timestamps:
+    >>> #     Offending timestamps:
     >>> #     ——————————————————————————————————————————————————————————————————————————————
     >>> #                   nanoseconds [  T  ]                          nanoseconds [ T+1 ]
     >>> #     ——————————————————————————————————————————————————————————————————————————————
@@ -146,12 +142,11 @@ def timestamp_causal_ordering_sanity_check(
     >>> assert len(offending_index) == 4
 
     :param timestamp_object: A Timestance object fill with trajectory stamp in nanosecond.
-    :param feature_name: The name reported in the error message to help scope the problem root.
     :param show_offending_in_nanoseconds: Display in nanosecond or ( seconds nanoseconds ).
      Default nanoseconds
     :return: The list of offending timestamps indexes.
-    :raises AssertionError: Raises an AssertionError if the "timestamps" array is empty
-        or if any timestamp violates the causal ordering.
+    :raises TimestampCausalOrderingError: Raises an TimestampCausalOrderingError if the
+     "timestamps" array is empty or if any timestamp violates the causal ordering.
     """
     offending_idx = []
     offending_ts = ""
@@ -181,11 +176,10 @@ def timestamp_causal_ordering_sanity_check(
                 f"    {'—' * 78}"
         )
         error_msg = (
-                f"Timestamp causal ordering sanity check failed!\n"
-                f"[TCT error] Timestamp causal ordering violations:\n"
+                f"Timestamp causal ordering violations:\n"
                 f"    Number of offending timestamps {len(offending_idx)}/"
                 f"{len(timestamp_object)}\n\n"
-                f"    Offending {feature_name} timestamps:\n"
+                f"    Offending timestamps:\n"
                 f"{offending_ts_header}\n"
                 f"{offending_ts}\n"
                 f"    Rosbag timestamps metadate:\n"
@@ -199,16 +193,15 @@ def timestamp_causal_ordering_sanity_check(
                 f"{(timestamp_object[-1] - timestamp_object[0]):>22}  \n"
                 f"    {'—' * 78}\n"
         )
-        raise AssertionError(error_msg)
+        raise TimestampCausalOrderingError(error_msg)
 
     return offending_idx
 
 
 def to_seconds_nanoseconds(nanoseconds: int) -> Tuple[int, int]:
-    """
-    Get time as separate seconds and nanoseconds components.
+    """ Get time as separate seconds and nanoseconds components.
 
-    Follow the ROS2 time convention
+    Output is compatible with the ROS2 time (seconds nanoseconds) format
 
     :returns: 2-tuple seconds and nanoseconds
     """
@@ -217,18 +210,3 @@ def to_seconds_nanoseconds(nanoseconds: int) -> Tuple[int, int]:
             NANOSECONDS_CONVERSION_CONSTANT)
 
 
-def fetch_timestamps_from_shadow_data_container(shadow_data_container: dict) -> np.ndarray:
-    """
-    Temporary hack
-    Will be replaced by 'Timestamps' class (ref task TCT-49)
-    """
-    assert "feature_name" in shadow_data_container, ("[TCT error] missing required key "
-                                                     "'feature_name'!")
-    if "timestamps" in shadow_data_container or "header" in shadow_data_container:
-        if "timestamps" in shadow_data_container:
-            timestamps_ = shadow_data_container["timestamps"]
-        else:
-            timestamps_ = shadow_data_container["header"].__getattribute__("timestamps")
-    else:
-        raise AssertionError("[TCT error] missing required key 'timestamps' or 'header'!")
-    return timestamps_

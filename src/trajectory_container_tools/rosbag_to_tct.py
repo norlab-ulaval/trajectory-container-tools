@@ -7,7 +7,6 @@ from typing import Any, Dict, Optional, Tuple, Type, Union
 import numpy as np
 
 from rosbags.rosbag2 import Reader
-from rclpy.time import Time as RosTime
 from rosbags.typesys.store import Typestore
 
 from .trj_dataclasses.abstract_trajectory_dataclass import (
@@ -25,11 +24,15 @@ from .utils.factory import (
     )
 from .utils.general import camelcase_to_snake_case, extract_class_name_from_type, setup_progressbar
 from .utils.ros2_non_native_msg import register_ros2_non_native_msg
-from .utils.ros2_utils import get_rosbag_typestore_auto_distro
+from .utils.ros2_utils import (
+    convert_timestamp_from_rosbag_message,
+    get_rosbag_typestore_auto_distro, rosbag_topic_time_to_timestamp,
+    )
 from .utils.shadow_data_container import (
     ShadowDataContainer, instanciate_shadow_data_container,
     post_process_shadown_data_container,
     )
+from .utils.temporal_tools.timestamps import TimestampCausalOrderingError
 
 
 def check_rosbag_path_and_show_available_topics(rosbag_path: Union[str, Path]) -> Path:
@@ -128,9 +131,8 @@ def aggregate_multiple_features_from_rosbag(
         if isinstance(feature_dataclass, tuple):
             if len(feature_dataclass) == 1:
                 raise KeyError(
-                        "[TCT error] Check your `features_config` dict. You forgot to specify "
-                        "the '"
-                        f"{feature_name}' dimensions."
+                        f"[TCT error] Check your `features_config` dict. You forgot to specify "
+                        "the '{feature_name}' dimensions."
                         )
 
             new_type, *dims = feature_dataclass
@@ -266,13 +268,23 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
             progressbar.close()
 
         # .... Post-process rosbag data and create data container .................................
-        shadow_data_container = post_process_shadown_data_container(
-                shadow_data_container,
-                data_container_type,
-                feature_name)
+        try:
+            shadow_data_container = post_process_shadown_data_container(
+                    shadow_data_container,
+                    data_container_type,
+                    feature_name)
 
-    # noinspection PyArgumentList
-    return data_container_type(**shadow_data_container)
+            # noinspection PyArgumentList
+            feature_instance = data_container_type(**shadow_data_container)
+
+        except TimestampCausalOrderingError as e:
+            error_msg = (
+                    f"Detected timestamps causal ordering violation in rosbag {feature_name} "
+                    f"topic message!\n\n{e}"
+            )
+            raise TimestampCausalOrderingError(error_msg)
+
+    return feature_instance
 
 
 def _collect_properties_from_rosbag(
@@ -289,7 +301,7 @@ def _collect_properties_from_rosbag(
                 if not shadow_data_container['header']["frame_id"]['data']:
                     shadow_data_container['header']["frame_id"]['data'] = msg.header.frame_id
                 shadow_data_container['header']["timestamps"]['data'].append(
-                        _extract_timestamp(msg.header.stamp, timestamp, use_msg_timestamp=True, output_rostime=False)
+                        rosbag_topic_time_to_timestamp(msg.header.stamp)
                         )
             else:
                 attribute_list = str(each_property_name).split("_")
@@ -329,27 +341,6 @@ def _collect_properties_from_rosbag(
                     )
 
     return shadow_data_container
-
-
-def _extract_timestamp(msg_timestamp, bag_timestamp: int, use_msg_timestamp: bool = True,
-                       output_rostime: bool = False) -> Union[int, RosTime]:
-    # (NICE TO HAVE) ToDo: unit-test (curently indirectly tested)
-    NANOSECONDS_CONVERSION_CONSTANT = 10 ** 9
-    if output_rostime:
-        if use_msg_timestamp:
-            _timestamp = RosTime(seconds=msg_timestamp.sec,
-                                 nanoseconds=msg_timestamp.nanosec)
-        else:
-            _timestamp = RosTime(nanoseconds=bag_timestamp)
-    else:
-        if use_msg_timestamp:
-            nanoseconds = msg_timestamp.nanosec
-            seconds = msg_timestamp.sec
-            _timestamp = (seconds * NANOSECONDS_CONVERSION_CONSTANT) + nanoseconds
-        else:
-            _timestamp = bag_timestamp
-
-    return _timestamp
 
 
 def _dataclass_type_is_type_name(

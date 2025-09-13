@@ -2,7 +2,7 @@
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import AnyStr, Optional, Union
+from typing import AnyStr, Optional, Tuple, Union
 
 import pytest
 import numpy as np
@@ -17,6 +17,9 @@ from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import 
     AckermannMsgsAckermannDriveStamped, NavMsgsOdometry,
     RosBagFeatureDataclass, Tf2MsgsTFMessage, SensorMsgsImu,
     )
+from trajectory_container_tools.utils.temporal_tools.timestamps import (
+    TimestampCausalOrderingError, Timestamps,
+    )
 
 
 @dataclass()
@@ -28,27 +31,36 @@ class RosBagConfig:
     selected_topic: list
 
 
-@pytest.fixture(scope="function")
-def setup_rosbag_from_tests_dir():
+def setup_rosbag_path(offending: bool = False) -> Tuple[Path, str]:
+    """ Path to ROS bag in 'demo_data' directory
 
-    # .... Path to ROS bag in 'demo_data' directory
-    # ................................................
-    # For test purposes
+    Note: offending timestamps are in the /teleop topic messages
+    """
 
-    BAG = "2024-03-21_14-52-35-filtered"
-    # BAG = "2024-03-21_14-52-35-offending-timestamps"
+    if offending:
+        BAG = "2024-03-21_14-52-35-offending-timestamps"
+    else:
+        BAG = "2024-03-21_14-52-35-filtered"
+
     rosbag_path = os.path.join(
             "demo_data",
             "rosbag_test_data",
             "rosbag-vaul-f110-grand-salon-raw-msg",
             BAG)
 
-    # .... Setup rosbag test configuration ........................................................
+    return check_rosbag_path_and_show_available_topics(rosbag_path), BAG
+
+
+@pytest.fixture(scope="function")
+def setup_rosbag_from_tests_dir():
+
+    bag_path, bag_name = setup_rosbag_path()
+
     ros_bag_config = RosBagConfig(
-            bag_name=BAG,
+            bag_name=bag_name,
             ts_fast_forward=None,
             ts_window=None,
-            bag_path=check_rosbag_path_and_show_available_topics(rosbag_path),
+            bag_path=bag_path,
             selected_topic=[
                     "/teleop",
                     "/sensors/imu/raw",
@@ -120,14 +132,22 @@ class TestExtractROSBagFeature:
                                                feature_name="/aaaaaaackermann_cmddd",
                                                data_container_type=NavMsgsOdometry)
 
-    @pytest.mark.skip(reason="to implement")  # ToDo: implement test case
-    def test_missing_timestep(self, setup_rosbag_from_tests_dir):
-        col_label = "/ackermann_cmd"
-        df_missing = setup_rosbag_from_tests_dir.drop(f"{col_label}_x_9", axis=1)
+    def test_catch_timestamps_sanity_check_error(self):
+        # 2024-03-21_14-52-35-offending-timestamps
+        bag_path, bag_name = setup_rosbag_path(offending=True)
 
-        with pytest.raises(ValueError):
-            extract_single_feature_from_rosbag(rosbag_path=df_missing, feature_name=col_label,
+        with pytest.raises(TimestampCausalOrderingError) as exc_info:
+            extract_single_feature_from_rosbag(rosbag_path=bag_path,
+                                               feature_name="/teleop",
                                                data_container_type=AckermannMsgsAckermannDriveStamped)
+        print(f"{exc_info=}")
+        error_msg = (
+                "Detected timestamps causal ordering violation in rosbag /teleop topic "
+                "message!\n\n"
+                "Timestamp causal ordering violations:\n"
+                "    Number of offending timestamps 15/3409"
+        )
+        assert error_msg in exc_info.value.args[0]
 
 
 class TestExtractROSBagMultifeature:
@@ -218,11 +238,3 @@ class TestExtractROSBagMultifeature:
                     )
 
             print(feats)
-
-
-class TestROSBagUtilities:
-
-    @pytest.mark.skip(reason="ToDo: implement test case")
-    def test_set_timestamp(self):
-        raise NotImplementedError("ToDo: implement test case ")
-        set_timestamp()

@@ -4,7 +4,8 @@ import pytest
 from rclpy.time import Time as ROSTime
 
 from trajectory_container_tools.utils.temporal_tools.timestamps import (
-    Timestamps, timestamp_causal_ordering_sanity_check, to_seconds_nanoseconds,
+    TimestampCausalOrderingError, Timestamps, timestamp_causal_ordering_sanity_check,
+    to_seconds_nanoseconds,
     )
 
 
@@ -127,37 +128,31 @@ class TestTimestamps:
         mock_ts_array = setup_mock_timestamps
 
         # Case pass
-        assert Timestamps(stamps=mock_ts_array).causal_ordering_sanity_check(
-                feature_name="mock") == []
+        assert Timestamps(stamps=mock_ts_array).causal_ordering_sanity_check() == []
 
         # Case expect failure
         mock_ts_array[5] = 1711038330132760208
         mock_ts_array[9] = 1711038330177285488
 
-        with pytest.raises(AssertionError) as exc_info:
-            assert Timestamps(stamps=mock_ts_array).causal_ordering_sanity_check(
-                    feature_name="mock") == [5, 9]
+        with pytest.raises(TimestampCausalOrderingError) as exc_info:
+            assert Timestamps(stamps=mock_ts_array).causal_ordering_sanity_check() == [5, 9]
 
 
 class TestTimestampCausalOrderingSanityCheck:
 
     def test_base_case_pass(self, setup_Timestamps_object):
-        assert timestamp_causal_ordering_sanity_check(setup_Timestamps_object,
-                                                      feature_name="mock") == []
+        assert timestamp_causal_ordering_sanity_check(setup_Timestamps_object) == []
 
     def test_case_non_causal_ordering_detected(self, setup_mock_timestamps):
         setup_mock_timestamps[5] = 1711038330132760208
         setup_mock_timestamps[9] = 1711038330177285488
 
-        with pytest.raises(AssertionError) as exc_info:
-            assert timestamp_causal_ordering_sanity_check(
-                    Timestamps(setup_mock_timestamps),
-                    feature_name="mock") == [5, 9]
+        with pytest.raises(TimestampCausalOrderingError) as exc_info:
+            assert timestamp_causal_ordering_sanity_check(Timestamps(setup_mock_timestamps)) == [5, 9]
 
         print(f"{exc_info=}")
         expected_error_msg = (
-                f"Timestamp causal ordering sanity check failed!\n"
-                f"[TCT error] Timestamp causal ordering violations:\n"
+                f"Timestamp causal ordering violations:\n"
                 f"    Number of offending timestamps 2/10\n\n"
         )
         assert expected_error_msg in exc_info.value.args[0]
