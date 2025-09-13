@@ -4,7 +4,7 @@ import datetime
 from copy import copy, deepcopy
 from dataclasses import dataclass, field, fields
 import numpy as np
-from typing import Any, List, Tuple, Type, Union
+from typing import Any, List, Optional, Tuple, Type, Union
 
 from ..utils.temporal_tools.timestamps import Timestamps
 from ..utils.temporal_tools.timestep_indexing import timestep_indices_sanity_check
@@ -451,7 +451,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
     dataset_info: str
     aggregated_date: datetime.datetime = field(init=False)
-    # timestamps: Timestamps
+    bag_timestamps: Optional[Timestamps] = field(default=None, kw_only=True)
 
     def __post_init__(self):
         self.aggregated_date = datetime.datetime.now()

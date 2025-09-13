@@ -5,6 +5,7 @@ import numpy as np
 from tqdm import tqdm
 
 from .general import extract_class_name_from_type, setup_progressbar
+from ..trj_dataclasses.abstract_trajectory_dataclass import AbstractTrajectoryDataclass
 from ..trj_dataclasses.rosbag_feature_dataclass import RosBagFeatureDataclass
 from ..trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
 from .temporal_tools.timestamps import (
@@ -31,10 +32,11 @@ def instanciate_shadow_data_container(
         or `NestedBaseTrajectoryDataclass` or their derived types.
     :return: A shadow data container.
     """
+    shadow_data_container: ShadowDataContainer
 
     # container_properties = fields(data_container_type)
-    shadow_data_container: ShadowDataContainer = {each_field: None for each_field in
-                                                  data_container_type.get_dimension_names()}
+    shadow_data_container = {each_field: None for each_field in
+                             data_container_type.get_dimension_names()}
 
     shadow_data_container['type'] = data_container_type
 

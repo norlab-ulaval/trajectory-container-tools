@@ -30,7 +30,7 @@ from .utils.shadow_data_container import (
     ShadowDataContainer, instanciate_shadow_data_container,
     post_process_shadown_data_container,
     )
-from .utils.temporal_tools.timestamps import TimestampCausalOrderingError
+from .utils.temporal_tools.timestamps import TimestampCausalOrderingError, Timestamps
 from .utils.typing import MultifeatureTrajectoryDataclass
 
 
@@ -143,12 +143,19 @@ def aggregate_multiple_features_from_rosbag(
         features_type.append((f"topic{feature_name.replace('/', '_')}", type(feature)))
         features.append(feature)
 
+    with Reader(rosbag_path) as reader:
+        feature_names = features_config.keys()
+        connections = [conn for conn in reader.connections if conn.topic == feature_names]
+        bag_timestamps = []
+        for _, timestamp, _ in reader.messages(connections=connections, start=start, stop=stop):
+            bag_timestamps.append(timestamp)
+
     rosbag_multifeature = make_dataclass(
             "multifeature",
             bases=(AbstractMultifeatureDataclass,),
             fields=features_type,
             )
-    return rosbag_multifeature(dataset_info, *features)
+    return rosbag_multifeature(dataset_info, *features, bag_timestamps=Timestamps(np.array(bag_timestamps)))
 
 
 def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
@@ -277,6 +284,7 @@ def _collect_properties_from_rosbag(
 
     for each_property_name in data_container_type.get_dimension_names():
         try:
+
             if issubclass(shadow_data_container[each_property_name]['type'], Header):
                 # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling non-trj data
                 if not shadow_data_container['header']["frame_id"]['data']:
