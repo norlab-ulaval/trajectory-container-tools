@@ -10,7 +10,6 @@ from ..utils.temporal_tools.timestamps import Timestamps
 from ..utils.temporal_tools.timestep_indexing import timestep_indices_sanity_check
 from ..utils.general import extract_class_name_from_instance, extract_first_union_type
 
-
 @dataclass()
 class AbstractTrajectoryDataclassCommon(abc.ABC):
 
@@ -452,11 +451,13 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
     dataset_info: str
     aggregated_date: datetime.datetime = field(init=False)
+    # timestamps: Timestamps
 
     def __post_init__(self):
         self.aggregated_date = datetime.datetime.now()
 
     def __str__(self):
+
         """User representation. Handle dynamical property added at run time"""
         t_sp = " " * 0
         m_sp = " " * 3
@@ -466,8 +467,15 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
             if k == "dataset_info":
                 repr_str += f"{m_sp}dataset_info: {v}\n"
                 repr_str += f"{m_sp}aggregated_date: {self.aggregated_date}\n"
-            elif k == "aggregated_date":
+            elif k in ["aggregated_date"]:
                 pass
+            elif isinstance(v, (np.ndarray, Timestamps)):
+                if isinstance(v, Timestamps):
+                    range_str = f"range(nanosec) {np.min(v.stamps)} ⟶ {np.max(v.stamps)}"
+                else:
+                    range_str = f"range {np.min(v)} ⟶ {np.max(v)}"
+                repr_str += (f"{m_sp}{k}: ({extract_class_name_from_instance(v)}) "
+                             f"shape {v.shape} {range_str}\n")
             else:
                 # repr_str += f"{m_sp}{k}( {str(v)}\n{m_sp*2})\n"
                 repr_str += f"{m_sp}{k}: {str(v)}\n"

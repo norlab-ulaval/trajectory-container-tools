@@ -19,13 +19,11 @@ from .trj_dataclasses.rosbag_feature_dataclass import (
     RosBagFeatureDataclass,
     )
 from .utils.factory import (
-    TrjDataClassFeatureSpecification,
-    trajectory_dataclass_factory,
+    parse_to_feature_dataclass,
     )
 from .utils.general import camelcase_to_snake_case, extract_class_name_from_type, setup_progressbar
 from .utils.ros2_non_native_msg import register_ros2_non_native_msg
 from .utils.ros2_utils import (
-    convert_timestamp_from_rosbag_message,
     get_rosbag_typestore_auto_distro, rosbag_topic_time_to_timestamp,
     )
 from .utils.shadow_data_container import (
@@ -33,6 +31,7 @@ from .utils.shadow_data_container import (
     post_process_shadown_data_container,
     )
 from .utils.temporal_tools.timestamps import TimestampCausalOrderingError
+from .utils.typing import MultifeatureTrajectoryDataclass
 
 
 def check_rosbag_path_and_show_available_topics(rosbag_path: Union[str, Path]) -> Path:
@@ -80,7 +79,7 @@ def aggregate_multiple_features_from_rosbag(
         start: Optional[int] = None,
         stop: Optional[int] = None,
         typestore: Optional[Typestore] = None
-        ) -> AbstractMultifeatureDataclass:
+        ) -> MultifeatureTrajectoryDataclass:
     """Extract multiple features (i.e. topics) from a rosbag_path based on a configuration
     dictionary.
 
@@ -128,36 +127,18 @@ def aggregate_multiple_features_from_rosbag(
         typestore = register_ros2_non_native_msg(typestore)
 
     for feature_name, feature_dataclass in features_config.items():
+
+        # Case: features_config require parsing topic msg property
         if isinstance(feature_dataclass, tuple):
-            if len(feature_dataclass) == 1:
-                raise KeyError(
-                        f"[TCT error] Check your `features_config` dict. You forgot to specify "
-                        "the '{feature_name}' dimensions."
-                        )
+            feature_dataclass = parse_to_feature_dataclass(feature_dataclass,
+                                                           target_subclass=RosBagFeatureDataclass,
+                                                           feature_name=feature_name)
 
-            new_type, *dims = feature_dataclass
-            feat_spec = TrjDataClassFeatureSpecification(
-                    new_feature_dataclass_type=new_type, dimension_names=tuple(dims)
-                    )
-
-            feature_dataclass = trajectory_dataclass_factory(
-                    specification=feat_spec, trj_dataclass_subclass=RosBagFeatureDataclass
-                    )
-
-            feature = extract_single_feature_from_rosbag(rosbag_path=rosbag_path,
-                                                         feature_name=feature_name,
-                                                         data_container_type=feature_dataclass,
-                                                         start=start, stop=stop,
-                                                         typestore=typestore)
-
-        elif issubclass(feature_dataclass, RosBagFeatureDataclass):
-            feature = extract_single_feature_from_rosbag(rosbag_path=rosbag_path,
-                                                         feature_name=feature_name,
-                                                         data_container_type=feature_dataclass,
-                                                         start=start, stop=stop,
-                                                         typestore=typestore)
-        else:
-            raise
+        feature = extract_single_feature_from_rosbag(rosbag_path=rosbag_path,
+                                                     feature_name=feature_name,
+                                                     data_container_type=feature_dataclass,
+                                                     start=start, stop=stop,
+                                                     typestore=typestore)
 
         features_type.append((f"topic{feature_name.replace('/', '_')}", type(feature)))
         features.append(feature)
@@ -300,6 +281,7 @@ def _collect_properties_from_rosbag(
                 # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling non-trj data
                 if not shadow_data_container['header']["frame_id"]['data']:
                     shadow_data_container['header']["frame_id"]['data'] = msg.header.frame_id
+
                 shadow_data_container['header']["timestamps"]['data'].append(
                         rosbag_topic_time_to_timestamp(msg.header.stamp)
                         )

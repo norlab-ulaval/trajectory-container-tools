@@ -6,6 +6,7 @@ import pandas as pd
 from typing import Dict, Tuple, Type, Union
 from dataclasses import fields as fields, make_dataclass
 
+from .utils.typing import MultifeatureTrajectoryDataclass, TrajectoryDataclass
 from trajectory_container_tools.trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
     )
@@ -16,7 +17,7 @@ from trajectory_container_tools.utils.temporal_tools.timestep_indexing import \
     dataframe_timestep_indexing_sanity_check
 from trajectory_container_tools.utils.factory import (
     TrjDataClassFeatureSpecification,
-    trajectory_dataclass_factory,
+    parse_to_feature_dataclass, trajectory_dataclass_factory,
     )
 
 
@@ -44,7 +45,7 @@ def unpack_dataframe_and_show_topic(dataframe_path: Union[str, Path]) -> Tuple[p
             dataframe_path = os.path.join(dn_project_path, dataframe_path)
 
         assert os.path.exists(
-            dataframe_path), f"[TCT] dataframe path is unreachable at {dataframe_path}"
+                dataframe_path), f"[TCT] dataframe path is unreachable at {dataframe_path}"
 
     dataframe_path = Path(os.path.realpath(dataframe_path))
 
@@ -63,7 +64,7 @@ def aggregate_multiple_features_from_dataframe(
         dataset_frame: pd.DataFrame,
         dataset_info: str,
         features_config: Dict[str, Union[Type[BaseDataframeFeatureDataclass], Tuple[str, ...]]],
-        ) -> AbstractMultifeatureDataclass:
+        ) -> MultifeatureTrajectoryDataclass:
     """Extract multiple features from a dataset (formated in a dataframe) based on a
     configuration dictionary.
 
@@ -95,28 +96,13 @@ def aggregate_multiple_features_from_dataframe(
 
     for feature_name, feature_dataclass in features_config.items():
         if isinstance(feature_dataclass, tuple):
-            if len(feature_dataclass) == 1:
-                raise KeyError(
-                        "[TCT error] Check your `features_config` dict. You forgot to specify "
-                        "the '"
-                        f"{feature_name}' "
-                        "dimensions."
-                        )
+            feature_dataclass = parse_to_feature_dataclass(feature_dataclass,
+                                                           target_subclass=BaseDataframeFeatureDataclass,
+                                                           feature_name=feature_name)
 
-            new_type, *dims = feature_dataclass
-            feat_spec = TrjDataClassFeatureSpecification(
-                    new_feature_dataclass_type=new_type, dimension_names=tuple(dims)
-                    )
-            feature_dataclass = trajectory_dataclass_factory(
-                    specification=feat_spec,
-                    trj_dataclass_subclass=BaseDataframeFeatureDataclass)
-            feature = extract_single_feature_from_dataframe(dataset=dataset_frame,
-                                                            feature_name=feature_name,
-                                                            data_container_type=feature_dataclass)
-        elif issubclass(feature_dataclass, BaseDataframeFeatureDataclass):
-            feature = extract_single_feature_from_dataframe(dataset=dataset_frame,
-                                                            feature_name=feature_name,
-                                                            data_container_type=feature_dataclass)
+        feature = extract_single_feature_from_dataframe(dataset=dataset_frame,
+                                                        feature_name=feature_name,
+                                                        data_container_type=feature_dataclass)
 
         features_type.append((feature_name, type(feature)))
         features.append(feature)
@@ -127,9 +113,10 @@ def aggregate_multiple_features_from_dataframe(
     return multifeature(dataset_info, *features)
 
 
-def extract_single_feature_from_dataframe(dataset: pd.DataFrame, feature_name: str,
-                                          data_container_type: Type[BaseDataframeFeatureDataclass],
-                                          header_mix_label_and_timesteps=True) -> BaseDataframeFeatureDataclass:
+def extract_single_feature_from_dataframe(
+        dataset: pd.DataFrame, feature_name: str,
+        data_container_type: Type[BaseDataframeFeatureDataclass],
+        header_mix_label_and_timesteps=True) -> BaseDataframeFeatureDataclass:
     """
     Dataframe feature extractor automation function.
 
@@ -188,11 +175,15 @@ def extract_single_feature_from_dataframe(dataset: pd.DataFrame, feature_name: s
 
             # (NICE TO HAVE) ToDo: refactor using "shadow_data_container" module
             # tmp_container = {each_field.name: None for each_field in container_properties}
-            tmp_container = {each_field: None for each_field in data_container_type.get_dimension_names()}
+            tmp_container = {each_field: None for each_field in
+                             data_container_type.get_dimension_names()}
 
             for each_property in data_container_type.get_dimension_names():
                 if each_property == "timestamps":
-                    print("Be advised timestamps sanity check is not supported yet with dataframe to tct extraction")
+                    print(
+                            "Be advised timestamps sanity check is not supported yet with "
+                            "dataframe "
+                            "to tct extraction")
 
                 df_header_field = f"{feature_name}_{each_property}"
                 empty_property_error_msg = (
@@ -213,7 +204,8 @@ def extract_single_feature_from_dataframe(dataset: pd.DataFrame, feature_name: s
                         tmp_container["timesteps_indices"] = timestep_index
                     except IndexError as e:
                         raise ValueError(
-                                "[TCT error] There is a problem with the `dataset_frame` column label "
+                                "[TCT error] There is a problem with the `dataset_frame` column "
+                                "label "
                                 f"`{df_header_field}_` timestep index. "
                                 f"<< {e}"
                                 )

@@ -5,3 +5,4 @@ from .rosbag_to_tct import aggregate_multiple_features_from_rosbag, check_rosbag
 from .trj_dataclasses.abstract_trajectory_dataclass import AbstractMultifeatureDataclass, AbstractTrajectoryDataclass
 from .trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass, BaseReverseAxisTrajectoryDataclass, NestedBaseTrajectoryDataclass, NestedBaseReverseAxisTrajectoryDataclass
 
+
