@@ -207,13 +207,13 @@ Create trajectory containers directly from data arrays:
 def aggregate_multiple_features_from_dataframe(
     dataset_frame: pd.DataFrame,
     dataset_info: str,
-    features_config: Dict[str, Union[Type[BaseDataframeFeatureDataclass], Tuple[str, ...]]]
+    features_config: Dict[str, Union[type[BaseDataframeFeatureDataclass], Tuple[str, ...]]]
 ) -> AbstractMultifeatureDataclass
 
 def extract_single_feature_from_dataframe(
     dataset: pd.DataFrame,
     feature_name: str,
-    data_container_type: Type[BaseDataframeFeatureDataclass]
+    data_container_type: type[BaseDataframeFeatureDataclass]
 ) -> BaseDataframeFeatureDataclass
 ```
 
@@ -222,7 +222,7 @@ def extract_single_feature_from_dataframe(
 def aggregate_multiple_features_from_rosbag(
     rosbag_path: Path,
     dataset_info: Optional[str],
-    features_config: Dict[str, Union[Type[RosBagFeatureDataclass], Tuple[str, ...]]],
+    features_config: Dict[str, Union[type[RosBagFeatureDataclass], Tuple[str, ...]]],
     start: Optional[int] = None,
     stop: Optional[int] = None,
     typestore: Optional[Typestore] = None
@@ -231,7 +231,7 @@ def aggregate_multiple_features_from_rosbag(
 def extract_single_feature_from_rosbag(
     rosbag_path: Path,
     feature_name: str,
-    data_container_type: Type[RosBagFeatureDataclass],
+    data_container_type: type[RosBagFeatureDataclass],
     start: Optional[int] = None,
     stop: Optional[int] = None,
     typestore: Optional[Typestore] = None

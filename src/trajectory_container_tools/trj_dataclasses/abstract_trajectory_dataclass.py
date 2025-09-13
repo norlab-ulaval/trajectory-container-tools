@@ -202,7 +202,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         return tuple(field_name)
 
     @classmethod
-    def get_dimension_type(cls, dimension_name: str) -> Type[Any]:
+    def get_dimension_type(cls, dimension_name: str) -> type:
         """
         Retrieves the target type of specified dimension in a data container.
 

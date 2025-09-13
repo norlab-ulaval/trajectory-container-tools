@@ -1,6 +1,6 @@
 # coding=utf-8
 from dataclasses import dataclass, make_dataclass
-from typing import Tuple, Type
+from typing import Tuple, Type, Union
 
 import numpy as np
 
@@ -35,8 +35,8 @@ class TrjDataClassFeatureSpecification:
 
 def trajectory_dataclass_factory(
         specification: TrjDataClassFeatureSpecification,
-        trj_dataclass_subclass: Type[TrajectoryDataclass] = BaseTrajectoryDataclass,
-        ) -> Type[TrajectoryDataclass]:
+        trj_dataclass_subclass: type[TrajectoryDataclass] = BaseTrajectoryDataclass,
+        ) -> Union[type, type[TrajectoryDataclass]]:
     """A factory function for dynnamicaly creates new `AbstractTrajectoryDataclass` subclass
     from a TrjDataClassFeatureSpecification dataclass object.
 
@@ -85,8 +85,8 @@ def trajectory_dataclass_factory(
 
 
 def parse_to_feature_dataclass(feature_dataclass_spec: tuple[str, ...],
-                               target_subclass: Type[TrajectoryDataclass],
-                               feature_name: str) -> Type[TrajectoryDataclass]:
+                               target_subclass: type[TrajectoryDataclass],
+                               feature_name: str) -> type[TrajectoryDataclass]:
     """ Parses the feature specification tuple to generate a new TrajectoryDataclass type based on
     the provided specification and target subclass.
 

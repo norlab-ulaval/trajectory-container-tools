@@ -13,13 +13,13 @@ from .temporal_tools.timestamps import (
     )
 
 ShadowDataContainer: TypeAlias = Dict[str, Union[None, List, np.ndarray, Dict, Union[
-    Type[RosBagFeatureDataclass], Type[NestedBaseTrajectoryDataclass], Type[Timestamps]], Union[
+    type[RosBagFeatureDataclass], type[NestedBaseTrajectoryDataclass], type[Timestamps]], Union[
     RosBagFeatureDataclass, NestedBaseTrajectoryDataclass, Timestamps]]]
 
 
 def instanciate_shadow_data_container(
         data_container_type: Union[
-            Type[RosBagFeatureDataclass], Type[NestedBaseTrajectoryDataclass]]
+            type[RosBagFeatureDataclass], type[NestedBaseTrajectoryDataclass]]
         ) -> ShadowDataContainer:
     """
     Instantiates a shadow data container for storing data corresponding to the given
@@ -57,7 +57,7 @@ def instanciate_shadow_data_container(
 
 def post_process_shadown_data_container(shadow_data_container: ShadowDataContainer,
                                         data_container_type: Union[
-                                            Type[RosBagFeatureDataclass], Type[
+                                            type[RosBagFeatureDataclass], type[
                                                 NestedBaseTrajectoryDataclass]],
                                         feature_name: Optional[str],
                                         progressbar_enabled=True) -> ShadowDataContainer:

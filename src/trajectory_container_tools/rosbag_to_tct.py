@@ -75,7 +75,7 @@ def check_rosbag_path_and_show_available_topics(rosbag_path: Union[str, Path]) -
 def aggregate_multiple_features_from_rosbag(
         rosbag_path: Path,
         dataset_info: Optional[str],
-        features_config: Dict[str, Union[Type[RosBagFeatureDataclass], Tuple[str, ...]]],
+        features_config: Dict[str, Union[type[RosBagFeatureDataclass], Tuple[str, ...]]],
         start: Optional[int] = None,
         stop: Optional[int] = None,
         typestore: Optional[Typestore] = None
@@ -152,7 +152,7 @@ def aggregate_multiple_features_from_rosbag(
 
 
 def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
-                                       data_container_type: Type[RosBagFeatureDataclass],
+                                       data_container_type: type[RosBagFeatureDataclass],
                                        start: Optional[int] = None,
                                        stop: Optional[int] = None,
                                        typestore: Optional[Typestore] = None
@@ -269,7 +269,7 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
 
 
 def _collect_properties_from_rosbag(
-        data_container_type: Union[Type[RosBagFeatureDataclass], Type[BaseTrajectoryDataclass]],
+        data_container_type: Union[type[RosBagFeatureDataclass], type[BaseTrajectoryDataclass]],
         feature_name: str,
         msg: object | Any,
         timestamp: int,

@@ -63,7 +63,7 @@ def unpack_dataframe_and_show_topic(dataframe_path: Union[str, Path]) -> Tuple[p
 def aggregate_multiple_features_from_dataframe(
         dataset_frame: pd.DataFrame,
         dataset_info: str,
-        features_config: Dict[str, Union[Type[BaseDataframeFeatureDataclass], Tuple[str, ...]]],
+        features_config: Dict[str, Union[type[BaseDataframeFeatureDataclass], Tuple[str, ...]]],
         ) -> MultifeatureTrajectoryDataclass:
     """Extract multiple features from a dataset (formated in a dataframe) based on a
     configuration dictionary.
@@ -115,7 +115,7 @@ def aggregate_multiple_features_from_dataframe(
 
 def extract_single_feature_from_dataframe(
         dataset: pd.DataFrame, feature_name: str,
-        data_container_type: Type[BaseDataframeFeatureDataclass],
+        data_container_type: type[BaseDataframeFeatureDataclass],
         header_mix_label_and_timesteps=True) -> BaseDataframeFeatureDataclass:
     """
     Dataframe feature extractor automation function.

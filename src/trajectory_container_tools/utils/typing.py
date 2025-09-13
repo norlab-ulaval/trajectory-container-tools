@@ -6,5 +6,4 @@ from ..trj_dataclasses.abstract_trajectory_dataclass import AbstractMultifeature
 
 TrajectoryDataclass = NewType('TrajectoryDataclass', AbstractTrajectoryDataclass)
 MultifeatureTrajectoryDataclass = NewType('MultifeatureTrajectoryDataclass', AbstractMultifeatureDataclass)
-MultifeatureTrajectoryDataclass = NewType('MultifeatureTrajectoryDataclass', AbstractMultifeatureDataclass)
 
