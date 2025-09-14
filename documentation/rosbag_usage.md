@@ -48,10 +48,10 @@ from trajectory_container_tools.rosbag_to_tct import (
     aggregate_multiple_features_from_rosbag,
     extract_single_feature_from_rosbag,
     check_rosbag_path_and_show_available_topics
-)
-from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
-    NavMsgsOdometry, RosBagFeatureDataclass
-)
+    )
+from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
+    NavMsgsOdometry, RosStampedDataclass
+    )
 ```
 
 ### 2. Inspect ROS Bag Contents
@@ -99,13 +99,14 @@ print(trajectory_container)
 ### Built-in Message Types
 
 #### Navigation Messages
+
 ```python
-from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import NavMsgsOdometry
+from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import NavMsgsOdometry
 
 # nav_msgs/Odometry -> pose + pose covariance + twist + twist covariance data
 features_config = {
-    '/odometry': NavMsgsOdometry
-}
+        '/odometry': NavMsgsOdometry
+        }
 ```
 
 #### Custom Messages
@@ -122,30 +123,31 @@ features_config = {
 ```python
 from pathlib import Path
 from trajectory_container_tools.rosbag_to_tct import aggregate_multiple_features_from_rosbag
-from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import NavMsgsOdometry
+from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import NavMsgsOdometry
 
 rosbag_path = Path("experiments/robot_nav_2024_01_15.db3").parent
 
 # Configure multiple ROS topics
 features_config = {
-    # Navigation data
-    '/odometry': NavMsgsOdometry,
-    '/ground_truth_pose': ('GroundTruth', 'pose.pose.position.x', 'pose.pose.position.y', 'pose.pose.orientation.z'),
-    
-    # Control data  
-    '/velocity_commands': ('VelCmd', 'linear.x', 'linear.y', 'angular.z'),
-    
-    # Sensor data
-    '/imu_readings': ('IMUData', 'linear_acceleration.x', 'linear_acceleration.y', 'angular_velocity.z'),
-    '/lidar_features': ('LidarFeatures', 'ranges[0]', 'ranges[90]', 'ranges[180]', 'ranges[270]')
-}
+        # Navigation data
+        '/odometry':          NavMsgsOdometry,
+        '/ground_truth_pose': ('GroundTruth', 'pose_pose_position_x', 'pose_pose_position_y',
+                               'pose_pose_orientation_z'),
+
+        # Control data  
+        '/velocity_commands': ('VelCmd', 'linear_x', 'linear_y', 'angular_z'),
+
+        # Sensor data
+        '/imu_readings':      ('IMUData', 'linear_acceleration_x', 'linear_acceleration_y', 'angular_velocity_z'),
+        '/lidar_features':    ('LidarFeatures', 'ranges[0]', 'ranges[90]', 'ranges[180]', 'ranges[270]')
+        }
 
 # Extract trajectory data
 robot_data = aggregate_multiple_features_from_rosbag(
-    rosbag_path=rosbag_path,
-    dataset_info="Outdoor navigation experiment - 2024-01-15",
-    features_config=features_config
-)
+        rosbag_path=rosbag_path,
+        dataset_info="Outdoor navigation experiment - 2024-01-15",
+        features_config=features_config
+        )
 
 # Access extracted data
 print(f"Odometry data shape: {robot_data.odometry.x.shape}")
@@ -154,6 +156,7 @@ print(f"IMU data shape: {robot_data.imu_readings.linear_acceleration_x.shape}")
 
 # Analyze trajectory
 import matplotlib.pyplot as plt
+
 plt.figure(figsize=(10, 6))
 plt.plot(robot_data.odometry.x, robot_data.odometry.y, 'b-', label='Odometry')
 plt.plot(robot_data.ground_truth_pose.x, robot_data.ground_truth_pose.y, 'r--', label='Ground Truth')
@@ -186,8 +189,8 @@ positions = odom_container.x, odom_container.y, odom_container.z
 orientations = odom_container.qx, odom_container.qy, odom_container.qz, odom_container.qw
 
 # Access twist data  
-linear_vel = odom_container.twist_linear_x, odom_container.twist_linear_y
-angular_vel = odom_container.twist_angular_z
+linear_vel = odom_container.twist.linear.x, odom_container.twist.linear.y
+angular_vel = odom_container.twist.angular.z
 ```
 
 ### Example 3: Time-Sliced Extraction
@@ -235,18 +238,19 @@ features_config = {
 
 ```python
 from dataclasses import dataclass
-from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import RosBagFeatureDataclass
+from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import RosStampedDataclass
 import numpy as np
 
+
 @dataclass
-class CustomRobotState(RosBagFeatureDataclass):
+class CustomRobotState(RosStampedDataclass):
     """Custom dataclass for complex robot state messages"""
     x: np.ndarray
     y: np.ndarray
     theta: np.ndarray
     velocity: np.ndarray
     battery_level: np.ndarray
-    
+
     def post_init_feature_callback(self, feature_name: str):
         """Custom processing after feature extraction"""
         if feature_name == 'theta':
@@ -254,12 +258,12 @@ class CustomRobotState(RosBagFeatureDataclass):
             theta = getattr(self, feature_name)
             wrapped_theta = np.arctan2(np.sin(theta), np.cos(theta))
             setattr(self, feature_name, wrapped_theta)
-        
+
 
 # Use custom dataclass
 features_config = {
-    'robot_state': CustomRobotState
-}
+        'robot_state': CustomRobotState
+        }
 ```
 
 

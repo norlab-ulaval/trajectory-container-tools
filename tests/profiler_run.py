@@ -13,9 +13,9 @@ from trajectory_container_tools.rosbag_to_tct import (
     aggregate_multiple_features_from_rosbag,
     extract_single_feature_from_rosbag,
     )
-from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
+from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
     AckermannMsgsAckermannDriveStamped, NavMsgsOdometry, SensorMsgsImu,
-    RosBagFeatureDataclass,
+    RosStampedDataclass,
     )
 
 
@@ -53,7 +53,7 @@ def profiler_run():
     rosbag_path = check_rosbag_path_and_show_available_topics(rosbag_path)
 
     print(f"\n[TCT] === Profiling run ====================================================")
-    container: Union[NavMsgsOdometry, RosBagFeatureDataclass, AbstractMultifeatureDataclass]
+    container: Union[NavMsgsOdometry, RosStampedDataclass, AbstractMultifeatureDataclass]
 
     # .... Extract Single Feature From Rosbag .....................................................
     # "/odom": NavMsgsOdometry,

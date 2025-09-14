@@ -7,7 +7,7 @@ import pytest
 
 from rclpy.time import Time as RosTime
 
-from trajectory_container_tools.trj_dataclasses.primitive_dataclass import Header
+from trajectory_container_tools.trj_dataclasses.ros2_primitive_dataclass import Header
 
 TRJ_LEN = 40
 

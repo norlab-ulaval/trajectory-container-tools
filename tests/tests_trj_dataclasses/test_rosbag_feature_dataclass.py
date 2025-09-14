@@ -1,8 +1,12 @@
 # coding=utf-8
-from trajectory_container_tools.trj_dataclasses.primitive_dataclass import Header
-from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
-    AckermannMsgsAckermannDriveStamped, NavMsgsOdometry,
-    NavMsgsOdometryFlat, Pose, PoseWithCovariance, SensorMsgsImu, Tf2MsgsTFMessage, Twist,
+from trajectory_container_tools.trj_dataclasses.ros2_primitive_dataclass import (
+    Header, Point, Quaternion,
+    Transform, Vector3,
+    )
+from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
+    AckermannMsgsAckermannDrive, AckermannMsgsAckermannDriveStamped, NavMsgsOdometry,
+    NavMsgsOdometryFlat, Pose, PoseWithCovariance, Scan, SensorMsgsImu, SensorMsgsImuFlat,
+    Tf2MsgsTFMessage, Twist,
     TwistWithCovariance,
     )
 
@@ -15,28 +19,28 @@ class TestTrajectoryDataclassFromROSBagCase:
                 feature_name="/pf/pose/odom",
                 header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
                 pose=PoseWithCovariance(
-                    pose=Pose(
-                        position_x=md.a,
-                        position_y=md.a,
-                        position_z=md.a,
-                        orientation_x=md.a,
-                        orientation_y=md.a,
-                        orientation_z=md.a,
-                        orientation_w=md.a,
-                    ),
-                    covariance=md.c,
-                ),
+                        pose=Pose(
+                                position=Point(x=md.a,
+                                               y=md.a,
+                                               z=md.a),
+                                orientation=Quaternion(x=md.a,
+                                                       y=md.a,
+                                                       z=md.a,
+                                                       w=md.a),
+                                ),
+                        covariance=md.c,
+                        ),
                 twist=TwistWithCovariance(
-                    twist=Twist(
-                        linear_x=md.a,
-                        linear_y=md.a,
-                        linear_z=md.a,
-                        angular_x=md.a,
-                        angular_y=md.a,
-                        angular_z=md.a,
-                    ),
-                    covariance=md.c,
-                    )
+                        twist=Twist(
+                                linear=Vector3(x=md.a,
+                                               y=md.a,
+                                               z=md.a),
+                                angular=Vector3(x=md.a,
+                                                y=md.a,
+                                                z=md.a),
+                                ),
+                        covariance=md.c,
+                        )
                 )
         print(dc_)
         assert dc_._init_trj_axe == 0
@@ -68,13 +72,13 @@ class TestTrajectoryDataclassFromROSBagCase:
     def test_AckermannMsgsAckermannDriveStamped_init(self, mock_ROSbag_2_trj_DC):
         md = mock_ROSbag_2_trj_DC
         dc_ = AckermannMsgsAckermannDriveStamped(
-                feature_name="/ackermann_cmd",
+                feature_name="/teleop",
                 header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
-                drive_steeringAngle=md.a,
-                drive_steeringAngleVelocity=md.a,
-                drive_speed=md.a,
-                drive_acceleration=md.a,
-                drive_jerk=md.a,
+                drive=AckermannMsgsAckermannDrive(steeringAngle=md.a,
+                                                  steeringAngleVelocity=md.a,
+                                                  speed=md.a,
+                                                  acceleration=md.a,
+                                                  jerk=md.a, )
                 )
         print(dc_)
         assert dc_._init_trj_axe == 0
@@ -82,16 +86,31 @@ class TestTrajectoryDataclassFromROSBagCase:
     def test_Tf2MsgsTFMessage_init(self, mock_ROSbag_2_trj_DC):
         md = mock_ROSbag_2_trj_DC
         dc_ = Tf2MsgsTFMessage(
-                feature_name="/ackermann_cmd",
+                feature_name="/tf",
                 header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
                 childFrameId="odom",
-                transform_translation_x=md.a,
-                transform_translation_y=md.a,
-                transform_translation_z=md.a,
-                transform_rotation_x=md.a,
-                transform_rotation_y=md.a,
-                transform_rotation_z=md.a,
-                transform_rotation_w=md.a,
+                transform=Transform(
+                        translation=Vector3(x=md.a, y=md.a, z=md.a),
+                        rotation=Quaternion(x=md.a, y=md.a, z=md.a, w=md.a)
+                        ),
+                )
+        print(dc_)
+        assert dc_._init_trj_axe == 0
+
+    def test_Scan_init(self, mock_ROSbag_2_trj_DC):
+        md = mock_ROSbag_2_trj_DC
+        dc_ = Scan(
+                feature_name="/scan",
+                header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
+                angle_min=0.0,
+                angle_max=0.0,
+                angle_increment=0.0,
+                time_increment=0.0,
+                scan_time=0.0,
+                range_min=0.0,
+                range_max=0.0,
+                ranges=md.c,
+                intensities=md.c,
                 )
         print(dc_)
         assert dc_._init_trj_axe == 0
@@ -99,7 +118,22 @@ class TestTrajectoryDataclassFromROSBagCase:
     def test_SensorMsgsImu_init(self, mock_ROSbag_2_trj_DC):
         md = mock_ROSbag_2_trj_DC
         dc_ = SensorMsgsImu(
-                feature_name="/ackermann_cmd",
+                feature_name="/sensors/imu/raw",
+                header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
+                orientation=Quaternion(x=md.a, y=md.a, z=md.a, w=md.a),
+                orientationCovariance=md.c,
+                angularVelocity=Vector3(x=md.a, y=md.a, z=md.a),
+                angularVelocityCovariance=md.c,
+                linearAcceleration=Vector3(x=md.a, y=md.a, z=md.a),
+                linearAccelerationCovariance=md.c,
+                )
+        print(dc_)
+        assert dc_._init_trj_axe == 0
+
+    def test_SensorMsgsImuFlat_init(self, mock_ROSbag_2_trj_DC):
+        md = mock_ROSbag_2_trj_DC
+        dc_ = SensorMsgsImuFlat(
+                feature_name="/sensors/imu/raw",
                 header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
                 orientation_x=md.a,
                 orientation_y=md.a,

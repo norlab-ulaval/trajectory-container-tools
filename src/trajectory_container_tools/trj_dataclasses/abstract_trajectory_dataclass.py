@@ -38,12 +38,12 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
         string representation of the attribute's hierarchical structure.
         It takes a dot-separated attribute name, traverses the object's nested levels
         sequentially, and retrieves the final attribute
-        e.g., "topic_odom.pose.pose.position_x" would sequentialy crawl into nested container
-        "topic_odom" -> "pose" -> "pose" -> "position_x".
+        e.g., "topic_odom.pose.pose.position.x" would sequentialy crawl into nested container
+        "topic_odom" -> "pose" -> "pose" -> "position" -> "x".
 
         Example:
 
-            >>> position_x_value = self.fetch_nested_attribute("topic_odom.pose.pose.position_x")
+            >>> position_x_value = self.fetch_nested_attribute("topic_odom.pose.pose.position.x")
 
         :param nested_attribute_list: A dot-separated string representing the hierarchical
           structure of the attribute to retrieve.

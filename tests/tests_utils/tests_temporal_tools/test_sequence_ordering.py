@@ -1,6 +1,6 @@
 # coding=utf-8
-from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import \
-    RosBagFeatureDataclass
+from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import \
+    RosStampedDataclass
 from trajectory_container_tools.utils.temporal_tools.sequence_ordering import \
     fix_sequence_ordering_base_on_timestamps
 from trajectory_container_tools.utils.temporal_tools.timestamps import \
@@ -14,7 +14,7 @@ class TestTrajectorySequenceOrderingLogic:
             ):
         fixed_trajectory_dict = fix_sequence_ordering_base_on_timestamps(
                 shadow_data_container=mock_trajectory_dict_ordered,
-                data_container_type_=RosBagFeatureDataclass)
+                data_container_type_=RosStampedDataclass)
 
         ts = fixed_trajectory_dict["header"].timestamps
 
@@ -26,7 +26,7 @@ class TestTrajectorySequenceOrderingLogic:
             ):
         fixed_trajectory_dict = fix_sequence_ordering_base_on_timestamps(
                 shadow_data_container=mock_trajectory_dict_unordered,
-                data_container_type_=RosBagFeatureDataclass)
+                data_container_type_=RosStampedDataclass)
 
         ts = fixed_trajectory_dict["header"].timestamps
 

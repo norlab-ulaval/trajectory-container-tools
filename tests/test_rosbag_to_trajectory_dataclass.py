@@ -11,11 +11,11 @@ from trajectory_container_tools.rosbag_to_tct import (
     aggregate_multiple_features_from_rosbag,
     check_rosbag_path_and_show_available_topics, extract_single_feature_from_rosbag,
     )
-from trajectory_container_tools.trj_dataclasses.primitive_dataclass import Header
+from trajectory_container_tools.trj_dataclasses.ros2_primitive_dataclass import Header
 
-from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
-    AckermannMsgsAckermannDriveStamped, NavMsgsOdometry,
-    RosBagFeatureDataclass, Tf2MsgsTFMessage, SensorMsgsImu,
+from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
+    AckermannMsgsAckermannDrive, AckermannMsgsAckermannDriveStamped, NavMsgsOdometry,
+    RosStampedDataclass, Tf2MsgsTFMessage, SensorMsgsImu,
     )
 from trajectory_container_tools.utils.temporal_tools.timestamps import (
     TimestampCausalOrderingError, Timestamps,
@@ -85,7 +85,7 @@ class TestExtractROSBagFeature:
         assert container.trajectory_len == 3120
 
     def test_populate_nested_trajectory_dataclass(self, setup_rosbag_from_tests_dir):
-        container: Union[NavMsgsOdometry, RosBagFeatureDataclass]
+        container: Union[NavMsgsOdometry, RosStampedDataclass]
         container = extract_single_feature_from_rosbag(
                 rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name="/odom",
                 data_container_type=NavMsgsOdometry)
@@ -95,9 +95,9 @@ class TestExtractROSBagFeature:
         assert container.pose.feature_name is None
         assert container.twist.feature_name is None
         assert container.pose.pose.feature_name is None
-        assert isinstance(container.pose.pose.position_x, np.ndarray)
+        assert isinstance(container.pose.pose.position.x, np.ndarray)
         assert container.pose.pose.trajectory_len == container.trajectory_len
-        assert len(container.pose.pose.position_x) == container.trajectory_len
+        assert len(container.pose.pose.position.x) == container.trajectory_len
 
     def test_bad_argument(self, setup_rosbag_from_tests_dir):
         fn = "/aaaaaaackermann_cmddd"
@@ -106,11 +106,11 @@ class TestExtractROSBagFeature:
         bad_argument = AckermannMsgsAckermannDriveStamped(
                 feature_name=fn,
                 header=Header(frame_id="", timestamps=mock_value),
-                drive_steeringAngle=mock_value,
-                drive_steeringAngleVelocity=mock_value,
-                drive_speed=mock_value,
-                drive_acceleration=mock_value,
-                drive_jerk=mock_value,
+                drive=AckermannMsgsAckermannDrive(steeringAngle=mock_value,
+                                                  steeringAngleVelocity=mock_value,
+                                                  speed=mock_value,
+                                                  acceleration=mock_value,
+                                                  jerk=mock_value),
                 # timesteps_indices=mock_value,
                 )
 
@@ -189,7 +189,7 @@ class TestExtractROSBagMultifeature:
 
         print(features_container)
 
-        assert isinstance(features_container.topic_sensors_imu_raw, RosBagFeatureDataclass)
+        assert isinstance(features_container.topic_sensors_imu_raw, RosStampedDataclass)
         assert not isinstance(features_container.topic_sensors_imu_raw, SensorMsgsImu)
         assert features_container.topic_sensors_imu_raw.feature_name == '/sensors/imu/raw'
         assert features_container.topic_sensors_imu_raw.get_dimension_names() == (
@@ -219,7 +219,7 @@ class TestExtractROSBagMultifeature:
         assert features_container.topic_sensors_imu_raw.feature_name == '/sensors/imu/raw'
         assert isinstance(features_container.topic_sensors_imu_raw, SensorMsgsImu)
 
-        assert isinstance(features_container.topic_odom, RosBagFeatureDataclass)
+        assert isinstance(features_container.topic_odom, RosStampedDataclass)
         assert features_container.topic_odom.feature_name == "/odom"
 
     def test_extract_rosbag_multifeature_misspecification(

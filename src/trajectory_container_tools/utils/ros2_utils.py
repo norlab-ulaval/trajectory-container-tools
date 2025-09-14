@@ -4,7 +4,7 @@ from typing import Union
 
 from rclpy.time import Time as RosTime
 from rosbags.typesys.store import Typestore
-from rosbags.typesys.types import builtin_interfaces__msg__Time
+from rosbags.typesys.stores.empty import builtin_interfaces__msg__Time
 from rosbags.typesys import Stores, get_typestore
 
 

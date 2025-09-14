@@ -13,10 +13,10 @@ from .trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
     )
 from .trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
-from .trj_dataclasses.primitive_dataclass import Header
-from .trj_dataclasses.rosbag_feature_dataclass import (
+from .trj_dataclasses.ros2_primitive_dataclass import Header
+from .trj_dataclasses.ros2_feature_dataclass import (
     NavMsgsOdometry,
-    RosBagFeatureDataclass,
+    RosStampedDataclass,
     )
 from .utils.factory import (
     parse_to_feature_dataclass,
@@ -75,7 +75,7 @@ def check_rosbag_path_and_show_available_topics(rosbag_path: Union[str, Path]) -
 def aggregate_multiple_features_from_rosbag(
         rosbag_path: Path,
         dataset_info: Optional[str],
-        features_config: Dict[str, Union[type[RosBagFeatureDataclass], Tuple[str, ...]]],
+        features_config: Dict[str, Union[type[RosStampedDataclass], Tuple[str, ...]]],
         start: Optional[int] = None,
         stop: Optional[int] = None,
         typestore: Optional[Typestore] = None
@@ -89,7 +89,7 @@ def aggregate_multiple_features_from_rosbag(
     to lookout in the rosbag topic list and agregate them in a *multifeature* dataclass.
 
     Feature dimensions such as 'pose.position.x' or 'twist.linear.y' are specified either by
-    using existing `RosBagFeatureDataclass` subclass such as `NavMsgsOdometry`,
+    using existing `RosStampedDataclass` subclass such as `NavMsgsOdometry`,
     `AckermannMsgsAckermannDriveStamped`, `Tf2MsgsTFMessage`, `SensorMsgsImu` or by using tuple
     of strings such as `('<NewFeatureDataclassTypeName>', '<topic_property_name_1>',
     '<topic_property_name_2>', ...)`.
@@ -131,7 +131,7 @@ def aggregate_multiple_features_from_rosbag(
         # Case: features_config require parsing topic msg property
         if isinstance(feature_dataclass, tuple):
             feature_dataclass = parse_to_feature_dataclass(feature_dataclass,
-                                                           target_subclass=RosBagFeatureDataclass,
+                                                           target_subclass=RosStampedDataclass,
                                                            feature_name=feature_name)
 
         feature = extract_single_feature_from_rosbag(rosbag_path=rosbag_path,
@@ -159,17 +159,17 @@ def aggregate_multiple_features_from_rosbag(
 
 
 def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
-                                       data_container_type: type[RosBagFeatureDataclass],
+                                       data_container_type: type[RosStampedDataclass],
                                        start: Optional[int] = None,
                                        stop: Optional[int] = None,
                                        typestore: Optional[Typestore] = None
-                                       ) -> RosBagFeatureDataclass:
+                                       ) -> RosStampedDataclass:
     """
     Extracts a specific feature from a ROS bag file and returns it in a structured data container.
 
     This function retrieves messages from a specified topic within a ROS bag, processes them, and
     organizes the extracted data into a provided custom dataclass that inherits from the
-    `RosBagFeatureDataclass`. Handles data integrity checks and enables customization for
+    `RosStampedDataclass`. Handles data integrity checks and enables customization for
     specialized message types.
 
     Usage:
@@ -184,7 +184,7 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
 
     :param rosbag_path: Path to the input ROS bag file.
     :param feature_name: Name of the topic to extract data from.
-    :param data_container_type: Custom dataclass type inheriting from `RosBagFeatureDataclass`
+    :param data_container_type: Custom dataclass type inheriting from `RosStampedDataclass`
         used to construct the final structured data container.
     :param start: Optional start time for filtering messages, measured in nanoseconds.
     :param stop: Optional stop time for filtering messages, measured in nanoseconds.
@@ -192,10 +192,10 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
     :return: An instance of the `data_container_type` containing the processed feature data.
     """
     try:
-        if not issubclass(data_container_type, RosBagFeatureDataclass):
+        if not issubclass(data_container_type, RosStampedDataclass):
             raise ValueError(
                     f"[TCT error] `{data_container_type}` must be a subclass of "
-                    f"`RosBagFeatureDataclass`"
+                    f"`RosStampedDataclass`"
                     )
     except TypeError as e:
         raise AttributeError(
@@ -222,9 +222,6 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
                         )
 
             print(f"[TCT] Extract single feature from rosbag › seeking {feature_name}")
-            if _dataclass_type_is_type_name(data_container_type, "Tf2MsgsTFMessage"):
-                # This is a one-time warning (ref task TCT-11)
-                print("[TCT] Skipping msg type 'transforms'")
 
             feature_msg_len = len(
                     list(reader.messages(connections=connections, start=start, stop=stop)))
@@ -238,14 +235,6 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
                 progressbar.update(1)
 
                 msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
-
-                # Note: this is a tmp quick-hack for dealing with Tf2MsgsTFMessage topic msg with
-                #       embedded msg type (ref task TCT-11)
-                # (NICE TO HAVE) ToDo: add nested logic to Tf2MsgsTFMessage and delete
-                # quick-hack (ref task TCT-11)
-                if _dataclass_type_is_type_name(data_container_type, "Tf2MsgsTFMessage"):
-                    msg = getattr(msg, "transforms")
-                    msg = msg.pop()
 
                 # ... Fetch properties from rosbag ................................................
                 shadow_data_container = _collect_properties_from_rosbag(
@@ -276,7 +265,7 @@ def extract_single_feature_from_rosbag(rosbag_path: Path, feature_name: str,
 
 
 def _collect_properties_from_rosbag(
-        data_container_type: Union[type[RosBagFeatureDataclass], type[BaseTrajectoryDataclass]],
+        data_container_type: Union[type[RosStampedDataclass], type[BaseTrajectoryDataclass]],
         feature_name: str,
         msg: object | Any,
         timestamp: int,
@@ -308,7 +297,7 @@ def _collect_properties_from_rosbag(
                     attribute_parent = getattr(attribute_parent, each_child)
 
                 if issubclass(shadow_data_container[each_property_name]['type'],
-                              (RosBagFeatureDataclass, BaseTrajectoryDataclass)):
+                              (RosStampedDataclass, BaseTrajectoryDataclass)):
                     shadow_data_container[each_property_name] = _collect_properties_from_rosbag(
                             data_container_type=shadow_data_container[each_property_name]['type'],
                             feature_name=each_property_name,

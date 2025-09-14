@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from .general import extract_class_name_from_type, setup_progressbar
 from ..trj_dataclasses.abstract_trajectory_dataclass import AbstractTrajectoryDataclass
-from ..trj_dataclasses.rosbag_feature_dataclass import RosBagFeatureDataclass
+from ..trj_dataclasses.ros2_feature_dataclass import RosStampedDataclass
 from ..trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
 from .temporal_tools.timestamps import (
     TimestampCausalOrderingError, Timestamps,
@@ -14,13 +14,13 @@ from .temporal_tools.timestamps import (
     )
 
 ShadowDataContainer: TypeAlias = Dict[str, Union[None, List, np.ndarray, Dict, Union[
-    type[RosBagFeatureDataclass], type[NestedBaseTrajectoryDataclass], type[Timestamps]], Union[
-    RosBagFeatureDataclass, NestedBaseTrajectoryDataclass, Timestamps]]]
+    type[RosStampedDataclass], type[NestedBaseTrajectoryDataclass], type[Timestamps]], Union[
+    RosStampedDataclass, NestedBaseTrajectoryDataclass, Timestamps]]]
 
 
 def instanciate_shadow_data_container(
         data_container_type: Union[
-            type[RosBagFeatureDataclass], type[NestedBaseTrajectoryDataclass]]
+            type[RosStampedDataclass], type[NestedBaseTrajectoryDataclass]]
         ) -> ShadowDataContainer:
     """
     Instantiates a shadow data container for storing data corresponding to the given
@@ -28,7 +28,7 @@ def instanciate_shadow_data_container(
     provided data container type and its sub-properties.
 
     :param data_container_type: The data container type for which the shadow
-        data container is to be instantiated. It should be either `RosBagFeatureDataclass`
+        data container is to be instantiated. It should be either `RosStampedDataclass`
         or `NestedBaseTrajectoryDataclass` or their derived types.
     :return: A shadow data container.
     """
@@ -46,7 +46,7 @@ def instanciate_shadow_data_container(
             # Note: Using a list to temporary aggregate data and then convert to numpy array when
             #       done is faster than directly append to a numpy array
             shadow_data_container[each_property_name] = {'type': dimension_type, 'data': []}
-        elif issubclass(dimension_type, (RosBagFeatureDataclass, NestedBaseTrajectoryDataclass)):
+        elif issubclass(dimension_type, (RosStampedDataclass, NestedBaseTrajectoryDataclass)):
             shadow_data_container[each_property_name] = instanciate_shadow_data_container(
                     dimension_type)
         else:
@@ -59,7 +59,7 @@ def instanciate_shadow_data_container(
 
 def post_process_shadown_data_container(shadow_data_container: ShadowDataContainer,
                                         data_container_type: Union[
-                                            type[RosBagFeatureDataclass], type[
+                                            type[RosStampedDataclass], type[
                                                 NestedBaseTrajectoryDataclass]],
                                         feature_name: Optional[str],
                                         progressbar_enabled=True) -> ShadowDataContainer:
@@ -73,7 +73,7 @@ def post_process_shadown_data_container(shadow_data_container: ShadowDataContain
 
     :param shadow_data_container: The data container shadowing data_container_type.
     :param data_container_type: The expected type of data container. It must
-        be a class type that is either RosBagFeatureDataclass or NestedBaseTrajectoryDataclass.
+        be a class type that is either RosStampedDataclass or NestedBaseTrajectoryDataclass.
     :param feature_name: The name of the specific feature process by non-nested data container.
     :param progressbar_enabled:
     :return: The processed ShadowDataContainer with the updated structure and values.

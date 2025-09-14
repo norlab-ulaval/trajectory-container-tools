@@ -10,9 +10,9 @@ from trajectory_container_tools import (
     check_rosbag_path_and_show_available_topics,
     extract_single_feature_from_rosbag,
     )
-from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
+from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
     NavMsgsOdometry,
-    RosBagFeatureDataclass,
+    RosStampedDataclass,
     )
 
 
@@ -71,7 +71,7 @@ def benchmark_extract_single_feature_from_rosbag(bag_path: Path, rosbag_start: i
 #                 'Multiprocessing disabled']
 #         )
 def test_extract_rosbag_benchmark(benchmark, setup_rosbag_from_external_data_dir):
-    container: Union[NavMsgsOdometry, RosBagFeatureDataclass]
+    container: Union[NavMsgsOdometry, RosStampedDataclass]
     rosbag_path, rosbag_start, rosbag_stop = setup_rosbag_from_external_data_dir
 
     container = benchmark(benchmark_extract_single_feature_from_rosbag,
@@ -82,4 +82,4 @@ def test_extract_rosbag_benchmark(benchmark, setup_rosbag_from_external_data_dir
 
     # Minimum logic to validate run success
     print(container)
-    assert isinstance(container.pose.pose.position_x, np.ndarray)
+    assert isinstance(container.pose.pose.position.x, np.ndarray)

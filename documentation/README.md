@@ -150,7 +150,7 @@ Create trajectory containers directly from data arrays:
 - `CmdSkidSteer` - Skid-steer command interface
 
 #### ROS Bag Feature Dataclasses
-- `RosBagFeatureDataclass` - Base for ROS message containers
+- `RosStampedDataclass` - Base for ROS message containers
 - `NavMsgsOdometry` - nav_msgs/Odometry messages
 - `AckermannMsgsAckermannDriveStamped` - teleop or cmd messages 
 - `Tf2MsgsTFMessage` - transform messages
@@ -222,7 +222,7 @@ def extract_single_feature_from_dataframe(
 def aggregate_multiple_features_from_rosbag(
     rosbag_path: Path,
     dataset_info: Optional[str],
-    features_config: Dict[str, Union[type[RosBagFeatureDataclass], Tuple[str, ...]]],
+    features_config: Dict[str, Union[type[RosStampedDataclass], Tuple[str, ...]]],
     start: Optional[int] = None,
     stop: Optional[int] = None,
     typestore: Optional[Typestore] = None
@@ -231,11 +231,11 @@ def aggregate_multiple_features_from_rosbag(
 def extract_single_feature_from_rosbag(
     rosbag_path: Path,
     feature_name: str,
-    data_container_type: type[RosBagFeatureDataclass],
+    data_container_type: type[RosStampedDataclass],
     start: Optional[int] = None,
     stop: Optional[int] = None,
     typestore: Optional[Typestore] = None
-) -> RosBagFeatureDataclass
+) -> RosStampedDataclass
 ```
 
 ---

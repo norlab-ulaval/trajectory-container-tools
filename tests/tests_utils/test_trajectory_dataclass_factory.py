@@ -5,9 +5,9 @@ import pytest
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
     BaseDataframeFeatureDataclass,
 )
-from trajectory_container_tools.trj_dataclasses.primitive_dataclass import Header
-from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import (
-    RosBagFeatureDataclass,
+from trajectory_container_tools.trj_dataclasses.ros2_primitive_dataclass import Header
+from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
+    RosStampedDataclass,
 )
 from trajectory_container_tools.utils.factory import (
     TrjDataClassFeatureSpecification,
@@ -92,7 +92,7 @@ class TestTrajectoryDataclassFactoryROSbagCase:
 
     def test_spec_ok(self, setup_rosbag_style_config):
         trajectory_dataclass_factory(
-            specification=setup_rosbag_style_config, trj_dataclass_subclass=RosBagFeatureDataclass
+            specification=setup_rosbag_style_config, trj_dataclass_subclass=RosStampedDataclass
         )
 
     def test_bad_spec(self):
@@ -102,13 +102,13 @@ class TestTrajectoryDataclassFactoryROSbagCase:
                     new_feature_dataclass_type="new_topic_msg_type",
                     dimension_names=("pose.xx", "pose_yy", 999),
                 ),
-                trj_dataclass_subclass=RosBagFeatureDataclass,
+                trj_dataclass_subclass=RosStampedDataclass,
             )
 
     def test_output_ok(self, setup_rosbag_style_config):
         mock_cls = trajectory_dataclass_factory(
             specification=setup_rosbag_style_config,
-            trj_dataclass_subclass=RosBagFeatureDataclass,
+            trj_dataclass_subclass=RosStampedDataclass,
         )
         mock_value = np.arange(10)
         assert issubclass(mock_cls, atd.AbstractTrajectoryDataclass)

@@ -13,8 +13,8 @@ from ..trj_dataclasses.base_trajectory_dataclass import (
 
 def plot_trajectory_2d(
         trajectory_data: Union[BaseTrajectoryDataclass, BaseReverseAxisTrajectoryDataclass],
-        x_axis_topic: str = "topic_odom.pose.pose.position_x",
-        y_axis_topic: str = "topic_odom.pose.pose.position_y"):
+        x_axis_topic: str = "topic_odom.pose.pose.position.x",
+        y_axis_topic: str = "topic_odom.pose.pose.position.y"):
     """
     Plots a 2D trajectory of position data using specified x and y axis topics.
 
@@ -26,9 +26,9 @@ def plot_trajectory_2d(
     :param trajectory_data: A data container (either `BaseTrajectoryDataclass` or
         `BaseReverseAxisTrajectoryDataclass`) holding the trajectory attributes.
     :param x_axis_topic: The hierarchical string path to identify the x-axis attribute
-        in `trajectory_data`. Default is "topic_odom.pose.pose.position_x".
+        in `trajectory_data`. Default is "topic_odom.pose.pose.position.x".
     :param y_axis_topic: The hierarchical string path to identify the y-axis attribute
-        in `trajectory_data`. Default is "topic_odom.pose.pose.position_y".
+        in `trajectory_data`. Default is "topic_odom.pose.pose.position.y".
     :return: A tuple containing the matplotlib figure and axes objects with the plotted
         trajectory.
     """

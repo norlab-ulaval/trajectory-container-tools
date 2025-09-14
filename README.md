@@ -119,10 +119,12 @@ trajectory = StatePose2D(feature_name="odom pose",
 ```
              
 #### From ROS bag
+
 ```python
 from trajectory_container_tools.rosbag_to_tct import aggregate_multiple_features_from_rosbag
-from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import NavMsgsOdometry,
-    AckermannMsgsAckermannDriveStamped
+from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import NavMsgsOdometry,
+
+AckermannMsgsAckermannDriveStamped
 
 dataset_info = f"Warthog Mont-Morency {datetime.now()}"
 features_config = {"/odom": NavMsgsOdometry, "/teleop": AckermannMsgsAckermannDriveStamped}

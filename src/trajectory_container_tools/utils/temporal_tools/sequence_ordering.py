@@ -4,7 +4,7 @@ from typing import Type, Union
 import numpy as np
 
 from trajectory_container_tools.trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
-from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import RosBagFeatureDataclass
+from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import RosStampedDataclass
 from trajectory_container_tools.utils.temporal_tools.timestamps import (
     Timestamps,
     )
@@ -14,7 +14,7 @@ from trajectory_container_tools.utils.shadow_data_container import \
 
 def fix_sequence_ordering_base_on_timestamps(
         shadow_data_container: dict,
-        data_container_type_: type[RosBagFeatureDataclass]) -> dict:
+        data_container_type_: type[RosStampedDataclass]) -> dict:
     """Fix trajectory data sequence ordering with respect to timestamps values
 
     Note that the 'shadow_data_container' object is an intermediate step before instanciating a
@@ -36,7 +36,7 @@ def fix_sequence_ordering_base_on_timestamps(
 
 def _fix_container_array_timestamps(
         data_container_type_: Union[
-            type[RosBagFeatureDataclass], type[NestedBaseTrajectoryDataclass]],
+            type[RosStampedDataclass], type[NestedBaseTrajectoryDataclass]],
         sorted_ts_idx: np.ndarray,
         shadow_data_container: dict):
     for each_property_name in data_container_type_.get_dimension_names():
