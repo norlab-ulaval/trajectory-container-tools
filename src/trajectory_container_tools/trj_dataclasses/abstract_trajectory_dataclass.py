@@ -375,7 +375,10 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 if isinstance(v, Timestamps):
                     range_str = f"range(nanosec) {np.min(v.stamps)} ⟶ {np.max(v.stamps)}"
                 else:
-                    range_str = f"range {np.min(v)} ⟶ {np.max(v)}"
+                    if v.size == 0:
+                        range_str = f"empty"
+                    else:
+                        range_str = f"range {np.min(v)} ⟶ {np.max(v)}"
                 repr_str += (f"{m_sp}{item_space}{k}: ({extract_class_name_from_instance(v)}) "
                              f"shape {v.shape} {range_str}\n")
             elif isinstance(v, AbstractTrajectoryDataclass):

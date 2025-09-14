@@ -14,7 +14,7 @@ from trajectory_container_tools.rosbag_to_tct import (
     extract_single_feature_from_rosbag,
     )
 from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
-    AckermannMsgsAckermannDriveStamped, NavMsgsOdometry, SensorMsgsImu,
+    AckermannMsgsAckermannDriveStamped, NavMsgsOdometry, Scan, SensorMsgsImu,
     RosStampedDataclass,
     )
 
@@ -30,9 +30,11 @@ def profiler_run():
     # rosbag_start=1711047206000000000
     # rosbag_stop=1711047237203288917
 
+    BAG = "2024-03-21_14-52-35-with-scans"
+
     # BAG = "2024-03-21_15-14-09" # ★★ 63063 timesteps
     # BAG = "2024-03-21_15-26-13" # ★ 35128 timesteps
-    BAG = "2024-03-21_15-35-28"  # ★ 179236 timesteps
+    # BAG = "2024-03-21_15-35-28"  # ★ 179236 timesteps
     rosbag_path = os.path.join("external_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
 
     # .... Path to ROS bag in 'demo_data' directory ...............................................
@@ -74,10 +76,10 @@ def profiler_run():
     # Basic configuration - extract odometry
     features_config_1 = {
             "/odom": NavMsgsOdometry,
-            # "/teleop": AckermannMsgsAckermannDriveStamped,
+            "/teleop": AckermannMsgsAckermannDriveStamped,
             "/sensors/imu/raw": SensorMsgsImu,
+            "/scan": Scan,
             }
-    # "/scan",
     # "/robot_description",
 
     container = aggregate_multiple_features_from_rosbag(

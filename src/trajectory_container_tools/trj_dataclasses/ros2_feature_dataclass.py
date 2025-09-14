@@ -257,10 +257,6 @@ class Tf2MsgsTFMessage(RosStampedDataclass):
     childFrameId: str
     transform: Transform
 
-    @classmethod
-    def trajectory_metadata_field(cls) -> List[str]:
-        return super().trajectory_metadata_field() + ["childFrameId"]
-
 
 # .... Sensor messages ............................................................................
 @dataclass()
@@ -274,35 +270,29 @@ class Scan(RosStampedDataclass):
     and intensities. The range and intensity values provide important details
     about the surrounding environment being scanned by the laser scanner.
 
-    :ivar angle_min: Start angle of the scan in radians.
-    :ivar angle_max: End angle of the scan in radians.
-    :ivar angle_increment: Angular distance between consecutive measurements in radians.
-    :ivar time_increment: Time between measurements in seconds. For a moving scanner,
+    :ivar angleMin: Start angle of the scan in radians.
+    :ivar angleMax: End angle of the scan in radians.
+    :ivar angleIncrement: Angular distance between consecutive measurements in radians.
+    :ivar timeIncrement: Time between measurements in seconds. For a moving scanner,
         this can be used to interpolate the position of 3D points.
-    :ivar scan_time: Total time between scans in seconds.
-    :ivar range_min: Minimum range value in meters.
-    :ivar range_max: Maximum range value in meters.
+    :ivar scanTime: Total time between scans in seconds.
+    :ivar rangeMin: Minimum range value in meters.
+    :ivar rangeMax: Maximum range value in meters.
     :ivar ranges: Range data in meters. Values outside the [range_min, range_max]
         bounds should be discarded.
     :type ranges: numpy.ndarray
     :ivar intensities: Intensity data in device-specific units.
     :type intensities: numpy.ndarray
     """
-    angle_min: float # [rad]
-    angle_max: float # [rad]
-    angle_increment: float # [rad]
-    time_increment: float # [seconds]
-    scan_time: float # [seconds]
-    range_min: float # [m]
-    range_max: float # [m]
+    angleMin: float # [rad]
+    angleMax: float # [rad]
+    angleIncrement: float # [rad]
+    timeIncrement: float # [seconds]
+    scanTime: float # [seconds]
+    rangeMin: float # [m]
+    rangeMax: float # [m]
     ranges: np.ndarray # multi-dimensional ndarray [m]
     intensities: np.ndarray # multi-dimensional ndarray [device-specific units]
-
-    @classmethod
-    def trajectory_metadata_field(cls) -> List[str]:
-        return super().trajectory_metadata_field() + ["angle_min", "angle_max", "angle_increment",
-                                                      "time_increment", "scan_time", "range_min",
-                                                      "range_max"]
 
 
 @dataclass()
