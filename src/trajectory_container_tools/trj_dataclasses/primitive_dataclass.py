@@ -43,6 +43,9 @@ class Header(NestedBaseTrajectoryDataclass):
     This class ensures that timestamps are processed properly, converting numpy arrays to the
     specified `Timestamps` type and validating causal ordering to maintain data consistency.
 
+    The `timestamps` target type is Timestamps but accept numpy array for convenience which will be
+    converted to the target type at instanciation.
+
     :ivar frame_id: Identifier for the coordinate frame.
     :ivar timestamps: Time-related information, either a Timestamps object or a numpy array
                       (converted to Timestamps internally at instanciation).
@@ -50,8 +53,6 @@ class Header(NestedBaseTrajectoryDataclass):
     """
     frame_id: str
     timestamps: Union[Timestamps, np.ndarray]
-    # The target type is Timestamps but accept numpy array for convenience which will be
-    # converted to the target type.
 
     def on_begin_post_init_callback(self) -> None:
         timestamps: Union[Timestamps, np.ndarray]

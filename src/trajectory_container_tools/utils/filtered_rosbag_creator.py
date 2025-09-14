@@ -91,33 +91,39 @@ def create_filtered_rosbag(
 
 
 if __name__ == '__main__':
-    # .... Path to ROS bag in 'external_data' directory
-    # ...............................................
-    # For EDA and benchmark purposes only
+    rosbag_start = None
+    rosbag_stop = None
+
+    # .... Path to ROS bag in 'external_data' directory ...........................................
 
     # BAG = "2024-03-21_12-19-00" # small circle
     # BAG = "2024-03-21_12-23-53" # medium spiral
+
     BAG = "2024-03-21_14-52-35"  # ★★ 8408 timesteps
+    rosbag_start = 1711047206000000000
+    rosbag_stop = 1711047237203288917
+
     # BAG = "2024-03-21_15-14-09"  # ★★ 63063 timesteps
     # BAG = "2024-03-21_15-26-13" # ★ 35128 timesteps
     # BAG = "2024-03-21_15-35-28" # ★ 179236 timesteps
     rosbag_path = os.path.join("external_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
 
-    target_rosbag_path = os.path.join("demo_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
+    # target_rosbag_path = os.path.join("demo_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
+    target_rosbag_path = os.path.join("demo_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
 
     rosbag_path = check_rosbag_path_and_show_available_topics(rosbag_path)
 
     create_filtered_rosbag(input_rosbag_path=rosbag_path,
-                           output_rosbag_path=F"{target_rosbag_path}-offending-timestamps",
+                           output_rosbag_path=F"{target_rosbag_path}-with-scans",
                            selected_topics=[
                                    "/teleop",
                                    "/odom",
                                    "/sensors/imu/raw",
-                                   # "/scan",
+                                   "/scan",
                                    # "/robot_description",
                                    ],
-                           # start=1711047206000000000,
-                           # stop=1711047237203288917,
+                           start=rosbag_start,
+                           stop=rosbag_stop,
                            )
 # "/odom",
 # "/odometry/filtered",
