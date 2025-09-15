@@ -30,7 +30,7 @@ The library is designed for robotics research, autonomous systems, and trajector
 
 ## Interactive [Jupyter notebook examples](../notebooks/):
 
-- **[TCT Dataclass Usage Examples](../notebooks/dataclass_usage_example.ipynb)** - Direct trajectory container instantiation
+- **[TCT Dataclass Usage Examples](../notebooks/direct_instanciation_usage_example.ipynb)** - Direct trajectory container instantiation
 - **[DataFrame To TCT Usage Examples](../notebooks/dataframe_usage_example.ipynb)** - Convert pandas DataFrames to trajectory containers
 - **[ROS Bag To TCT Usage Examples](../notebooks/rosbag_usage_example.ipynb)** - Extract trajectory data from ROS bags
 
@@ -242,11 +242,7 @@ def extract_single_feature_from_rosbag(
 
 ## Need Help?
 
-- 📖 Check the [usage guides](#usage-guides) for your specific use case
-- 🔍 Browse the [API reference](#api-reference) for detailed function documentation  
-- 💻 Run the [Jupyter notebook examples](../notebooks/) for hands-on learning
+- 💻 Run the [Jupyter notebook examples](../notebooks/) for hands-on learning in the `notebooks/` directory
 - 🐛 Report issues on [GitHub Issues](https://github.com/norlab-ulaval/trajectory-container-tools/issues)
 
 ---
-
-*This documentation is maintained alongside the codebase. Last updated: December 2024*
