@@ -77,12 +77,6 @@ data from various sources.
 
 ### 🎯 High-Level Overview
 
-```mermaid
-flowchart LR
-    A[📊 DATA SOURCES<br/>• DataFrames<br/>• ROS2 Bags<br/>• Direct Data] --> B[🔄 CONVERTERS<br/>• Extract<br/>• Transform<br/>• Validate]
-    B --> C[📦 TRAJECTORY CONTAINERS<br/>• Type-safe dataclasses<br/>• Indexed & iterable<br/>• Timestamp validated<br/>• Feature-rich]
-    
-```
 
 TCT provides:
 

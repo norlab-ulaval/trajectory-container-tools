@@ -28,45 +28,49 @@ The library is designed for robotics research, autonomous systems, and trajector
 
 ```mermaid
 graph TB
+    subgraph DS["📊 DATA SOURCES"]
+        DF[📋 Pandas DataFrame]
+        ROS[🤖 ROS2 Bags]
+        DD[💾 Direct Data]
+    end
+    
     subgraph TCT["🎯 TRAJECTORY CONTAINER TOOLS (TCT)"]
-        subgraph DS["📊 DATA SOURCES"]
-            DF[📋 Pandas<br/>DataFrame]
-            ROS[🤖 ROS2<br/>Bags]
-            DD[💾 Direct<br/>Data]
-        end
-        
-        subgraph CONV["🔄 CONVERTERS"]
-            DFC[DataFrame<br/>to TCT]
-            RC[RosBag<br/>to TCT]
-            FF[Factory<br/>Functions]
-        end
         
         subgraph MFC["🗂️ MULTIFEATURE CONTAINERS"]
-            AMC[AbstractMultifeature<br/>Dataclass<br/><br/>Contains multiple<br/>trajectory features<br/>in one container]
+            AMC[AbstractMultifeatureDataclass<br/><br/>Contains multiple<br/>trajectory features<br/>in one container]
         end
         
         subgraph TC["📦 TRAJECTORY CONTAINERS"]
-            ATC[AbstractTrajectory<br/>Dataclass]
-            BTC[BaseTrajectory<br/>Dataclass]
-            SC[🎯 Specialized<br/>Dataclasses:<br/>• F110Gym<br/>• MathGymnasium<br/>• ERLL<br/>• PandaDataFrame<br/>• ROS2Feature]
+            ATC[AbstractTrajectoryDataclass]
+            BTC[BaseTrajectoryDataclass]
+            NBTC[NestedBaseTrajectoryDataclass]
+            SC[🎯 Specialized Dataclasses:<br/>• Primitive<br/>• PandaDataFrame<br/>• ROS2Feature<br/>• F110Gym<br/>• MathGymnasium<br/>]
+        end
+        
+        subgraph CONV["🔄 CONVERTERS"]
+            DFC[DataFrame to TCT]
+            RC[RosBag to TCT]
+            FF[Factory Functions<br/>Optional]
         end
         
     end
     
     %% Data flow connections
+    TC --> MFC 
+        
     DF --> DFC
     ROS --> RC
     DD --> FF
+    DD --> ATC
     
     DFC --> ATC
     RC --> ATC
     FF --> ATC
     
-    ATC --> BTC
+    ATC --> BTC --> SC
+    BTC --> NBTC --> SC 
     ATC --> SC
-    BTC --> SC
     
-    TC --> MFC
     
 ```
 
