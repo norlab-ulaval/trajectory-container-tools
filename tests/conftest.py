@@ -20,6 +20,7 @@ class MockDataContainer:
     b: np.ndarray
     c: np.ndarray
     ts: np.ndarray
+    batch: bool
 
 
 @pytest.fixture(scope="function")
@@ -31,6 +32,7 @@ def mock_DF_2_trj_DC() -> MockDataContainer:
             b=np.ones((10, TRJ_LEN)),
             c=np.ones((10, TRJ_LEN)),
             ts=np.arange(0, TRJ_LEN),
+            batch=True
             )
 
 
@@ -43,6 +45,7 @@ def mock_DF_2_trj_DC_range() -> MockDataContainer:
             b=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
             c=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
             ts=np.arange(0, TRJ_LEN),
+            batch=True
             )
 
 
@@ -55,6 +58,7 @@ def mock_DF_2_trj_DC_uneven_time_index() -> MockDataContainer:
             b=np.ones((10, TRJ_LEN)),
             c=np.ones((9, 39)),
             ts=np.arange(0, TRJ_LEN),
+            batch=True
             )
 
 
@@ -69,6 +73,7 @@ class MockROSbagDataContainer:
     a: np.ndarray
     b: np.ndarray
     c: np.ndarray
+    batch: bool
     header: Header = Header(
             frame_id="map",
             timestamps=np.arange(
@@ -76,7 +81,6 @@ class MockROSbagDataContainer:
                     )
             )
     ts_idx: np.ndarray = np.arange(0, TRJ_LEN)
-    trj_axe: int = 0
 
 
 @pytest.fixture(scope="function")
@@ -87,6 +91,7 @@ def mock_ROSbag_2_trj_DC() -> MockROSbagDataContainer:
             a=np.ones((TRJ_LEN,)),
             b=np.ones((TRJ_LEN,)),
             c=np.ones((TRJ_LEN, 36)),
+            batch=False
             )
 
 
@@ -98,6 +103,7 @@ def mock_ROSbag_2_trj_DC_range() -> MockROSbagDataContainer:
             a=np.arange(TRJ_LEN),
             b=np.arange(TRJ_LEN),
             c=np.arange(TRJ_LEN * 36).reshape((TRJ_LEN, 36)),
+            batch=False
             )
 
 
@@ -109,6 +115,7 @@ def mock_ROSbag_2_trj_DC_longer_range() -> MockROSbagDataContainer:
             a=np.arange(TRJ_LEN + 9),
             b=np.arange(TRJ_LEN + 9),
             c=np.arange((TRJ_LEN + 9) * 36).reshape((TRJ_LEN + 9, 36)),
+            batch=False
             )
 
 
@@ -120,7 +127,8 @@ def mock_ROSbag_2_trj_DC_uneven_time_index() -> MockROSbagDataContainer:
             a=np.ones((TRJ_LEN,)),
             b=np.ones((TRJ_LEN,)),
             c=np.ones((TRJ_LEN - 1, 36)),
-            header=Header(frame_id="map", timestamps=(np.arange(10)) * 10 + 1000)
+            header=Header(frame_id="map", timestamps=(np.arange(10)) * 10 + 1000),
+            batch=False
             )
 
 

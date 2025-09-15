@@ -5,14 +5,11 @@ from matplotlib import pyplot as plt
 
 from .general import extract_class_name_from_instance
 from .. import AbstractMultifeatureDataclass
-from ..trj_dataclasses.base_trajectory_dataclass import (
-    BaseTrajectoryDataclass,
-    BaseReverseAxisTrajectoryDataclass,
-    )
+from ..trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
 
 
 def plot_trajectory_2d(
-        trajectory_data: Union[BaseTrajectoryDataclass, BaseReverseAxisTrajectoryDataclass],
+        trajectory_data: BaseTrajectoryDataclass,
         x_axis_topic: str = "topic_odom.pose.pose.position.x",
         y_axis_topic: str = "topic_odom.pose.pose.position.y"):
     """
@@ -23,8 +20,7 @@ def plot_trajectory_2d(
     using the provided topic strings. The plot includes the trajectory line, start
     and end points, direction arrows along the path, and labels for visualization.
 
-    :param trajectory_data: A data container (either `BaseTrajectoryDataclass` or
-        `BaseReverseAxisTrajectoryDataclass`) holding the trajectory attributes.
+    :param trajectory_data: A data container holding the trajectory attributes.
     :param x_axis_topic: The hierarchical string path to identify the x-axis attribute
         in `trajectory_data`. Default is "topic_odom.pose.pose.position.x".
     :param y_axis_topic: The hierarchical string path to identify the y-axis attribute

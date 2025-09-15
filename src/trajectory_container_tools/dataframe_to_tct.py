@@ -64,6 +64,7 @@ def aggregate_multiple_features_from_dataframe(
         dataset_frame: pd.DataFrame,
         dataset_info: str,
         features_config: Dict[str, Union[type[BaseDataframeFeatureDataclass], Tuple[str, ...]]],
+        header_mix_label_and_timesteps: bool = True
         ) -> MultifeatureTrajectoryDataclass:
     """Extract multiple features from a dataset (formated in a dataframe) based on a
     configuration dictionary.
@@ -86,9 +87,16 @@ def aggregate_multiple_features_from_dataframe(
         >>>             'icp':              ('StatePose3D', 'x', 'y', 'z', 'roll', 'pitch', 'yaw')
         >>>             }
 
-    :param dataset_frame: Dataset as a panda dataframe
-    :param dataset_info: Any relevant information about the dataset (location, robot, condition...)
-    :param features_config: The features to agregate from the dataset as a configuration dictionary
+    :param dataset_frame: Dataset as a panda dataframe.
+    :param dataset_info: Any relevant information about the dataset (location, robot,
+     condition...).
+    :param features_config: The features to agregate from the dataset as a configuration
+     dictionary.
+    :param header_mix_label_and_timesteps: A flag indicating whether the dataset's column names
+        append timestep details to the feature name (e.g., `<feature_name>_<timestep>`).
+        Default is True.
+    :return: An instance of MultifeatureTrajectoryDataclass containing the extracted data by
+     feature.
     """
 
     features = []
@@ -102,7 +110,8 @@ def aggregate_multiple_features_from_dataframe(
 
         feature = extract_single_feature_from_dataframe(dataset=dataset_frame,
                                                         feature_name=feature_name,
-                                                        data_container_type=feature_dataclass)
+                                                        data_container_type=feature_dataclass,
+                                                        header_mix_label_and_timesteps=header_mix_label_and_timesteps)
 
         features_type.append((feature_name, type(feature)))
         features.append(feature)
@@ -114,15 +123,22 @@ def aggregate_multiple_features_from_dataframe(
 
 
 def extract_single_feature_from_dataframe(
-        dataset: pd.DataFrame, feature_name: str,
+        dataset: pd.DataFrame,
+        feature_name: str,
         data_container_type: type[BaseDataframeFeatureDataclass],
-        header_mix_label_and_timesteps=True) -> BaseDataframeFeatureDataclass:
+        header_mix_label_and_timesteps: bool = True) -> BaseDataframeFeatureDataclass:
     """
-    Dataframe feature extractor automation function.
+    Dataframe feature extractor automation function. Extracts a single feature from a pandas
+    DataFrame while organizing it into a dataclass compatible with the specified container type.
 
-    Requirement: the dataframe must contain one trajectory or a batch of trajectories (one per row)
-    with some features (column) containing a timestep index in there name
-    e.g., `feature_1, feature_2, feature_3 ...
+    This function attempts to retrieve a feature from the provided dataset by filtering the column
+    names for matches to the specified feature prefix. If the column names include timesteps as a
+    postfix, it handles the extraction of such structures as well. The extracted data is organized
+    into the provided dataclass type.
+
+    `header_mix_label_and_timesteps=True` requirement: the dataframe must contain one trajectory
+    or a batch of trajectories (one per row) with some features (column) containing a timestep
+    index in there name e.g., `feature_1, feature_2, feature_3 ...
 
     Usage:
      1. Suposing the dataframe head contains column `body_vel_disturption_x_0` to
@@ -134,16 +150,19 @@ def extract_single_feature_from_dataframe(
      4. `data_container.<property name>` must be a postfix to `feature_name_<property
      name>_<index>` used in the dataframe head.
 
-    :param dataset:
-    :param feature_name:
-    :param data_container_type:
-    :param header_mix_label_and_timesteps:
-    :return:
+
+    :param dataset: The pandas DataFrame from which a feature is to be extracted.
+    :param feature_name: The prefix of the column names representing the feature to be
+        extracted from the dataset.
+    :param data_container_type: The class/type of the dataclass container where the extracted
+        feature will be organized. Must inherit from `BaseDataframeFeatureDataclass`.
+    :param header_mix_label_and_timesteps: A flag indicating whether the dataset's column names
+        append timestep details to the feature name (e.g., `<feature_name>_<timestep>`).
+        Default is True.
+    :return: An instance of the provided dataclass type containing the extracted feature organized
+        as specified.
     """
-    # Note: `bagpy` is not compatible with ROS2
     # (NICE TO HAVE) ToDo: implement nested trajectory-dataclass support for dataframe extraction
-    # (NICE TO HAVE) ToDo: implement >> a variation of `extract_single_feature_from_dataframe()`
-    #                       for extracting topics from a dataframe organized one timestep per row.
     # (NICE TO HAVE) ToDo: implement extract arbitrary trajectory length (ref task SWMRD-12)
     #     with param: `extract_trajectory_timesteps: Optional[slice] = None`
 
@@ -168,13 +187,7 @@ def extract_single_feature_from_dataframe(
                         f"`dataset_frame` as a column header prefix"
                         )
 
-            # (NICE TO HAVE) ToDo: refactor using explicit key deletion
-            container_properties = fields(data_container_type)[
-                1:
-            ]  # Remove 'feature_name'
-
             # (NICE TO HAVE) ToDo: refactor using "shadow_data_container" module
-            # tmp_container = {each_field.name: None for each_field in container_properties}
             tmp_container = {each_field: None for each_field in
                              data_container_type.get_dimension_names()}
 
@@ -205,9 +218,7 @@ def extract_single_feature_from_dataframe(
                     except IndexError as e:
                         raise ValueError(
                                 "[TCT error] There is a problem with the `dataset_frame` column "
-                                "label "
-                                f"`{df_header_field}_` timestep index. "
-                                f"<< {e}"
+                                "label " f"`{df_header_field}_` timestep index. << {e}"
                                 )
                 elif not header_mix_label_and_timesteps:
                     if df_property.empty:
@@ -221,4 +232,5 @@ def extract_single_feature_from_dataframe(
             raise
 
     # noinspection PyArgumentList
-    return data_container_type(feature_name=feature_name, **tmp_container)
+    return data_container_type(feature_name=feature_name, **tmp_container,
+                               batch=header_mix_label_and_timesteps)

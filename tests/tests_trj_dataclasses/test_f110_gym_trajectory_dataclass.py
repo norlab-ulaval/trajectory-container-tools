@@ -37,4 +37,4 @@ class TestF110MotionDynamicDataclass:
                 )
 
         assert t_obs_container.trajectory_len == trj_len
-        assert t_obs_container._init_trj_axe == 0
+        assert t_obs_container._time_axis == 0

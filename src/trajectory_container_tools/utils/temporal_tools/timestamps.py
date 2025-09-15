@@ -110,11 +110,11 @@ class Timestamps:
 def timestamp_causal_ordering_sanity_check(timestamp_object: Timestamps,
                                            show_offending_in_nanoseconds: bool = True) -> List[int]:
     """ Checks the causal order of timestamps in the given data container to ensure they are
-    sequentially increasing.
+    monoticaly increasing.
 
     This sanity check function validates that each timestamp in the timestamp array is less
     than the next timestamp. If a causal order violation is detected, the function identifies
-    and reports the offending timestamps and raises an assertion error.
+    and reports the offending timestamps and raises an TimestampCausalOrderingError error.
 
     Usage example:
 

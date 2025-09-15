@@ -30,10 +30,7 @@ class BaseTrajectoryDataclass(AbstractTrajectoryDataclass):
         >>>     position_z: np.ndarray
 
     """
-
-    @property
-    def _init_trj_axe(self) -> int:
-        return 0
+    pass
 
 
 @dataclass()
@@ -66,37 +63,3 @@ class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
     """
     feature_name: str = field(default=None, init=False)
     _nested: str = field(default=True, init=False)
-
-
-# :::: Dataframe related ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-@dataclass()
-class BaseReverseAxisTrajectoryDataclass(BaseTrajectoryDataclass):
-    """ Represents a base trajectory data structure with inverted array axes
-    with respect to 'BaseTrajectoryDataclass'
-
-    This class is intended to serve as a base class for specialized trajectory dataclasess where
-    the data is fetched from sources that assign features to column and time step to row.
-    It builds upon the abstract trajectory dataclass and can be extended further to meet
-    specific requirements.
-
-    Note:
-
-    **Usage example**:
-
-        >>> @dataclass()
-        >>> class MockContainer(BaseReverseAxisTrajectoryDataclass):
-        >>>     timestamps: np.ndarray
-        >>>     position_x: np.ndarray
-        >>>     position_y: np.ndarray
-        >>>     position_z: np.ndarray
-
-    """
-
-    @property
-    def _init_trj_axe(self) -> int:
-        return -1
-
-
-@dataclass()
-class NestedBaseReverseAxisTrajectoryDataclass(BaseReverseAxisTrajectoryDataclass):
-    feature_name: str = field(default=None, init=False)

@@ -18,7 +18,7 @@ class TestMathEnvTrajectoryDataclass:
                 )
 
         assert t_state_axes_container.trajectory_len == trj_len
-        assert t_state_axes_container._init_trj_axe == 0
+        assert t_state_axes_container._time_axis == 0
 
     def test_member_dataclass_TimeAxisDataclass(self, setup_mock_trajectory_data):
         trj_len, ndim, state_obs_ndim_trj, time_obs_trj = setup_mock_trajectory_data(
@@ -31,7 +31,7 @@ class TestMathEnvTrajectoryDataclass:
                 )
 
         assert t_time_axis_container.trajectory_len == trj_len
-        assert t_time_axis_container._init_trj_axe == 0
+        assert t_time_axis_container._time_axis == 0
 
     def test_parent_dataclass(self, setup_mock_trajectory_data):
         trj_len, ndim, state_obs_ndim_trj, time_obs_trj = setup_mock_trajectory_data(
@@ -52,4 +52,4 @@ class TestMathEnvTrajectoryDataclass:
                 )
 
         assert t_trajectory_container.trajectory_len == trj_len
-        assert t_trajectory_container._init_trj_axe == 0
+        assert t_trajectory_container._time_axis == 0

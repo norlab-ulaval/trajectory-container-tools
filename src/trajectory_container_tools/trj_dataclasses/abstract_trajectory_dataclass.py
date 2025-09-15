@@ -12,7 +12,16 @@ from ..utils.general import extract_class_name_from_instance, extract_first_unio
 
 @dataclass()
 class AbstractTrajectoryDataclassCommon(abc.ABC):
+    """
+    Provides an abstract base dataclass for dynamically interacting with and managing object
+    attributes, including dynamic fields creation and nested attribute retrieval.
 
+    This class serves as a foundation for implementing objects that must support
+    dynamically added fields, as well as hierarchical retrieval of nested attributes. It is
+    an abstract base class (ABC) and requires implementation of the `__post_init__` method
+    in subclasses.
+
+    """
     def get_dynamic_field(self, feature_name: str) -> Any:
         """ Retrieves the value of a dynamicaly declared attribute from the object.
 
@@ -59,14 +68,29 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
 @dataclass()
 class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
     """
-    An abstract base dataclass for trajectory-related data manipulation
-    """
+    AbstractTrajectoryDataclass serves as a structured representation for trajectory data,
+    providing methods for metadata management, data manipulation, and field extraction.
 
+    This dataclass is designed to handle trajectory-related data encapsulated in structured
+    fields. It includes methods for custom initialization, metadata management, and data
+    manipulation. Each instance is equipped to process multi-dimensional data arrays,
+    facilitate adjustments, and encapsulate metadata in an organized manner. Subclasses
+    are expected to extend this class to define domain-specific behaviors and additional
+    fields.
+
+    :ivar feature_name: Name of the feature associated with the trajectory.
+    :ivar timesteps_indices: NumPy array representing the indices of timesteps in
+        the trajectory. These may pertain to a subset of a larger trajectory, ignoring
+        prior indices.
+    :ivar batch: Boolean indicating if the data is batched (True) or pertaining to a
+        single trajectory (False).
+    """
     _timestep_indexes: np.ndarray = field(default=None, init=False)
     _iter_index: int = field(default=0, init=False)
     _transposed: bool = field(default=False, init=False)
     _nested: bool = field(default=False, init=False)
     feature_name: str
+    batch: bool = field(default=False, compare=True, kw_only=True)
 
     # Note on timesteps_indices:
     #   - Can be explicitly set by user, TCT fct or automaticaly set post-init.
@@ -94,6 +118,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 "_iter_index",
                 "_transposed",
                 "_nested",
+                "batch",
                 ]
 
     @classmethod
@@ -155,11 +180,15 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
             >>> class StatePose2DSteadyState(StatePose2D):
             >>>
             >>>     def post_init_feature_callback(self, feature_name):
+            >>>         # Example for creating an explicit timestep t=0 property named "<feature_name>_init"
             >>>         feature = self.get_dynamic_field(feature_name)
             >>>         if isinstance(feature, np.ndarray):
-            >>>             feature_ini = feature[0, ...]
-            >>>             if self.current_trj_axe == -1:
-            >>>                 feature_ini = feature[..., 0]
+            >>>             if self.batch:
+            >>>                 # Case batch data
+            >>>                 feature_ini = feature[:, 0, ...]
+            >>>             else:
+            >>>                 # Case time-serie data
+            >>>                 feature_ini = feature[0, ...]
             >>>             self.set_dynamic_field(f"{feature_name}_init", feature_ini)
             >>>         return None
 
@@ -225,18 +254,16 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         return dimension_type
 
     @property
-    def _init_trj_axe(self) -> int:
+    def _time_axis(self) -> int:
         """
         The numpy array axe on which is the trajectory time index at dataclass initialization.
 
-        This property provides the initialized value of a trajectory axis, which is set to -1 by
-        default. This could have further implications where such initialization is required for
-        trajectory handling, depending on the context of the application e.g. data fetch from
-        dataframe vs from rosbag. This property is meant to be overriden.
-
         :return: The trajectory array axe.
         """
-        return -1
+        if self.batch:
+            return 1
+        else:
+            return 0
 
     @property
     def trajectory_len(self) -> int:
@@ -306,13 +333,9 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 elif isinstance(data_property, np.ndarray):
                     # Case leaf: initialize time-steps index
                     data_property: np.ndarray
-                    data_property_trajectory_len = None
 
                     # [Re-]Compute trajectory length from data arrays
-                    if data_property.ndim <= 2:
-                        data_property_trajectory_len = data_property.shape[self._init_trj_axe]
-                    elif data_property.ndim == 3:
-                        data_property_trajectory_len = data_property.shape[1 - self._init_trj_axe]
+                    data_property_trajectory_len = data_property.shape[self._time_axis]
 
                     if self._timestep_indexes is None:
                         self._timestep_indexes = np.arange(data_property_trajectory_len)
@@ -363,11 +386,13 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
         if not self._nested:
             repr_str += f"{m_sp}trajectory_len: {self.trajectory_len}\n"
+            if self.batch:
+                repr_str += f"{m_sp}batch: {self.batch}\n"
             repr_str += f"{m_sp}transposed: {self._transposed}\n"
             repr_str += f"{m_sp}dimensions:\n"
 
         for k, v in self.__dict__.items():
-            if k in ["_iter_index", "_transposed", "feature_name", "_timestep_indexes"]:
+            if k in ["_iter_index", "_transposed", "feature_name", "_timestep_indexes", "batch"]:
                 pass
             elif k == "timesteps_indices" and self._nested:
                 pass
@@ -394,12 +419,10 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
     @property
     def current_trj_axe(self):
-        if self._init_trj_axe == -1 and self._transposed == True:
-            return 0
-        elif self._init_trj_axe == 0 and self._transposed == True:
+        if self._transposed:
             return -1
         else:
-            return self._init_trj_axe
+            return self._time_axis
 
     def __getitem__(self, key):
         feature_dataclass_at_t = deepcopy(self)
@@ -413,10 +436,17 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 data_property = self.__getattribute__(each_name)
 
                 if isinstance(data_property, (np.ndarray, AbstractTrajectoryDataclass)):
-                    if self.current_trj_axe == -1:
+                    if self.current_trj_axe == 0:
+                        # Case: time-serie
+                        data_value = data_property[key]
+                    elif self.current_trj_axe == 1:
+                        # Case: batch
+                        data_value = data_property[:, key, ...]
+                    elif self.current_trj_axe == -1:
+                        # Case: transposed
                         data_value = data_property[..., key]
                     else:
-                        data_value = data_property[key]
+                        raise ValueError(f"Unexpected trajectory time axe {self.current_trj_axe=}")
 
                     feature_dataclass_at_t.__setattr__(each_name, data_value)
 
@@ -472,6 +502,8 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
                 repr_str += f"{m_sp}aggregated_date: {self.aggregated_date}\n"
             elif k in ["aggregated_date"]:
                 pass
+            elif k in ["bag_timestamps"] and self.bag_timestamps is None:
+                pass
             elif isinstance(v, (np.ndarray, Timestamps)):
                 if isinstance(v, Timestamps):
                     range_str = f"range(nanosec) {np.min(v.stamps)} ⟶ {np.max(v.stamps)}"
@@ -480,7 +512,6 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
                 repr_str += (f"{m_sp}{k}: ({extract_class_name_from_instance(v)}) "
                              f"shape {v.shape} {range_str}\n")
             else:
-                # repr_str += f"{m_sp}{k}( {str(v)}\n{m_sp*2})\n"
                 repr_str += f"{m_sp}{k}: {str(v)}\n"
         repr_str += f"{m_sp})"
         return repr_str

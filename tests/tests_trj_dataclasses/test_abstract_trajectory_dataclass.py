@@ -22,10 +22,6 @@ class MockTrajectoryChildDFcase(AbstractTrajectoryDataclass):
     cc: np.ndarray
     dd_metadata: np.ndarray = np.array([0, 0, 0])
 
-    @property
-    def _init_trj_axe(self) -> int:
-        return -1
-
     @classmethod
     def trajectory_metadata_field(cls):
         return super().trajectory_metadata_field() + ["dd_metadata"]
@@ -60,10 +56,6 @@ class MockTrajectoryChildRosBagCase(AbstractTrajectoryDataclass):
     cc: np.ndarray
     dd_metadata: np.ndarray = np.array([0, 0, 0])
 
-    @property
-    def _init_trj_axe(self) -> int:
-        return 0
-
     @classmethod
     def trajectory_metadata_field(cls):
         return super().trajectory_metadata_field() + ["dd_metadata"]
@@ -97,10 +89,6 @@ class MockTrajectoryComposedParent(AbstractTrajectoryDataclass):
     child_two: MockTrajectoryChildRosBagCase
     aa: np.ndarray
 
-    @property
-    def _init_trj_axe(self) -> int:
-        return 0
-
     def on_begin_post_init_callback(self):  # self.dd_metadata += 99
         # Create test attribute for post-init-callback logic
         self.__setattr__("test_on_begin_post_init_callback", True)
@@ -121,10 +109,6 @@ class MockTrajectoryComposedParent(AbstractTrajectoryDataclass):
 class MockTrajectoryComposedParentNestedOnly(AbstractTrajectoryDataclass):
     child_one: MockTrajectoryChildRosBagCase
     child_two: MockTrajectoryChildRosBagCase
-
-    @property
-    def _init_trj_axe(self) -> int:
-        return 0
 
     def on_begin_post_init_callback(self):  # self.dd_metadata += 99
         # Create test attribute for post-init-callback logic
@@ -152,6 +136,7 @@ class TestAbstractTrajectoryDataclassDataframeCase:
                 bb=mock_DF_2_trj_DC.b,
                 cc=mock_DF_2_trj_DC.c,
                 timesteps_indices=mock_DF_2_trj_DC.ts,
+                batch=mock_DF_2_trj_DC.batch
                 )
 
     @pytest.fixture
@@ -162,6 +147,7 @@ class TestAbstractTrajectoryDataclassDataframeCase:
                 bb=mock_DF_2_trj_DC_range.b,
                 cc=mock_DF_2_trj_DC_range.c,
                 timesteps_indices=mock_DF_2_trj_DC_range.ts,
+                batch=mock_DF_2_trj_DC_range.batch
                 )
 
     def test_FeatureDataclass_baseclass_not_instantiable(self):
@@ -175,7 +161,8 @@ class TestAbstractTrajectoryDataclassDataframeCase:
 
         assert np.array_equal(
                 mfc.dd_metadata, np.array([99, 99, 99])
-                ), f"{mfc.dd_metadata=} != np.array([99, 99, 99])"  # test on_begin_post_init_callback
+                ), f"{mfc.dd_metadata=} != np.array([99, 99, 99])"  # test
+        # on_begin_post_init_callback
 
         # ★ post_init_feature_callback `aa_init` is a dynamicaly created field
         assert np.array_equal(
@@ -195,6 +182,7 @@ class TestAbstractTrajectoryDataclassDataframeCase:
                     bb=mock_DF_2_trj_DC_uneven_time_index.b,
                     cc=mock_DF_2_trj_DC_uneven_time_index.c,
                     timesteps_indices=mock_DF_2_trj_DC_uneven_time_index.ts,
+                    batch=mock_DF_2_trj_DC_uneven_time_index.batch
                     )
 
     def test_get_dimension_names(self, setup_mock_feature_child, mock_DF_2_trj_DC):
@@ -298,8 +286,8 @@ class TestAbstractTrajectoryDataclassDataframeCase:
         mdc = setup_mock_feature_child_range
 
         assert mdc._transposed == False
-        assert mdc._init_trj_axe == -1
-        assert mdc.current_trj_axe == -1
+        assert mdc._time_axis == 1
+        assert mdc.current_trj_axe == 1
 
         assert mdc.trajectory_len == 40
         assert mdc.aa.shape == (10, 40)
@@ -314,8 +302,8 @@ class TestAbstractTrajectoryDataclassDataframeCase:
         t_mdc = mdc.T
 
         assert t_mdc._transposed == True
-        assert t_mdc._init_trj_axe == -1
-        assert t_mdc.current_trj_axe == 0
+        assert t_mdc._time_axis == 1
+        assert t_mdc.current_trj_axe == -1
 
         assert t_mdc.trajectory_len == 40
         assert t_mdc.aa.shape == (40, 10)
@@ -331,8 +319,8 @@ class TestAbstractTrajectoryDataclassDataframeCase:
         t_mdc2 = t_mdc.T
 
         assert t_mdc2._transposed == False
-        assert t_mdc2._init_trj_axe == -1
-        assert t_mdc2.current_trj_axe == -1
+        assert t_mdc2._time_axis == 1
+        assert t_mdc2.current_trj_axe == 1
 
         assert t_mdc2.trajectory_len == 40
         assert t_mdc2.aa.shape == (10, 40)
@@ -381,7 +369,8 @@ class TestAbstractTrajectoryDataclassROSbagCase:
 
         assert np.array_equal(
                 mfc.dd_metadata, np.array([99, 99, 99])
-                ), f"{mfc.dd_metadata=} != np.array([99, 99, 99])"  # test on_begin_post_init_callback
+                ), f"{mfc.dd_metadata=} != np.array([99, 99, 99])"  # test
+        # on_begin_post_init_callback
 
         assert np.array_equal(
                 mfc.aa_init, mock_ROSbag_2_trj_DC.a[0, ...]
@@ -442,11 +431,11 @@ class TestAbstractTrajectoryDataclassROSbagCase:
 
     def test_string_representation(self, setup_mock_feature_child, mock_ROSbag_2_trj_DC):
         mdc = setup_mock_feature_child
-        print(mdc) # <- Don't comment this line
+        print(mdc)  # <- Don't comment this line
 
     def test_trajectory_len(self, setup_mock_feature_child, mock_ROSbag_2_trj_DC):
         mdc = setup_mock_feature_child
-        assert mdc.trajectory_len == mock_ROSbag_2_trj_DC.a.shape[mdc._init_trj_axe]
+        assert mdc.trajectory_len == mock_ROSbag_2_trj_DC.a.shape[mdc._time_axis]
 
     # @pytest.mark.skip(reason="todo")
     def test_ravel_dimensions_in_place(
@@ -503,7 +492,7 @@ class TestAbstractTrajectoryDataclassROSbagCase:
         mdc = setup_mock_feature_child_range
 
         assert mdc._transposed == False
-        assert mdc._init_trj_axe == 0
+        assert mdc._time_axis == 0
         assert mdc.current_trj_axe == 0
 
         assert mdc.trajectory_len == 40
@@ -519,7 +508,7 @@ class TestAbstractTrajectoryDataclassROSbagCase:
         t_mdc = mdc.T
 
         assert t_mdc._transposed == True
-        assert t_mdc._init_trj_axe == 0
+        assert t_mdc._time_axis == 0
         assert t_mdc.current_trj_axe == -1
 
         assert t_mdc.trajectory_len == 40
@@ -536,7 +525,7 @@ class TestAbstractTrajectoryDataclassROSbagCase:
         t_mdc2 = t_mdc.T
 
         assert t_mdc2._transposed == False
-        assert t_mdc2._init_trj_axe == 0
+        assert t_mdc2._time_axis == 0
         assert t_mdc2.current_trj_axe == 0
 
         assert t_mdc2.trajectory_len == 40
@@ -679,7 +668,8 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
                         timesteps_indices=setup_mock_feature_child_range.timesteps_indices,
                         )
             print(f"{exc_info=}")
-            assert exc_info.value.args == ("[TCT error] timesteps_indices expecte lemgth 49 != 40",)
+            assert exc_info.value.args == (
+                    "[TCT error] timesteps_indices expecte lemgth 49 != 40",)
 
     def test_post_init_check_timestep_indices_not_monoticaly_increassing(
             self, setup_mock_feature_child_range, t_nested_case
@@ -687,7 +677,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         if t_nested_case == "nested-and-ndarray":
             with pytest.raises(IndexError) as exc_info:
                 indices_with_jump = setup_mock_feature_child_range.timesteps_indices
-                indices_with_jump[3] = indices_with_jump[3] -10
+                indices_with_jump[3] = indices_with_jump[3] - 10
                 mfc_u = MockTrajectoryComposedParent(
                         feature_name="Parent uneven",
                         child_one=setup_mock_feature_child_range,
@@ -703,7 +693,8 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
                         )
             print(f"{exc_info=}")
             assert exc_info.value.args == (
-                    "[TCT error] The timestep index is either missing a step or not monotonicaly increassing",)
+                    "[TCT error] The timestep index is either missing a step or not monotonicaly "
+                    "increassing",)
 
     def test_arbitrary_timestep_indices(
             self, setup_mock_feature_child_range, t_nested_case
@@ -729,8 +720,10 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
                     timesteps_indices=setup_mock_feature_child_range.timesteps_indices + 9,
                     )
 
-            assert np.allclose(mfc_u.child_two.timesteps_indices, setup_mock_feature_child_range.timesteps_indices + 9)
-            # assert np.allclose(mfc_u.timesteps_indices, setup_mock_feature_child_range.timesteps_indices + 9)
+            assert np.allclose(mfc_u.child_two.timesteps_indices,
+                               setup_mock_feature_child_range.timesteps_indices + 9)
+            # assert np.allclose(mfc_u.timesteps_indices,
+            # setup_mock_feature_child_range.timesteps_indices + 9)
 
     def test_get_dimension_names(
             self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC, t_nested_case
@@ -772,16 +765,19 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
             mfc.set_dynamic_field("new_field", "new-field-value")
             assert mfc.new_field == "new-field-value"
 
-    def test_get_dynamic_field(self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case):
+    def test_get_dynamic_field(self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range,
+                               t_nested_case):
         mfc = setup_mock_feature_parent_range(t_nested_case)
         assert np.allclose(mfc.child_one.get_dynamic_field("aa"),
                            mock_ROSbag_2_trj_DC_range.a)
         if t_nested_case == "nested-and-ndarray":
             assert np.allclose(mfc.get_dynamic_field("aa"), mock_ROSbag_2_trj_DC_range.a)
 
-    def test_fetch_nested_attribute(self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case):
+    def test_fetch_nested_attribute(self, setup_mock_feature_parent_range,
+                                    mock_ROSbag_2_trj_DC_range, t_nested_case):
         mfc = setup_mock_feature_parent_range(t_nested_case)
-        assert np.allclose(mfc.fetch_nested_attribute("child_one.aa"), mock_ROSbag_2_trj_DC_range.a)
+        assert np.allclose(mfc.fetch_nested_attribute("child_one.aa"),
+                           mock_ROSbag_2_trj_DC_range.a)
         if t_nested_case == "nested-and-ndarray":
             assert np.allclose(mfc.fetch_nested_attribute("aa"), mock_ROSbag_2_trj_DC_range.a)
 
@@ -789,13 +785,13 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
             self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC, t_nested_case
             ):
         mfc = setup_mock_feature_parent_range(t_nested_case)
-        print(mfc) # <- Don't comment this line
+        print(mfc)  # <- Don't comment this line
 
     def test_trajectory_len(
             self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC, t_nested_case
             ):
         mfc = setup_mock_feature_parent_range(t_nested_case)
-        assert mfc.trajectory_len == mock_ROSbag_2_trj_DC.a.shape[mfc._init_trj_axe]
+        assert mfc.trajectory_len == mock_ROSbag_2_trj_DC.a.shape[mfc._time_axis]
 
     # @pytest.mark.skip(reason="todo")
     def test_ravel_dimensions_in_place(
@@ -863,7 +859,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         mfc = setup_mock_feature_parent_range(t_nested_case)
 
         assert mfc._transposed == False
-        assert mfc._init_trj_axe == 0
+        assert mfc._time_axis == 0
         assert mfc.current_trj_axe == 0
         assert mfc.trajectory_len == 40
         assert mfc.timesteps_indices.shape == (40,)
@@ -872,7 +868,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
             assert np.array_equal(mfc.aa, t_ref.a)
 
         assert mfc.child_one._transposed == False
-        assert mfc.child_one._init_trj_axe == 0
+        assert mfc.child_one._time_axis == 0
         assert mfc.child_one.current_trj_axe == 0
         assert mfc.child_one.trajectory_len == 40
         assert mfc.child_one.timesteps_indices.shape == (40,)
@@ -885,7 +881,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         assert np.array_equal(mfc.child_one.cc, t_ref.c)
 
         assert mfc.child_two._transposed == False
-        assert mfc.child_two._init_trj_axe == 0
+        assert mfc.child_two._time_axis == 0
         assert mfc.child_two.current_trj_axe == 0
         assert mfc.child_two.trajectory_len == 40
         assert mfc.child_two.timesteps_indices.shape == (40,)
@@ -906,7 +902,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         t_mdc = mfc.T
 
         assert t_mdc._transposed == True
-        assert t_mdc._init_trj_axe == 0
+        assert t_mdc._time_axis == 0
         assert t_mdc.current_trj_axe == -1
         assert t_mdc.trajectory_len == 40
         assert t_mdc.timesteps_indices.shape == (40,)
@@ -915,7 +911,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
             assert np.array_equal(t_mdc.aa, t_ref.a)
 
         assert t_mdc.child_one._transposed == True
-        assert t_mdc.child_one._init_trj_axe == 0
+        assert t_mdc.child_one._time_axis == 0
         assert t_mdc.child_one.current_trj_axe == -1
         assert t_mdc.child_one.trajectory_len == 40
         assert t_mdc.child_one.timesteps_indices.shape == (40,)
@@ -928,7 +924,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         assert np.array_equal(t_mdc.child_one.cc, t_ref.c.T)
 
         assert t_mdc.child_two._transposed == True
-        assert t_mdc.child_two._init_trj_axe == 0
+        assert t_mdc.child_two._time_axis == 0
         assert t_mdc.child_two.current_trj_axe == -1
         assert t_mdc.child_two.trajectory_len == 40
         assert t_mdc.child_two.timesteps_indices.shape == (40,)
@@ -950,7 +946,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         t_mdc2 = t_mdc.T
 
         assert t_mdc2._transposed == False
-        assert t_mdc2._init_trj_axe == 0
+        assert t_mdc2._time_axis == 0
         assert t_mdc2.current_trj_axe == 0
         assert t_mdc2.trajectory_len == 40
         assert t_mdc2.timesteps_indices.shape == (40,)
@@ -959,7 +955,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
             assert np.array_equal(t_mdc2.aa, t_ref.a)
 
         assert t_mdc2.child_one._transposed == False
-        assert t_mdc2.child_one._init_trj_axe == 0
+        assert t_mdc2.child_one._time_axis == 0
         assert t_mdc2.child_one.current_trj_axe == 0
         assert t_mdc2.child_one.trajectory_len == 40
         assert t_mdc2.child_one.timesteps_indices.shape == (40,)
@@ -972,7 +968,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         assert np.array_equal(t_mdc2.child_one.cc, t_ref.c)
 
         assert t_mdc2.child_two._transposed == False
-        assert t_mdc2.child_two._init_trj_axe == 0
+        assert t_mdc2.child_two._time_axis == 0
         assert t_mdc2.child_two.current_trj_axe == 0
         assert t_mdc2.child_two.trajectory_len == 40
         assert t_mdc2.child_two.timesteps_indices.shape == (40,)

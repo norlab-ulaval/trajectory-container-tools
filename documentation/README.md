@@ -122,7 +122,7 @@ Create trajectory containers directly from data arrays:
 
 **Available Dataclasses:**
 - `BaseTrajectoryDataclass` - Basic trajectory container
-- `BaseReverseAxisTrajectoryDataclass` - Reverse axis ordering
+- `NestedBaseTrajectoryDataclass` - Basic trajectory container intended to be nested in a `BaseTrajectoryDataclass` 
 - Custom dataclasses inheriting from `AbstractTrajectoryDataclass`
 
 ## Trajectory Dataclasses

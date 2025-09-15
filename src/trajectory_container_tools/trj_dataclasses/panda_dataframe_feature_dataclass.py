@@ -16,17 +16,10 @@ class BaseDataframeFeatureDataclass(AbstractTrajectoryDataclass):
     """
     Represents a dataclass for handling trajectory data fetched from a Panda dataframe.
 
-    This class is utilized as a specialized data structure that inherits features from the
-    BaseReverseAxisTrajectoryDataclass, aiming to encapsulate and manage properties related to
-    dataframe features.
-
     It can be extended or utilized wherever structured data for dataframe processing or
     trajectory computation is necessary.
     """
-
-    @property
-    def _init_trj_axe(self) -> int:
-        return -1
+    pass
 
 
 @dataclass()

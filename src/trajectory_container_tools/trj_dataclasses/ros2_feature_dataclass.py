@@ -12,9 +12,6 @@ from .ros2_primitive_dataclass import Header, Point, Quaternion, Transform, Vect
 class RosStampedDataclass(BaseTrajectoryDataclass):
     header: Header
 
-    @property
-    def _init_trj_axe(self) -> int:
-        return 0
 
 
 @dataclass()

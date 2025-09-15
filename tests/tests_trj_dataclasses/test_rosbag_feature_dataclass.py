@@ -43,7 +43,7 @@ class TestTrajectoryDataclassFromROSBagCase:
                         )
                 )
         print(dc_)
-        assert dc_._init_trj_axe == 0
+        assert dc_._time_axis == 0
 
     def test_NavMsgsOdometry_init_flat_version(self, mock_ROSbag_2_trj_DC):
         md = mock_ROSbag_2_trj_DC
@@ -67,7 +67,7 @@ class TestTrajectoryDataclassFromROSBagCase:
                 twist_covariance=md.c,
                 )
         print(dc_)
-        assert dc_._init_trj_axe == 0
+        assert dc_._time_axis == 0
 
     def test_AckermannMsgsAckermannDriveStamped_init(self, mock_ROSbag_2_trj_DC):
         md = mock_ROSbag_2_trj_DC
@@ -81,7 +81,7 @@ class TestTrajectoryDataclassFromROSBagCase:
                                                   jerk=md.a, )
                 )
         print(dc_)
-        assert dc_._init_trj_axe == 0
+        assert dc_._time_axis == 0
 
     def test_Tf2MsgsTFMessage_init(self, mock_ROSbag_2_trj_DC):
         md = mock_ROSbag_2_trj_DC
@@ -95,7 +95,7 @@ class TestTrajectoryDataclassFromROSBagCase:
                         ),
                 )
         print(dc_)
-        assert dc_._init_trj_axe == 0
+        assert dc_._time_axis == 0
 
     def test_Scan_init(self, mock_ROSbag_2_trj_DC):
         md = mock_ROSbag_2_trj_DC
@@ -113,7 +113,7 @@ class TestTrajectoryDataclassFromROSBagCase:
                 intensities=md.c,
                 )
         print(dc_)
-        assert dc_._init_trj_axe == 0
+        assert dc_._time_axis == 0
 
     def test_SensorMsgsImu_init(self, mock_ROSbag_2_trj_DC):
         md = mock_ROSbag_2_trj_DC
@@ -128,7 +128,7 @@ class TestTrajectoryDataclassFromROSBagCase:
                 linearAccelerationCovariance=md.c,
                 )
         print(dc_)
-        assert dc_._init_trj_axe == 0
+        assert dc_._time_axis == 0
 
     def test_SensorMsgsImuFlat_init(self, mock_ROSbag_2_trj_DC):
         md = mock_ROSbag_2_trj_DC
@@ -150,4 +150,4 @@ class TestTrajectoryDataclassFromROSBagCase:
                 linearAccelerationCovariance=md.c,
                 )
         print(dc_)
-        assert dc_._init_trj_axe == 0
+        assert dc_._time_axis == 0

@@ -89,6 +89,7 @@ Whether you're working with robotics research, autonomous systems, or trajectory
 - Factory pattern allows dynamic creation of trajectory containers
 - Easy to extend with custom trajectory types and post-processing callback logic
 - Support for both single trajectories and multi-feature datasets
+- Support trajectory batching
 
 ### 🚀 **Research-Ready**
 - Built for robotics and AI research workflows
@@ -96,7 +97,7 @@ Whether you're working with robotics research, autonomous systems, or trajectory
 
 ### ✅ **Data Validation**
 - Automatic sanity checks for trajectory data consistency
-- Timestamp validation and monotonicity checks
+- Timestamp validation
 - Dimension and shape validation
 
 ## How Does It Work?
