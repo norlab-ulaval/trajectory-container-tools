@@ -28,44 +28,43 @@ The library is designed for robotics research, autonomous systems, and trajector
 
 ```mermaid
 graph TB
-    subgraph DS["📊 Data Sources"]
+    subgraph DS["📊 DATA SOURCES"]
         DF[📋 Pandas DataFrame]
         ROS[🤖 ROS2 Bags]
         DD[💾 Direct Data]
     end
     
-    subgraph TCT["🎯 Trajectory-Container-Tools (TCT)"]
+    subgraph TCT["TRAJECTORY-CONTAINER-TOOLS"]
         
-        subgraph MFC["🗂️ Multifeature-Containers"]
-            AMC[AbstractMultifeatureDataclass<br/><br/>Contains multiple<br/>trajectory features<br/>in one container]
-        end
-        
-        subgraph TC["📦 Trajectory-Containers"]
-            ATC[AbstractTrajectoryDataclass]
-            BTC[BaseTrajectoryDataclass]
-            NBTC[NestedBaseTrajectoryDataclass]
-            SC[🎯 Specialized Dataclasses:<br/>• Primitive<br/>• PandaDataFrame<br/>• ROS2Feature<br/>• F110Gym<br/>• MathGymnasium<br/>]
-        end
-        
-        subgraph CONV["🔄 Converters"]
+        subgraph CONV["🔄 CONVERTERS"]
             DFC[DataFrame to TCT]
             RC[RosBag to TCT]
             FF[Factory Functions<br/>Optional]
         end
         
+        subgraph MFC["🗂️ Multifeature-Containers"]
+            AMC[AbstractMultifeatureDataclass<br/><br/>Contains multiple<br/>trajectory features<br/>in one container]
+        end
+        
+        subgraph TC["📦 TRAJECTORY-CONTAINERS"]
+            ATC[AbstractTrajectoryDataclass]
+            BTC[BaseTrajectoryDataclass]
+            NBTC[NestedBaseTrajectoryDataclass]
+            SC[🎯 Specialized Dataclasses:<br/>• Primitive<br/>• PandaDataFrame<br/>• ROS2Feature<br/>• F110Gym<br/>• MathGymnasium<br/>]
+        end
     end
     
     %% Data flow connections
-    TC --> MFC 
-        
-    DF --> DFC
     ROS --> RC
     DD --> FF
-    DD --> ATC
-    
-    DFC --> ATC
-    RC --> ATC
-    FF --> ATC
+    DF --> DFC
+        
+    DFC --> MFC
+    RC --> MFC
+        
+    DD --> TC
+    FF --> TC
+    MFC --> TC 
     
     ATC --> BTC --> SC
     BTC --> NBTC --> SC 
