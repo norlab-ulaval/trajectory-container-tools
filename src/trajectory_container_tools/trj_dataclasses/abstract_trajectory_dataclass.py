@@ -10,6 +10,7 @@ from ..utils.temporal_tools.timestamps import Timestamps
 from ..utils.temporal_tools.timestep_indexing import timestep_indices_sanity_check
 from ..utils.general import extract_class_name_from_instance, extract_first_union_type
 
+
 @dataclass()
 class AbstractTrajectoryDataclassCommon(abc.ABC):
     """
@@ -22,8 +23,9 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
     in subclasses.
 
     """
+
     def get_dynamic_field(self, feature_name: str) -> Any:
-        """ Retrieves the value of a dynamicaly declared attribute from the object.
+        """Retrieves the value of a dynamicaly declared attribute from the object.
 
         :param feature_name: The name of the attribute to retrieve.
         :return: The value of the requested attribute.
@@ -31,7 +33,7 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
         return self.__getattribute__(feature_name)
 
     def set_dynamic_field(self, feature_name: str, value: Any) -> None:
-        """ Updates or creates a dynamic attribute on an object.
+        """Updates or creates a dynamic attribute on an object.
 
         :param feature_name: The name of the attribute to update or create.
         :param value: The value to assign to the attribute.
@@ -41,7 +43,7 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
         return None
 
     def fetch_nested_attribute(self, nested_attribute_list: str) -> Any:
-        """ Retrieves a nested attribute from an object based on a dot-separated string.
+        """Retrieves a nested attribute from an object based on a dot-separated string.
 
         This function allows accessing nested attributes of an object dynamically, based on a
         string representation of the attribute's hierarchical structure.
@@ -85,6 +87,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
     :ivar batch: Boolean indicating if the data is batched (True) or pertaining to a
         single trajectory (False).
     """
+
     _timestep_indexes: np.ndarray = field(default=None, init=False)
     _iter_index: int = field(default=0, init=False)
     _transposed: bool = field(default=False, init=False)
@@ -112,14 +115,15 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
         :return: A list containing the names of internal fields used in the data class.
         """
-        return ["feature_name",
-                "timesteps_indices",
-                "_timestep_indexes",
-                "_iter_index",
-                "_transposed",
-                "_nested",
-                "batch",
-                ]
+        return [
+            "feature_name",
+            "timesteps_indices",
+            "_timestep_indexes",
+            "_iter_index",
+            "_transposed",
+            "_nested",
+            "batch",
+        ]
 
     @classmethod
     def trajectory_metadata_field(cls) -> List[str]:
@@ -296,14 +300,13 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         return None
 
     def __post_init__(self):
-
         self.on_begin_post_init_callback()
 
         if not self.get_dimension_names():
             raise TypeError(
-                    f"[TCT error] AbstractTrajectoryDataclass is an abstract baseclass, "
-                    f"it must be subclassed in order to be instanciated."
-                    )
+                f"[TCT error] AbstractTrajectoryDataclass is an abstract baseclass, "
+                f"it must be subclassed in order to be instanciated."
+            )
 
         for each_name in self.get_dimension_names():
             if each_name in self.trajectory_metadata_field():
@@ -315,7 +318,6 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 data_property = self.__getattribute__(each_name)
 
                 if isinstance(data_property, (AbstractTrajectoryDataclass, Timestamps)):
-
                     # Case nested container: Init timesteps using nested entity trajectory_len
                     if self._timestep_indexes is None:
                         self._timestep_indexes = np.arange(len(data_property))
@@ -324,8 +326,9 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                         self.timesteps_indices = self._timestep_indexes
                     elif self.timesteps_indices is not None:
                         assert isinstance(self.timesteps_indices, np.ndarray)
-                        _timesteps_indices_vs_index_len_check(self.timesteps_indices,
-                                                              self._timestep_indexes)
+                        _timesteps_indices_vs_index_len_check(
+                            self.timesteps_indices, self._timestep_indexes
+                        )
                         timestep_indices_sanity_check(self.timesteps_indices)
 
                 elif isinstance(data_property, np.ndarray):
@@ -343,16 +346,18 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                         self.timesteps_indices = self._timestep_indexes
                     elif self.timesteps_indices is not None:
                         assert isinstance(self.timesteps_indices, np.ndarray)
-                        _timesteps_indices_vs_index_len_check(self.timesteps_indices,
-                                                              self._timestep_indexes)
+                        _timesteps_indices_vs_index_len_check(
+                            self.timesteps_indices, self._timestep_indexes
+                        )
 
                     if data_property_trajectory_len != self.trajectory_len:
                         raise ValueError(
-                                f"{data_property_trajectory_len} != {self.trajectory_len}\n"
-                                f"[TCT error] `{self.feature_name}` with container `"
-                                f"{each_name}`" " received numpy arrays which do not match "
-                                "the trajectory length"
-                                )
+                            f"{data_property_trajectory_len} != {self.trajectory_len}\n"
+                            f"[TCT error] `{self.feature_name}` with container `"
+                            f"{each_name}`"
+                            " received numpy arrays which do not match "
+                            "the trajectory length"
+                        )
 
         self.on_exit_post_init_callback()
 
@@ -390,20 +395,30 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
             repr_str += f"{m_sp}dimensions:\n"
 
         for k, v in self.__dict__.items():
-            if k in ["_iter_index", "_transposed", "feature_name", "_timestep_indexes", "batch"]:
+            if k in [
+                "_iter_index",
+                "_transposed",
+                "feature_name",
+                "_timestep_indexes",
+                "batch",
+            ]:
                 pass
             elif k == "timesteps_indices" and self._nested:
                 pass
             elif isinstance(v, (np.ndarray, Timestamps)):
                 if isinstance(v, Timestamps):
-                    range_str = f"range(nanosec) {np.min(v.stamps)} ⟶ {np.max(v.stamps)}"
+                    range_str = (
+                        f"range(nanosec) {np.min(v.stamps)} ⟶ {np.max(v.stamps)}"
+                    )
                 else:
                     if v.size == 0:
                         range_str = f"empty"
                     else:
                         range_str = f"range {np.min(v)} ⟶ {np.max(v)}"
-                repr_str += (f"{m_sp}{item_space}{k}: ({extract_class_name_from_instance(v)}) "
-                             f"shape {v.shape} {range_str}\n")
+                repr_str += (
+                    f"{m_sp}{item_space}{k}: ({extract_class_name_from_instance(v)}) "
+                    f"shape {v.shape} {range_str}\n"
+                )
             elif isinstance(v, AbstractTrajectoryDataclass):
                 indent_v = []
                 for each_line in str(v).splitlines():
@@ -425,8 +440,12 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
     def __getitem__(self, key):
         feature_dataclass_at_t = deepcopy(self)
 
-        feature_dataclass_at_t.__setattr__("_timestep_indexes", self._timestep_indexes[key])
-        feature_dataclass_at_t.__setattr__("timesteps_indices", self.timesteps_indices[key])
+        feature_dataclass_at_t.__setattr__(
+            "_timestep_indexes", self._timestep_indexes[key]
+        )
+        feature_dataclass_at_t.__setattr__(
+            "timesteps_indices", self.timesteps_indices[key]
+        )
         for each_name in self.get_dimension_names():
             if each_name in self.trajectory_metadata_field():
                 pass
@@ -444,7 +463,9 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                         # Case: transposed
                         data_value = data_property[..., key]
                     else:
-                        raise ValueError(f"Unexpected trajectory time axe {self.current_trj_axe=}")
+                        raise ValueError(
+                            f"Unexpected trajectory time axe {self.current_trj_axe=}"
+                        )
 
                     feature_dataclass_at_t.__setattr__(each_name, data_value)
 
@@ -488,7 +509,6 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
         self.aggregated_date = datetime.datetime.now()
 
     def __str__(self):
-
         """User representation. Handle dynamical property added at run time"""
         t_sp = " " * 0
         m_sp = " " * 3
@@ -504,11 +524,15 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
                 pass
             elif isinstance(v, (np.ndarray, Timestamps)):
                 if isinstance(v, Timestamps):
-                    range_str = f"range(nanosec) {np.min(v.stamps)} ⟶ {np.max(v.stamps)}"
+                    range_str = (
+                        f"range(nanosec) {np.min(v.stamps)} ⟶ {np.max(v.stamps)}"
+                    )
                 else:
                     range_str = f"range {np.min(v)} ⟶ {np.max(v)}"
-                repr_str += (f"{m_sp}{k}: ({extract_class_name_from_instance(v)}) "
-                             f"shape {v.shape} {range_str}\n")
+                repr_str += (
+                    f"{m_sp}{k}: ({extract_class_name_from_instance(v)}) "
+                    f"shape {v.shape} {range_str}\n"
+                )
             else:
                 repr_str += f"{m_sp}{k}: {str(v)}\n"
         repr_str += f"{m_sp})"
@@ -522,15 +546,17 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
 
 def _fetch_nested_attribute(self_, nested_attribute_list: str) -> Any:
     nested_attribute = self_
-    for each in nested_attribute_list.split('.'):
+    for each in nested_attribute_list.split("."):
         nested_attribute = nested_attribute.get_dynamic_field(each)
     return nested_attribute
 
 
-def _timesteps_indices_vs_index_len_check(timesteps_indices: np.ndarray,
-                                          _timestep_indexes: np.ndarray) -> None:
+def _timesteps_indices_vs_index_len_check(
+    timesteps_indices: np.ndarray, _timestep_indexes: np.ndarray
+) -> None:
     ts_id_len = timesteps_indices.shape[-1]
     ts_idx_len = _timestep_indexes.shape[-1]
-    assert ts_idx_len == ts_id_len, (f"[TCT error] timesteps_indices expecte "
-                                     f"lemgth {ts_idx_len} != {ts_id_len}")
+    assert ts_idx_len == ts_id_len, (
+        f"[TCT error] timesteps_indices expecte " f"lemgth {ts_idx_len} != {ts_id_len}"
+    )
     return None

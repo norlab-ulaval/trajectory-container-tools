@@ -27,39 +27,39 @@ class MockDataContainer:
 def mock_DF_2_trj_DC() -> MockDataContainer:
     """Mock pandas dataframe to trajectory dataclass: case even data"""
     return MockDataContainer(
-            name="mock_data",
-            a=np.ones((10, TRJ_LEN)),
-            b=np.ones((10, TRJ_LEN)),
-            c=np.ones((10, TRJ_LEN)),
-            ts=np.arange(0, TRJ_LEN),
-            batch=True
-            )
+        name="mock_data",
+        a=np.ones((10, TRJ_LEN)),
+        b=np.ones((10, TRJ_LEN)),
+        c=np.ones((10, TRJ_LEN)),
+        ts=np.arange(0, TRJ_LEN),
+        batch=True,
+    )
 
 
 @pytest.fixture(scope="function")
 def mock_DF_2_trj_DC_range() -> MockDataContainer:
     """Mock pandas dataframe to trajectory dataclass: case incremental data"""
     return MockDataContainer(
-            name="mock_data_incremental",
-            a=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
-            b=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
-            c=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
-            ts=np.arange(0, TRJ_LEN),
-            batch=True
-            )
+        name="mock_data_incremental",
+        a=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
+        b=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
+        c=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
+        ts=np.arange(0, TRJ_LEN),
+        batch=True,
+    )
 
 
 @pytest.fixture(scope="function")
 def mock_DF_2_trj_DC_uneven_time_index() -> MockDataContainer:
     """Mock pandas dataframe to trajectory dataclass, case uneven dimensions across feature"""
     return MockDataContainer(
-            name="mock_data_uneven",
-            a=np.ones((10, TRJ_LEN)),
-            b=np.ones((10, TRJ_LEN)),
-            c=np.ones((9, 39)),
-            ts=np.arange(0, TRJ_LEN),
-            batch=True
-            )
+        name="mock_data_uneven",
+        a=np.ones((10, TRJ_LEN)),
+        b=np.ones((10, TRJ_LEN)),
+        c=np.ones((9, 39)),
+        ts=np.arange(0, TRJ_LEN),
+        batch=True,
+    )
 
 
 # ====Mock rosbag topics cases=====================================================================
@@ -75,11 +75,11 @@ class MockROSbagDataContainer:
     c: np.ndarray
     batch: bool
     header: Header = Header(
-            frame_id="map",
-            timestamps=np.arange(
-                    TS_START, TS_STOP, (TS_STOP - TS_START) / TRJ_LEN, dtype=int
-                    )
-            )
+        frame_id="map",
+        timestamps=np.arange(
+            TS_START, TS_STOP, (TS_STOP - TS_START) / TRJ_LEN, dtype=int
+        ),
+    )
     ts_idx: np.ndarray = np.arange(0, TRJ_LEN)
 
 
@@ -87,55 +87,55 @@ class MockROSbagDataContainer:
 def mock_ROSbag_2_trj_DC() -> MockROSbagDataContainer:
     """Mock rosbag to trajectory dataclass: case even data"""
     return MockROSbagDataContainer(
-            name="/mocked/topic/name",
-            a=np.ones((TRJ_LEN,)),
-            b=np.ones((TRJ_LEN,)),
-            c=np.ones((TRJ_LEN, 36)),
-            batch=False
-            )
+        name="/mocked/topic/name",
+        a=np.ones((TRJ_LEN,)),
+        b=np.ones((TRJ_LEN,)),
+        c=np.ones((TRJ_LEN, 36)),
+        batch=False,
+    )
 
 
 @pytest.fixture(scope="function")
 def mock_ROSbag_2_trj_DC_range() -> MockROSbagDataContainer:
     """Mock rosbag to trajectory dataclass: case incremental data"""
     return MockROSbagDataContainer(
-            name="/mocked/topic/name",
-            a=np.arange(TRJ_LEN),
-            b=np.arange(TRJ_LEN),
-            c=np.arange(TRJ_LEN * 36).reshape((TRJ_LEN, 36)),
-            batch=False
-            )
+        name="/mocked/topic/name",
+        a=np.arange(TRJ_LEN),
+        b=np.arange(TRJ_LEN),
+        c=np.arange(TRJ_LEN * 36).reshape((TRJ_LEN, 36)),
+        batch=False,
+    )
 
 
 @pytest.fixture(scope="function")
 def mock_ROSbag_2_trj_DC_longer_range() -> MockROSbagDataContainer:
     """Mock rosbag to trajectory dataclass: case incremental data"""
     return MockROSbagDataContainer(
-            name="/mocked/topic/name",
-            a=np.arange(TRJ_LEN + 9),
-            b=np.arange(TRJ_LEN + 9),
-            c=np.arange((TRJ_LEN + 9) * 36).reshape((TRJ_LEN + 9, 36)),
-            batch=False
-            )
+        name="/mocked/topic/name",
+        a=np.arange(TRJ_LEN + 9),
+        b=np.arange(TRJ_LEN + 9),
+        c=np.arange((TRJ_LEN + 9) * 36).reshape((TRJ_LEN + 9, 36)),
+        batch=False,
+    )
 
 
 @pytest.fixture(scope="function")
 def mock_ROSbag_2_trj_DC_uneven_time_index() -> MockROSbagDataContainer:
     """Mock rosbag to trajectory dataclass, case uneven dimensions across feature"""
     return MockROSbagDataContainer(
-            name="/mocked/topic/name/",
-            a=np.ones((TRJ_LEN,)),
-            b=np.ones((TRJ_LEN,)),
-            c=np.ones((TRJ_LEN - 1, 36)),
-            header=Header(frame_id="map", timestamps=(np.arange(10)) * 10 + 1000),
-            batch=False
-            )
+        name="/mocked/topic/name/",
+        a=np.ones((TRJ_LEN,)),
+        b=np.ones((TRJ_LEN,)),
+        c=np.ones((TRJ_LEN - 1, 36)),
+        header=Header(frame_id="map", timestamps=(np.arange(10)) * 10 + 1000),
+        batch=False,
+    )
 
 
 @pytest.fixture(scope="function")
 def mock_trajectory_dict_ordered(
-        mock_ROSbag_2_trj_DC_range,
-        ) -> Dict[str, Union[str, int, np.ndarray]]:
+    mock_ROSbag_2_trj_DC_range,
+) -> Dict[str, Union[str, int, np.ndarray]]:
     ordered_trajectory_dict = asdict(mock_ROSbag_2_trj_DC_range)
 
     timestamps_ = []
@@ -144,9 +144,9 @@ def mock_trajectory_dict_ordered(
 
     ordered_trajectory_dict["feature_name"] = "/mock_ROSbag_2_trj_DC_range"
     ordered_trajectory_dict["header"] = Header(
-            frame_id=mock_ROSbag_2_trj_DC_range.header.frame_id,
-            timestamps=np.array(timestamps_)
-            )
+        frame_id=mock_ROSbag_2_trj_DC_range.header.frame_id,
+        timestamps=np.array(timestamps_),
+    )
     # print(ordered_trajectory_dict)
 
     return ordered_trajectory_dict
@@ -154,8 +154,8 @@ def mock_trajectory_dict_ordered(
 
 @pytest.fixture(scope="function")
 def mock_trajectory_dict_unordered(
-        mock_trajectory_dict_ordered,
-        ) -> Dict[str, Union[str, int, np.ndarray]]:
+    mock_trajectory_dict_ordered,
+) -> Dict[str, Union[str, int, np.ndarray]]:
     unordered_trajectory_dict = mock_trajectory_dict_ordered
 
     unordered_idx = np.arange(TRJ_LEN)

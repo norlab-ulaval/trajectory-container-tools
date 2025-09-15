@@ -3,8 +3,10 @@ from typing import Any, List, Tuple
 
 import numpy as np
 
+
 class TimestampCausalOrderingError(Exception):
     """Exception raised when a causal order violation is detected."""
+
     pass
 
 
@@ -20,6 +22,7 @@ class Timestamps:
     are in logical and causal order. This class enforces basic constraints on the timestamps and
     provides methods for further processing.
     """
+
     _stamps: np.ndarray[Any, np.dtype[int]]
     _trajectory_len: int
     _iter_index: int = 0
@@ -90,7 +93,9 @@ class Timestamps:
         """
         return to_seconds_nanoseconds(self[key])
 
-    def causal_ordering_sanity_check(self, show_offending_in_nanoseconds: bool = True) -> List[int]:
+    def causal_ordering_sanity_check(
+        self, show_offending_in_nanoseconds: bool = True
+    ) -> List[int]:
         """
         Performs a sanity check for causal ordering based on timestamps of events.
 
@@ -104,12 +109,15 @@ class Timestamps:
           nanoseconds or (seconds, nanoseconds ), default is True.
         :return: A list of integers representing IDs of events that violate causal ordering.
         """
-        return timestamp_causal_ordering_sanity_check(self, show_offending_in_nanoseconds)
+        return timestamp_causal_ordering_sanity_check(
+            self, show_offending_in_nanoseconds
+        )
 
 
-def timestamp_causal_ordering_sanity_check(timestamp_object: Timestamps,
-                                           show_offending_in_nanoseconds: bool = True) -> List[int]:
-    """ Checks the causal order of timestamps in the given data container to ensure they are
+def timestamp_causal_ordering_sanity_check(
+    timestamp_object: Timestamps, show_offending_in_nanoseconds: bool = True
+) -> List[int]:
+    """Checks the causal order of timestamps in the given data container to ensure they are
     monoticaly increasing.
 
     This sanity check function validates that each timestamp in the timestamp array is less
@@ -162,8 +170,9 @@ def timestamp_causal_ordering_sanity_check(timestamp_object: Timestamps,
                 current_timestamp = to_seconds_nanoseconds(current_timestamp)
             offending_idx.append(ts_idx)
             offending_ts += (
-                    f"    {str(previous_timestamp):>25} [{ts_idx - 1:>5}]     !<     "
-                    f"{str(current_timestamp):>25} [{ts_idx:>5}]\n")
+                f"    {str(previous_timestamp):>25} [{ts_idx - 1:>5}]     !<     "
+                f"{str(current_timestamp):>25} [{ts_idx:>5}]\n"
+            )
 
     if len(offending_idx) > 0:
         if show_offending_in_nanoseconds:
@@ -171,27 +180,27 @@ def timestamp_causal_ordering_sanity_check(timestamp_object: Timestamps,
         else:
             timestamp_display = "( seconds nanoseconds )"
         offending_ts_header = (
-                f"    {'—' * 78}\n"
-                f"    {timestamp_display:>25} [  T  ]            {timestamp_display:>25} [ T+1 ]\n"
-                f"    {'—' * 78}"
+            f"    {'—' * 78}\n"
+            f"    {timestamp_display:>25} [  T  ]            {timestamp_display:>25} [ T+1 ]\n"
+            f"    {'—' * 78}"
         )
         error_msg = (
-                f"Timestamp causal ordering violations:\n"
-                f"    Number of offending timestamps {len(offending_idx)}/"
-                f"{len(timestamp_object)}\n\n"
-                f"    Offending timestamps:\n"
-                f"{offending_ts_header}\n"
-                f"{offending_ts}\n"
-                f"    Rosbag timestamps metadate:\n"
-                f"    {'—' * 78}\n"
-                f"                            nanoseconds    ( seconds nanoseconds )\n"
-                f"          start: {timestamp_object[0]:>22}  "
-                f"{str(timestamp_object.seconds_nanoseconds(0)):>25} \n"
-                f"          stop:  {timestamp_object[-1]:>22}  "
-                f"{str(timestamp_object.seconds_nanoseconds(-1)):>25} \n"
-                f"      duration:  "
-                f"{(timestamp_object[-1] - timestamp_object[0]):>22}  \n"
-                f"    {'—' * 78}\n"
+            f"Timestamp causal ordering violations:\n"
+            f"    Number of offending timestamps {len(offending_idx)}/"
+            f"{len(timestamp_object)}\n\n"
+            f"    Offending timestamps:\n"
+            f"{offending_ts_header}\n"
+            f"{offending_ts}\n"
+            f"    Rosbag timestamps metadate:\n"
+            f"    {'—' * 78}\n"
+            f"                            nanoseconds    ( seconds nanoseconds )\n"
+            f"          start: {timestamp_object[0]:>22}  "
+            f"{str(timestamp_object.seconds_nanoseconds(0)):>25} \n"
+            f"          stop:  {timestamp_object[-1]:>22}  "
+            f"{str(timestamp_object.seconds_nanoseconds(-1)):>25} \n"
+            f"      duration:  "
+            f"{(timestamp_object[-1] - timestamp_object[0]):>22}  \n"
+            f"    {'—' * 78}\n"
         )
         raise TimestampCausalOrderingError(error_msg)
 
@@ -199,14 +208,14 @@ def timestamp_causal_ordering_sanity_check(timestamp_object: Timestamps,
 
 
 def to_seconds_nanoseconds(nanoseconds: int) -> Tuple[int, int]:
-    """ Get time as separate seconds and nanoseconds components.
+    """Get time as separate seconds and nanoseconds components.
 
     Output is compatible with the ROS2 time (seconds nanoseconds) format
 
     :returns: 2-tuple seconds and nanoseconds
     """
-    NANOSECONDS_CONVERSION_CONSTANT = 10 ** 9
-    return (nanoseconds // NANOSECONDS_CONVERSION_CONSTANT, nanoseconds %
-            NANOSECONDS_CONVERSION_CONSTANT)
-
-
+    NANOSECONDS_CONVERSION_CONSTANT = 10**9
+    return (
+        nanoseconds // NANOSECONDS_CONVERSION_CONSTANT,
+        nanoseconds % NANOSECONDS_CONVERSION_CONSTANT,
+    )

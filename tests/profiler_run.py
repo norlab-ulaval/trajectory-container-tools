@@ -5,18 +5,25 @@ from typing import Union
 
 from trajectory_container_tools.trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
-    )
+)
 from trajectory_container_tools.utils.optimization import detect_docker_cpu_limits
-from trajectory_container_tools.rosbag_to_tct import check_rosbag_path_and_show_available_topics
-from trajectory_container_tools.utils.ros2_non_native_msg import register_ros2_non_native_msg
+from trajectory_container_tools.rosbag_to_tct import (
+    check_rosbag_path_and_show_available_topics,
+)
+from trajectory_container_tools.utils.ros2_non_native_msg import (
+    register_ros2_non_native_msg,
+)
 from trajectory_container_tools.rosbag_to_tct import (
     aggregate_multiple_features_from_rosbag,
     extract_single_feature_from_rosbag,
-    )
+)
 from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
-    AckermannMsgsAckermannDriveStamped, NavMsgsOdometry, Scan, SensorMsgsImu,
+    AckermannMsgsAckermannDriveStamped,
+    NavMsgsOdometry,
+    Scan,
+    SensorMsgsImu,
     RosStampedDataclass,
-    )
+)
 
 
 def profiler_run():
@@ -35,7 +42,9 @@ def profiler_run():
     # BAG = "2024-03-21_15-14-09" # ★★ 63063 timesteps
     # BAG = "2024-03-21_15-26-13" # ★ 35128 timesteps
     # BAG = "2024-03-21_15-35-28"  # ★ 179236 timesteps
-    rosbag_path = os.path.join("external_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
+    rosbag_path = os.path.join(
+        "external_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
+    )
 
     # .... Path to ROS bag in 'demo_data' directory ...............................................
 
@@ -54,8 +63,12 @@ def profiler_run():
 
     rosbag_path = check_rosbag_path_and_show_available_topics(rosbag_path)
 
-    print(f"\n[TCT] === Profiling run ====================================================")
-    container: Union[NavMsgsOdometry, RosStampedDataclass, AbstractMultifeatureDataclass]
+    print(
+        f"\n[TCT] === Profiling run ===================================================="
+    )
+    container: Union[
+        NavMsgsOdometry, RosStampedDataclass, AbstractMultifeatureDataclass
+    ]
 
     # .... Extract Single Feature From Rosbag .....................................................
     # "/odom": NavMsgsOdometry,
@@ -75,22 +88,22 @@ def profiler_run():
     # .... Aggregate Multiple Features From Rosbag ................................................
     # Basic configuration - extract odometry
     features_config_1 = {
-            "/odom": NavMsgsOdometry,
-            "/teleop": AckermannMsgsAckermannDriveStamped,
-            "/sensors/imu/raw": SensorMsgsImu,
-            "/scan": Scan,
-            }
+        "/odom": NavMsgsOdometry,
+        "/teleop": AckermannMsgsAckermannDriveStamped,
+        "/sensors/imu/raw": SensorMsgsImu,
+        "/scan": Scan,
+    }
     # "/robot_description",
 
     container = aggregate_multiple_features_from_rosbag(
-            rosbag_path,
-            dataset_info=f"Robot: f110_race_car, Track: grand_salon, Run: {BAG}",
-            features_config=features_config_1
-            )
+        rosbag_path,
+        dataset_info=f"Robot: f110_race_car, Track: grand_salon, Run: {BAG}",
+        features_config=features_config_1,
+    )
 
     # Minimum logic to validate run success
     print(container)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     profiler_run()

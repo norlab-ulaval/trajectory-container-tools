@@ -9,11 +9,11 @@ import pytest
 from trajectory_container_tools import (
     check_rosbag_path_and_show_available_topics,
     extract_single_feature_from_rosbag,
-    )
+)
 from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
     NavMsgsOdometry,
     RosStampedDataclass,
-    )
+)
 
 
 @pytest.fixture(scope="function")
@@ -38,20 +38,28 @@ def setup_rosbag_from_external_data_dir() -> Tuple[Path, Optional[int], Optional
     # BAG = "2024-03-21_14-52-35-offending-timestamps"
     rosbag_start = None
     rosbag_stop = None
-    rosbag_path = os.path.join("demo_data", "rosbag_test_data",
-                               "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
+    rosbag_path = os.path.join(
+        "demo_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
+    )
 
-    return check_rosbag_path_and_show_available_topics(rosbag_path), rosbag_start, rosbag_stop
+    return (
+        check_rosbag_path_and_show_available_topics(rosbag_path),
+        rosbag_start,
+        rosbag_stop,
+    )
 
 
-def benchmark_extract_single_feature_from_rosbag(bag_path: Path, rosbag_start: int,
-                                                 rosbag_stop: int):
+def benchmark_extract_single_feature_from_rosbag(
+    bag_path: Path, rosbag_start: int, rosbag_stop: int
+):
     """Standalone function for benchmarking - avoids pickling issues with Joblib"""
-    return extract_single_feature_from_rosbag(rosbag_path=bag_path, feature_name="/odom",
-                                              data_container_type=NavMsgsOdometry,
-                                              start=rosbag_start,
-                                              stop=rosbag_stop
-                                              )
+    return extract_single_feature_from_rosbag(
+        rosbag_path=bag_path,
+        feature_name="/odom",
+        data_container_type=NavMsgsOdometry,
+        start=rosbag_start,
+        stop=rosbag_stop,
+    )
 
 
 # @pytest.mark.parametrize(
@@ -74,11 +82,12 @@ def test_extract_rosbag_benchmark(benchmark, setup_rosbag_from_external_data_dir
     container: Union[NavMsgsOdometry, RosStampedDataclass]
     rosbag_path, rosbag_start, rosbag_stop = setup_rosbag_from_external_data_dir
 
-    container = benchmark(benchmark_extract_single_feature_from_rosbag,
-                          bag_path=rosbag_path,
-                          rosbag_start=rosbag_start,
-                          rosbag_stop=rosbag_stop,
-                          )
+    container = benchmark(
+        benchmark_extract_single_feature_from_rosbag,
+        bag_path=rosbag_path,
+        rosbag_start=rosbag_start,
+        rosbag_stop=rosbag_stop,
+    )
 
     # Minimum logic to validate run success
     print(container)

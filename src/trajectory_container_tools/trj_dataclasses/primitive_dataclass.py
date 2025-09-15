@@ -7,15 +7,16 @@ from trajectory_container_tools import NestedBaseTrajectoryDataclass
 
 
 @dataclass()
-class Point2(NestedBaseTrajectoryDataclass):
+class Point2D(NestedBaseTrajectoryDataclass):
     x: np.ndarray
     y: np.ndarray
 
 
 @dataclass()
-class Vector2(NestedBaseTrajectoryDataclass):
+class Vector2D(NestedBaseTrajectoryDataclass):
     x: np.ndarray
     y: np.ndarray
+
 
 @dataclass()
 class Pose2D(NestedBaseTrajectoryDataclass):

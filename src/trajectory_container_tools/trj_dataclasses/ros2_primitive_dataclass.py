@@ -4,14 +4,15 @@ from typing import Union
 
 import numpy as np
 
-from trajectory_container_tools.trj_dataclasses.base_trajectory_dataclass import \
-    NestedBaseTrajectoryDataclass
+from trajectory_container_tools.trj_dataclasses.base_trajectory_dataclass import (
+    NestedBaseTrajectoryDataclass,
+)
 from trajectory_container_tools.utils.temporal_tools.timestamps import Timestamps
 
 
 @dataclass()
 class Header(NestedBaseTrajectoryDataclass):
-    """ Represents a ros header containing frame information and time-related data.
+    """Represents a ros header containing frame information and time-related data.
 
     Compatible ros2 message interface: std_msgs/msg/Header
 
@@ -26,6 +27,7 @@ class Header(NestedBaseTrajectoryDataclass):
                       (converted to Timestamps internally at instanciation).
     :type timestamps: Timestamps
     """
+
     frame_id: str
     timestamps: Union[Timestamps, np.ndarray]
 

@@ -1,16 +1,14 @@
 # coding=utf-8
 from dataclasses import dataclass, field
-from typing import Optional
 
 import numpy as np
 
 from .abstract_trajectory_dataclass import AbstractTrajectoryDataclass
 
 
-# :::: General ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 @dataclass()
 class BaseTrajectoryDataclass(AbstractTrajectoryDataclass):
-    """ Represents a base trajectory data structure.
+    """Represents a base trajectory data structure.
 
     This class is intended to serve as a base class for specialized trajectory dataclasses,
     providing core functionalities and attributes to manage data related to trajectories. It
@@ -30,12 +28,13 @@ class BaseTrajectoryDataclass(AbstractTrajectoryDataclass):
         >>>     position_z: np.ndarray
 
     """
+
     pass
 
 
 @dataclass()
 class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
-    """ Represents a nested base trajectory dataclass which extends the functionality of the
+    """Represents a nested base trajectory dataclass which extends the functionality of the
     BaseTrajectoryDataclass.
 
     This class summarizes the concept of a derived dataclass with specific attributes associated
@@ -61,5 +60,6 @@ class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
     :ivar feature_name: This attribute is set to None by default and is immutable.
     :type feature_name: str
     """
+
     feature_name: str = field(default=None, init=False)
     _nested: str = field(default=True, init=False)

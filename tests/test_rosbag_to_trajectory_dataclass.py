@@ -9,17 +9,23 @@ import numpy as np
 
 from trajectory_container_tools.rosbag_to_tct import (
     aggregate_multiple_features_from_rosbag,
-    check_rosbag_path_and_show_available_topics, extract_single_feature_from_rosbag,
-    )
+    check_rosbag_path_and_show_available_topics,
+    extract_single_feature_from_rosbag,
+)
 from trajectory_container_tools.trj_dataclasses.ros2_primitive_dataclass import Header
 
 from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
-    AckermannMsgsAckermannDrive, AckermannMsgsAckermannDriveStamped, NavMsgsOdometry,
-    RosStampedDataclass, Tf2MsgsTFMessage, SensorMsgsImu,
-    )
+    AckermannMsgsAckermannDrive,
+    AckermannMsgsAckermannDriveStamped,
+    NavMsgsOdometry,
+    RosStampedDataclass,
+    Tf2MsgsTFMessage,
+    SensorMsgsImu,
+)
 from trajectory_container_tools.utils.temporal_tools.timestamps import (
-    TimestampCausalOrderingError, Timestamps,
-    )
+    TimestampCausalOrderingError,
+    Timestamps,
+)
 
 
 @dataclass()
@@ -32,7 +38,7 @@ class RosBagConfig:
 
 
 def setup_rosbag_path(offending: bool = False) -> Tuple[Path, str]:
-    """ Path to ROS bag in 'demo_data' directory
+    """Path to ROS bag in 'demo_data' directory
 
     Note: offending timestamps are in the /teleop topic messages
     """
@@ -43,41 +49,39 @@ def setup_rosbag_path(offending: bool = False) -> Tuple[Path, str]:
         BAG = "2024-03-21_14-52-35-filtered"
 
     rosbag_path = os.path.join(
-            "demo_data",
-            "rosbag_test_data",
-            "rosbag-vaul-f110-grand-salon-raw-msg",
-            BAG)
+        "demo_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
+    )
 
     return check_rosbag_path_and_show_available_topics(rosbag_path), BAG
 
 
 @pytest.fixture(scope="function")
 def setup_rosbag_from_tests_dir():
-
     bag_path, bag_name = setup_rosbag_path()
 
     ros_bag_config = RosBagConfig(
-            bag_name=bag_name,
-            ts_fast_forward=None,
-            ts_window=None,
-            bag_path=bag_path,
-            selected_topic=[
-                    "/teleop",
-                    "/sensors/imu/raw",
-                    "/odom",
-                    ],
-            )
+        bag_name=bag_name,
+        ts_fast_forward=None,
+        ts_window=None,
+        bag_path=bag_path,
+        selected_topic=[
+            "/teleop",
+            "/sensors/imu/raw",
+            "/odom",
+        ],
+    )
     # '/ackermann_cmd',
     # '/pf/pose/odom',
     return ros_bag_config
 
 
 class TestExtractROSBagFeature:
-
     def test_extract_single_feature_from_rosbag(self, setup_rosbag_from_tests_dir):
         container = extract_single_feature_from_rosbag(
-                rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name="/odom",
-                data_container_type=NavMsgsOdometry)
+            rosbag_path=setup_rosbag_from_tests_dir.bag_path,
+            feature_name="/odom",
+            data_container_type=NavMsgsOdometry,
+        )
 
         print(container)
 
@@ -87,8 +91,10 @@ class TestExtractROSBagFeature:
     def test_populate_nested_trajectory_dataclass(self, setup_rosbag_from_tests_dir):
         container: Union[NavMsgsOdometry, RosStampedDataclass]
         container = extract_single_feature_from_rosbag(
-                rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name="/odom",
-                data_container_type=NavMsgsOdometry)
+            rosbag_path=setup_rosbag_from_tests_dir.bag_path,
+            feature_name="/odom",
+            data_container_type=NavMsgsOdometry,
+        )
 
         print(container)
 
@@ -104,65 +110,74 @@ class TestExtractROSBagFeature:
 
         mock_value = np.arange(10)
         bad_argument = AckermannMsgsAckermannDriveStamped(
-                feature_name=fn,
-                header=Header(frame_id="", timestamps=mock_value),
-                drive=AckermannMsgsAckermannDrive(steeringAngle=mock_value,
-                                                  steeringAngleVelocity=mock_value,
-                                                  speed=mock_value,
-                                                  acceleration=mock_value,
-                                                  jerk=mock_value),
-                # timesteps_indices=mock_value,
-                )
+            feature_name=fn,
+            header=Header(frame_id="", timestamps=mock_value),
+            drive=AckermannMsgsAckermannDrive(
+                steeringAngle=mock_value,
+                steeringAngleVelocity=mock_value,
+                speed=mock_value,
+                acceleration=mock_value,
+                jerk=mock_value,
+            ),
+            # timesteps_indices=mock_value,
+        )
 
         with pytest.raises(AttributeError):
             # noinspection PyTypeChecker
             container = extract_single_feature_from_rosbag(
-                    rosbag_path=setup_rosbag_from_tests_dir.bag_path, feature_name=fn,
-                    data_container_type=bad_argument)
+                rosbag_path=setup_rosbag_from_tests_dir.bag_path,
+                feature_name=fn,
+                data_container_type=bad_argument,
+            )
 
     def test_fail_no_existing_feature(self, setup_rosbag_from_tests_dir):
         with pytest.raises(ValueError):
-            extract_single_feature_from_rosbag(rosbag_path=setup_rosbag_from_tests_dir.bag_path,
-                                               feature_name="/aaaaaaackermann_cmddd",
-                                               data_container_type=AckermannMsgsAckermannDriveStamped)
+            extract_single_feature_from_rosbag(
+                rosbag_path=setup_rosbag_from_tests_dir.bag_path,
+                feature_name="/aaaaaaackermann_cmddd",
+                data_container_type=AckermannMsgsAckermannDriveStamped,
+            )
 
     def test_no_existing_feature_dimension(self, setup_rosbag_from_tests_dir):
         with pytest.raises(ValueError):
-            extract_single_feature_from_rosbag(rosbag_path=setup_rosbag_from_tests_dir.bag_path,
-                                               feature_name="/aaaaaaackermann_cmddd",
-                                               data_container_type=NavMsgsOdometry)
+            extract_single_feature_from_rosbag(
+                rosbag_path=setup_rosbag_from_tests_dir.bag_path,
+                feature_name="/aaaaaaackermann_cmddd",
+                data_container_type=NavMsgsOdometry,
+            )
 
     def test_catch_timestamps_sanity_check_error(self):
         # 2024-03-21_14-52-35-offending-timestamps
         bag_path, bag_name = setup_rosbag_path(offending=True)
 
         with pytest.raises(TimestampCausalOrderingError) as exc_info:
-            extract_single_feature_from_rosbag(rosbag_path=bag_path,
-                                               feature_name="/teleop",
-                                               data_container_type=AckermannMsgsAckermannDriveStamped)
+            extract_single_feature_from_rosbag(
+                rosbag_path=bag_path,
+                feature_name="/teleop",
+                data_container_type=AckermannMsgsAckermannDriveStamped,
+            )
         print(f"{exc_info=}")
         error_msg = (
-                "Detected timestamps causal ordering violation in rosbag /teleop topic "
-                "message!\n\n"
-                "Timestamp causal ordering violations:\n"
-                "    Number of offending timestamps 15/3409"
+            "Detected timestamps causal ordering violation in rosbag /teleop topic "
+            "message!\n\n"
+            "Timestamp causal ordering violations:\n"
+            "    Number of offending timestamps 15/3409"
         )
         assert error_msg in exc_info.value.args[0]
 
 
 class TestExtractROSBagMultifeature:
-
     @pytest.fixture
     def setup_feature_config_new_type(self):
         feature_config: dict = {
-                "/odom":            NavMsgsOdometry,
-                "/sensors/imu/raw": (
-                        "SensorMsgsImuMinimal",
-                        "orientation_x",
-                        "orientation_y",
-                        "orientation_z",
-                        ),
-                }
+            "/odom": NavMsgsOdometry,
+            "/sensors/imu/raw": (
+                "SensorMsgsImuMinimal",
+                "orientation_x",
+                "orientation_y",
+                "orientation_z",
+            ),
+        }
         return feature_config
 
         # '/sensors/imu/raw': SensorMsgsImu,
@@ -170,71 +185,77 @@ class TestExtractROSBagMultifeature:
     @pytest.fixture
     def setup_feature_config_known_type(self):
         feature_config: dict = {
-                "/teleop":          AckermannMsgsAckermannDriveStamped,
-                "/odom":            NavMsgsOdometry,
-                "/sensors/imu/raw": SensorMsgsImu,
-                }
+            "/teleop": AckermannMsgsAckermannDriveStamped,
+            "/odom": NavMsgsOdometry,
+            "/sensors/imu/raw": SensorMsgsImu,
+        }
         return feature_config
 
         # '/sensors/imu/raw': SensorMsgsImu,
 
     def test_aggregate_multiple_features_from_rosbag_with_new_type(
-            self, setup_rosbag_from_tests_dir, setup_feature_config_new_type
-            ):
+        self, setup_rosbag_from_tests_dir, setup_feature_config_new_type
+    ):
         features_container = aggregate_multiple_features_from_rosbag(
-                rosbag_path=setup_rosbag_from_tests_dir.bag_path,
-                dataset_info=None,
-                features_config=setup_feature_config_new_type,
-                )
+            rosbag_path=setup_rosbag_from_tests_dir.bag_path,
+            dataset_info=None,
+            features_config=setup_feature_config_new_type,
+        )
 
         print(features_container)
 
         assert isinstance(features_container.topic_sensors_imu_raw, RosStampedDataclass)
         assert not isinstance(features_container.topic_sensors_imu_raw, SensorMsgsImu)
-        assert features_container.topic_sensors_imu_raw.feature_name == '/sensors/imu/raw'
+        assert (
+            features_container.topic_sensors_imu_raw.feature_name == "/sensors/imu/raw"
+        )
         assert features_container.topic_sensors_imu_raw.get_dimension_names() == (
-                "header",
-                "orientation_x",
-                "orientation_y",
-                "orientation_z",
-                )
+            "header",
+            "orientation_x",
+            "orientation_y",
+            "orientation_z",
+        )
 
         assert isinstance(features_container.topic_odom, NavMsgsOdometry)
         assert features_container.topic_odom.feature_name == "/odom"
 
     def test_aggregate_multiple_features_from_rosbag_with_known_type(
-            self, setup_rosbag_from_tests_dir, setup_feature_config_known_type
-            ):
+        self, setup_rosbag_from_tests_dir, setup_feature_config_known_type
+    ):
         features_container = aggregate_multiple_features_from_rosbag(
-                rosbag_path=setup_rosbag_from_tests_dir.bag_path,
-                dataset_info=None,
-                features_config=setup_feature_config_known_type,
-                )
+            rosbag_path=setup_rosbag_from_tests_dir.bag_path,
+            dataset_info=None,
+            features_config=setup_feature_config_known_type,
+        )
 
         print(features_container)
 
-        assert isinstance(features_container.topic_teleop, AckermannMsgsAckermannDriveStamped)
+        assert isinstance(
+            features_container.topic_teleop, AckermannMsgsAckermannDriveStamped
+        )
         assert features_container.topic_teleop.feature_name == "/teleop"
 
-        assert features_container.topic_sensors_imu_raw.feature_name == '/sensors/imu/raw'
+        assert (
+            features_container.topic_sensors_imu_raw.feature_name == "/sensors/imu/raw"
+        )
         assert isinstance(features_container.topic_sensors_imu_raw, SensorMsgsImu)
 
         assert isinstance(features_container.topic_odom, RosStampedDataclass)
         assert features_container.topic_odom.feature_name == "/odom"
 
     def test_extract_rosbag_multifeature_misspecification(
-            self, setup_rosbag_from_tests_dir, setup_feature_config_known_type
-            ):
+        self, setup_rosbag_from_tests_dir, setup_feature_config_known_type
+    ):
         setup_feature_config_known_type_bad = setup_feature_config_known_type.copy()
         setup_feature_config_known_type_bad["/pf/pose/odom"] = (
-                "AckermannMsgsAckermannDriveStamped",
-                )
+            "AckermannMsgsAckermannDriveStamped",
+        )
 
         with pytest.raises(KeyError):
             feats = aggregate_multiple_features_from_rosbag(
-                    rosbag_path=setup_rosbag_from_tests_dir.bag_path,
-                    dataset_info="",
-                    features_config=setup_feature_config_known_type_bad,
-                    )
+                rosbag_path=setup_rosbag_from_tests_dir.bag_path,
+                dataset_info="",
+                features_config=setup_feature_config_known_type_bad,
+            )
 
             print(feats)

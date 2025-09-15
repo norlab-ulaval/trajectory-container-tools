@@ -4,7 +4,10 @@ from typing import List
 
 import numpy as np
 
-from .base_trajectory_dataclass import BaseTrajectoryDataclass, NestedBaseTrajectoryDataclass
+from .base_trajectory_dataclass import (
+    BaseTrajectoryDataclass,
+    NestedBaseTrajectoryDataclass,
+)
 from .ros2_primitive_dataclass import Header, Point, Quaternion, Transform, Vector3
 
 
@@ -25,6 +28,7 @@ class RosStampedDataclass(BaseTrajectoryDataclass):
         reference information.
     :type header: Header
     """
+
     header: Header
 
 
@@ -45,13 +49,14 @@ class Pose(NestedBaseTrajectoryDataclass):
     :ivar orientation: Orientation of the object defined as a quaternion.
     :type orientation: Quaternion
     """
+
     position: Point
     orientation: Quaternion
 
 
 @dataclass()
 class PoseWithCovariance(NestedBaseTrajectoryDataclass):
-    """ Represents a pose with its covariance data.
+    """Represents a pose with its covariance data.
 
     Compatible ros2 message interface: geometry_msgs/msg/PoseWithCovariance
 
@@ -67,6 +72,7 @@ class PoseWithCovariance(NestedBaseTrajectoryDataclass):
         representing the uncertainty in the pose observations.
     :type covariance: numpy.ndarray
     """
+
     pose: Pose
     covariance: np.ndarray
 
@@ -87,13 +93,14 @@ class Twist(NestedBaseTrajectoryDataclass):
     :ivar angular: The angular velocity vector.
     :type angular: Vector3
     """
+
     linear: Vector3
     angular: Vector3
 
 
 @dataclass()
 class TwistWithCovariance(NestedBaseTrajectoryDataclass):
-    """ Represents a twist with an associated covariance matrix.
+    """Represents a twist with an associated covariance matrix.
 
     Compatible ros2 message interface: geometry_msgs/msg/TwistWithCovariance
 
@@ -107,6 +114,7 @@ class TwistWithCovariance(NestedBaseTrajectoryDataclass):
     :ivar covariance: The covariance matrix associated with the twist.
     :type covariance: np.ndarray
     """
+
     twist: Twist
     covariance: np.ndarray
 
@@ -114,7 +122,7 @@ class TwistWithCovariance(NestedBaseTrajectoryDataclass):
 # .... Odometry messages ..........................................................................
 @dataclass()
 class NavMsgsOdometry(RosStampedDataclass):
-    """ Data container for navigation messages odometry (nested data container version).
+    """Data container for navigation messages odometry (nested data container version).
 
     Compatible ros2 message interface: nav_msgs/msg/Odometry
 
@@ -129,13 +137,14 @@ class NavMsgsOdometry(RosStampedDataclass):
     :ivar twist: Contains the twist along with its associated covariance information.
     :type twist: TwistWithCovariance
     """
+
     pose: PoseWithCovariance
     twist: TwistWithCovariance
 
 
 @dataclass()
 class NavMsgsOdometryFlat(RosStampedDataclass):
-    """ Data container for navigation messages odometry (flat structure data container version).
+    """Data container for navigation messages odometry (flat structure data container version).
 
     Compatible ros2 message interface: nav_msgs/msg/Odometry
 
@@ -175,6 +184,7 @@ class NavMsgsOdometryFlat(RosStampedDataclass):
     :ivar twist_covariance: The twist covariance matrix.
     :type twist_covariance: numpy.ndarray
     """
+
     pose_pose_position_x: np.ndarray
     pose_pose_position_y: np.ndarray
     pose_pose_position_z: np.ndarray
@@ -212,6 +222,7 @@ class AckermannMsgsAckermannDrive(NestedBaseTrajectoryDataclass):
     :ivar jerk: Desired jerk in meters per second cubed.
     :type jerk: numpy.ndarray
     """
+
     steeringAngle: np.ndarray  # desired virtual angle (radians)
     steeringAngleVelocity: np.ndarray  # desired rate of change (radians/s)
     speed: np.ndarray  # desired forward speed (m/s)
@@ -233,14 +244,16 @@ class AckermannMsgsAckermannDriveStamped(RosStampedDataclass):
         such as speed and steering angle.
     :type drive: AckermannMsgsAckermannDrive
     """
+
     drive: AckermannMsgsAckermannDrive
 
 
 @dataclass()
 class AckermannMsgsAckermannDriveStampedFlat(RosStampedDataclass):
-    """ AckermannMsgsAckermannDriveStamped flat version
+    """AckermannMsgsAckermannDriveStamped flat version
     Compatible ros2 message interface: ackermann_msgs/msg/AckermannDriveStamped
     """
+
     drive_steeringAngle: np.ndarray  # desired virtual angle (radians)
     drive_steeringAngleVelocity: np.ndarray  # desired rate of change (radians/s)
     drive_speed: np.ndarray  # desired forward speed (m/s)
@@ -251,7 +264,7 @@ class AckermannMsgsAckermannDriveStampedFlat(RosStampedDataclass):
 # .... TF messages ................................................................................
 @dataclass()
 class Tf2MsgsTFMessage(RosStampedDataclass):
-    """ Represents a message used in coordinate transformation tasks in ROS.
+    """Represents a message used in coordinate transformation tasks in ROS.
 
     Compatible ros2 message interface: tf2_msgs/msg/TFMessage
 
@@ -265,6 +278,7 @@ class Tf2MsgsTFMessage(RosStampedDataclass):
         translation and rotation information.
     :type transform: Transform
     """
+
     childFrameId: str
     transform: Transform
 
@@ -272,7 +286,7 @@ class Tf2MsgsTFMessage(RosStampedDataclass):
 # .... Sensor messages ............................................................................
 @dataclass()
 class Scan(RosStampedDataclass):
-    """ Represents a LaserScan message containing range and intensity data.
+    """Represents a LaserScan message containing range and intensity data.
 
     Compatible ros2 message interface: sensor_msgs/msg/LaserScan
 
@@ -295,6 +309,7 @@ class Scan(RosStampedDataclass):
     :ivar intensities: Intensity data in device-specific units.
     :type intensities: numpy.ndarray
     """
+
     angleMin: float  # [rad]
     angleMax: float  # [rad]
     angleIncrement: float  # [rad]
@@ -308,7 +323,7 @@ class Scan(RosStampedDataclass):
 
 @dataclass()
 class SensorMsgsImu(RosStampedDataclass):
-    """ Represents IMU (Inertial Measurement Unit) sensor data with orientation,
+    """Represents IMU (Inertial Measurement Unit) sensor data with orientation,
     angular velocity, and
     linear acceleration, including their covariance values.
 
@@ -333,6 +348,7 @@ class SensorMsgsImu(RosStampedDataclass):
     measurement.
     :type linearAccelerationCovariance: np.ndarray
     """
+
     orientation: Quaternion
     orientationCovariance: np.ndarray
     angularVelocity: Vector3
@@ -343,10 +359,11 @@ class SensorMsgsImu(RosStampedDataclass):
 
 @dataclass()
 class SensorMsgsImuFlat(RosStampedDataclass):
-    """ SensorMsgsImu flat version
+    """SensorMsgsImu flat version
 
     Compatible ros2 message interface: sensor_msgs/msg/Imu
     """
+
     orientation_x: np.ndarray
     orientation_y: np.ndarray
     orientation_z: np.ndarray

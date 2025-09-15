@@ -9,7 +9,14 @@ import os
 import numpy as np
 
 
-def process_large_arrays_parallel(data_list, enable: bool = True, n_jobs=-1, chunk_size=1000, debug: bool = False, array_func: Callable = np.array):
+def process_large_arrays_parallel(
+    data_list,
+    enable: bool = True,
+    n_jobs=-1,
+    chunk_size=1000,
+    debug: bool = False,
+    array_func: Callable = np.array,
+):
     """
     Processes a large list of data into a numpy array, with optional parallelization and chunking.
 
@@ -36,23 +43,26 @@ def process_large_arrays_parallel(data_list, enable: bool = True, n_jobs=-1, chu
         return np.array(data_list)
 
     try:
-        chunks = [data_list[i:i + chunk_size] for i in range(0, len(data_list), chunk_size)]
+        chunks = [
+            data_list[i : i + chunk_size] for i in range(0, len(data_list), chunk_size)
+        ]
 
         # Joblib automatically handles memory-mapping for large arrays
         verbose = 1
         if debug:
             verbose = 8
 
-        chunk_results = Parallel(n_jobs=n_jobs, backend='loky', verbose=verbose)(
-                delayed(array_func)(chunk) for chunk in chunks
-                )
+        chunk_results = Parallel(n_jobs=n_jobs, backend="loky", verbose=verbose)(
+            delayed(array_func)(chunk) for chunk in chunks
+        )
 
         return np.concatenate(chunk_results)
     except PicklingError:
         if debug:
             print(
-                    "[TCT warning] process large arrays parallel ecounter PicklingError. Process "
-                    "sequentialy instead")
+                "[TCT warning] process large arrays parallel ecounter PicklingError. Process "
+                "sequentialy instead"
+            )
         return np.array(data_list)
 
 
@@ -72,9 +82,9 @@ def detect_docker_cpu_limits():
 
     # Check Docker CPU quota (if available)
     try:
-        with open('/sys/fs/cgroup/cpu/cpu.cfs_quota_us', 'r') as f:
+        with open("/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "r") as f:
             quota = int(f.read().strip())
-        with open('/sys/fs/cgroup/cpu/cpu.cfs_period_us', 'r') as f:
+        with open("/sys/fs/cgroup/cpu/cpu.cfs_period_us", "r") as f:
             period = int(f.read().strip())
 
         if quota > 0 and period > 0:
@@ -82,23 +92,25 @@ def detect_docker_cpu_limits():
     except (FileNotFoundError, ValueError, OSError):
         # Try cgroup v2 format
         try:
-            with open('/sys/fs/cgroup/cpu.max', 'r') as f:
+            with open("/sys/fs/cgroup/cpu.max", "r") as f:
                 cpu_max = f.read().strip()
-            if cpu_max != 'max':
+            if cpu_max != "max":
                 quota, period = cpu_max.split()
                 docker_cpu_limit = int(quota) / int(period)
         except (FileNotFoundError, ValueError, OSError):
             pass
 
     # Check if running in Docker
-    is_docker = os.path.exists('/.dockerenv') or os.path.exists('/proc/1/cgroup')
+    is_docker = os.path.exists("/.dockerenv") or os.path.exists("/proc/1/cgroup")
 
-    print((
+    print(
+        (
             f"      Multiprocessing CPU count: {mp_cpu_count}\n"
             f"      OS CPU count: {os_cpu_count}\n"
             f"      Docker CPU limit: {docker_cpu_limit}\n"
             f"      Running in Docker: {is_docker}"
-    ))
+        )
+    )
 
     # Determine optimal worker count
     if docker_cpu_limit and docker_cpu_limit < mp_cpu_count:

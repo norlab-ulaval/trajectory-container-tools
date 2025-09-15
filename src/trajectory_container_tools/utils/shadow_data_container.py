@@ -1,27 +1,21 @@
 # coding=utf-8
-from typing import Dict, List, Optional, Type, Union, TypeAlias
+from typing import Optional, Union
 
 import numpy as np
 from tqdm import tqdm
 
 from .general import extract_class_name_from_type, setup_progressbar
-from ..trj_dataclasses.abstract_trajectory_dataclass import AbstractTrajectoryDataclass
+from .typing import ShadowDataContainer
 from ..trj_dataclasses.ros2_feature_dataclass import RosStampedDataclass
 from ..trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
-from .temporal_tools.timestamps import (
-    TimestampCausalOrderingError, Timestamps,
-    timestamp_causal_ordering_sanity_check,
-    )
-
-ShadowDataContainer: TypeAlias = Dict[str, Union[None, List, np.ndarray, Dict, Union[
-    type[RosStampedDataclass], type[NestedBaseTrajectoryDataclass], type[Timestamps]], Union[
-    RosStampedDataclass, NestedBaseTrajectoryDataclass, Timestamps]]]
+from .temporal_tools.timestamps import Timestamps
 
 
 def instanciate_shadow_data_container(
-        data_container_type: Union[
-            type[RosStampedDataclass], type[NestedBaseTrajectoryDataclass]]
-        ) -> ShadowDataContainer:
+    data_container_type: Union[
+        type[RosStampedDataclass], type[NestedBaseTrajectoryDataclass]
+    ]
+) -> ShadowDataContainer:
     """
     Instantiates a shadow data container for storing data corresponding to the given
     data container type. This function recursively initializes each property of the
@@ -35,34 +29,43 @@ def instanciate_shadow_data_container(
     shadow_data_container: ShadowDataContainer
 
     # container_properties = fields(data_container_type)
-    shadow_data_container = {each_field: None for each_field in
-                             data_container_type.get_dimension_names()}
+    shadow_data_container = {
+        each_field: None for each_field in data_container_type.get_dimension_names()
+    }
 
-    shadow_data_container['type'] = data_container_type
+    shadow_data_container["type"] = data_container_type
 
     for each_property_name in data_container_type.get_dimension_names():
         dimension_type = data_container_type.get_dimension_type(each_property_name)
         if issubclass(dimension_type, (np.ndarray, Timestamps)):
             # Note: Using a list to temporary aggregate data and then convert to numpy array when
             #       done is faster than directly append to a numpy array
-            shadow_data_container[each_property_name] = {'type': dimension_type, 'data': []}
-        elif issubclass(dimension_type, (RosStampedDataclass, NestedBaseTrajectoryDataclass)):
-            shadow_data_container[each_property_name] = instanciate_shadow_data_container(
-                    dimension_type)
+            shadow_data_container[each_property_name] = {
+                "type": dimension_type,
+                "data": [],
+            }
+        elif issubclass(
+            dimension_type, (RosStampedDataclass, NestedBaseTrajectoryDataclass)
+        ):
+            shadow_data_container[
+                each_property_name
+            ] = instanciate_shadow_data_container(dimension_type)
         else:
             shadow_data_container[each_property_name] = {
-                    'type': dimension_type,
-                    'data': None,
-                    }
+                "type": dimension_type,
+                "data": None,
+            }
     return shadow_data_container
 
 
-def post_process_shadown_data_container(shadow_data_container: ShadowDataContainer,
-                                        data_container_type: Union[
-                                            type[RosStampedDataclass], type[
-                                                NestedBaseTrajectoryDataclass]],
-                                        feature_name: Optional[str],
-                                        progressbar_enabled=True) -> ShadowDataContainer:
+def post_process_shadown_data_container(
+    shadow_data_container: ShadowDataContainer,
+    data_container_type: Union[
+        type[RosStampedDataclass], type[NestedBaseTrajectoryDataclass]
+    ],
+    feature_name: Optional[str],
+    progressbar_enabled=True,
+) -> ShadowDataContainer:
     """
     Post-processes a ShadowDataContainer containing various data elements while ensuring proper
     handling of nested data types and arrays.
@@ -81,50 +84,55 @@ def post_process_shadown_data_container(shadow_data_container: ShadowDataContain
     # (NICE TO HAVE) ToDo: unit-test explicitly (ref task RLRP-83). Its indirectly tested for now.
 
     for each in data_container_type._dataclass_internal_field():
-        if each == 'feature_name':
+        if each == "feature_name":
             if not issubclass(data_container_type, NestedBaseTrajectoryDataclass):
                 shadow_data_container["feature_name"] = feature_name
             else:
                 # Nested trj container should not populate 'feature_name'
-                if 'feature_name' in shadow_data_container:
-                    del shadow_data_container['feature_name']
+                if "feature_name" in shadow_data_container:
+                    del shadow_data_container["feature_name"]
         else:
             if each in shadow_data_container:
                 del shadow_data_container[each]
 
-    del shadow_data_container['type']
+    del shadow_data_container["type"]
 
     progressbar: Optional[tqdm] = None
     if progressbar_enabled:
         print(
-                f"[TCT] Post-process rosbag data and configure "
-                f"{extract_class_name_from_type(data_container_type)} container")
+            f"[TCT] Post-process rosbag data and configure "
+            f"{extract_class_name_from_type(data_container_type)} container"
+        )
         progressbar = setup_progressbar(len(list(shadow_data_container.items())))
 
     for k, v in shadow_data_container.items():
         # if shadow_data_container["feature_name"]:
-        if (k in data_container_type.trajectory_metadata_field() or k in
-                data_container_type._dataclass_internal_field()):
+        if (
+            k in data_container_type.trajectory_metadata_field()
+            or k in data_container_type._dataclass_internal_field()
+        ):
             pass
-        elif k == 'type':
+        elif k == "type":
             pass
-        elif isinstance(v, dict) and v.get('type') is not None:
-            target_type = v.get('type')
+        elif isinstance(v, dict) and v.get("type") is not None:
+            target_type = v.get("type")
             if issubclass(target_type, np.ndarray):
-                assert isinstance(v['data'], list)
-                shadow_data_container[k] = np.array(v['data'])
+                assert isinstance(v["data"], list)
+                shadow_data_container[k] = np.array(v["data"])
             elif issubclass(target_type, Timestamps):
-                shadow_data_container[k] = Timestamps(v['data'])
+                shadow_data_container[k] = Timestamps(v["data"])
             elif issubclass(target_type, NestedBaseTrajectoryDataclass):
-                ppsdc = post_process_shadown_data_container(v, data_container_type=target_type,
-                                                            feature_name=None,
-                                                            progressbar_enabled=False
-                                                            )
-                if 'type' in ppsdc:
-                    del ppsdc['type']
+                ppsdc = post_process_shadown_data_container(
+                    v,
+                    data_container_type=target_type,
+                    feature_name=None,
+                    progressbar_enabled=False,
+                )
+                if "type" in ppsdc:
+                    del ppsdc["type"]
                 shadow_data_container[k] = target_type(**ppsdc)
             else:
-                shadow_data_container[k] = v['data']
+                shadow_data_container[k] = v["data"]
         else:
             shadow_data_container[k] = v
 
@@ -136,17 +144,23 @@ def post_process_shadown_data_container(shadow_data_container: ShadowDataContain
     return shadow_data_container
 
 
-def fetch_timestamps_from_shadow_data_container(shadow_data_container: dict) -> Timestamps:
-    assert "feature_name" in shadow_data_container, ("[TCT error] missing required key "
-                                                     "'feature_name'!")
+def fetch_timestamps_from_shadow_data_container(
+    shadow_data_container: dict,
+) -> Timestamps:
+    assert "feature_name" in shadow_data_container, (
+        "[TCT error] missing required key " "'feature_name'!"
+    )
     if "timestamps" in shadow_data_container or "header" in shadow_data_container:
         if "timestamps" in shadow_data_container:
             timestamps_ = shadow_data_container["timestamps"]
         else:
             timestamps_ = shadow_data_container["header"].__getattribute__("timestamps")
     else:
-        raise AssertionError("[TCT error] missing required key 'timestamps' or 'header'!")
+        raise AssertionError(
+            "[TCT error] missing required key 'timestamps' or 'header'!"
+        )
 
-    assert isinstance(timestamps_,
-                      Timestamps), "[TCT] timestamps where not converted to a Timestamps object!"
+    assert isinstance(
+        timestamps_, Timestamps
+    ), "[TCT] timestamps where not converted to a Timestamps object!"
     return timestamps_

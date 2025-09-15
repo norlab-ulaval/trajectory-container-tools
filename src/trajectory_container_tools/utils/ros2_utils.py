@@ -9,7 +9,7 @@ from rosbags.typesys import Stores, get_typestore
 
 
 def get_ros2_distro() -> str:
-    """ Retrieve the current ROS 2 distribution from the environment.
+    """Retrieve the current ROS 2 distribution from the environment.
 
     This function retrieves the value of the `ROS_DISTRO` environment variable. If the
     `ROS_DISTRO` variable is not set, an `EnvironmentError` is raised. It ensures that the user
@@ -18,15 +18,16 @@ def get_ros2_distro() -> str:
     :raises EnvironmentError: If the `ROS_DISTRO` environment variable is not set.
     :return: The currently active ROS2 distribution.
     """
-    distro = os.getenv('ROS_DISTRO')
+    distro = os.getenv("ROS_DISTRO")
     if not distro:
         raise EnvironmentError(
-                "ROS_DISTRO environment variable is not set. Make sure ROS2 is sourced.")
+            "ROS_DISTRO environment variable is not set. Make sure ROS2 is sourced."
+        )
     return distro
 
 
 def get_rosbag_typestore_auto_distro() -> Typestore:
-    """ Fetches the typestore for the current ROS 2 distribution.
+    """Fetches the typestore for the current ROS 2 distribution.
 
     The function attempts to dynamically determine the current ROS 2 distribution and fetch the
     corresponding typestore. If the ROS 2 distribution environment is not set or cannot be
@@ -45,10 +46,13 @@ def get_rosbag_typestore_auto_distro() -> Typestore:
     return typestore
 
 
-def convert_timestamp_from_rosbag_message(msg_timestamp: builtin_interfaces__msg__Time,
-                                          bag_timestamp: int, use_topic_timestamp: bool = True,
-                                          output_rostime: bool = False) -> Union[int, RosTime]:
-    """ Converts timestamps from a ROS bag message to ros timestamp format or ros time object.
+def convert_timestamp_from_rosbag_message(
+    msg_timestamp: builtin_interfaces__msg__Time,
+    bag_timestamp: int,
+    use_topic_timestamp: bool = True,
+    output_rostime: bool = False,
+) -> Union[int, RosTime]:
+    """Converts timestamps from a ROS bag message to ros timestamp format or ros time object.
 
     This function processes timestamps obtained from ROS bag messages, providing
     the ability to determine output either as ros `rclpy` `Time` objects or as integers compatible
@@ -65,8 +69,9 @@ def convert_timestamp_from_rosbag_message(msg_timestamp: builtin_interfaces__msg
     """
 
     if output_rostime:
-        _timestamp = rosbag_timestamp_to_ros_time(msg_timestamp, bag_timestamp,
-                                                  use_topic_timestamp)
+        _timestamp = rosbag_timestamp_to_ros_time(
+            msg_timestamp, bag_timestamp, use_topic_timestamp
+        )
     else:
         if use_topic_timestamp:
             _timestamp = rosbag_topic_time_to_timestamp(msg_timestamp)
@@ -77,7 +82,7 @@ def convert_timestamp_from_rosbag_message(msg_timestamp: builtin_interfaces__msg
 
 
 def rosbag_topic_time_to_timestamp(msg_timestamp: builtin_interfaces__msg__Time) -> int:
-    NANOSECONDS_CONVERSION_CONSTANT = 10 ** 9
+    NANOSECONDS_CONVERSION_CONSTANT = 10**9
 
     nanoseconds = msg_timestamp.nanosec
     seconds = msg_timestamp.sec
@@ -85,8 +90,11 @@ def rosbag_topic_time_to_timestamp(msg_timestamp: builtin_interfaces__msg__Time)
     return _timestamp
 
 
-def rosbag_timestamp_to_ros_time(msg_timestamp: builtin_interfaces__msg__Time, bag_timestamp: int,
-                                 use_msg_timestamp: bool) -> RosTime:
+def rosbag_timestamp_to_ros_time(
+    msg_timestamp: builtin_interfaces__msg__Time,
+    bag_timestamp: int,
+    use_msg_timestamp: bool,
+) -> RosTime:
     if use_msg_timestamp:
         _timestamp = rosbag_topic_time_to_ros_time(msg_timestamp)
     else:
@@ -94,7 +102,8 @@ def rosbag_timestamp_to_ros_time(msg_timestamp: builtin_interfaces__msg__Time, b
     return _timestamp
 
 
-def rosbag_topic_time_to_ros_time(msg_timestamp: builtin_interfaces__msg__Time) -> RosTime:
-    _timestamp = RosTime(seconds=msg_timestamp.sec,
-                         nanoseconds=msg_timestamp.nanosec)
+def rosbag_topic_time_to_ros_time(
+    msg_timestamp: builtin_interfaces__msg__Time,
+) -> RosTime:
+    _timestamp = RosTime(seconds=msg_timestamp.sec, nanoseconds=msg_timestamp.nanosec)
     return _timestamp

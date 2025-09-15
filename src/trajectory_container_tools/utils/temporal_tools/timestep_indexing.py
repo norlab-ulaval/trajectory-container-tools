@@ -5,8 +5,9 @@ import numpy as np
 import pandas as pd
 
 
-def timestep_indices_sanity_check(timestep_index: np.ndarray,
-                                  trajectory_expected_len: Optional[int] = None) -> np.ndarray:
+def timestep_indices_sanity_check(
+    timestep_index: np.ndarray, trajectory_expected_len: Optional[int] = None
+) -> np.ndarray:
     """
     Checks and validates if the provided timestep index satisfies monotonicity
     and constant increment constraints.
@@ -36,20 +37,20 @@ def timestep_indices_sanity_check(timestep_index: np.ndarray,
     index_has_constant_increment = trajectory_expected_len == delta
 
     is_timestep_index_good_to_go = all(
-            (index_is_monoticaly_increasing, index_has_constant_increment)
-            )
+        (index_is_monoticaly_increasing, index_has_constant_increment)
+    )
     if not is_timestep_index_good_to_go:
         raise IndexError(
-                f"[TCT error] The timestep index is either missing a step or not monotonicaly "
-                f"increassing"
-                )
+            f"[TCT error] The timestep index is either missing a step or not monotonicaly "
+            f"increassing"
+        )
 
     return timestep_index
 
 
 def dataframe_timestep_indexing_sanity_check(
-        the_dataframe: pd.DataFrame, indexed_column_label: str
-        ) -> np.ndarray:
+    the_dataframe: pd.DataFrame, indexed_column_label: str
+) -> np.ndarray:
     """Utility for validating timestep index in column label by checking if it is either
     missing a step or not monotonicaly increassing.
 
@@ -60,7 +61,9 @@ def dataframe_timestep_indexing_sanity_check(
         the trajectory length does not correspond to a constant increment.
     """
     column_labels: List[str] = the_dataframe.columns.to_list()
-    col_index = [int(each_label.strip(indexed_column_label)) for each_label in column_labels]
+    col_index = [
+        int(each_label.strip(indexed_column_label)) for each_label in column_labels
+    ]
     timestep_index = np.array(col_index)
     column_nb = the_dataframe.shape[1]
 

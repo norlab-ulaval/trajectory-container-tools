@@ -11,6 +11,7 @@ from .abstract_trajectory_dataclass import AbstractTrajectoryDataclass
 #       Use flat layout in the mean time
 # /////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 @dataclass()
 class BaseDataframeFeatureDataclass(AbstractTrajectoryDataclass):
     """
@@ -19,6 +20,7 @@ class BaseDataframeFeatureDataclass(AbstractTrajectoryDataclass):
     It can be extended or utilized wherever structured data for dataframe processing or
     trajectory computation is necessary.
     """
+
     pass
 
 
@@ -27,10 +29,13 @@ class NestedBaseDataframeFeatureDataclass(BaseDataframeFeatureDataclass):
     """
     # (NICE TO HAVE) ToDo: implement nested trajectory-dataclass support for dataframe extraction
     """
+
     feature_name: str = field(default=None, init=False)
 
     def on_begin_post_init_callback(self):
-        raise NotImplementedError("Nested trajectory for dataframe is not supported yet.")
+        raise NotImplementedError(
+            "Nested trajectory for dataframe is not supported yet."
+        )
 
 
 @dataclass()

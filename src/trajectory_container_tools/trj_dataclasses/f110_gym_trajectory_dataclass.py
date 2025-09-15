@@ -3,7 +3,10 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .base_trajectory_dataclass import BaseTrajectoryDataclass, NestedBaseTrajectoryDataclass
+from .base_trajectory_dataclass import (
+    BaseTrajectoryDataclass,
+    NestedBaseTrajectoryDataclass,
+)
 from .primitive_dataclass import Pose2D, Velocity2D
 
 
@@ -26,6 +29,7 @@ class F110MotionDynamicDataclassNested(BaseTrajectoryDataclass):
     """
     F110-gym motion dynamic trajectory dataclass (nested version)
     """
+
     actions: F110actions
     obs: F110observations
     next_obs: F110observations
@@ -39,6 +43,7 @@ class F110MotionDynamicDataclass(BaseTrajectoryDataclass):
     """
     F110-gym motion dynamic trajectory dataclass (flat version)
     """
+
     # .... actions ................................................................................
     steer: np.ndarray
     speed: np.ndarray

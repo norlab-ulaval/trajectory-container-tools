@@ -2,8 +2,9 @@
 import numpy as np
 import pytest
 
-from trajectory_container_tools.trj_dataclasses.f110_gym_trajectory_dataclass import \
-    F110MotionDynamicDataclass
+from trajectory_container_tools.trj_dataclasses.f110_gym_trajectory_dataclass import (
+    F110MotionDynamicDataclass,
+)
 from trajectory_container_tools.utils.containers_sanity_checks import (
     containers_timestep_alignment_sanity_check,
 )
@@ -51,7 +52,9 @@ class TestContainersTimestepAlignementSanityCheck:
 
         return mock_container
 
-    def test_both_containers_have_same_parameters(self, mock_f110_motion_dynamic_dataclass):
+    def test_both_containers_have_same_parameters(
+        self, mock_f110_motion_dynamic_dataclass
+    ):
         mock_container_1 = mock_f110_motion_dynamic_dataclass(
             name="mock container 1",
             trj_len=5,
@@ -66,7 +69,9 @@ class TestContainersTimestepAlignementSanityCheck:
             pose_y=np.array([1, 2, 3, 4, 5]),
             pose_theta=np.array([1, 2, 3, 4, 5]),
         )
-        assert containers_timestep_alignment_sanity_check(mock_container_1, mock_container_2)
+        assert containers_timestep_alignment_sanity_check(
+            mock_container_1, mock_container_2
+        )
 
     def test_both_containers_have_different_trajectory_lengths(
         self, mock_f110_motion_dynamic_dataclass
@@ -85,9 +90,13 @@ class TestContainersTimestepAlignementSanityCheck:
             pose_y=np.array([1, 2, 3, 4, 5, 6]),
             pose_theta=np.array([1, 2, 3, 4, 5, 6]),
         )
-        assert not containers_timestep_alignment_sanity_check(mock_container_1, mock_container_2)
+        assert not containers_timestep_alignment_sanity_check(
+            mock_container_1, mock_container_2
+        )
 
-    def test_both_containers_have_different_values(self, mock_f110_motion_dynamic_dataclass):
+    def test_both_containers_have_different_values(
+        self, mock_f110_motion_dynamic_dataclass
+    ):
         mock_container_1 = mock_f110_motion_dynamic_dataclass(
             name="mock container 1",
             trj_len=5,
@@ -102,4 +111,6 @@ class TestContainersTimestepAlignementSanityCheck:
             pose_y=np.array([1, 2, 3, 4, 5]),
             pose_theta=np.array([1, 2, 3, 4, 5]),
         )
-        assert not containers_timestep_alignment_sanity_check(mock_container_1, mock_container_2)
+        assert not containers_timestep_alignment_sanity_check(
+            mock_container_1, mock_container_2
+        )

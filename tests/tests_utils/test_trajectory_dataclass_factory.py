@@ -13,7 +13,9 @@ from trajectory_container_tools.utils.factory import (
     TrjDataClassFeatureSpecification,
     trajectory_dataclass_factory,
 )
-from trajectory_container_tools.trj_dataclasses import abstract_trajectory_dataclass as atd
+from trajectory_container_tools.trj_dataclasses import (
+    abstract_trajectory_dataclass as atd,
+)
 
 
 # ====Pandas dataframe cases=======================================================================
@@ -92,7 +94,8 @@ class TestTrajectoryDataclassFactoryROSbagCase:
 
     def test_spec_ok(self, setup_rosbag_style_config):
         trajectory_dataclass_factory(
-            specification=setup_rosbag_style_config, trj_dataclass_subclass=RosStampedDataclass
+            specification=setup_rosbag_style_config,
+            trj_dataclass_subclass=RosStampedDataclass,
         )
 
     def test_bad_spec(self):

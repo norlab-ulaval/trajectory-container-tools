@@ -9,19 +9,20 @@ from dataclasses import fields as fields, make_dataclass
 from .utils.typing import MultifeatureTrajectoryDataclass, TrajectoryDataclass
 from trajectory_container_tools.trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
-    )
-from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import \
-    BaseDataframeFeatureDataclass
+)
+from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
+    BaseDataframeFeatureDataclass,
+)
 
-from trajectory_container_tools.utils.temporal_tools.timestep_indexing import \
-    dataframe_timestep_indexing_sanity_check
-from trajectory_container_tools.utils.factory import (
-    TrjDataClassFeatureSpecification,
-    parse_to_feature_dataclass, trajectory_dataclass_factory,
-    )
+from trajectory_container_tools.utils.temporal_tools.timestep_indexing import (
+    dataframe_timestep_indexing_sanity_check,
+)
+from trajectory_container_tools.utils.factory import parse_to_feature_dataclass
 
 
-def unpack_dataframe_and_show_topic(dataframe_path: Union[str, Path]) -> Tuple[pd.DataFrame, Path]:
+def unpack_dataframe_and_show_topic(
+    dataframe_path: Union[str, Path]
+) -> Tuple[pd.DataFrame, Path]:
     """
     Unpack a dataframe from a given file path. Display its columns and content for convenience.
 
@@ -39,13 +40,14 @@ def unpack_dataframe_and_show_topic(dataframe_path: Union[str, Path]) -> Tuple[p
     try:
         assert os.path.exists(dataframe_path)
     except AssertionError:
-        dn_project_path = os.getenv('DN_PROJECT_PATH')
+        dn_project_path = os.getenv("DN_PROJECT_PATH")
         if os.path.exists(dn_project_path):
             # Case running in a Dockerized-NorLab docker container
             dataframe_path = os.path.join(dn_project_path, dataframe_path)
 
         assert os.path.exists(
-                dataframe_path), f"[TCT] dataframe path is unreachable at {dataframe_path}"
+            dataframe_path
+        ), f"[TCT] dataframe path is unreachable at {dataframe_path}"
 
     dataframe_path = Path(os.path.realpath(dataframe_path))
 
@@ -61,11 +63,13 @@ def unpack_dataframe_and_show_topic(dataframe_path: Union[str, Path]) -> Tuple[p
 
 
 def aggregate_multiple_features_from_dataframe(
-        dataset_frame: pd.DataFrame,
-        dataset_info: str,
-        features_config: Dict[str, Union[type[BaseDataframeFeatureDataclass], Tuple[str, ...]]],
-        header_mix_label_and_timesteps: bool = True
-        ) -> MultifeatureTrajectoryDataclass:
+    dataset_frame: pd.DataFrame,
+    dataset_info: str,
+    features_config: Dict[
+        str, Union[type[BaseDataframeFeatureDataclass], Tuple[str, ...]]
+    ],
+    header_mix_label_and_timesteps: bool = True,
+) -> MultifeatureTrajectoryDataclass:
     """Extract multiple features from a dataset (formated in a dataframe) based on a
     configuration dictionary.
 
@@ -104,29 +108,34 @@ def aggregate_multiple_features_from_dataframe(
 
     for feature_name, feature_dataclass in features_config.items():
         if isinstance(feature_dataclass, tuple):
-            feature_dataclass = parse_to_feature_dataclass(feature_dataclass,
-                                                           target_subclass=BaseDataframeFeatureDataclass,
-                                                           feature_name=feature_name)
+            feature_dataclass = parse_to_feature_dataclass(
+                feature_dataclass,
+                target_subclass=BaseDataframeFeatureDataclass,
+                feature_name=feature_name,
+            )
 
-        feature = extract_single_feature_from_dataframe(dataset=dataset_frame,
-                                                        feature_name=feature_name,
-                                                        data_container_type=feature_dataclass,
-                                                        header_mix_label_and_timesteps=header_mix_label_and_timesteps)
+        feature = extract_single_feature_from_dataframe(
+            dataset=dataset_frame,
+            feature_name=feature_name,
+            data_container_type=feature_dataclass,
+            header_mix_label_and_timesteps=header_mix_label_and_timesteps,
+        )
 
         features_type.append((feature_name, type(feature)))
         features.append(feature)
 
     multifeature = make_dataclass(
-            "multifeature", bases=(AbstractMultifeatureDataclass,), fields=features_type
-            )
+        "multifeature", bases=(AbstractMultifeatureDataclass,), fields=features_type
+    )
     return multifeature(dataset_info, *features)
 
 
 def extract_single_feature_from_dataframe(
-        dataset: pd.DataFrame,
-        feature_name: str,
-        data_container_type: type[BaseDataframeFeatureDataclass],
-        header_mix_label_and_timesteps: bool = True) -> BaseDataframeFeatureDataclass:
+    dataset: pd.DataFrame,
+    feature_name: str,
+    data_container_type: type[BaseDataframeFeatureDataclass],
+    header_mix_label_and_timesteps: bool = True,
+) -> BaseDataframeFeatureDataclass:
     """
     Dataframe feature extractor automation function. Extracts a single feature from a pandas
     DataFrame while organizing it into a dataclass compatible with the specified container type.
@@ -169,41 +178,45 @@ def extract_single_feature_from_dataframe(
     try:
         if not issubclass(data_container_type, BaseDataframeFeatureDataclass):
             raise ValueError(
-                    f"[TCT error] `{data_container_type}` must be a subclass of "
-                    f"`BaseDataframeFeatureDataclass`"
-                    )
+                f"[TCT error] `{data_container_type}` must be a subclass of "
+                f"`BaseDataframeFeatureDataclass`"
+            )
     except TypeError as e:
         raise AttributeError(
-                f"[TCT error] `{data_container_type}` must not be instanciated, just pass the "
-                f"class as "
-                "attribute."
-                )
+            f"[TCT error] `{data_container_type}` must not be instanciated, just pass the "
+            f"class as "
+            "attribute."
+        )
     else:
         try:
             df_features = dataset.filter(like=feature_name)
             if df_features.empty:
                 raise ValueError(
-                        f"[TCT error] The parameter `{feature_name}` does not exist in "
-                        f"`dataset_frame` as a column header prefix"
-                        )
+                    f"[TCT error] The parameter `{feature_name}` does not exist in "
+                    f"`dataset_frame` as a column header prefix"
+                )
 
             # (NICE TO HAVE) ToDo: refactor using "shadow_data_container" module
-            tmp_container = {each_field: None for each_field in
-                             data_container_type.get_dimension_names()}
+            tmp_container = {
+                each_field: None
+                for each_field in data_container_type.get_dimension_names()
+            }
 
             for each_property in data_container_type.get_dimension_names():
                 if each_property == "timestamps":
                     print(
-                            "Be advised timestamps sanity check is not supported yet with "
-                            "dataframe "
-                            "to tct extraction")
+                        "Be advised timestamps sanity check is not supported yet with "
+                        "dataframe "
+                        "to tct extraction"
+                    )
 
                 df_header_field = f"{feature_name}_{each_property}"
                 empty_property_error_msg = (
-                        f"[TCT error] The column `{df_header_field}` does not exist in "
-                        "`dataset_frame`."
-                        f"Check that property `{each_property}` in {str(data_container_type)} "
-                        f"is a `{feature_name}` postfix in the dataset_frame")
+                    f"[TCT error] The column `{df_header_field}` does not exist in "
+                    "`dataset_frame`."
+                    f"Check that property `{each_property}` in {str(data_container_type)} "
+                    f"is a `{feature_name}` postfix in the dataset_frame"
+                )
 
                 df_property = df_features.filter(items=[df_header_field])
                 if df_property.empty and header_mix_label_and_timesteps:
@@ -212,14 +225,16 @@ def extract_single_feature_from_dataframe(
                         raise ValueError(empty_property_error_msg)
 
                     try:
-                        timestep_index = dataframe_timestep_indexing_sanity_check(df_property,
-                                                                                  df_header_field)
+                        timestep_index = dataframe_timestep_indexing_sanity_check(
+                            df_property, df_header_field
+                        )
                         tmp_container["timesteps_indices"] = timestep_index
                     except IndexError as e:
                         raise ValueError(
-                                "[TCT error] There is a problem with the `dataset_frame` column "
-                                "label " f"`{df_header_field}_` timestep index. << {e}"
-                                )
+                            "[TCT error] There is a problem with the `dataset_frame` column "
+                            "label "
+                            f"`{df_header_field}_` timestep index. << {e}"
+                        )
                 elif not header_mix_label_and_timesteps:
                     if df_property.empty:
                         raise ValueError(empty_property_error_msg)
@@ -232,5 +247,6 @@ def extract_single_feature_from_dataframe(
             raise
 
     # noinspection PyArgumentList
-    return data_container_type(feature_name=feature_name, **tmp_container,
-                               batch=header_mix_label_and_timesteps)
+    return data_container_type(
+        feature_name=feature_name, **tmp_container, batch=header_mix_label_and_timesteps
+    )

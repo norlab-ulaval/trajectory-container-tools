@@ -33,14 +33,16 @@ def register_ros2_non_native_msg(typestore: Optional[Typestore] = None) -> Types
     if not typestore:
         typestore = get_rosbag_typestore_auto_distro()
 
-    if not typestore.types.get('ackermann_msgs/msg/AckermannDrive'):
+    if not typestore.types.get("ackermann_msgs/msg/AckermannDrive"):
         typestore.register(
-                get_types_from_msg(ACKERMAN_MSG, 'ackermann_msgs/msg/AckermannDrive')
-                )
+            get_types_from_msg(ACKERMAN_MSG, "ackermann_msgs/msg/AckermannDrive")
+        )
 
-    if not typestore.types.get('ackermann_msgs/msg/AckermannDriveStamped'):
+    if not typestore.types.get("ackermann_msgs/msg/AckermannDriveStamped"):
         typestore.register(
-                get_types_from_msg(ACKERMAN_STAMPED_MSG, 'ackermann_msgs/msg/AckermannDriveStamped')
-                )
+            get_types_from_msg(
+                ACKERMAN_STAMPED_MSG, "ackermann_msgs/msg/AckermannDriveStamped"
+            )
+        )
 
     return typestore
