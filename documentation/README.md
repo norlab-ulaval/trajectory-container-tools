@@ -28,25 +28,25 @@ The library is designed for robotics research, autonomous systems, and trajector
 
 ```mermaid
 graph TB
-    subgraph DS["📊 DATA SOURCES"]
+    subgraph DS["📊&nbsp;DATA&nbsp;SOURCES"]
         DF[📋 Pandas DataFrame]
         ROS[🤖 ROS2 Bags]
         DD[💾 Direct Data]
     end
     
-    subgraph TCT["TRAJECTORY-CONTAINER-TOOLS"]
+    subgraph TCT["TRAJECTORY&nbsp;CONTAINER&nbsp;TOOLS&nbsp;(TCT)"]
         
-        subgraph CONV["🔄 CONVERTERS"]
+        subgraph CONV["🔄&nbsp;CONVERTERS"]
             DFC[DataFrame to TCT]
             RC[RosBag to TCT]
             FF[Factory Functions<br/>Optional]
         end
         
-        subgraph MFC["🗂️ Multifeature-Containers"]
+        subgraph MFC["🗂️&nbsp;MULTIFEATURE&nbsp;CONTAINERS"]
             AMC[AbstractMultifeatureDataclass<br/><br/>Contains multiple<br/>trajectory features<br/>in one container]
         end
         
-        subgraph TC["📦 TRAJECTORY-CONTAINERS"]
+        subgraph TC["📦&nbsp;TRAJECTORY&nbsp;CONTAINERS"]
             ATC[AbstractTrajectoryDataclass]
             BTC[BaseTrajectoryDataclass]
             NBTC[NestedBaseTrajectoryDataclass]
