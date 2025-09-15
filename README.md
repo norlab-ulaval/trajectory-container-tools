@@ -112,7 +112,7 @@ interface for handling trajectory data across different formats and sources.
 
 - Built for robotics and AI research workflows
 - Integration with common research tools (pandas, matplotlib, numpy, ROS2)
-- Reliable → TCT has decent codecoverage and is periodicaly tested in CI 
+- Reliable → TCT as decent codecoverage and is periodicaly tested in CI 
 
 ### ✅ **Data Validation**
 
