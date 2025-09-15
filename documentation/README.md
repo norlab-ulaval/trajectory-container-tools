@@ -26,6 +26,70 @@ TCT provides a unified interface for working with trajectory data from various s
 
 The library is designed for robotics research, autonomous systems, and trajectory analysis workflows.
 
+```mermaid
+graph TB
+    subgraph TCT["🎯 TRAJECTORY CONTAINER TOOLS (TCT)"]
+        subgraph DS["📊 DATA SOURCES"]
+            DF[📋 Pandas<br/>DataFrame]
+            ROS[🤖 ROS2<br/>Bags]
+            DD[💾 Direct<br/>Data]
+        end
+        
+        subgraph CONV["🔄 CONVERTERS"]
+            DFC[DataFrame<br/>to TCT]
+            RC[RosBag<br/>to TCT]
+            FF[Factory<br/>Functions]
+        end
+        
+        subgraph MFC["🗂️ MULTIFEATURE CONTAINERS"]
+            AMC[AbstractMultifeature<br/>Dataclass<br/><br/>Contains multiple<br/>trajectory features<br/>in one container]
+        end
+        
+        subgraph TC["📦 TRAJECTORY CONTAINERS"]
+            ATC[AbstractTrajectory<br/>Dataclass]
+            BTC[BaseTrajectory<br/>Dataclass]
+            SC[🎯 Specialized<br/>Dataclasses:<br/>• F110Gym<br/>• MathGymnasium<br/>• ERLL<br/>• PandaDataFrame<br/>• ROS2Feature]
+        end
+        
+    end
+    
+    %% Data flow connections
+    DF --> DFC
+    ROS --> RC
+    DD --> FF
+    
+    DFC --> ATC
+    RC --> ATC
+    FF --> ATC
+    
+    ATC --> BTC
+    ATC --> SC
+    BTC --> SC
+    
+    TC --> MFC
+    
+```
+
+### Core Flow Explanation
+
+1. **Data Sources**: TCT accepts data from three main sources:
+   - **Pandas DataFrames**: Structured tabular data with trajectory information
+   - **ROS2 Bags**: Robotics data from ROS2 bag files containing sensor/control messages
+   - **Direct Data**: Raw numpy arrays or custom data for direct instantiation
+
+2. **Converters**: Specialized functions transform raw data into trajectory containers:
+   - **DataFrame to TCT**: Extracts features from DataFrame columns/rows
+   - **RosBag to TCT**: Parses ROS2 messages and converts to trajectory format
+   - **Factory Functions**: Dynamically creates custom trajectory dataclasses
+
+3. **Trajectory Containers**: Type-safe dataclasses that provide:
+   - **Structure**: Clear organization of trajectory dimensions (x, y, z, velocities, etc.)
+   - **Validation**: Ensures data consistency and monotonic timestamps
+   - **Access Patterns**: Indexing, slicing, iteration over timesteps
+   - **Metadata**: Timestamps, dataset information, and trajectory properties
+
+
+
 ---
 
 ## Interactive [Jupyter notebook examples](../notebooks/):

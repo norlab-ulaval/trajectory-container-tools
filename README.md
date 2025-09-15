@@ -73,7 +73,18 @@ Maintainer <a href="https://github.com/RedLeader962">RedLeader962</a>
 ## What it does
 
 **Trajectory Container Tools (TCT)** is a Python library designed to simplify the management and analysis of trajectory
-data from various sources. It provides:
+data from various sources. 
+
+### 🎯 High-Level Overview
+
+```mermaid
+flowchart LR
+    A[📊 DATA SOURCES<br/>• DataFrames<br/>• ROS2 Bags<br/>• Direct Data] --> B[🔄 CONVERTERS<br/>• Extract<br/>• Transform<br/>• Validate]
+    B --> C[📦 TRAJECTORY CONTAINERS<br/>• Type-safe dataclasses<br/>• Indexed & iterable<br/>• Timestamp validated<br/>• Feature-rich]
+    
+```
+
+TCT provides:
 
 - **Trajectory Dataclasses**:
     - Type-safety for different trajectory formats (e.g., 2D/3D poses, velocities, commands)
