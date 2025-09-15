@@ -8,13 +8,24 @@ from trajectory_container_tools import NestedBaseTrajectoryDataclass
 
 @dataclass()
 class Point2(NestedBaseTrajectoryDataclass):
-    # No ros2 compatible message
     x: np.ndarray
     y: np.ndarray
 
 
 @dataclass()
 class Vector2(NestedBaseTrajectoryDataclass):
-    # No ros2 compatible message
     x: np.ndarray
     y: np.ndarray
+
+@dataclass()
+class Pose2D(NestedBaseTrajectoryDataclass):
+    x: np.ndarray
+    y: np.ndarray
+    theta: np.ndarray
+
+
+@dataclass()
+class Velocity2D(NestedBaseTrajectoryDataclass):
+    x: np.ndarray
+    y: np.ndarray
+    ang: np.ndarray

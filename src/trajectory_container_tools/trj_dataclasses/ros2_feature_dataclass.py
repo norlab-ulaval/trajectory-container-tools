@@ -10,8 +10,22 @@ from .ros2_primitive_dataclass import Header, Point, Quaternion, Transform, Vect
 
 @dataclass()
 class RosStampedDataclass(BaseTrajectoryDataclass):
-    header: Header
+    """
+    Represents a ROS-stamped dataclass containing trajectory information.
 
+    Compatible ros2 message interface: std_msgs/msg/Header
+
+    This dataclass is used to store trajectory data alongside its ROS message
+    header. The header contains information such as timestamp and frame of
+    reference, which are critical for synchronizing data within ROS-based
+    systems. This class inherits from `BaseTrajectoryDataclass` to provide
+    trajectory-specific attributes and behaviors.
+
+    :ivar header: The ROS message header, which includes timestamp and frame of
+        reference information.
+    :type header: Header
+    """
+    header: Header
 
 
 @dataclass()
@@ -281,15 +295,15 @@ class Scan(RosStampedDataclass):
     :ivar intensities: Intensity data in device-specific units.
     :type intensities: numpy.ndarray
     """
-    angleMin: float # [rad]
-    angleMax: float # [rad]
-    angleIncrement: float # [rad]
-    timeIncrement: float # [seconds]
-    scanTime: float # [seconds]
-    rangeMin: float # [m]
-    rangeMax: float # [m]
-    ranges: np.ndarray # multi-dimensional ndarray [m]
-    intensities: np.ndarray # multi-dimensional ndarray [device-specific units]
+    angleMin: float  # [rad]
+    angleMax: float  # [rad]
+    angleIncrement: float  # [rad]
+    timeIncrement: float  # [seconds]
+    scanTime: float  # [seconds]
+    rangeMin: float  # [m]
+    rangeMax: float  # [m]
+    ranges: np.ndarray  # multi-dimensional ndarray [m]
+    intensities: np.ndarray  # multi-dimensional ndarray [device-specific units]
 
 
 @dataclass()

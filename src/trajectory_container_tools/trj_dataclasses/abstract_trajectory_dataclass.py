@@ -143,9 +143,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
         :return: A list of string names corresponding to the fields skipped.
         """
-        # Note: "header_FrameId" is a rosbag generated field
-        # (Priority) ToDo: refactor out to 'Header' primitive dataclass (ref task TCT-45)
-        return ["header_FrameId"]
+        return []
 
     def on_begin_post_init_callback(self) -> None:
         """Overide this methode to execute custom computation on feature dataclass at the begining
