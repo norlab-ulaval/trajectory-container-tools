@@ -337,12 +337,15 @@ partial_data = aggregate_multiple_features_from_rosbag(
 
 ---
 
-## Next Steps
+## Documentation
+- [Landing page](../README.md#_trajectory-container-tools_)
+- [Overview and Core concept](README.md#trajectory-container-tools-documentation)
+  - ↳ **[DataFrame To TCT Usage Guide](dataframe_usage.md)** - Convert pandas DataFrames to trajectory containers
+  - ↳ **[TCT Direct Instantiation Guide](direct_instantiation.md)** - Create trajectory containers directly
+- Interactive Jupyter notebook examples:
+    - [Direct Instanciation Usage Examples](../notebooks/direct_instanciation_usage_example.ipynb) - Direct trajectory
+      container instantiation
+    - [ROS Bag Usage Examples](../notebooks/rosbag_usage_example.ipynb) - Extract trajectory data from ROS bags
+    - [DataFrame Usage Examples](../notebooks/dataframe_usage_example.ipynb) - Convert pandas DataFrames to trajectory
+      containers
 
-- **[DataFrame To TCT Usage Guide](dataframe_usage.md)** - Convert pandas DataFrames to trajectory containers
-- **[TCT Direct Instantiation Guide](direct_instantiation.md)** - Create trajectory containers directly
-- **[Jupyter Notebook Examples](../notebooks/rosbag_usage_example.ipynb)** - Interactive ROS bag examples
-
----
-
-*For more help, see the [main documentation](README.md) or check the [Jupyter notebook examples](../notebooks/).*

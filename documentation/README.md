@@ -314,3 +314,18 @@ def extract_single_feature_from_rosbag(
 - 🐛 Report issues on [GitHub Issues](https://github.com/norlab-ulaval/trajectory-container-tools/issues)
 
 ---
+
+## Documentation
+
+- [Landing page](../README.md#_trajectory-container-tools_)
+- [Overview and Core concept](README.md#trajectory-container-tools-documentation)
+    - ↳ [Direct Instantiation](./direct_instantiation.md#trajectory-container-tools---direct-instantiation-guide)
+    - ↳ [ROS Bag Usage](./rosbag_usage.md#ros-bag-to-tct--usage-guide)
+    - ↳ [Pandas DataFrame Usage](./dataframe_usage.md#dataframe-to-tct-usage-guide)
+- Interactive Jupyter notebook examples:
+    - [Direct Instanciation Usage Examples](../notebooks/direct_instanciation_usage_example.ipynb) - Direct trajectory
+      container instantiation
+    - [ROS Bag Usage Examples](../notebooks/rosbag_usage_example.ipynb) - Extract trajectory data from ROS bags
+    - [DataFrame Usage Examples](../notebooks/dataframe_usage_example.ipynb) - Convert pandas DataFrames to trajectory
+      containers
+

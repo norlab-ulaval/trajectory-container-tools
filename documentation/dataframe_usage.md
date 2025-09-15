@@ -503,9 +503,18 @@ def debug_dataframe_conversion(df, features_config):
 ## Next Steps
 
 - **[ROS To TCT Bag Usage Guide](rosbag_usage.md)** - Learn to extract trajectory data from ROS bags
-- **[TCT Direct Instantiation Guide](direct_instantiation.md)** - Create trajectory containers directly
-- **[Jupyter Notebook Examples](../notebooks/dataframe_usage_example.ipynb)** - Interactive examples
 
 ---
 
-*For more help, see the [main documentation](README.md) or check the [Jupyter notebook examples](../notebooks/).*
+## Documentation
+- [Landing page](../README.md#_trajectory-container-tools_)
+- [Overview and Core concept](README.md#trajectory-container-tools-documentation)
+  - ↳ [TCT Direct Instantiation Guide](direct_instantiation.md) - Create trajectory containers directly
+  - ↳ [ROS To TCT Bag Usage Guide](rosbag_usage.md) - Learn to extract trajectory data from ROS bags
+- Interactive Jupyter notebook examples:
+    - [Direct Instanciation Usage Examples](../notebooks/direct_instanciation_usage_example.ipynb) - Direct trajectory
+      container instantiation
+    - [ROS Bag Usage Examples](../notebooks/rosbag_usage_example.ipynb) - Extract trajectory data from ROS bags
+    - [DataFrame Usage Examples](../notebooks/dataframe_usage_example.ipynb) - Convert pandas DataFrames to trajectory
+      containers
+
