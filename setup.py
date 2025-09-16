@@ -15,4 +15,3 @@ def read_version():
 
 
 setup(version=read_version())
-

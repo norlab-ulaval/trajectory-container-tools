@@ -20,7 +20,7 @@ class TestNumpyUtilities:
 
         # Case: input is NOT finite
         with pytest.raises(AssertionError) as exc_info:
-            not_finite = np.array([1, np.infty, 3])
+            not_finite = np.array([1, np.inf, 3])
             assert check_is_finite(not_finite) is None, "Wrong output type"
 
         print(f"{exc_info=}")
