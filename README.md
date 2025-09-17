@@ -104,7 +104,7 @@ interface for handling trajectory data across different formats and sources.
 ### 🔧 **Flexible & Extensible**
 
 - Factory pattern allows dynamic creation of trajectory containers
-- Easy to extend with custom trajectory types and post-processing callback logic
+- Straight forward to extend with custom trajectory types and post-processing callback logic
 - Support for both single trajectories and multi-feature datasets
 - Support trajectory time-series and batching i.e., array shape `(trj_len, ...)` and `(batch_size, trj_len, ...)`
 
@@ -133,6 +133,7 @@ Common use cases:
 #### From direct instantiation
 
 ```python
+import numpy as np
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
     StatePose2D,
 )
