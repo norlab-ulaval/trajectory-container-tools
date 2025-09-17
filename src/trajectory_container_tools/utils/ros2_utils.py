@@ -84,6 +84,8 @@ def convert_timestamp_from_rosbag_message(
 def rosbag_topic_time_to_timestamp(msg_timestamp: builtin_interfaces__msg__Time) -> int:
     NANOSECONDS_CONVERSION_CONSTANT = 10**9
 
+    assert isinstance(msg_timestamp, builtin_interfaces__msg__Time)
+
     nanoseconds = msg_timestamp.nanosec
     seconds = msg_timestamp.sec
     _timestamp = (seconds * NANOSECONDS_CONVERSION_CONSTANT) + nanoseconds
@@ -105,5 +107,7 @@ def rosbag_timestamp_to_ros_time(
 def rosbag_topic_time_to_ros_time(
     msg_timestamp: builtin_interfaces__msg__Time,
 ) -> RosTime:
+    assert isinstance(msg_timestamp, builtin_interfaces__msg__Time)
+
     _timestamp = RosTime(seconds=msg_timestamp.sec, nanoseconds=msg_timestamp.nanosec)
     return _timestamp

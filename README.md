@@ -105,8 +105,8 @@ interface for handling trajectory data across different formats and sources.
 
 - Factory pattern allows dynamic creation of trajectory containers
 - Straight forward to extend with custom trajectory types and post-processing callback logic
-- Support for both single trajectories and multi-feature datasets
 - Support trajectory time-series and batching i.e., array shape `(trj_len, ...)` and `(batch_size, trj_len, ...)`
+- Support for both single feature and multi-feature datasets
 
 ### 🚀 **Research-Ready**
 
