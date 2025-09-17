@@ -348,7 +348,21 @@ Multifeature(
 
 ## Getting started
 
-### Option 1: Clone and Install with pip
+### For user
+
+#### Optiona 1: pip install from repository
+```bash
+pip install git+https://github.com/norlab-ulaval/trajectory-container-tools.git
+```
+
+#### Optiona 2: install from PyPI (when available) 
+```bash
+pip install trajectory-container-tools
+```
+
+### For developer, playing with the interactive example Jupyter notebook or using the `demo_data` 
+
+#### Option 1: Clone and Install with pip
 
 ```bash
 # Clone the repository
@@ -357,12 +371,9 @@ cd trajectory-container-tools
 
 # Install in development mode
 pip install -e .
-
-# Or install from PyPI (when available)
-pip install trajectory-container-tools
 ```
 
-### Option 2: Using DNA (Dockerized-NorLab Application)
+#### Option 2: Using DNA (Dockerized-NorLab Application)
 
 ```bash
 # Build and run the container
