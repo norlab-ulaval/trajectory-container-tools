@@ -166,10 +166,13 @@ print(trajectory)
 ##### Define your own custom data trajectory container
 
 ```python
-from trajectory_container_tools.trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
+import numpy as np
+from trajectory_container_tools.trj_dataclasses.base_trajectory_dataclass import (
+    BaseTrajectoryDataclass,
+)
 
 
-class CustomStatePose2D(BaseTrajectoryDataclass)
+class CustomStatePose2D(BaseTrajectoryDataclass):
     x: np.ndarray
     y: np.ndarray
     yaw: np.ndarray
@@ -301,7 +304,7 @@ from trajectory_container_tools.dataframe_to_tct import aggregate_multiple_featu
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import StatePose2D
 
 trajectory_from_dataframe = aggregate_multiple_features_from_dataframe(
-        dataset_snow,
+        mock_dataset_snow,
         dataset_info="Marmote Mont-Morency 1 Dec 2025",
         features_config={
                 'icp_vel': StatePose2D,
