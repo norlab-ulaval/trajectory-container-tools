@@ -73,10 +73,9 @@ Maintainer <a href="https://github.com/RedLeader962">RedLeader962</a>
 ## What it does
 
 **Trajectory Container Tools (TCT)** is a Python library designed to simplify the management and analysis of trajectory
-data from various sources. 
+data from various sources.
 
 ### 🎯 High-Level Overview
-
 
 TCT provides:
 
@@ -112,7 +111,7 @@ interface for handling trajectory data across different formats and sources.
 
 - Built for robotics and AI research workflows
 - Integration with common research tools (pandas, matplotlib, numpy, ROS2)
-- Reliable → TCT has decent codecoverage and is periodicaly tested in CI 
+- Reliable → TCT as decent codecoverage and is periodicaly tested in CI
 
 ### ✅ **Data Validation**
 
@@ -136,15 +135,15 @@ Common use cases:
 import numpy as np
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
     StatePose2D,
-)
+    )
 
 trajectory = StatePose2D(
-    feature_name="odom pose",
-    x=np.arange(100, dtype=float),
-    y=np.arange(100, dtype=float),
-    yaw=np.arange(100, dtype=float),
-    timesteps_indices=np.arange(100, dtype=int),
-)
+        feature_name="odom pose",
+        x=np.arange(100, dtype=float),
+        y=np.arange(100, dtype=float),
+        yaw=np.linspace(start=0, stop=360, num=100, dtype=np.float16),
+        timesteps_indices=np.arange(100, dtype=int),
+        )
 
 print(trajectory)
 
@@ -159,8 +158,34 @@ print(trajectory)
                 timesteps_indices: (ndarray) shape (100,) range 0 ⟶ 99
                 x: (ndarray) shape (100,) range 0.0 ⟶ 99.0
                 y: (ndarray) shape (100,) range 0.0 ⟶ 99.0
-                yaw: (ndarray) shape (100,) range 0.0 ⟶ 99.0
+                yaw: (ndarray) shape (100,) range 0.0 ⟶ 360.0
           )
+```
+
+##### Trajectory containers are trajectory wide iterable object which support indexing and slicing
+
+```python
+# Trajectory timesteps interval t=10 to t=15
+print(trajectory[10:15])
+```
+
+```terminaloutput
+          StatePose2D(
+             feature_name: odom pose
+             trajectory_len: 5
+             transposed: False
+             dimensions:
+                timesteps_indices: (ndarray) shape (5,) range 10 ⟶ 14
+                x: (ndarray) shape (5,) range 10.0 ⟶ 14.0
+                y: (ndarray) shape (5,) range 10.0 ⟶ 14.0
+                yaw: (ndarray) shape (5,) range 36.375 ⟶ 50.90625
+          )       
+```
+
+```python
+# Access last yaw value
+print(trajectory[-1].yaw)
+# 360
 ```
 
 ##### Define your own custom data trajectory container
