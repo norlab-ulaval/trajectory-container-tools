@@ -98,8 +98,6 @@ print(trajectory_container)
 
 ### Built-in Message Types
 
-#### Navigation Messages
-
 ```python
 from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import NavMsgsOdometry
 
@@ -109,10 +107,11 @@ features_config = {
         }
 ```
 
-#### Custom Messages
+### Dynamicaly Created Custom Messages Types
+
 ```python
 features_config = {
-    '/robot_pose': ('PoseStamped', 'x', 'y', 'z', 'qx', 'qy', 'qz', 'qw')
+    '/robot_pose': ('PoseCustom', 'x', 'y', 'z', 'qx', 'qy', 'qz', 'qw')
 }
 ```
 
