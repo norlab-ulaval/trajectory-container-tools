@@ -104,9 +104,9 @@ interface for handling trajectory data across different formats and sources.
 ### 🔧 **Flexible & Extensible**
 
 - Factory pattern allows dynamic creation of trajectory containers
-- Easy to extend with custom trajectory types and post-processing callback logic
-- Support for both single trajectories and multi-feature datasets
+- Straight forward to extend with custom trajectory types and post-processing callback logic
 - Support trajectory time-series and batching i.e., array shape `(trj_len, ...)` and `(batch_size, trj_len, ...)`
+- Support for both single feature and multi-feature datasets
 
 ### 🚀 **Research-Ready**
 
@@ -133,6 +133,7 @@ Common use cases:
 #### From direct instantiation
 
 ```python
+import numpy as np
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
     StatePose2D,
 )
@@ -165,10 +166,13 @@ print(trajectory)
 ##### Define your own custom data trajectory container
 
 ```python
-from trajectory_container_tools.trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
+import numpy as np
+from trajectory_container_tools.trj_dataclasses.base_trajectory_dataclass import (
+    BaseTrajectoryDataclass,
+)
 
 
-class CustomStatePose2D(BaseTrajectoryDataclass)
+class CustomStatePose2D(BaseTrajectoryDataclass):
     x: np.ndarray
     y: np.ndarray
     yaw: np.ndarray
@@ -300,7 +304,7 @@ from trajectory_container_tools.dataframe_to_tct import aggregate_multiple_featu
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import StatePose2D
 
 trajectory_from_dataframe = aggregate_multiple_features_from_dataframe(
-        dataset_snow,
+        mock_dataset_snow,
         dataset_info="Marmote Mont-Morency 1 Dec 2025",
         features_config={
                 'icp_vel': StatePose2D,
@@ -344,7 +348,21 @@ Multifeature(
 
 ## Getting started
 
-### Option 1: Clone and Install with pip
+### For user
+
+#### Optiona 1: pip install from repository
+```bash
+pip install git+https://github.com/norlab-ulaval/trajectory-container-tools.git
+```
+
+#### Optiona 2: install from PyPI (when available) 
+```bash
+pip install trajectory-container-tools
+```
+
+### For developer, playing with the interactive example Jupyter notebook or using the `demo_data` 
+
+#### Option 1: Clone and Install with pip
 
 ```bash
 # Clone the repository
@@ -353,12 +371,9 @@ cd trajectory-container-tools
 
 # Install in development mode
 pip install -e .
-
-# Or install from PyPI (when available)
-pip install trajectory-container-tools
 ```
 
-### Option 2: Using DNA (Dockerized-NorLab Application)
+#### Option 2: Using DNA (Dockerized-NorLab Application)
 
 ```bash
 # Build and run the container
