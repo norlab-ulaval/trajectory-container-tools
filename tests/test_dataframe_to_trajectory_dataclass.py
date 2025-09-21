@@ -21,7 +21,7 @@ def setup_panda_dataframe() -> pd.DataFrame:
     slip_dataset_all_path = os.path.join(
         "data",
         "repository_data",
-        "demo_data",
+        "tests_data",
         "dataframe_test_data",
         "marmotte",
         "ga_hard_snow_25_01_a",

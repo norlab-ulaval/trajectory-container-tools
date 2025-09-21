@@ -32,14 +32,14 @@ def setup_rosbag_from_external_data_dir() -> Tuple[Path, Optional[int], Optional
     # # BAG = "2024-03-21_15-35-28" # ★ 179236 timesteps
     # rosbag_path = os.path.join( "data", "shared_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
 
-    # .... Path to ROS bag in 'demo_data' directory ...............................................
+    # .... Path to ROS bag in 'tests_data' directory ...............................................
 
     BAG = "2024-03-21_14-52-35-filtered"
     # BAG = "2024-03-21_14-52-35-offending-timestamps"
     rosbag_start = None
     rosbag_stop = None
     rosbag_path = os.path.join(
-        "data", "repository_data", "demo_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
+        "data", "repository_data", "tests_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
     )
 
     return (

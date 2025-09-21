@@ -115,7 +115,7 @@ if __name__ == "__main__":
         "data", "shared_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
     )
 
-    # target_rosbag_path = os.path.join("data", "repository_data", "demo_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
+    # target_rosbag_path = os.path.join("data", "repository_data", "tests_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
     target_rosbag_path = os.path.join(
         "data", "shared_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
     )
