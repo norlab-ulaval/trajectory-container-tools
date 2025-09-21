@@ -56,6 +56,7 @@ def check_rosbag_path_and_show_available_topics(rosbag_path: Union[str, Path]) -
         assert os.path.exists(rosbag_path)
     except AssertionError:
         dn_project_path = os.getenv("DN_PROJECT_PATH")
+
         if os.path.exists(dn_project_path):
             # Case running in a Dockerized-NorLab docker container
             rosbag_path = os.path.join(dn_project_path, rosbag_path)

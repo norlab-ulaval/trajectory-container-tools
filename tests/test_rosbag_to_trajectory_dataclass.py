@@ -49,7 +49,7 @@ def setup_rosbag_path(offending: bool = False) -> Tuple[Path, str]:
         BAG = "2024-03-21_14-52-35-filtered"
 
     rosbag_path = os.path.join(
-        "demo_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
+        "data", "repository_data", "demo_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
     )
 
     return check_rosbag_path_and_show_available_topics(rosbag_path), BAG

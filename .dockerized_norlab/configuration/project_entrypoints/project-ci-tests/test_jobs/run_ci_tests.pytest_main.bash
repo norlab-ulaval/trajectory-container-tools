@@ -4,13 +4,14 @@
 PYTEST_FLAG=()
 
 # ....Required flags...............................................................................
-PYTEST_FLAG+=(--rootdir="${DN_PROJECT_PATH}/tests")
+PYTEST_FLAG+=(--rootdir="${DN_PROJECT_PATH}")
 
 # ....Optional flags...............................................................................
 PYTEST_FLAG+=(--config-file="${DN_PROJECT_PATH}/tests/pytest.ini")
 # pytest-xdist is configured through the pytest.ini file
 
 PYTEST_FLAG+=(--reruns 5 --reruns-delay 2.5)
+
 #PYTEST_FLAG+=(--verbose)
 #PYTEST_FLAG+=(--exitfirst) # Exit instantly on first error or failed test
 
