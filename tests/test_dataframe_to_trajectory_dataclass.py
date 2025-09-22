@@ -16,11 +16,12 @@ from trajectory_container_tools.trj_dataclasses import (
     abstract_trajectory_dataclass as atd,
 )
 
-
 @pytest.fixture(scope="function")
 def setup_panda_dataframe() -> pd.DataFrame:
     slip_dataset_all_path = os.path.join(
-        "demo_data",
+        "data",
+        "repository_data",
+        "tests_data",
         "dataframe_test_data",
         "marmotte",
         "ga_hard_snow_25_01_a",

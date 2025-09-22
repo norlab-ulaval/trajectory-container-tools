@@ -1,0 +1,26 @@
+# Repository Data 
+
+## Directory purpose 
+Data required by source code or tests code logic.
+
+## Use cases 
+Data used for integration tests, benchmarking data, demo data published with a release, ...
+
+## Properties
+- Vcs tracked data
+- Rsync to remote host
+- Docker read-and-write volume in develop, copied otherwise 
+- Its the only data directory available both at build time and runtime
+
+## Notes
+
+- ★ Dockerized-NorLab project application (DNA) **required** directory.
+
+## See Also
+ 
+- [Data Directories README](../README.md)
+- [External Data Directory README](../external_data/README.md)
+- [Shared Data Directory README](../shared_data/README.md)
+- [Artifact Directory README](../../artifact/README.md)
+- [DNA documentation](https://github.com/norlab-ulaval/dockerized-norlab-project?tab=readme-ov-file#documentation) on
+  _Project Initialization & Configuration_, section _Directory Structure_ for details.

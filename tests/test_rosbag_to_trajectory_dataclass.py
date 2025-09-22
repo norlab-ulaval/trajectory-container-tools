@@ -38,7 +38,7 @@ class RosBagConfig:
 
 
 def setup_rosbag_path(offending: bool = False) -> Tuple[Path, str]:
-    """Path to ROS bag in 'demo_data' directory
+    """Path to ROS bag in 'tests_data' directory
 
     Note: offending timestamps are in the /teleop topic messages
     """
@@ -49,7 +49,7 @@ def setup_rosbag_path(offending: bool = False) -> Tuple[Path, str]:
         BAG = "2024-03-21_14-52-35-filtered"
 
     rosbag_path = os.path.join(
-        "demo_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
+        "data", "repository_data", "tests_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
     )
 
     return check_rosbag_path_and_show_available_topics(rosbag_path), BAG

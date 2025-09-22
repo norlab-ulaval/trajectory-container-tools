@@ -385,7 +385,7 @@ pip install git+https://github.com/norlab-ulaval/trajectory-container-tools.git
 pip install trajectory-container-tools
 ```
 
-### For developer, playing with the interactive example Jupyter notebook or using the `demo_data` 
+### For developer, playing with the interactive example Jupyter notebook or using the `tests_data` 
 
 #### Option 1: Clone and Install with pip
 

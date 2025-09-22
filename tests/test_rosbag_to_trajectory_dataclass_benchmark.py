@@ -18,7 +18,7 @@ from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
 
 @pytest.fixture(scope="function")
 def setup_rosbag_from_external_data_dir() -> Tuple[Path, Optional[int], Optional[int]]:
-    # .... Path to ROS bag in 'external_data' directory ...........................................
+    # .... Path to ROS bag in 'shared_data' directory ...........................................
 
     # BAG = "2024-03-21_12-19-00" # small circle
     # BAG = "2024-03-21_12-23-53" # medium spiral
@@ -30,16 +30,16 @@ def setup_rosbag_from_external_data_dir() -> Tuple[Path, Optional[int], Optional
     # # BAG = "2024-03-21_15-14-09" # ★★ 63063 timesteps
     # # BAG = "2024-03-21_15-26-13" # ★ 35128 timesteps
     # # BAG = "2024-03-21_15-35-28" # ★ 179236 timesteps
-    # rosbag_path = os.path.join( "external_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
+    # rosbag_path = os.path.join( "data", "shared_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
 
-    # .... Path to ROS bag in 'demo_data' directory ...............................................
+    # .... Path to ROS bag in 'tests_data' directory ...............................................
 
     BAG = "2024-03-21_14-52-35-filtered"
     # BAG = "2024-03-21_14-52-35-offending-timestamps"
     rosbag_start = None
     rosbag_stop = None
     rosbag_path = os.path.join(
-        "demo_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
+        "data", "repository_data", "tests_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
     )
 
     return (
