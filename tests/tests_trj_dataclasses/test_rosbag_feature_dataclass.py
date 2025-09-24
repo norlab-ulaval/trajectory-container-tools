@@ -17,6 +17,7 @@ from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
     SensorMsgsImu,
     SensorMsgsImuFlat,
     Tf2MsgsTFMessage,
+    TransformStamped,
     Twist,
     TwistWithCovariance,
 )
@@ -90,11 +91,15 @@ class TestTrajectoryDataclassFromROSBagCase:
         md = mock_ROSbag_2_trj_DC
         dc_ = Tf2MsgsTFMessage(
             feature_name="/tf",
-            header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
-            childFrameId="odom",
-            transform=Transform(
-                translation=Vector3(x=md.a, y=md.a, z=md.a),
-                rotation=Quaternion(x=md.a, y=md.a, z=md.a, w=md.a),
+            transforms=TransformStamped(
+                header=Header(
+                    frame_id=md.header.frame_id, timestamps=md.header.timestamps
+                ),
+                childFrameId="odom",
+                transform=Transform(
+                    translation=Vector3(x=md.a, y=md.a, z=md.a),
+                    rotation=Quaternion(x=md.a, y=md.a, z=md.a, w=md.a),
+                ),
             ),
         )
         print(dc_)

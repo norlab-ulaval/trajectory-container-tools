@@ -263,7 +263,15 @@ class AckermannMsgsAckermannDriveStampedFlat(RosStampedDataclass):
 
 # .... TF messages ................................................................................
 @dataclass()
-class Tf2MsgsTFMessage(RosStampedDataclass):
+class TransformStamped(NestedBaseTrajectoryDataclass):
+    # Compatible ros2 message interface: geometry_msgs/msg/TransformStamped
+    header: Header
+    childFrameId: str
+    transform: Transform
+
+
+@dataclass()
+class Tf2MsgsTFMessage(BaseTrajectoryDataclass):
     """Represents a message used in coordinate transformation tasks in ROS.
 
     Compatible ros2 message interface: tf2_msgs/msg/TFMessage
@@ -272,15 +280,14 @@ class Tf2MsgsTFMessage(RosStampedDataclass):
     rotation) for a specific frame in the ROS ecosystem. It is used specifically
     to store messages that relate to frame IDs and their associated transformations.
 
-    :ivar childFrameId: Identifier for the child frame to which the transformation applies.
-    :type childFrameId: str
-    :ivar transform: Transformation data for the specified child frame, containing
-        translation and rotation information.
-    :type transform: Transform
+    :ivar transforms: Stamped Transformation data
+    :type transforms: TransformStamped
     """
 
-    childFrameId: str
-    transform: Transform
+    transforms: TransformStamped
+
+    def on_exit_post_init_callback(self) -> None:
+        self.set_dynamic_field("header", self.transforms.header)
 
 
 # .... Sensor messages ............................................................................
