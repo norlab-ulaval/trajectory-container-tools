@@ -6,6 +6,7 @@ from rclpy.time import Time as ROSTime
 from trajectory_container_tools.utils.temporal_tools.timestamps import (
     TimestampCausalOrderingError,
     Timestamps,
+    compute_delta_timestamp,
     timestamp_causal_ordering_sanity_check,
     to_seconds_nanoseconds,
 )
@@ -67,6 +68,7 @@ class TestTimestamps:
         print(ts)
 
         assert isinstance(ts.stamps, np.ndarray)
+        assert isinstance(ts.delta_stamps, np.ndarray)
 
     def test_instanciation_pre_condition_check(self, setup_mock_timestamps):
         # Case input array is empty
@@ -91,6 +93,12 @@ class TestTimestamps:
         ts = Timestamps(stamps=mock_ts_array)
 
         assert np.allclose(ts.stamps, mock_ts_array)
+
+    def test_delta_stamps_property_getter(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+
+        assert ts.delta_stamps.size == mock_ts_array.size
 
     def test_stamps_shape(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
@@ -164,3 +172,14 @@ class TestTimestampCausalOrderingSanityCheck:
             f"    Number of offending timestamps 2/10\n\n"
         )
         assert expected_error_msg in exc_info.value.args[0]
+
+
+class TestComputeDeltaTimestamp:
+
+    def test_base_case(self):
+        t_time_space = np.arange(100) * 100000000 # Mock timestamp with uniform delta
+        t_time_space += 1711038330 # Make trajectory timestamp start at arbitrary time
+        t_dt_space = np.ones(100) * 100000000 # Expected delta
+        t_dt_space[0] = 0 # Delta array first element should be 0
+        delta_time = compute_delta_timestamp(t_time_space)
+        assert delta_time == pytest.approx(t_dt_space)
