@@ -8,19 +8,20 @@ from typing import List, Optional, Union
 from tqdm import tqdm
 
 from trajectory_container_tools import check_rosbag_path_and_show_available_topics
+from trajectory_container_tools.rosbag_to_tct import check_rosbag_path
 from trajectory_container_tools.utils.ros2_non_native_msg import (
     register_ros2_non_native_msg,
-)
+    )
 from trajectory_container_tools.utils.ros2_utils import get_rosbag_typestore_auto_distro
 
 
 def create_filtered_rosbag(
-    input_rosbag_path: Union[str, Path],
-    output_rosbag_path: Union[str, Path],
-    selected_topics: List[str],
-    start: Optional[int] = None,
-    stop: Optional[int] = None,
-) -> Path:
+        input_rosbag_path: Union[str, Path],
+        output_rosbag_path: Union[str, Path],
+        selected_topics: List[str],
+        start: Optional[int] = None,
+        stop: Optional[int] = None,
+        ) -> Path:
     """
     Create a smaller rosbag by filtering topics and timestamp intervals.
 
@@ -50,13 +51,13 @@ def create_filtered_rosbag(
     with Reader(input_path) as reader:
         # Filter connections for selected topics
         selected_connections = [
-            conn for conn in reader.connections if conn.topic in selected_topics
-        ]
+                conn for conn in reader.connections if conn.topic in selected_topics
+                ]
 
         if not selected_connections:
             raise ValueError(
-                f"None of the specified topics {selected_topics} found in rosbag"
-            )
+                    f"None of the specified topics {selected_topics} found in rosbag"
+                    )
 
         print(f"[TCT] Creating filtered rosbag with {len(selected_connections)} topics")
         for conn in selected_connections:
@@ -67,12 +68,12 @@ def create_filtered_rosbag(
             connection_map = {}
             for connection in selected_connections:
                 conn_id = writer.add_connection(
-                    connection.topic,
-                    connection.msgtype,
-                    typestore=typestore,
-                    # serialization_format=connection.serialization_format,
-                    # offered_qos_profiles=connection.offered_qos_profiles
-                )
+                        connection.topic,
+                        connection.msgtype,
+                        typestore=typestore,
+                        # serialization_format=connection.serialization_format,
+                        # offered_qos_profiles=connection.offered_qos_profiles
+                        )
                 connection_map[connection.id] = conn_id
 
             # Copy filtered messages
@@ -80,11 +81,11 @@ def create_filtered_rosbag(
             print("[TCT] Copying messages...")
 
             for connection, timestamp, rawdata in tqdm(
-                reader.messages(
-                    connections=selected_connections, start=start, stop=stop
-                ),
-                desc="[TCT] Writing filtered messages",
-            ):
+                    reader.messages(
+                            connections=selected_connections, start=start, stop=stop
+                            ),
+                    desc="[TCT] Writing filtered messages",
+                    ):
                 if connection.id in connection_map:
                     writer.write(connection_map[connection.id], timestamp, rawdata)
                     message_count += 1
@@ -112,40 +113,26 @@ if __name__ == "__main__":
     # BAG = "2024-03-21_15-26-13" # ★ 35128 timesteps
     # BAG = "2024-03-21_15-35-28" # ★ 179236 timesteps
     rosbag_path = os.path.join(
-        "data", "shared_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
-    )
+            "data", "shared_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
+            )
 
-    # target_rosbag_path = os.path.join("data", "repository_data", "tests_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG)
-    target_rosbag_path = os.path.join(
-        "data", "shared_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
-    )
+    target_destination = os.path.join("data", "repository_data")
+    target_destination = check_rosbag_path(target_destination)
+    target_rosbag_path = os.path.join(target_destination, "tests_data",
+                                      "rosbag-vaul-f110-grand-salon-raw-msg", f"{BAG}-filtered")
 
+    # .............................................................................................
     rosbag_path = check_rosbag_path_and_show_available_topics(rosbag_path)
 
     create_filtered_rosbag(
-        input_rosbag_path=rosbag_path,
-        output_rosbag_path=f"{target_rosbag_path}-with-scans",
-        selected_topics=[
-            "/teleop",
-            "/odom",
-            "/sensors/imu/raw",
-            "/scan",
-            # "/robot_description",
-        ],
-        start=rosbag_start,
-        stop=rosbag_stop,
-    )
-# "/odom",
-# "/odometry/filtered",
-# "/tf",
-# "/scan",
-# "/teleop",
-# "/sensors/imu/raw",
-# "/ackermann_cmd",
-# "/pf/pose/odom",
-
-# /teleop: ackermann_msgs/msg/AckermannDriveStamped
-# /sensors/imu/raw: sensor_msgs/msg/Imu
-# /scan: sensor_msgs/msg/LaserScan
-# /robot_description: std_msgs/msg/String
-# /odom: nav_msgs/msg/Odometry
+            input_rosbag_path=rosbag_path,
+            output_rosbag_path=target_rosbag_path,
+            selected_topics=[
+                    "/teleop",
+                    "/odom",
+                    "/sensors/imu/raw",
+                    "/scan",
+                    ],
+            start=rosbag_start,
+            stop=rosbag_stop,
+            )
