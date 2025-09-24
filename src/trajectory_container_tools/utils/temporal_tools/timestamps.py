@@ -24,6 +24,7 @@ class Timestamps:
     """
 
     _stamps: np.ndarray[Any, np.dtype[int]]
+    _delta_stamps: np.ndarray[Any, np.dtype[int]]
     _trajectory_len: int
     _iter_index: int = 0
 
@@ -49,10 +50,15 @@ class Timestamps:
             raise ValueError("[TCT error] stamps must be positive values")
 
         self._stamps = np.array(stamps)
+        self._delta_stamps = compute_delta_timestamp(self._stamps)
 
     @property
     def stamps(self) -> np.ndarray[Any, np.dtype[int]]:
         return self._stamps
+
+    @property
+    def delta_stamps(self) -> np.ndarray[Any, np.dtype[int]]:
+        return self._delta_stamps
 
     @property
     def shape(self) -> Tuple:
@@ -219,3 +225,8 @@ def to_seconds_nanoseconds(nanoseconds: int) -> Tuple[int, int]:
         nanoseconds // NANOSECONDS_CONVERSION_CONSTANT,
         nanoseconds % NANOSECONDS_CONVERSION_CONSTANT,
     )
+
+def compute_delta_timestamp(time_space: np.ndarray) -> np.ndarray:
+    assert time_space.ndim == 1
+    delta_time = np.ediff1d(time_space, to_begin=0)
+    return delta_time
