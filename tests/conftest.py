@@ -210,8 +210,8 @@ def setup_rosbag_six_topics_filtered():
 
     ros_bag_config = RosBagConfig(
         bag_name=bag_name,
-        ts_fast_forward=1e8,
-        ts_window=2e8,
+        ts_fast_forward=None,
+        ts_window=None,
         bag_path=bag_path,
         feature_config={
             "/odom": NavMsgsOdometry,
@@ -230,8 +230,8 @@ def setup_rosbag_six_topics_offending_timestamps():
 
     ros_bag_config = RosBagConfig(
         bag_name=bag_name,
-        ts_fast_forward=1e8,
-        ts_window=2e8,
+        ts_fast_forward=None,
+        ts_window=None,
         bag_path=bag_path,
         feature_config={
             "/pf/pose/odom": NavMsgsOdometry,

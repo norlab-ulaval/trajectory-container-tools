@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-from rosbags.highlevel import AnyReader
 from rosbags.rosbag2 import Reader, Writer
 from typing import List, Optional, Union
 
