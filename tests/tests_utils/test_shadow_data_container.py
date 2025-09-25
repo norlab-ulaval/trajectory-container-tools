@@ -1,4 +1,5 @@
 # coding=utf-8
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -10,10 +11,14 @@ from trajectory_container_tools.utils.shadow_data_container import (
     instanciate_shadow_data_container,
 )
 from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
-    NavMsgsOdometryFlat,
     Pose,
-    PoseWithCovariance,
+    RosDataclass,
 )
+
+
+@dataclass()
+class MockListOfNestedDataclass(RosDataclass):
+    list_of_point: list[Point]
 
 
 class TestInstanciateShadowDataContainer:
@@ -54,3 +59,21 @@ class TestInstanciateShadowDataContainer:
         }
 
         # print(sdc)
+
+    def test_case_list_of_type(self):
+        sdc = instanciate_shadow_data_container(MockListOfNestedDataclass)
+
+        print(sdc)
+
+        assert isinstance(sdc, dict)
+        assert sdc == {
+            "type": MockListOfNestedDataclass,
+            "list_of_point": [
+                {
+                    "type": Point,
+                    "x": {"data": [], "type": np.ndarray},
+                    "y": {"data": [], "type": np.ndarray},
+                    "z": {"data": [], "type": np.ndarray},
+                },
+            ],
+        }

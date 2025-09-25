@@ -3,7 +3,8 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from .abstract_trajectory_dataclass import AbstractTrajectoryDataclass
+from .abstract_trajectory_dataclass import AbstractNoTrajectoryDataclass, \
+    AbstractTrajectoryDataclass
 
 
 @dataclass()
@@ -63,3 +64,7 @@ class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
 
     feature_name: str = field(default=None, init=False)
     _nested: str = field(default=True, init=False)
+
+@dataclass()
+class BaseNoTrajectoryDataclass(AbstractNoTrajectoryDataclass):
+    pass

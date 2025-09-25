@@ -1,5 +1,5 @@
 # coding=utf-8
-from typing import Type, Union
+from typing import Any, Union
 
 import numpy as np
 
@@ -41,23 +41,31 @@ def fix_sequence_ordering_base_on_timestamps(
 
 def _fix_container_array_timestamps(
     data_container_type_: Union[
-        type[RosStampedDataclass], type[NestedBaseTrajectoryDataclass]
+        type[RosStampedDataclass], type[NestedBaseTrajectoryDataclass], type[Any]
     ],
     sorted_ts_idx: np.ndarray,
     shadow_data_container: dict,
 ):
     for each_property_name in data_container_type_.get_dimension_names():
         each_property = shadow_data_container[each_property_name]
-        if not each_property.get_dimension_type(each_property_name):
+        dimension_type, is_list_of_type = each_property.get_dimension_type(each_property_name)
+        if is_list_of_type:
+            raise NotImplementedError("(NICE TO HAVE) ToDo: support list of type (ref TCT-61)")
+
+        if not dimension_type:
             return shadow_data_container
 
         if isinstance(each_property, np.ndarray):
             shadow_data_container[each_property_name] = each_property[sorted_ts_idx]
         elif isinstance(each_property, NestedBaseTrajectoryDataclass):
+            dimension_type, is_list_of_type = each_property.get_dimension_type(each_property_name)
+            if is_list_of_type:
+                raise NotImplementedError(
+                    "(NICE TO HAVE) ToDo: support list of type (ref TCT-61)"
+                )
+
             shadow_data_container[each_property_name] = _fix_container_array_timestamps(
-                data_container_type_=each_property.get_dimension_type(
-                    each_property_name
-                ),
+                data_container_type_=dimension_type,
                 sorted_ts_idx=sorted_ts_idx,
                 shadow_data_container=shadow_data_container[each_property_name],
             )

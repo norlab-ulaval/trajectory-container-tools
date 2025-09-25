@@ -1,6 +1,6 @@
 # coding=utf-8
 from dataclasses import dataclass, make_dataclass
-from typing import Tuple, Type, Union
+from typing import Tuple, Union
 
 import numpy as np
 
