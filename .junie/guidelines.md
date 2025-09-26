@@ -68,5 +68,3 @@ See A2G general guidelines for complete procedures and requirements.
 ## Repository Specific Additional Guidelines
 
 Proceed with _AI operator_ instructions
-
-#

@@ -1,4 +1,5 @@
 # A2G Core Configuration
+
 A2G:
   super_project: "trajectory-container-tools"
   workflow: "supervised"  # supervised | autonomous
