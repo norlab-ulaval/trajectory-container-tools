@@ -1,0 +1,70 @@
+rosbag2_bagfile_information:
+  compression_format: ''
+  compression_mode: ''
+  custom_data: null
+  duration:
+    nanoseconds: 17265939007
+  files:
+  - duration:
+      nanoseconds: 17265939007
+    message_count: 4920
+    path: rosbag2_2023_09_24-20_30_12-filtered-short.db3
+    starting_time:
+      nanoseconds_since_epoch: 1695601812726547969
+  message_count: 4920
+  relative_file_paths:
+  - rosbag2_2023_09_24-20_30_12-filtered-short.db3
+  ros_distro: rosbags
+  starting_time:
+    nanoseconds_since_epoch: 1695601812726547969
+  storage_identifier: sqlite3
+  topics_with_message_count:
+  - message_count: 857
+    topic_metadata:
+      name: /sensors/imu
+      offered_qos_profiles: []
+      serialization_format: cdr
+      type: vesc_msgs/msg/VescImuStamped
+      type_description_hash: 
+        RIHS01_21704395b4b39c25e5083fe01a32613c772e17591da649ac746189ee6b07c93e
+  - message_count: 691
+    topic_metadata:
+      name: /scan
+      offered_qos_profiles: []
+      serialization_format: cdr
+      type: sensor_msgs/msg/LaserScan
+      type_description_hash: 
+        RIHS01_64c191398013af96509d518dac71d5164f9382553fce5c1f8cca5be7924bd828
+  - message_count: 783
+    topic_metadata:
+      name: /teleop
+      offered_qos_profiles: []
+      serialization_format: cdr
+      type: ackermann_msgs/msg/AckermannDriveStamped
+      type_description_hash: 
+        RIHS01_48ca7612a08d3bb72744fd98b71b7cf2ea24c6ad50fa4e1aa0bbad963c90d8cf
+  - message_count: 864
+    topic_metadata:
+      name: /odom
+      offered_qos_profiles: []
+      serialization_format: cdr
+      type: nav_msgs/msg/Odometry
+      type_description_hash: 
+        RIHS01_3cc97dc7fb7502f8714462c526d369e35b603cfc34d946e3f2eda2766dfec6e0
+  - message_count: 866
+    topic_metadata:
+      name: /tf
+      offered_qos_profiles: []
+      serialization_format: cdr
+      type: tf2_msgs/msg/TFMessage
+      type_description_hash: 
+        RIHS01_e369d0f05a23ae52508854b66f6aa0437f3449d652e8cbf22d5abe85d020f087
+  - message_count: 859
+    topic_metadata:
+      name: /sensors/imu/raw
+      offered_qos_profiles: []
+      serialization_format: cdr
+      type: sensor_msgs/msg/Imu
+      type_description_hash: 
+        RIHS01_7d9a00ff131080897a5ec7e26e315954b8eae3353c3f995c55faf71574000b5b
+  version: 9

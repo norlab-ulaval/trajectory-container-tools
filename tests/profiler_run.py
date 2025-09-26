@@ -58,9 +58,6 @@ def profiler_run():
     # ..............................................................................................
     detect_docker_cpu_limits()
 
-    # Register non-native ros message
-    register_ros2_non_native_msg()
-
     rosbag_path = check_rosbag_path_and_show_available_topics(rosbag_path)
 
     print(

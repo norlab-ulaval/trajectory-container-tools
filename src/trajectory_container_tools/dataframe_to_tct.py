@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 import pandas as pd
-from typing import Dict, Tuple, Type, Union
+from typing import Dict, Tuple, Union
 from dataclasses import fields as fields, make_dataclass
 
 from .utils.typing import MultifeatureTrajectoryDataclass, TrajectoryDataclass

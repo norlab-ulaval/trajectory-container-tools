@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 from dataclasses import make_dataclass
-from typing import Any, Dict, Optional, Tuple, Type, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 import numpy as np
 
@@ -11,30 +11,32 @@ from rosbags.typesys.store import Typestore
 
 from .trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
-    )
+)
 from .trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
 from .trj_dataclasses.ros2_primitive_dataclass import Header
 from .trj_dataclasses.ros2_feature_dataclass import (
     NavMsgsOdometry,
+    NestedRosStampedDataclass,
+    RosDataclass,
     RosStampedDataclass,
-    )
+)
 from .utils.factory import (
     parse_to_feature_dataclass,
-    )
+)
 from .utils.general import (
     camelcase_to_snake_case,
     extract_class_name_from_type,
-    setup_progressbar,
-    )
+    setup_progressbar, dn_validate_path,
+)
 from .utils.ros2_non_native_msg import register_ros2_non_native_msg
 from .utils.ros2_utils import (
     get_rosbag_typestore_auto_distro,
     rosbag_topic_time_to_timestamp,
-    )
+)
 from .utils.shadow_data_container import (
     instanciate_shadow_data_container,
     post_process_shadown_data_container,
-    )
+)
 from .utils.temporal_tools.timestamps import TimestampCausalOrderingError, Timestamps
 from .utils.typing import MultifeatureTrajectoryDataclass, ShadowDataContainer
 
@@ -50,7 +52,7 @@ def check_rosbag_path_and_show_available_topics(rosbag_path: Union[str, Path]) -
     :param rosbag_path: Path to the ROS bag file (absolute or relative).
     :return: the real ros bag path if the input was a relative path
     """
-    rosbag_path = check_rosbag_path(rosbag_path)
+    rosbag_path = dn_validate_path(rosbag_path)
 
     # .... Introspect ros bag contents ............................................................
     print(f"ROS bag path: {rosbag_path}\n")
@@ -61,7 +63,8 @@ def check_rosbag_path_and_show_available_topics(rosbag_path: Union[str, Path]) -
         print(
             f"Rosbag time:\n  start: {reader.start_time} (ns)\n"
             f"  end: {reader.end_time} (ns)\n"
-            f"  duration: {reader.duration} (ns)\n")
+            f"  duration: {reader.duration} (ns)\n"
+        )
         print("Available topics:")
         for connection in reader.connections:
             print(f"  {connection.topic}: {connection.msgtype}")
@@ -69,45 +72,14 @@ def check_rosbag_path_and_show_available_topics(rosbag_path: Union[str, Path]) -
     return Path(rosbag_path)
 
 
-def check_rosbag_path(rosbag_path: str | Path) -> str:
-    """
-    Validates and resolves the path to a specified ROS bag file.
-
-    This function ensures that the given file path exists. If the path is not directly
-    accessible, it attempts to resolve it within the context of a "Dockerized-NorLab" (DN)
-    environment by combining the path with environment variable `DN_PROJECT_PATH`.
-
-    Handle cases: pycharm-born dna run and shell-born dna run
-
-    :param rosbag_path: The relative or absolute path to the ROS bag file.
-    :return: An absolute and resolved path to the ROS bag file.
-    :raises AssertionError: If the provided or resolved file path does not exist.
-    """
-    try:
-        assert os.path.exists(rosbag_path)
-    except AssertionError:
-        dn_project_path = os.getenv("DN_PROJECT_PATH")
-
-        if os.path.exists(dn_project_path):
-            # Case running in a Dockerized-NorLab docker container
-            rosbag_path = os.path.join(dn_project_path, rosbag_path)
-
-        assert os.path.exists(
-                rosbag_path
-                ), f"[TCT] rosbag path is unreachable at {rosbag_path}"
-
-    rosbag_path = os.path.realpath(rosbag_path)
-    return rosbag_path
-
-
 def aggregate_multiple_features_from_rosbag(
-        rosbag_path: Path,
-        dataset_info: Optional[str],
-        features_config: Dict[str, Union[type[RosStampedDataclass], Tuple[str, ...]]],
-        start: Optional[int] = None,
-        stop: Optional[int] = None,
-        typestore: Optional[Typestore] = None,
-        ) -> MultifeatureTrajectoryDataclass:
+    rosbag_path: Path,
+    dataset_info: Optional[str],
+    features_config: Dict[str, Union[type[RosDataclass], type[RosStampedDataclass], Tuple[str, ...]]],
+    start: Optional[int] = None,
+    stop: Optional[int] = None,
+    typestore: Optional[Typestore] = None,
+) -> MultifeatureTrajectoryDataclass:
     """Extract multiple features (i.e. topics) from a rosbag_path based on a configuration
     dictionary.
 
@@ -158,19 +130,19 @@ def aggregate_multiple_features_from_rosbag(
         # Case: features_config require parsing topic msg property
         if isinstance(feature_dataclass, tuple):
             feature_dataclass = parse_to_feature_dataclass(
-                    feature_dataclass,
-                    target_subclass=RosStampedDataclass,
-                    feature_name=feature_name,
-                    )
+                feature_dataclass,
+                target_subclass=RosStampedDataclass,
+                feature_name=feature_name,
+            )
 
         feature = extract_single_feature_from_rosbag(
-                rosbag_path=rosbag_path,
-                feature_name=feature_name,
-                data_container_type=feature_dataclass,
-                start=start,
-                stop=stop,
-                typestore=typestore,
-                )
+            rosbag_path=rosbag_path,
+            feature_name=feature_name,
+            data_container_type=feature_dataclass,
+            start=start,
+            stop=stop,
+            typestore=typestore,
+        )
 
         features_type.append((f"topic{feature_name.replace('/', '_')}", type(feature)))
         features.append(feature)
@@ -178,32 +150,32 @@ def aggregate_multiple_features_from_rosbag(
     with Reader(rosbag_path) as reader:
         feature_names = features_config.keys()
         connections = [
-                conn for conn in reader.connections if conn.topic == feature_names
-                ]
+            conn for conn in reader.connections if conn.topic == feature_names
+        ]
         bag_timestamps = []
         for _, timestamp, _ in reader.messages(
-                connections=connections, start=start, stop=stop
-                ):
+            connections=connections, start=start, stop=stop
+        ):
             bag_timestamps.append(timestamp)
 
     rosbag_multifeature = make_dataclass(
-            "multifeature",
-            bases=(AbstractMultifeatureDataclass,),
-            fields=features_type,
-            )
+        "multifeature",
+        bases=(AbstractMultifeatureDataclass,),
+        fields=features_type,
+    )
     return rosbag_multifeature(
-            dataset_info, *features, bag_timestamps=Timestamps(np.array(bag_timestamps))
-            )
+        dataset_info, *features, bag_timestamps=Timestamps(np.array(bag_timestamps))
+    )
 
 
 def extract_single_feature_from_rosbag(
-        rosbag_path: Path,
-        feature_name: str,
-        data_container_type: type[RosStampedDataclass],
-        start: Optional[int] = None,
-        stop: Optional[int] = None,
-        typestore: Optional[Typestore] = None,
-        ) -> RosStampedDataclass:
+    rosbag_path: Path,
+    feature_name: str,
+    data_container_type: Union[type[RosDataclass], type[RosStampedDataclass]],
+    start: Optional[int] = None,
+    stop: Optional[int] = None,
+    typestore: Optional[Typestore] = None,
+) -> Union[RosDataclass, RosStampedDataclass]:
     """
     Extracts a specific feature from a ROS bag file and returns it in a structured data container.
 
@@ -232,16 +204,16 @@ def extract_single_feature_from_rosbag(
     :return: An instance of the `data_container_type` containing the processed feature data.
     """
     try:
-        if not issubclass(data_container_type, RosStampedDataclass):
+        if not issubclass(data_container_type, (RosDataclass, RosStampedDataclass)):
             raise ValueError(
-                    f"[TCT error] `{data_container_type}` must be a subclass of "
-                    f"`RosStampedDataclass`"
-                    )
+                f"[TCT error] `{data_container_type}` must be a subclass of "
+                f"`RosStampedDataclass` or `RosDataclass`"
+            )
     except TypeError as e:
         raise AttributeError(
-                f"[TCT error] `{data_container_type}` must not be instanciated, just pass the "
-                f"class as attribute."
-                )
+            f"[TCT error] `{data_container_type}` must not be instanciated, just pass the "
+            f"class as attribute."
+        )
     else:
         # ... Create and initialize temporary container ...........................................
         shadow_data_container = instanciate_shadow_data_container(data_container_type)
@@ -253,56 +225,52 @@ def extract_single_feature_from_rosbag(
 
         with Reader(rosbag_path) as reader:
             connections = [
-                    conn for conn in reader.connections if conn.topic == feature_name
-                    ]
+                conn for conn in reader.connections if conn.topic == feature_name
+            ]
             selected_topic_msg_count = len(connections)
             if selected_topic_msg_count == 0:
                 raise ValueError(
-                        f"[TCT error] Topic `{feature_name}` does not exist in "
-                        f"{os.path.basename(rosbag_path)} "
-                        )
+                    f"[TCT error] Topic `{feature_name}` does not exist in "
+                    f"{os.path.basename(rosbag_path)} "
+                )
 
             print(f"[TCT] Extract single feature from rosbag › seeking {feature_name}")
 
             feature_msg_len = len(
-                    list(reader.messages(connections=connections, start=start, stop=stop))
-                    )
+                list(reader.messages(connections=connections, start=start, stop=stop))
+            )
             print(f"[TCT] Collect topic {feature_name} msg from rosbag")
             progressbar = setup_progressbar(feature_msg_len)
 
             # (NICE TO HAVE) ToDo: Move rosbag msg reader logic to recursive loop leaf (ref task
             # TCT-40)
             for connection, timestamp, rawdata in reader.messages(
-                    connections=connections, start=start, stop=stop
-                    ):
+                connections=connections, start=start, stop=stop
+            ):
                 progressbar.update(1)
 
                 msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
 
                 # ... Fetch properties from rosbag ................................................
                 shadow_data_container = _collect_properties_from_rosbag(
-                        data_container_type,
-                        feature_name,
-                        msg,
-                        timestamp,
-                        shadow_data_container,
-                        )
+                    data_container_type, feature_name, msg, shadow_data_container
+                )
 
             progressbar.close()
 
         # .... Post-process rosbag data and create data container .................................
         try:
             shadow_data_container = post_process_shadown_data_container(
-                    shadow_data_container, data_container_type, feature_name
-                    )
+                shadow_data_container, data_container_type, feature_name
+            )
 
             # noinspection PyArgumentList
             feature_instance = data_container_type(**shadow_data_container)
 
         except TimestampCausalOrderingError as e:
             error_msg = (
-                    f"Detected timestamps causal ordering violation in rosbag {feature_name} "
-                    f"topic message!\n\n{e}"
+                f"Detected timestamps causal ordering violation in rosbag {feature_name} "
+                f"topic message!\n\n{e}"
             )
             raise TimestampCausalOrderingError(error_msg)
 
@@ -310,17 +278,50 @@ def extract_single_feature_from_rosbag(
 
 
 def _collect_properties_from_rosbag(
-        data_container_type: Union[
-            type[RosStampedDataclass], type[BaseTrajectoryDataclass]
-        ],
-        feature_name: str,
-        msg: object | Any,
-        timestamp: int,
-        shadow_data_container: ShadowDataContainer,
-        ) -> ShadowDataContainer:
+    data_container_type: Union[
+        type[RosDataclass],
+        type[RosStampedDataclass],
+        type[NestedRosStampedDataclass],
+        type[BaseTrajectoryDataclass],
+    ],
+    feature_name: str,
+    msg: object | Any,
+    shadow_data_container: ShadowDataContainer,
+) -> ShadowDataContainer:
     for each_property_name in data_container_type.get_dimension_names():
         try:
-            if issubclass(shadow_data_container[each_property_name]["type"], Header):
+            if isinstance(shadow_data_container[each_property_name], list):
+                # Case list of nested container
+
+                msg_property_value = getattr(msg, each_property_name)
+                assert isinstance(msg_property_value, list)
+                assert isinstance(shadow_data_container[each_property_name], list)
+                nested_shadow_container_replicate_target_len = len(msg_property_value)
+                replicat = shadow_data_container[each_property_name][0]
+                while (
+                    len(shadow_data_container[each_property_name])
+                    < nested_shadow_container_replicate_target_len
+                ):
+                    shadow_data_container[each_property_name].append(replicat)
+                assert (
+                    len(shadow_data_container[each_property_name])
+                    == nested_shadow_container_replicate_target_len
+                ), (
+                    f"{len(shadow_data_container[each_property_name])} !="
+                    f" {nested_shadow_container_replicate_target_len}"
+                )
+
+                for idx, each in enumerate(shadow_data_container[each_property_name]):
+                    shadow_data_container[each_property_name][idx] = (
+                        _collect_properties_from_rosbag(
+                            data_container_type=each["type"],
+                            feature_name=each_property_name,
+                            msg=msg_property_value[idx],
+                            shadow_data_container=each,
+                        )
+                    )
+
+            elif issubclass(shadow_data_container[each_property_name]["type"], Header):
                 # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling non-trj data
                 if not shadow_data_container["header"]["frame_id"]["data"]:
                     shadow_data_container["header"]["frame_id"][
@@ -328,8 +329,8 @@ def _collect_properties_from_rosbag(
                     ] = msg.header.frame_id
 
                 shadow_data_container["header"]["timestamps"]["data"].append(
-                        rosbag_topic_time_to_timestamp(msg.header.stamp)
-                        )
+                    rosbag_topic_time_to_timestamp(msg.header.stamp)
+                )
             else:
                 attribute_list = str(each_property_name).split("_")
                 attribute_parent = msg
@@ -345,42 +346,42 @@ def _collect_properties_from_rosbag(
                     attribute_parent = getattr(attribute_parent, each_child)
 
                 if issubclass(
-                        shadow_data_container[each_property_name]["type"],
-                        (RosStampedDataclass, BaseTrajectoryDataclass),
-                        ):
-                    shadow_data_container[
-                        each_property_name
-                    ] = _collect_properties_from_rosbag(
-                            data_container_type=shadow_data_container[each_property_name][
-                                "type"
-                            ],
+                    shadow_data_container[each_property_name]["type"],
+                    (RosDataclass, BaseTrajectoryDataclass),
+                ):
+                    shadow_data_container[each_property_name] = (
+                        _collect_properties_from_rosbag(
+                            data_container_type=shadow_data_container[
+                                each_property_name
+                            ]["type"],
                             feature_name=each_property_name,
                             msg=attribute_parent,
-                            timestamp=timestamp,
-                            shadow_data_container=shadow_data_container[each_property_name],
-                            )
+                            shadow_data_container=shadow_data_container[
+                                each_property_name
+                            ],
+                        )
+                    )
                 elif issubclass(
-                        shadow_data_container[each_property_name]["type"],
-                        (list, np.ndarray),
-                        ):
+                    shadow_data_container[each_property_name]["type"],
+                    (list, np.ndarray),
+                ):
                     # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling trj data
                     shadow_data_container[each_property_name]["data"].append(
-                            attribute_parent
-                            )
+                        attribute_parent
+                    )
                 else:
                     # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling trj data
                     shadow_data_container[each_property_name]["data"] = attribute_parent
 
         except KeyError as e:
             raise KeyError(
-                    f"[TCT error] The property `{each_property_name}` does not exist in "
-                    f"{feature_name}. Check that property `{each_property_name}` "
-                    "in "
-                    f"{str(data_container_type)} exist in `{feature_name}`."
-                    )
+                f"[TCT error] The property `{each_property_name}` does not exist in "
+                f"{feature_name}. Check that property `{each_property_name}` "
+                f"in {str(data_container_type)} exist in `{feature_name}`."
+            )
 
     return shadow_data_container
 
 
-def _dataclass_type_is_type_name(data_container_type_: Type, type_as_str: str):
+def _dataclass_type_is_type_name(data_container_type_: type, type_as_str: str):
     return extract_class_name_from_type(data_container_type_) == type_as_str

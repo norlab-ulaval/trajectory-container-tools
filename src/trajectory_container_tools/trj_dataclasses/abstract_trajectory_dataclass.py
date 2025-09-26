@@ -1,14 +1,18 @@
 # coding=utf-8
 import abc
 import datetime
-from copy import copy, deepcopy
+from copy import deepcopy
 from dataclasses import dataclass, field, fields
 import numpy as np
-from typing import Any, List, Optional, Tuple, Type, Union
+from typing import Any, List, Optional, Tuple, Union
 
 from ..utils.temporal_tools.timestamps import Timestamps
 from ..utils.temporal_tools.timestep_indexing import timestep_indices_sanity_check
-from ..utils.general import extract_class_name_from_instance, extract_first_union_type
+from ..utils.general import (
+    check_typing_list_and_extract_list_type,
+    extract_class_name_from_instance,
+    check_typing_union_and_extract_first_union_type,
+)
 
 
 @dataclass()
@@ -23,6 +27,22 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
     in subclasses.
 
     """
+
+    @classmethod
+    def _dataclass_internal_field(cls) -> List[str]:
+        """
+        List of field marked as internal. Those are field name that will be omited by
+        `get_dimension_names` class method.
+
+        This method is intended to return a predefined list of attribute names that are
+        specific to the internal logic of a data class. These fields often represent
+        key information required for specialized operations or manipulations within
+        the class. The method should be used internally and not be exposed for
+        general use.
+
+        :return: A list containing the names of internal fields used in the data class.
+        """
+        return []
 
     def get_dynamic_field(self, feature_name: str) -> Any:
         """Retrieves the value of a dynamicaly declared attribute from the object.
@@ -66,6 +86,101 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
     def __post_init__(self):
         pass
 
+    @classmethod
+    def get_dimension_type(cls, dimension_name: str) -> Tuple[type[Any], bool]:
+        """
+        Get the type and whether it is a list for a given dimension name.
+
+        The method inspects the class fields, determining the type of the field associated with the provided dimension name. It identifies whether the type is a list or a union, returning the underlying type if applicable.
+
+        :param dimension_name: The name of the dimension to query.
+        :return: A tuple containing the type of the dimension and a boolean indicating if the dimension is a list.
+        """
+        container_properties = fields(cls)
+        dimension_type = None
+        is_list_of_type = False
+        for each_field in container_properties:
+            if each_field.name is dimension_name:
+                is_list_of_type, dimension_type = (
+                    check_typing_list_and_extract_list_type(each_field.type)
+                )
+                if not is_list_of_type:
+                    is_union, dimension_type = (
+                        check_typing_union_and_extract_first_union_type(each_field.type)
+                    )
+        return dimension_type, is_list_of_type
+
+    @classmethod
+    def get_dimension_names(cls) -> Tuple[str, ...]:
+        """
+        Provides the dimension names of the data class fields that are exposed to user.
+
+        This method retrieves the field names from the data class that are not marked
+        as internal fields. It returns these names as a tuple of strings, making it
+        useful for querying the explicitly defined data attributes of the class.
+
+        :return: A tuple containing the names of non-internal fields defined in the class.
+        """
+        container_properties = fields(cls)
+        field_name = []
+        for each_field in container_properties:
+            if each_field.name not in cls._dataclass_internal_field():
+                field_name.append(each_field.name)
+        return tuple(field_name)
+
+
+@dataclass()
+class AbstractNoTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
+    feature_name: str
+
+    @classmethod
+    def _dataclass_internal_field(cls) -> List[str]:
+        return [
+            "feature_name",
+        ]
+
+    def __str__(self):
+        """User representation. Dynamically handle property added at run time"""
+        t_sp = " " * 10
+        m_sp = " " * 3
+        item_space = " " * 3
+        dataclass_name = extract_class_name_from_instance(self)
+        repr_str = f"\n{t_sp}{dataclass_name}(\n"
+        v: Union[np.ndarray, AbstractTrajectoryDataclass, str, int, float]
+        m_sp += t_sp
+
+        v = self.__dict__.get("feature_name")
+        if v is not None:
+            repr_str += f"{m_sp}feature_name: {v}\n"
+
+        for k, v in self.__dict__.items():
+            if k in [
+                "feature_name",
+            ]:
+                pass
+            elif isinstance(v, list):
+                indent_v = []
+                for each in v:
+                    for each_line in str(each).splitlines():
+                        indent_v.append(f"{t_sp}{each_line}")
+                    indent_v[-1] = f"{indent_v[-1]},"
+                indent_v = "\n".join(indent_v)
+                repr_str += f"{m_sp}{item_space}{k}: [" f"{indent_v}" f"\n{m_sp}]\n"
+
+            elif isinstance(v, AbstractTrajectoryDataclass):
+                indent_v = []
+                for each_line in str(v).splitlines():
+                    indent_v.append(f"{t_sp}{each_line}\n")
+                indent_v = "".join(indent_v)
+                repr_str += f"{m_sp}{item_space}{k}:{indent_v}"
+            else:
+                repr_str += f"{m_sp}{item_space}{k}: ({extract_class_name_from_instance(v)}) {v}\n"
+        repr_str += f"{t_sp})"
+        return repr_str
+
+    def __post_init__(self):
+        pass
+
 
 @dataclass()
 class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
@@ -103,18 +218,6 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
     @classmethod
     def _dataclass_internal_field(cls) -> List[str]:
-        """
-        List of field marked as internal. Those are field name that will be omited by
-        `get_dimension_names` class method.
-
-        This method is intended to return a predefined list of attribute names that are
-        specific to the internal logic of a data class. These fields often represent
-        key information required for specialized operations or manipulations within
-        the class. The method should be used internally and not be exposed for
-        general use.
-
-        :return: A list containing the names of internal fields used in the data class.
-        """
         return [
             "feature_name",
             "timesteps_indices",
@@ -214,46 +317,6 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         """
         pass
 
-    @classmethod
-    def get_dimension_names(cls) -> Tuple[str, ...]:
-        """
-        Provides the dimension names of the data class fields that are exposed to user.
-
-        This method retrieves the field names from the data class that are not marked
-        as internal fields. It returns these names as a tuple of strings, making it
-        useful for querying the explicitly defined data attributes of the class.
-
-        :return: A tuple containing the names of non-internal fields defined in the class.
-        """
-        container_properties = fields(cls)
-        field_name = []
-        for each_field in container_properties:
-            if each_field.name not in cls._dataclass_internal_field():
-                field_name.append(each_field.name)
-        return tuple(field_name)
-
-    @classmethod
-    def get_dimension_type(cls, dimension_name: str) -> type:
-        """
-        Retrieves the target type of specified dimension in a data container.
-
-        This method examines the fields of the data container class to find a field whose
-        name matches the given dimension name and extracts its type.
-
-        Support typing.Union: The cases where the trajectory dataclass specify a field type with
-        typing.Union[Type, ...], will be handled such that the primary Union type (i.e.,
-        the first one) will be selected. e.g., see module `trj_dataclasses.primitive_dataclass`
-        dataclass `Header`.
-
-        :param dimension_name: The name of the dimension to look up.
-        :return: The type associated with the specified dimension.
-        """
-        container_properties = fields(cls)
-        dimension_type = None
-        for each_field in container_properties:
-            if each_field.name is dimension_name:
-                dimension_type = extract_first_union_type(each_field.type)
-        return dimension_type
 
     @property
     def _time_axis(self) -> int:
@@ -505,6 +568,11 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
     aggregated_date: datetime.datetime = field(init=False)
     bag_timestamps: Optional[Timestamps] = field(default=None, kw_only=True)
 
+    @classmethod
+    def _dataclass_internal_field(cls) -> List[str]:
+        return []
+
+
     def __post_init__(self):
         self.aggregated_date = datetime.datetime.now()
 
@@ -542,6 +610,12 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
     def summary(self) -> None:
         print(self)
         return None
+
+    @property
+    def topic_key_list(self):
+        return [
+            topic.name for topic in fields(self) if str(topic.name).startswith("topic_")
+        ]
 
 
 def _fetch_nested_attribute(self_, nested_attribute_list: str) -> Any:
