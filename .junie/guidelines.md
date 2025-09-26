@@ -2,19 +2,37 @@
 
 _Trajectory Container Tools (TCT)_ guidelines and instructions
 
+
 ## Repository Description
 
-A library for managing trajectory related data. Provide trajectory dataclasses of various type, factory function, rosbag extractor, pandas dataframe extractor and various utilities.
+A library for managing trajectory related data. Provide trajectory dataclasses of various type, factory function, rosbag
+extractor, pandas dataframe extractor and various utilities.
+
 
 ## Repository Guidelines Instructions
 
 1. First, review and learn _A2G Framework Guidelines_ specified in
-  `.junie/ai_agent_guidelines/guidelines.a2g_framework.md`.
+   `.junie/ai_agent_guidelines/guidelines.a2g_framework.md`.
 2. Then review the remaining repository guidelines below.
+3. **AI agents must follow the mandatory compliance requirements specified below.**
 
-## Prime directive:
+
+## Prime directive
 
 Always comply with _A2G Framework Guidelines_, _Repository Guidelines_ and _AI operator_ instructions.
+
+
+## AI Agent Compliance Requirements
+
+All AI agents must:
+
+1. **Always** review A2G guidelines before starting any task
+2. **Always** follow A2G file placement decision tree
+3. **Always** check workflow mode in `.junie/a2g_config.yml`
+4. **Always** apply A2G task verb interpretation protocols
+
+See A2G general guidelines for complete procedures and requirements.
+
 
 ## Repository Organization
 
@@ -28,19 +46,27 @@ Always comply with _A2G Framework Guidelines_, _Repository Guidelines_ and _AI o
 - `artifact/` contains runtime produced data such as experimental log, plot and trained model.
 - `data/` contains input data such as _test data_, _demo data_ or _experimental data_.
 
+
 ## Repository Terminology
 
-- **TCT**: Acronym for _Trajectory Container Tools_ i.e., the current repository. 
+- **TCT**: Acronym for _Trajectory Container Tools_ i.e., the current repository.
 - **DNA**: Dockerized-NorLab project application.
 - **MG**: Acronym for _Math Gymnasium_.
 - **RLRC**: Acronym for _RedLeader-research-codebase_.
-- **R2S2R**: Real to sim to real → Real environment to simulated environment to real environment. 
-- **RL**: Reinforcement-Learning → Is an AI learning base paradigme where an agent learns a policy by interacting with its environment.      
+- **R2S2R**: Real to sim to real → Real environment to simulated environment to real environment.
+- **RL**: Reinforcement-Learning → Is an AI learning base paradigme where an agent learns a policy by interacting with
+  its environment.
 - **Deep-RL**: Deep Reinforcement-Learning → A deep-learning variant of RL.
-- **Model-Based RL**: Model-based Reinforcement-Learning → RL method where the algorithm explicitly learns the environment model i.e., the system dynamic.
-- **Controller**: Control Theory analogue of a policy. Usualy imply a know motion dynamic and a cost instead of a reward. Usualy the term used in robotic. 
-- **Resilient controller**: Controller that can cop with adverse condition in such a way that they fall on their feet after losing control.
+- **Model-Based RL**: Model-based Reinforcement-Learning → RL method where the algorithm explicitly learns the
+  environment model i.e., the system dynamic.
+- **Controller**: Control Theory analogue of a policy. Usualy imply a know motion dynamic and a cost instead of a
+  reward. Usualy the term used in robotic.
+- **Resilient controller**: Controller that can cop with adverse condition in such a way that they fall on their feet
+  after losing control.
+
 
 ## Repository Specific Additional Guidelines
 
 Proceed with _AI operator_ instructions
+
+#
