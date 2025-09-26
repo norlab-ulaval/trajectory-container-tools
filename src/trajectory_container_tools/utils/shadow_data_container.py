@@ -6,15 +6,20 @@ from tqdm import tqdm
 
 from .general import extract_class_name_from_type, setup_progressbar
 from .typing import ShadowDataContainer
-from ..trj_dataclasses.ros2_feature_dataclass import RosStampedDataclass
-from ..trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
+from ..trj_dataclasses.ros2_feature_dataclass import RosDataclass, RosStampedDataclass
+from ..trj_dataclasses.base_trajectory_dataclass import (
+    BaseNoTrajectoryDataclass,
+    NestedBaseTrajectoryDataclass,
+)
 from .temporal_tools.timestamps import Timestamps
 
 
 def instanciate_shadow_data_container(
     data_container_type: Union[
-        type[RosStampedDataclass], type[NestedBaseTrajectoryDataclass]
-    ]
+        type[RosDataclass],
+        type[RosStampedDataclass],
+        type[NestedBaseTrajectoryDataclass],
+    ],
 ) -> ShadowDataContainer:
     """
     Instantiates a shadow data container for storing data corresponding to the given
@@ -28,7 +33,6 @@ def instanciate_shadow_data_container(
     """
     shadow_data_container: ShadowDataContainer
 
-    # container_properties = fields(data_container_type)
     shadow_data_container = {
         each_field: None for each_field in data_container_type.get_dimension_names()
     }
@@ -36,20 +40,27 @@ def instanciate_shadow_data_container(
     shadow_data_container["type"] = data_container_type
 
     for each_property_name in data_container_type.get_dimension_names():
-        dimension_type = data_container_type.get_dimension_type(each_property_name)
-        if issubclass(dimension_type, (np.ndarray, Timestamps)):
+
+        dimension_type, is_list_of_type = data_container_type.get_dimension_type(
+            each_property_name
+        )
+
+        if is_list_of_type:
+            shadow_data_container[each_property_name] = [
+                instanciate_shadow_data_container(dimension_type),
+            ]
+
+        elif issubclass(dimension_type, (RosDataclass, NestedBaseTrajectoryDataclass)):
+            shadow_data_container[each_property_name] = (
+                instanciate_shadow_data_container(dimension_type)
+            )
+        elif issubclass(dimension_type, (np.ndarray, Timestamps)):
             # Note: Using a list to temporary aggregate data and then convert to numpy array when
             #       done is faster than directly append to a numpy array
             shadow_data_container[each_property_name] = {
                 "type": dimension_type,
                 "data": [],
             }
-        elif issubclass(
-            dimension_type, (RosStampedDataclass, NestedBaseTrajectoryDataclass)
-        ):
-            shadow_data_container[
-                each_property_name
-            ] = instanciate_shadow_data_container(dimension_type)
         else:
             shadow_data_container[each_property_name] = {
                 "type": dimension_type,
@@ -61,7 +72,9 @@ def instanciate_shadow_data_container(
 def post_process_shadown_data_container(
     shadow_data_container: ShadowDataContainer,
     data_container_type: Union[
-        type[RosStampedDataclass], type[NestedBaseTrajectoryDataclass]
+        type[RosDataclass],
+        type[RosStampedDataclass],
+        type[NestedBaseTrajectoryDataclass],
     ],
     feature_name: Optional[str],
     progressbar_enabled=True,
@@ -107,7 +120,20 @@ def post_process_shadown_data_container(
 
     for k, v in shadow_data_container.items():
         # if shadow_data_container["feature_name"]:
-        if (
+
+        if isinstance(v, list):
+            for idx, each in enumerate(v):
+                target_type = each.get("type")
+                ppsdc = post_process_shadown_data_container(
+                    each,
+                    data_container_type=target_type,
+                    feature_name=None,
+                    progressbar_enabled=False,
+                )
+                if "type" in ppsdc:
+                    del ppsdc["type"]
+                shadow_data_container[k][idx] = target_type(**ppsdc)
+        elif not issubclass(data_container_type, BaseNoTrajectoryDataclass) and (
             k in data_container_type.trajectory_metadata_field()
             or k in data_container_type._dataclass_internal_field()
         ):

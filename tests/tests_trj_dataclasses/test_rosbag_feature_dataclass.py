@@ -1,4 +1,9 @@
 # coding=utf-8
+import pytest
+
+from trajectory_container_tools.rosbag_to_tct import (
+    aggregate_multiple_features_from_rosbag,
+)
 from trajectory_container_tools.trj_dataclasses.ros2_primitive_dataclass import (
     Header,
     Point,
@@ -17,6 +22,7 @@ from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
     SensorMsgsImu,
     SensorMsgsImuFlat,
     Tf2MsgsTFMessage,
+    TransformStamped,
     Twist,
     TwistWithCovariance,
 )
@@ -90,15 +96,36 @@ class TestTrajectoryDataclassFromROSBagCase:
         md = mock_ROSbag_2_trj_DC
         dc_ = Tf2MsgsTFMessage(
             feature_name="/tf",
-            header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
-            childFrameId="odom",
-            transform=Transform(
-                translation=Vector3(x=md.a, y=md.a, z=md.a),
-                rotation=Quaternion(x=md.a, y=md.a, z=md.a, w=md.a),
-            ),
+            transforms=[
+                TransformStamped(
+                    header=Header(
+                        frame_id=md.header.frame_id, timestamps=md.header.timestamps
+                    ),
+                    childFrameId="odom",
+                    transform=Transform(
+                        translation=Vector3(x=md.a, y=md.a, z=md.a),
+                        rotation=Quaternion(x=md.a, y=md.a, z=md.a, w=md.a),
+                    ),
+                ),
+                TransformStamped(
+                    header=Header(
+                        frame_id=md.header.frame_id, timestamps=md.header.timestamps
+                    ),
+                    childFrameId="pf_pose_odom",
+                    transform=Transform(
+                        translation=Vector3(x=md.a, y=md.a, z=md.a),
+                        rotation=Quaternion(x=md.a, y=md.a, z=md.a, w=md.a),
+                    ),
+                )
+            ],
         )
         print(dc_)
-        assert dc_._time_axis == 0
+        assert isinstance(dc_.transforms[0].header, Header)
+        assert isinstance(dc_.transforms[1].header, Header)
+        assert dc_.transforms[0].header.timestamps.stamps == pytest.approx(md.header.timestamps)
+        assert id(dc_.transforms[0].header) != id(dc_.transforms[1].header)
+        assert dc_.transforms[0].childFrameId == "odom"
+        assert dc_.transforms[1].childFrameId == "pf_pose_odom"
 
     def test_Scan_init(self, mock_ROSbag_2_trj_DC):
         md = mock_ROSbag_2_trj_DC
@@ -154,3 +181,19 @@ class TestTrajectoryDataclassFromROSBagCase:
         )
         print(dc_)
         assert dc_._time_axis == 0
+
+
+class TestTrajectoryDataclassFromROSBagCaseIntegration:
+
+    def test_RosDataclass_and_RosStampedDataclass_inheriter_on_rosbag(
+        self, setup_rosbag_six_topics_filtered
+    ):
+
+        container = aggregate_multiple_features_from_rosbag(
+            setup_rosbag_six_topics_filtered.bag_path,
+            dataset_info=setup_rosbag_six_topics_filtered.bag_name,
+            features_config=setup_rosbag_six_topics_filtered.feature_config,
+        )
+
+        # Minimum logic to validate run success
+        print(container)

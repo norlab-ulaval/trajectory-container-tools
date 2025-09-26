@@ -11,7 +11,7 @@ from ..trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
     AbstractTrajectoryDataclass,
 )
-from ..trj_dataclasses.ros2_feature_dataclass import RosStampedDataclass
+from ..trj_dataclasses.ros2_feature_dataclass import RosDataclass, RosStampedDataclass
 
 TrajectoryDataclass = NewType("TrajectoryDataclass", AbstractTrajectoryDataclass)
 
@@ -27,10 +27,10 @@ ShadowDataContainer: TypeAlias = Dict[
         np.ndarray,
         Dict,
         Union[
-            type[RosStampedDataclass],
+            type[RosDataclass],
             type[NestedBaseTrajectoryDataclass],
             type[Timestamps],
         ],
-        Union[RosStampedDataclass, NestedBaseTrajectoryDataclass, Timestamps],
+        Union[RosDataclass, NestedBaseTrajectoryDataclass, Timestamps],
     ],
 ]

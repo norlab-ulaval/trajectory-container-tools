@@ -5,10 +5,23 @@ from typing import List
 import numpy as np
 
 from .base_trajectory_dataclass import (
+    BaseNoTrajectoryDataclass,
     BaseTrajectoryDataclass,
     NestedBaseTrajectoryDataclass,
 )
 from .ros2_primitive_dataclass import Header, Point, Quaternion, Transform, Vector3
+
+
+@dataclass()
+class RosDataclass(BaseNoTrajectoryDataclass):
+    """
+    Represents a ROS dataclass containing trajectory information.
+
+    This dataclass is used to store trajectory data. This class inherits from
+    `BaseTrajectoryDataclass` to provide trajectory-specific attributes and behaviors.
+    """
+
+    pass
 
 
 @dataclass()
@@ -27,6 +40,23 @@ class RosStampedDataclass(BaseTrajectoryDataclass):
     :ivar header: The ROS message header, which includes timestamp and frame of
         reference information.
     :type header: Header
+    """
+
+    header: Header
+
+
+@dataclass()
+class NestedRosStampedDataclass(NestedBaseTrajectoryDataclass):
+    """
+    Represents a ROS-stamped dataclass containing trajectory information (nested version).
+
+    Compatible ros2 message interface: std_msgs/msg/Header
+
+    :ivar header: The ROS message header, which includes timestamp and frame of
+        reference information.
+    :type header: Header
+    :ivar feature_name: This attribute is set to None by default and is immutable.
+    :type feature_name: str
     """
 
     header: Header
@@ -263,7 +293,14 @@ class AckermannMsgsAckermannDriveStampedFlat(RosStampedDataclass):
 
 # .... TF messages ................................................................................
 @dataclass()
-class Tf2MsgsTFMessage(RosStampedDataclass):
+class TransformStamped(NestedRosStampedDataclass):
+    # Compatible ros2 message interface: geometry_msgs/msg/TransformStamped
+    childFrameId: str
+    transform: Transform
+
+
+@dataclass()
+class Tf2MsgsTFMessage(RosDataclass):
     """Represents a message used in coordinate transformation tasks in ROS.
 
     Compatible ros2 message interface: tf2_msgs/msg/TFMessage
@@ -272,15 +309,11 @@ class Tf2MsgsTFMessage(RosStampedDataclass):
     rotation) for a specific frame in the ROS ecosystem. It is used specifically
     to store messages that relate to frame IDs and their associated transformations.
 
-    :ivar childFrameId: Identifier for the child frame to which the transformation applies.
-    :type childFrameId: str
-    :ivar transform: Transformation data for the specified child frame, containing
-        translation and rotation information.
-    :type transform: Transform
+    :ivar transforms: Stamped Transformation data
+    :type transforms: TransformStamped
     """
 
-    childFrameId: str
-    transform: Transform
+    transforms: list[TransformStamped]
 
 
 # .... Sensor messages ............................................................................
@@ -356,7 +389,6 @@ class SensorMsgsImu(RosStampedDataclass):
     linearAcceleration: Vector3
     linearAccelerationCovariance: np.ndarray
 
-
 @dataclass()
 class SensorMsgsImuFlat(RosStampedDataclass):
     """SensorMsgsImu flat version
@@ -377,3 +409,51 @@ class SensorMsgsImuFlat(RosStampedDataclass):
     linearAcceleration_y: np.ndarray
     linearAcceleration_z: np.ndarray
     linearAccelerationCovariance: np.ndarray
+
+
+@dataclass()
+class VescMsgsVescImu(NestedBaseTrajectoryDataclass):
+    """
+    Represents IMU data related to VESC (Vedder Electronic Speed Controller).
+
+    Compatible ros2 message interface: vesc_msgs/msg/VescImu
+
+    This dataclass encapsulates IMU information, such as yaw-pitch-roll, angular
+    velocity, linear acceleration, compass readings, and orientation as a ROS2
+    message interface.
+
+    :ivar ypr: The yaw, pitch, and roll data as a 3D vector.
+    :type ypr: Vector3
+    :ivar angularVelocity: The angular velocity readings as a 3D vector.
+    :type angularVelocity: Vector3
+    :ivar linearAcceleration: The linear acceleration readings as a 3D vector.
+    :type linearAcceleration: Vector3
+    :ivar compass: The compass data represented as a 3D vector.
+    :type compass: Vector3
+    :ivar orientation: The orientation represented as a quaternion.
+    :type orientation: Quaternion
+    """
+
+    ypr: Vector3
+    angularVelocity: Vector3
+    linearAcceleration: Vector3
+    compass: Vector3
+    orientation: Quaternion
+
+@dataclass()
+class VescMsgsVescImuStamped(RosStampedDataclass):
+    """
+    Represents stamped IMU data related to VESC (Vedder Electronic Speed Controller).
+
+    Compatible ros2 message interface: vesc_msgs/msg/VescImuStamped
+
+    This class encapsulates data for a VESC IMU message with timestamping,
+    extending the RosStampedDataclass structure. It is compatible
+    with the `vesc_msgs/msg/VescImuStamped` ROS2 message interface.
+    The primary purpose of this class is to provide a structured data
+    representation of IMU measurements retrieved from a VESC-based system.
+
+    :ivar imu: Instance of the VescMsgsVescImu class, representing IMU data.
+    :type imu: VescMsgsVescImu
+    """
+    imu: VescMsgsVescImu

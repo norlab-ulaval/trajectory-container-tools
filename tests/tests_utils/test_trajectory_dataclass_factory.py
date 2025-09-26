@@ -118,7 +118,7 @@ class TestTrajectoryDataclassFactoryROSbagCase:
         assert not isinstance(mock_cls, atd.AbstractTrajectoryDataclass)
         mock_cls_instance = mock_cls(
             feature_name="mock_data",
-            header=Header(frame_id=999, timestamps=mock_value),
+            header=Header(frame_id="topic_999", timestamps=mock_value),
             pose_xx=mock_value,
             pose_yy=mock_value,
             pose_zz=mock_value,
