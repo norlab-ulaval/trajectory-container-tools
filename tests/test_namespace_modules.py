@@ -11,7 +11,7 @@ import sys
 import os
 
 # Add the src directory to path for importing the modules under test
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+# sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import trajectory_container_tools as tct
 
