@@ -21,10 +21,10 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
-#    "matplotlib",
-#    "numpy",
-    "matplotlib >= 3.8.0",  # These versions support NumPy 2.x
-    "numpy >= 2.0.0",
+    "matplotlib",
+    "numpy",
+#    "matplotlib >= 3.8.0",  # These versions support NumPy 2.x
+#    "numpy >= 2.0.0",
     "pandas",
     "tqdm",
     "rosbags", # For ROS bag functionality
