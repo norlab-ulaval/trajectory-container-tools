@@ -73,7 +73,6 @@ from . import ros
 from . import factory
 from . import temporal
 from . import utils
-from . import plot
 
 __all__ = [
     # Version
@@ -107,8 +106,7 @@ __all__ = [
     'factory', 
     'temporal',
     'utils',
-    'plot',
-    
+
     # Common exceptions
     'TimestampCausalOrderingError',
 ]
