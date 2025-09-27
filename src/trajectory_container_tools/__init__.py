@@ -10,19 +10,19 @@ A library for managing trajectory-related data with support for:
 - Visualization utilities
 
 Quick Start:
-    import trajectory_container_tools as tct
-    
-    # Extract from ROS bag
-    data = tct.from_rosbag(rosbag_path, features_config)
-    
-    # Extract from DataFrame
-    data = tct.from_dataframe(df, features_config)
-    
-    # Access dataclasses
-    odom_class = tct.dataclasses.NavMsgsOdometry
-    
-    # Utilities
-    tct.ros.check_topics(rosbag_path)
+    >>> import trajectory_container_tools as tct
+    >>>
+    >>> # Extract from ROS bag
+    >>> data = tct.from_rosbag(rosbag_path, features_config)
+    >>>
+    >>> # Extract from DataFrame
+    >>> data = tct.from_dataframe(df, features_config)
+    >>>
+    >>> # Access dataclasses
+    >>> odom_class = tct.dataclasses.NavMsgsOdometry
+    >>>
+    >>> # Utilities
+    >>> tct.ros.check_topics(rosbag_path)
 """
 
 # Version info

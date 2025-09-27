@@ -1,7 +1,5 @@
 # coding=utf-8
 """
-Unit tests for the new namespace modules created as part of the TCT import improvement proposal.
-
 These tests verify that the namespace modules (ros.py, factory.py, temporal.py)
 properly expose their expected functionality and maintain the correct API structure.
 """
@@ -9,9 +7,6 @@ properly expose their expected functionality and maintain the correct API struct
 import pytest
 import sys
 import os
-
-# Add the src directory to path for importing the modules under test
-# sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import trajectory_container_tools as tct
 
