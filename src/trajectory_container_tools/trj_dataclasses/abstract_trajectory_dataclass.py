@@ -317,7 +317,6 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         """
         pass
 
-
     @property
     def _time_axis(self) -> int:
         """
@@ -515,7 +514,12 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
             else:
                 data_property = self.__getattribute__(each_name)
 
-                if isinstance(data_property, (np.ndarray, AbstractTrajectoryDataclass)):
+                if isinstance(
+                    data_property, (np.ndarray, AbstractTrajectoryDataclass, Timestamps)
+                ):
+                    # if isinstance(data_property, Timestamps):
+                    #     # raise NotImplementedError("(CRITICAL) ToDo: implement fix")
+
                     if self.current_trj_axe == 0:
                         # Case: time-serie
                         data_value = data_property[key]
@@ -571,7 +575,6 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
     @classmethod
     def _dataclass_internal_field(cls) -> List[str]:
         return []
-
 
     def __post_init__(self):
         self.aggregated_date = datetime.datetime.now()
