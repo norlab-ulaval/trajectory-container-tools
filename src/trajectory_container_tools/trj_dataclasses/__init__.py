@@ -8,25 +8,30 @@ Available dataclasses:
 - Generic containers (BaseTrajectoryDataclass, etc.)
 
 Usage:
-    import trajectory_container_tools as tct
-    odom_class = tct.dataclasses.NavMsgsOdometry
-    imu_class = tct.dataclasses.SensorMsgsImu
+    >>> import trajectory_container_tools as tct
+    >>> odom_class = tct.dataclasses.NavMsgsOdometry
+    >>> imu_class = tct.dataclasses.SensorMsgsImu
 """
 
 # Abstract base classes
 from .abstract_trajectory_dataclass import (
     AbstractTrajectoryDataclass,
-    AbstractMultifeatureDataclass
+    AbstractMultifeatureDataclass,
+    AbstractNoTrajectoryDataclass
 )
 
 # Base implementations
 from .base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
-    NestedBaseTrajectoryDataclass
+    NestedBaseTrajectoryDataclass,
+    BaseNoTrajectoryDataclass
 )
 
 # ROS2 dataclasses
 from .ros2_feature_dataclass import (
+    RosStampedDataclass,
+    RosDataclass,
+    NestedRosStampedDataclass,
     NavMsgsOdometry,
     SensorMsgsImu,
     AckermannMsgsAckermannDriveStamped,
@@ -34,9 +39,6 @@ from .ros2_feature_dataclass import (
     Tf2MsgsTFMessage,
     VescMsgsVescImuStamped,
     Scan,
-    RosStampedDataclass,
-    RosDataclass,
-    NestedRosStampedDataclass
 )
 
 from .ros2_primitive_dataclass import Header
@@ -82,10 +84,12 @@ __all__ = [
     # Abstract classes
     'AbstractTrajectoryDataclass',
     'AbstractMultifeatureDataclass',
+    'AbstractNoTrajectoryDataclass',
     
     # Base classes
     'BaseTrajectoryDataclass', 
     'NestedBaseTrajectoryDataclass',
+    'BaseNoTrajectoryDataclass',
     
     # ROS2 dataclasses
     'NavMsgsOdometry',

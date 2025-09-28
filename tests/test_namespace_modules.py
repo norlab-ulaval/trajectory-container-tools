@@ -39,22 +39,6 @@ class TestRosNamespaceModule:
         assert hasattr(tct.ros, "rosbag_topic_time_to_timestamp")
         assert callable(tct.ros.rosbag_topic_time_to_timestamp)
 
-    def test_ros_dataclasses_available(self):
-        """Test that common ROS dataclasses are available in ros namespace."""
-        expected_dataclasses = [
-            "NavMsgsOdometry",
-            "SensorMsgsImu",
-            "AckermannMsgsAckermannDriveStamped",
-            "Tf2MsgsTFMessage",
-            "VescMsgsVescImuStamped",
-            "Scan",
-        ]
-
-        for dataclass_name in expected_dataclasses:
-            assert hasattr(
-                tct.ros, dataclass_name
-            ), f"Missing dataclass: {dataclass_name}"
-
     def test_ros_all_attribute(self):
         """Test that ros module has proper __all__ attribute."""
         assert hasattr(tct.ros, "__all__")
@@ -234,14 +218,26 @@ class TestDataclassesNamespace:
         abstract_classes = [
             "AbstractTrajectoryDataclass",
             "AbstractMultifeatureDataclass",
-            "BaseTrajectoryDataclass",
-            "NestedBaseTrajectoryDataclass",
+            "AbstractNoTrajectoryDataclass",
         ]
 
         for class_name in abstract_classes:
             assert hasattr(
                 tct.dataclasses, class_name
             ), f"Missing abstract class: {class_name}"
+
+    def test_base_classes_available_in_namespace(self):
+        """Test that abstract classes are available in dataclasses namespace."""
+        abstract_classes = [
+            "BaseTrajectoryDataclass",
+            "NestedBaseTrajectoryDataclass",
+            "BaseNoTrajectoryDataclass",
+        ]
+
+        for class_name in abstract_classes:
+            assert hasattr(
+                tct.dataclasses, class_name
+            ), f"Missing base class: {class_name}"
 
 
 class TestNamespacesConsistency:

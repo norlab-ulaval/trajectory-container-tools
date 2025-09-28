@@ -57,11 +57,13 @@ from .dataframe_to_tct import (
 # Core abstract classes
 from .trj_dataclasses.abstract_trajectory_dataclass import (
     AbstractTrajectoryDataclass,
-    AbstractMultifeatureDataclass
+    AbstractMultifeatureDataclass,
+    AbstractNoTrajectoryDataclass
 )
 from .trj_dataclasses.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
-    NestedBaseTrajectoryDataclass
+    NestedBaseTrajectoryDataclass,
+    BaseNoTrajectoryDataclass
 )
 
 # Common exceptions
@@ -96,9 +98,11 @@ __all__ = [
     
     # Core classes
     'AbstractTrajectoryDataclass',
-    'AbstractMultifeatureDataclass', 
+    'AbstractMultifeatureDataclass',
+    'AbstractNoTrajectoryDataclass',
     'BaseTrajectoryDataclass',
     'NestedBaseTrajectoryDataclass',
+    'BaseNoTrajectoryDataclass',
     
     # Namespaces
     'dataclasses',

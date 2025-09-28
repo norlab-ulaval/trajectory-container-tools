@@ -19,7 +19,7 @@ class BaseTrajectoryDataclass(AbstractTrajectoryDataclass):
     **Usage example**:
 
     Note: this example would represent a flat data representation as oposed to a nested one
-    (see `NestedBaseTrajectoryDataclass` usage example).
+    (see ``NestedBaseTrajectoryDataclass`` usage example).
 
         >>> @dataclass()
         >>> class MockContainer(BaseTrajectoryDataclass):
@@ -36,7 +36,7 @@ class BaseTrajectoryDataclass(AbstractTrajectoryDataclass):
 @dataclass()
 class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
     """Represents a nested base trajectory dataclass which extends the functionality of the
-    BaseTrajectoryDataclass.
+    ``BaseTrajectoryDataclass``.
 
     This class summarizes the concept of a derived dataclass with specific attributes associated
     with nested trajectory-related features.
@@ -67,4 +67,12 @@ class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
 
 @dataclass()
 class BaseNoTrajectoryDataclass(AbstractNoTrajectoryDataclass):
+    """
+    Represents a base data structure without trajectory handling.
+
+    This class inherits from ``AbstractNoTrajectoryDataclass`` and serves as
+    a foundation for non-trajectory-based data classes. It is designed to hold
+    and manage data that does not involve trajectory-specific information at top-level but might
+    in nested ones e.g., `Tf2MsgsTFMessage.transforms` a list of `TransformStamped` trj container
+    """
     pass
