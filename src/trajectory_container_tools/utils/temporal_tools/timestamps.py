@@ -1,5 +1,8 @@
 # coding=utf-8
-from typing import Any, List, Tuple
+from collections import namedtuple
+from copy import copy, deepcopy
+from dataclasses import dataclass
+from typing import Any, List, Tuple, Union
 
 import numpy as np
 
@@ -8,6 +11,12 @@ class TimestampCausalOrderingError(Exception):
     """Exception raised when a causal order violation is detected."""
 
     pass
+
+
+@dataclass
+class Stamps:
+    stamps: Union[np.ndarray, int]
+    dt: Union[np.ndarray, int]
 
 
 class Timestamps:
@@ -79,8 +88,14 @@ class Timestamps:
         else:
             raise StopIteration
 
-    def __getitem__(self, key) -> int:
-        return self._stamps[key]
+    def __getitem__(self, key):
+        feature_dataclass_at_t = deepcopy(self)
+        for each_name in ["_stamps", "_delta_stamps"]:
+            data_property = self.__getattribute__(each_name)
+            data_value = data_property[key]
+            feature_dataclass_at_t.__setattr__(each_name, data_value)
+
+        return feature_dataclass_at_t
 
     def seconds_nanoseconds(self, key) -> Tuple[int, int]:
         """
@@ -97,7 +112,7 @@ class Timestamps:
         :return: A tuple containing two integers, where the first integer represents
             seconds and the second represents nanoseconds.
         """
-        return to_seconds_nanoseconds(self[key])
+        return to_seconds_nanoseconds(self.stamps[key])
 
     def causal_ordering_sanity_check(
         self, show_offending_in_nanoseconds: bool = True
@@ -165,8 +180,8 @@ def timestamp_causal_ordering_sanity_check(
     offending_idx = []
     offending_ts = ""
     for ts_idx in np.arange(start=1, stop=len(timestamp_object)):
-        previous_timestamp = timestamp_object[ts_idx - 1]
-        current_timestamp = timestamp_object[ts_idx]
+        previous_timestamp = timestamp_object.stamps[ts_idx - 1]
+        current_timestamp = timestamp_object.stamps[ts_idx]
 
         try:
             assert previous_timestamp < current_timestamp
@@ -200,12 +215,12 @@ def timestamp_causal_ordering_sanity_check(
             f"    Rosbag timestamps metadate:\n"
             f"    {'—' * 78}\n"
             f"                            nanoseconds    ( seconds nanoseconds )\n"
-            f"          start: {timestamp_object[0]:>22}  "
+            f"          start: {timestamp_object[0].stamps:>22}  "
             f"{str(timestamp_object.seconds_nanoseconds(0)):>25} \n"
-            f"          stop:  {timestamp_object[-1]:>22}  "
+            f"          stop:  {timestamp_object[-1].stamps:>22}  "
             f"{str(timestamp_object.seconds_nanoseconds(-1)):>25} \n"
             f"      duration:  "
-            f"{(timestamp_object[-1] - timestamp_object[0]):>22}  \n"
+            f"{(timestamp_object[-1].stamps - timestamp_object[0].stamps):>22}  \n"
             f"    {'—' * 78}\n"
         )
         raise TimestampCausalOrderingError(error_msg)
@@ -225,6 +240,7 @@ def to_seconds_nanoseconds(nanoseconds: int) -> Tuple[int, int]:
         nanoseconds // NANOSECONDS_CONVERSION_CONSTANT,
         nanoseconds % NANOSECONDS_CONVERSION_CONSTANT,
     )
+
 
 def compute_delta_timestamp(time_space: np.ndarray) -> np.ndarray:
     assert time_space.ndim == 1

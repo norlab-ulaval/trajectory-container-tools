@@ -3,14 +3,14 @@
 Factory functions for creating trajectory dataclasses dynamically.
 
 Usage:
-    import trajectory_container_tools as tct
-    
-    spec = tct.factory.TrjDataClassFeatureSpecification(
-        new_feature_dataclass_type='CustomType',
-        dimension_names=('x', 'y', 'z')
-    )
-    
-    new_class = tct.factory.create_dataclass(spec)
+    >>> import trajectory_container_tools as tct
+    >>>
+    >>> spec = tct.factory.TrjDataClassFeatureSpecification(
+    >>>     new_feature_dataclass_type='CustomType',
+    >>>     dimension_names=('x', 'y', 'z')
+    >>> )
+    >>>
+    >>> new_class = tct.factory.create_dataclass(spec)
 """
 
 from .utils.factory import (
