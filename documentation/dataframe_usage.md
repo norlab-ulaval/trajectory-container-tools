@@ -63,14 +63,14 @@ df = pd.DataFrame(data)
 
 ```python
 from trajectory_container_tools.dataframe_to_tct import (
-    aggregate_multiple_features_from_dataframe,
-    extract_single_feature_from_dataframe,
+    from_dataframe,
+    extract_dataframe_feature,
     unpack_dataframe_and_show_topic
-)
+    )
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
     StatePose2D, StatePose3D, Velocity, VelocitySkidSteer,
     CmdStandard, CmdSkidSteer
-)
+    )
 ```
 
 ### 2. Inspect Your DataFrame
@@ -100,7 +100,7 @@ features_config = {
 
 ```python
 # Convert multiple features
-trajectory_container = aggregate_multiple_features_from_dataframe(
+trajectory_container = from_dataframe(
     dataset_frame=df,
     dataset_info="Robot navigation experiment - Lab conditions",
     features_config=features_config
@@ -172,7 +172,7 @@ features_config = {
 
 ```python
 import pandas as pd
-from trajectory_container_tools.dataframe_to_tct import aggregate_multiple_features_from_dataframe
+from trajectory_container_tools.dataframe_to_tct import from_dataframe
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import *
 
 # Load robotics dataset
@@ -180,20 +180,20 @@ df = pd.read_pickle("robot_trajectories.pkl")
 
 # Configure multiple features
 features_config = {
-    'odometry': StatePose2D,
-    'ground_truth': StatePose2D, 
-    'velocity_estimate': Velocity,
-    'control_commands': CmdStandard,
-    'imu_raw': ('IMUData', 'accel_x', 'accel_y', 'accel_z', 'gyro_z'),
-    'lidar_features': ('LidarFeatures', 'range_front', 'range_left', 'range_right')
-}
+        'odometry':          StatePose2D,
+        'ground_truth':      StatePose2D,
+        'velocity_estimate': Velocity,
+        'control_commands':  CmdStandard,
+        'imu_raw':           ('IMUData', 'accel_x', 'accel_y', 'accel_z', 'gyro_z'),
+        'lidar_features':    ('LidarFeatures', 'range_front', 'range_left', 'range_right')
+        }
 
 # Convert to trajectory container
-multi_feature_container = aggregate_multiple_features_from_dataframe(
-    dataset_frame=df,
-    dataset_info="Multi-sensor robot navigation dataset",
-    features_config=features_config
-)
+multi_feature_container = from_dataframe(
+        dataset_frame=df,
+        dataset_info="Multi-sensor robot navigation dataset",
+        features_config=features_config
+        )
 
 # Access trajectory data
 print(f"Dataset contains {multi_feature_container.odometry.trajectory_len} timesteps")
@@ -208,11 +208,11 @@ control_linear_x = multi_feature_container.control_commands.linear_x
 ### Example 2: Single Feature Extraction
 
 ```python
-from trajectory_container_tools.dataframe_to_tct import extract_single_feature_from_dataframe
+from trajectory_container_tools.dataframe_to_tct import extract_dataframe_feature
 
 # Extract only pose data
-pose_container = extract_single_feature_from_dataframe(dataset=df, feature_name="odometry",
-                                                       data_container_type=StatePose2D)
+pose_container = extract_dataframe_feature(dataset=df, feature_name="odometry",
+                                           data_container_type=StatePose2D)
 
 print(f"Pose data shape: {pose_container.x.shape}")
 print(f"Available dimensions: {pose_container.get_dimension_names()}")
@@ -261,7 +261,7 @@ features_config = {
     'reference_pose': StatePose2D
 }
 
-container = aggregate_multiple_features_from_dataframe(df, "Steady-state analysis", features_config)
+container = from_dataframe(df, "Steady-state analysis", features_config)
 
 # Access computed metrics
 initial_x = container.steady_state_pose.x_initial
@@ -311,12 +311,12 @@ TCT performs automatic validation for:
 
 ```python
 
-from trajectory_container_tools.utils.temporal_tools.timestep_indexing import dataframe_timestep_indexing_sanity_check
+from trajectory_container_tools.utils.temporal_tools.timestep_indexing import validate_dataframe_timesteps_indexing
 
 # Validate DataFrame structure before conversion
 feature_names = ['pose', 'velocity', 'commands']
 try:
-    dataframe_timestep_indexing_sanity_check(df, feature_names)
+    validate_dataframe_timesteps_indexing(df, feature_names)
     print("DataFrame structure is valid")
 except Exception as e:
     print(f"Validation error: {e}")
@@ -383,7 +383,7 @@ EXPERIMENT_CONFIG = {
 def load_trajectory_data(df_path, config=EXPERIMENT_CONFIG):
     df = pd.read_pickle(df_path)
     
-    return aggregate_multiple_features_from_dataframe(
+    return from_dataframe(
         dataset_frame=df,
         dataset_info=config['dataset_info'],
         features_config=config['features_config']
@@ -398,10 +398,10 @@ def safe_trajectory_conversion(df, features_config, dataset_info=""):
     try:
         # Validate first
         feature_names = list(features_config.keys())
-        dataframe_timestep_indexing_sanity_check(df, feature_names)
+        validate_dataframe_timesteps_indexing(df, feature_names)
         
         # Convert
-        container = aggregate_multiple_features_from_dataframe(
+        container = from_dataframe(
             dataset_frame=df,
             dataset_info=dataset_info,
             features_config=features_config

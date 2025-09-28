@@ -39,7 +39,7 @@ class TestExtractDataframeFeature:
         fn = "body_vel_disturption"
         check_property = "x"
 
-        container = dtd.extract_single_feature_from_dataframe(
+        container = dtd.extract_dataframe_feature(
             dataset=setup_panda_dataframe,
             feature_name=fn,
             data_container_type=StatePose2D,
@@ -53,7 +53,7 @@ class TestExtractDataframeFeature:
         fn = "cmd"
         check_property = "left"
 
-        container = dtd.extract_single_feature_from_dataframe(
+        container = dtd.extract_dataframe_feature(
             dataset=setup_panda_dataframe,
             feature_name=fn,
             data_container_type=CmdSkidSteer,
@@ -76,7 +76,7 @@ class TestExtractDataframeFeature:
         )
 
         with pytest.raises(AttributeError):
-            container = dtd.extract_single_feature_from_dataframe(
+            container = dtd.extract_dataframe_feature(
                 dataset=setup_panda_dataframe,
                 feature_name=fn,
                 data_container_type=state_pose,
@@ -84,7 +84,7 @@ class TestExtractDataframeFeature:
 
     def test_fail_no_existing_feature(self, setup_panda_dataframe):
         with pytest.raises(ValueError):
-            dtd.extract_single_feature_from_dataframe(
+            dtd.extract_dataframe_feature(
                 dataset=setup_panda_dataframe,
                 feature_name="bodyy_vel_ddisturption",
                 data_container_type=StatePose2D,
@@ -92,7 +92,7 @@ class TestExtractDataframeFeature:
 
     def test_no_existing_feature_dimension(self, setup_panda_dataframe):
         with pytest.raises(ValueError):
-            dtd.extract_single_feature_from_dataframe(
+            dtd.extract_dataframe_feature(
                 dataset=setup_panda_dataframe,
                 feature_name="body_vel_disturption",
                 data_container_type=CmdStandard,
@@ -103,7 +103,7 @@ class TestExtractDataframeFeature:
         df_missing = setup_panda_dataframe.drop(f"{col_label}_x_9", axis=1)
 
         with pytest.raises(ValueError):
-            dtd.extract_single_feature_from_dataframe(
+            dtd.extract_dataframe_feature(
                 dataset=df_missing,
                 feature_name=col_label,
                 data_container_type=StatePose2D,
@@ -123,7 +123,7 @@ class TestExtractDataframeMultifeature:
     def test_aggregate_multiple_features_from_dataframe_working(
         self, setup_panda_dataframe, setup_configuration_dict_OK
     ):
-        feats = dtd.aggregate_multiple_features_from_dataframe(
+        feats = dtd.from_dataframe(
             dataset_frame=setup_panda_dataframe,
             dataset_info="marmotte-ga_hard_snow_25_01_a",
             features_config=setup_configuration_dict_OK,
@@ -164,7 +164,7 @@ class TestExtractDataframeMultifeature:
         setup_configuration_dict_bad["icp"] = ("StatePose3D",)
 
         with pytest.raises(KeyError):
-            feats = dtd.aggregate_multiple_features_from_dataframe(
+            feats = dtd.from_dataframe(
                 dataset_frame=setup_panda_dataframe,
                 dataset_info="marmotte-ga_hard_snow_25_01_a",
                 features_config=setup_configuration_dict_bad,
@@ -176,7 +176,7 @@ class TestExtractDataframeMultifeature:
     def test_aggregate_multiple_features_from_dataframe_single_dimension_feature_no_index(
         self, setup_panda_dataframe
     ):
-        feats = dtd.aggregate_multiple_features_from_dataframe(
+        feats = dtd.from_dataframe(
             dataset_frame=setup_panda_dataframe,
             dataset_info="marmotte-ga_hard_snow_25_01_a",
             features_config={"calib": ("calib_step", "step")},

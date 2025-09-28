@@ -11,7 +11,7 @@ from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
 )
 from trajectory_container_tools.utils.factory import (
     TrjDataClassFeatureSpecification,
-    trajectory_dataclass_factory,
+    create_dataclass,
 )
 from trajectory_container_tools.trj_dataclasses import (
     abstract_trajectory_dataclass as atd,
@@ -29,14 +29,14 @@ class TestTrajectoryDataclassFactoryDataframeCase:
         return spec
 
     def test_spec_ok(self, setup_dataframe_style_config):
-        trajectory_dataclass_factory(
+        create_dataclass(
             specification=setup_dataframe_style_config,
             trj_dataclass_subclass=BaseDataframeFeatureDataclass,
         )
 
     def test_bad_spec(self):
         with pytest.raises(AttributeError):
-            fdf3 = trajectory_dataclass_factory(
+            fdf3 = create_dataclass(
                 specification=TrjDataClassFeatureSpecification(
                     new_feature_dataclass_type="new_feature_dataclass",
                     dimension_names=("xx", "yy", 999),
@@ -47,18 +47,18 @@ class TestTrajectoryDataclassFactoryDataframeCase:
         # ToDo: assessment >> next bloc ↓↓ is not relevant since refactoring to
         # specification object as a dataclass
         # with pytest.raises(KeyError):
-        #     fdf1 = atd.trajectory_dataclass_factory(
+        #     fdf1 = atd.create_dataclass(
         #             specification=atd.TrjDataClassFeatureSpecification(
         #             feature_AAAA='new_feature_dataclass',
         #                                                     dimension_names=('xx', 'yy',
         #                                                     'yaww')))
-        #     fdf2 = atd.trajectory_dataclass_factory(
+        #     fdf2 = atd.create_dataclass(
         #             specification=atd.TrjDataClassFeatureSpecification(
         #             new_feature_dataclass_type='new_feature_dataclass',
         #                                                     dimension_AAAA=('xx', 'yy', 'yaww')))
 
     def test_output_ok(self, setup_dataframe_style_config):
-        mock_cls = trajectory_dataclass_factory(
+        mock_cls = create_dataclass(
             specification=setup_dataframe_style_config,
             trj_dataclass_subclass=BaseDataframeFeatureDataclass,
         )
@@ -93,14 +93,14 @@ class TestTrajectoryDataclassFactoryROSbagCase:
         return spec
 
     def test_spec_ok(self, setup_rosbag_style_config):
-        trajectory_dataclass_factory(
+        create_dataclass(
             specification=setup_rosbag_style_config,
             trj_dataclass_subclass=RosStampedDataclass,
         )
 
     def test_bad_spec(self):
         with pytest.raises(AttributeError):
-            fdf3 = trajectory_dataclass_factory(
+            fdf3 = create_dataclass(
                 specification=TrjDataClassFeatureSpecification(
                     new_feature_dataclass_type="new_topic_msg_type",
                     dimension_names=("pose.xx", "pose_yy", 999),
@@ -109,7 +109,7 @@ class TestTrajectoryDataclassFactoryROSbagCase:
             )
 
     def test_output_ok(self, setup_rosbag_style_config):
-        mock_cls = trajectory_dataclass_factory(
+        mock_cls = create_dataclass(
             specification=setup_rosbag_style_config,
             trj_dataclass_subclass=RosStampedDataclass,
         )

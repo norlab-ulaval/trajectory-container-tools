@@ -15,9 +15,9 @@ from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclas
 )
 
 from trajectory_container_tools.utils.temporal_tools.timestep_indexing import (
-    dataframe_timestep_indexing_sanity_check,
+    validate_dataframe_timesteps_indexing,
 )
-from trajectory_container_tools.utils.factory import parse_to_feature_dataclass
+from trajectory_container_tools.utils.factory import parse_feature_spec
 
 
 def unpack_dataframe_and_show_topic(
@@ -62,7 +62,7 @@ def unpack_dataframe_and_show_topic(
     return dataframe_, Path(dataframe_path)
 
 
-def aggregate_multiple_features_from_dataframe(
+def from_dataframe(
     dataset_frame: pd.DataFrame,
     dataset_info: str,
     features_config: Dict[
@@ -108,13 +108,13 @@ def aggregate_multiple_features_from_dataframe(
 
     for feature_name, feature_dataclass in features_config.items():
         if isinstance(feature_dataclass, tuple):
-            feature_dataclass = parse_to_feature_dataclass(
+            feature_dataclass = parse_feature_spec(
                 feature_dataclass,
                 target_subclass=BaseDataframeFeatureDataclass,
                 feature_name=feature_name,
             )
 
-        feature = extract_single_feature_from_dataframe(
+        feature = extract_dataframe_feature(
             dataset=dataset_frame,
             feature_name=feature_name,
             data_container_type=feature_dataclass,
@@ -130,7 +130,7 @@ def aggregate_multiple_features_from_dataframe(
     return multifeature(dataset_info, *features)
 
 
-def extract_single_feature_from_dataframe(
+def extract_dataframe_feature(
     dataset: pd.DataFrame,
     feature_name: str,
     data_container_type: type[BaseDataframeFeatureDataclass],
@@ -225,7 +225,7 @@ def extract_single_feature_from_dataframe(
                         raise ValueError(empty_property_error_msg)
 
                     try:
-                        timestep_index = dataframe_timestep_indexing_sanity_check(
+                        timestep_index = validate_dataframe_timesteps_indexing(
                             df_property, df_header_field
                         )
                         tmp_container["timesteps_indices"] = timestep_index

@@ -20,9 +20,9 @@ class TestRosNamespaceModule:
         assert tct.ros is not None
 
     def test_check_topics_function_exists(self):
-        """Test that check_topics function is available in ros namespace."""
-        assert hasattr(tct.ros, "check_topics")
-        assert callable(tct.ros.check_topics)
+        """Test that check_bag_topics function is available in ros namespace."""
+        assert hasattr(tct.ros, "check_bag_topics")
+        assert callable(tct.ros.check_bag_topics)
 
     def test_register_non_native_msgs_function_exists(self):
         """Test that register_non_native_msgs function is available in ros namespace."""
@@ -95,9 +95,9 @@ class TestTemporalNamespaceModule:
         assert tct.temporal.TimestampCausalOrderingError is not None
 
     def test_validate_dataframe_indexing_function_exists(self):
-        """Test that validate_dataframe_indexing function is available in temporal namespace."""
-        assert hasattr(tct.temporal, "validate_dataframe_indexing")
-        assert callable(tct.temporal.validate_dataframe_indexing)
+        """Test that validate_dataframe_timesteps_indexing function is available in temporal namespace."""
+        assert hasattr(tct.temporal, "validate_dataframe_timesteps_indexing")
+        assert callable(tct.temporal.validate_dataframe_timesteps_indexing)
 
     def test_temporal_all_attribute(self):
         """Test that temporal module has proper __all__ attribute."""
@@ -106,8 +106,8 @@ class TestTemporalNamespaceModule:
         assert len(tct.temporal.__all__) > 0
 
 
-class TestMainNamespaceNewAPI:
-    """Test the new convenience API functions in the main namespace."""
+class TestMainNamespaceAPI:
+    """Test the API functions in the main namespace."""
 
     def test_from_rosbag_function_exists(self):
         """Test that from_rosbag convenience function is available."""
@@ -130,63 +130,33 @@ class TestMainNamespaceNewAPI:
         assert callable(tct.extract_dataframe_feature)
 
     def test_check_rosbag_function_exists(self):
-        """Test that check_rosbag convenience function is available."""
-        assert hasattr(tct, "check_rosbag")
-        assert callable(tct.check_rosbag)
+        """Test that check_bag_topics convenience function is available."""
+        assert hasattr(tct, "check_bag_topics")
+        assert callable(tct.check_bag_topics)
 
     def test_check_dataframe_function_exists(self):
-        """Test that check_dataframe convenience function is available."""
-        assert hasattr(tct, "check_dataframe")
-        assert callable(tct.check_dataframe)
+        """Test that unpack_dataframe_and_show_topic convenience function is available."""
+        assert hasattr(tct, "unpack_dataframe_and_show_topic")
+        assert callable(tct.unpack_dataframe_and_show_topic)
 
-
-class TestBackwardCompatibility:
-    """Test that backward compatibility is maintained for existing API."""
-
-    def test_original_rosbag_functions_exist(self):
-        """Test that original rosbag function names are still available."""
-        original_functions = [
-            "aggregate_multiple_features_from_rosbag",
-            "extract_single_feature_from_rosbag",
-            "check_rosbag_path_and_show_available_topics",
-        ]
-
-        for func_name in original_functions:
-            assert hasattr(
-                tct, func_name
-            ), f"Missing backward compatibility function: {func_name}"
-            assert callable(getattr(tct, func_name))
-
-    def test_original_dataframe_functions_exist(self):
-        """Test that original dataframe function names are still available."""
-        original_functions = [
-            "aggregate_multiple_features_from_dataframe",
-            "extract_single_feature_from_dataframe",
-            "unpack_dataframe_and_show_topic",
-        ]
-
-        for func_name in original_functions:
-            assert hasattr(
-                tct, func_name
-            ), f"Missing backward compatibility function: {func_name}"
-            assert callable(getattr(tct, func_name))
+    def test_common_exception_available(self):
+        """Test that TimestampCausalOrderingError is available in main namespace."""
+        assert hasattr(tct, "TimestampCausalOrderingError")
+        assert tct.TimestampCausalOrderingError is not None
 
     def test_core_classes_available(self):
         """Test that core abstract classes are available in main namespace."""
         core_classes = [
             "AbstractTrajectoryDataclass",
             "AbstractMultifeatureDataclass",
+            "AbstractNoTrajectoryDataclass",
             "BaseTrajectoryDataclass",
             "NestedBaseTrajectoryDataclass",
+            "BaseNoTrajectoryDataclass",
         ]
 
         for class_name in core_classes:
             assert hasattr(tct, class_name), f"Missing core class: {class_name}"
-
-    def test_common_exception_available(self):
-        """Test that TimestampCausalOrderingError is available in main namespace."""
-        assert hasattr(tct, "TimestampCausalOrderingError")
-        assert tct.TimestampCausalOrderingError is not None
 
 
 class TestDataclassesNamespace:

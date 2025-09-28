@@ -8,14 +8,14 @@ from trajectory_container_tools.trj_dataclasses.abstract_trajectory_dataclass im
 )
 from trajectory_container_tools.utils.optimization import detect_docker_cpu_limits
 from trajectory_container_tools.rosbag_to_tct import (
-    check_rosbag_path_and_show_available_topics,
+    check_bag_topics,
 )
 from trajectory_container_tools.utils.ros2_non_native_msg import (
-    register_ros2_non_native_msg,
+    register_non_native_msgs,
 )
 from trajectory_container_tools.rosbag_to_tct import (
-    aggregate_multiple_features_from_rosbag,
-    extract_single_feature_from_rosbag,
+    from_rosbag,
+    extract_rosbag_feature,
 )
 from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
     AckermannMsgsAckermannDriveStamped,
@@ -58,7 +58,7 @@ def profiler_run():
     # ..............................................................................................
     detect_docker_cpu_limits()
 
-    rosbag_path = check_rosbag_path_and_show_available_topics(rosbag_path)
+    rosbag_path = check_bag_topics(rosbag_path)
 
     print(
         f"\n[TCT] === Profiling run ===================================================="
@@ -74,7 +74,7 @@ def profiler_run():
     # "/scan",
     # "/robot_description",
 
-    # container = extract_single_feature_from_rosbag(
+    # container = extract_rosbag_feature(
     #         rosbag_path=Path(rosbag_path),
     #         # feature_name="/odom",
     #         # data_container_type=NavMsgsOdometry
@@ -92,7 +92,7 @@ def profiler_run():
     }
     # "/robot_description",
 
-    container = aggregate_multiple_features_from_rosbag(
+    container = from_rosbag(
         rosbag_path,
         dataset_info=f"Robot: f110_race_car, Track: grand_salon, Run: {BAG}",
         features_config=features_config_1,

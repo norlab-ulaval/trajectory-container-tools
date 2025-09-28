@@ -7,8 +7,8 @@ import numpy as np
 import pytest
 
 from trajectory_container_tools import (
-    check_rosbag_path_and_show_available_topics,
-    extract_single_feature_from_rosbag,
+    check_bag_topics,
+    extract_rosbag_feature,
 )
 from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
     NavMsgsOdometry,
@@ -43,9 +43,9 @@ def setup_rosbag_from_external_data_dir() -> Tuple[Path, Optional[int], Optional
     )
 
     return (
-        check_rosbag_path_and_show_available_topics(rosbag_path),
-        rosbag_start,
-        rosbag_stop,
+            check_bag_topics(rosbag_path),
+            rosbag_start,
+            rosbag_stop,
     )
 
 
@@ -53,7 +53,7 @@ def benchmark_extract_single_feature_from_rosbag(
     bag_path: Path, rosbag_start: int, rosbag_stop: int
 ):
     """Standalone function for benchmarking - avoids pickling issues with Joblib"""
-    return extract_single_feature_from_rosbag(
+    return extract_rosbag_feature(
         rosbag_path=bag_path,
         feature_name="/odom",
         data_container_type=NavMsgsOdometry,

@@ -4,8 +4,8 @@ import pandas as pd
 import pytest
 
 from trajectory_container_tools.utils.temporal_tools.timestep_indexing import (
-    dataframe_timestep_indexing_sanity_check,
-    timestep_indices_sanity_check,
+    validate_dataframe_timesteps_indexing,
+    validate_timestep_indices,
 )
 
 
@@ -14,13 +14,13 @@ class TestTimestepIndexingSanityCheck:
         mock_trj_indices = np.arange(20)
 
         # Case default arg
-        timestep_indices_sanity_check(
-            timestep_index=mock_trj_indices, trajectory_expected_len=None
+        validate_timestep_indices(
+            timesteps_indices=mock_trj_indices, trajectory_expected_len=None
         )
 
         # Case explicit expected len
-        timestep_indices_sanity_check(
-            timestep_index=mock_trj_indices,
+        validate_timestep_indices(
+            timesteps_indices=mock_trj_indices,
             trajectory_expected_len=len(mock_trj_indices),
         )
 
@@ -34,8 +34,8 @@ class TestTimestepIndexingSanityCheck:
 
         # Case default arg
         with pytest.raises(IndexError) as exc_info:
-            timestep_indices_sanity_check(
-                timestep_index=mock_trj_indices, trajectory_expected_len=None
+            validate_timestep_indices(
+                timesteps_indices=mock_trj_indices, trajectory_expected_len=None
             )
 
         print(f"{exc_info=}")
@@ -43,8 +43,8 @@ class TestTimestepIndexingSanityCheck:
 
         # Case explicit expected len
         with pytest.raises(IndexError) as exc_info:
-            timestep_indices_sanity_check(
-                timestep_index=mock_trj_indices,
+            validate_timestep_indices(
+                timesteps_indices=mock_trj_indices,
                 trajectory_expected_len=len(mock_trj_indices),
             )
 
@@ -72,7 +72,7 @@ class TestDataframeTimestepIndexingSanityCheck:
 
     def test_base_case_pass(self, setup_dataframe_monotonic_col_label):
         the_dataframe = setup_dataframe_monotonic_col_label()
-        tisc = dataframe_timestep_indexing_sanity_check(
+        tisc = validate_dataframe_timesteps_indexing(
             the_dataframe=the_dataframe,
             indexed_column_label=self.COL_LABEL,
         )
@@ -80,7 +80,7 @@ class TestDataframeTimestepIndexingSanityCheck:
         assert type(tisc) is np.ndarray
 
     def test_index_start_non_zero(self, setup_dataframe_monotonic_col_label):
-        tisc = dataframe_timestep_indexing_sanity_check(
+        tisc = validate_dataframe_timesteps_indexing(
             the_dataframe=setup_dataframe_monotonic_col_label(start_index=2),
             indexed_column_label=self.COL_LABEL,
         )
@@ -90,6 +90,6 @@ class TestDataframeTimestepIndexingSanityCheck:
             df_missing = setup_dataframe_monotonic_col_label().drop(
                 f"{self.COL_LABEL}9", axis=1
             )
-            tisc = dataframe_timestep_indexing_sanity_check(
+            tisc = validate_dataframe_timesteps_indexing(
                 the_dataframe=df_missing, indexed_column_label=self.COL_LABEL
             )

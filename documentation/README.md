@@ -161,8 +161,8 @@ Features are defined using either:
 Convert structured DataFrame data to trajectory containers:
 
 **Key Functions:**
-- `aggregate_multiple_features_from_dataframe()` - Multiple features from DataFrame
-- `extract_single_feature_from_dataframe()` - Single feature extraction
+- `from_dataframe()` - Multiple features from DataFrame
+- `extract_dataframe_feature()` - Single feature extraction
 - `unpack_dataframe_and_show_topic()` - Inspect DataFrame structure
 
 **Requirements:**
@@ -174,9 +174,9 @@ Convert structured DataFrame data to trajectory containers:
 Extract trajectory data from ROS bag files:
 
 **Key Functions:**
-- `aggregate_multiple_features_from_rosbag()` - Multiple ROS topics
-- `extract_single_feature_from_rosbag()` - Single topic extraction
-- `check_rosbag_path_and_show_available_topics()` - Inspect available topics
+- `from_rosbag()` - Multiple ROS topics
+- `extract_rosbag_feature()` - Single topic extraction
+- `check_bag_topics()` - Inspect available topics
 
 **Requirements:**
 - ROS2
@@ -231,7 +231,7 @@ Create trajectory containers directly from data arrays:
 ## Utilities
 
 ### Data Validation (`utils/data_sanity_checks.py`)
-- `dataframe_timestep_indexing_sanity_check()` - Validate DataFrame structure
+- `validate_dataframe_timesteps_indexing()` - Validate DataFrame structure
 - Trajectory data consistency checks
 - Dimension and shape validation
 
@@ -241,7 +241,7 @@ Create trajectory containers directly from data arrays:
 - Metadata validation
 
 ### Factory Functions (`utils/factory.py`)
-- `trajectory_dataclass_factory()` - Dynamic dataclass creation
+- `create_dataclass()` - Dynamic dataclass creation
 - `TrjDataClassFeatureSpecification` - Feature specification handling
 - Configuration validation
 
@@ -270,13 +270,13 @@ Create trajectory containers directly from data arrays:
 
 #### `trajectory_container_tools.dataframe_to_tct`
 ```python
-def aggregate_multiple_features_from_dataframe(
+def from_dataframe(
     dataset_frame: pd.DataFrame,
     dataset_info: str,
     features_config: Dict[str, Union[type[BaseDataframeFeatureDataclass], Tuple[str, ...]]]
 ) -> AbstractMultifeatureDataclass
 
-def extract_single_feature_from_dataframe(
+def extract_dataframe_feature(
     dataset: pd.DataFrame,
     feature_name: str,
     data_container_type: type[BaseDataframeFeatureDataclass]
@@ -285,7 +285,7 @@ def extract_single_feature_from_dataframe(
 
 #### `trajectory_container_tools.rosbag_to_tct`
 ```python
-def aggregate_multiple_features_from_rosbag(
+def from_rosbag(
     rosbag_path: Path,
     dataset_info: Optional[str],
     features_config: Dict[str, Union[type[RosStampedDataclass], Tuple[str, ...]]],
@@ -294,7 +294,7 @@ def aggregate_multiple_features_from_rosbag(
     typestore: Optional[Typestore] = None
 ) -> AbstractMultifeatureDataclass
 
-def extract_single_feature_from_rosbag(
+def extract_rosbag_feature(
     rosbag_path: Path,
     feature_name: str,
     data_container_type: type[RosStampedDataclass],

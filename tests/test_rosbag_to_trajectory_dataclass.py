@@ -6,8 +6,8 @@ import numpy as np
 
 from .rosbag_test_utils import get_rosbag_vaul_f110_grand_salon_path
 from trajectory_container_tools.rosbag_to_tct import (
-    aggregate_multiple_features_from_rosbag,
-    extract_single_feature_from_rosbag,
+    from_rosbag,
+    extract_rosbag_feature,
 )
 from trajectory_container_tools.trj_dataclasses.ros2_primitive_dataclass import Header
 
@@ -30,7 +30,7 @@ class TestExtractROSBagFeature:
     def test_extract_single_feature_from_rosbag(
         self, setup_rosbag_three_topics_filtered
     ):
-        container = extract_single_feature_from_rosbag(
+        container = extract_rosbag_feature(
             rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
             feature_name="/odom",
             data_container_type=NavMsgsOdometry,
@@ -45,7 +45,7 @@ class TestExtractROSBagFeature:
         self, setup_rosbag_three_topics_filtered
     ):
         container: Union[NavMsgsOdometry, RosStampedDataclass]
-        container = extract_single_feature_from_rosbag(
+        container = extract_rosbag_feature(
             rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
             feature_name="/odom",
             data_container_type=NavMsgsOdometry,
@@ -79,7 +79,7 @@ class TestExtractROSBagFeature:
 
         with pytest.raises(AttributeError):
             # noinspection PyTypeChecker
-            container = extract_single_feature_from_rosbag(
+            container = extract_rosbag_feature(
                 rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
                 feature_name=fn,
                 data_container_type=bad_argument,
@@ -87,7 +87,7 @@ class TestExtractROSBagFeature:
 
     def test_fail_no_existing_feature(self, setup_rosbag_three_topics_filtered):
         with pytest.raises(ValueError):
-            extract_single_feature_from_rosbag(
+            extract_rosbag_feature(
                 rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
                 feature_name="/aaaaaaackermann_cmddd",
                 data_container_type=AckermannMsgsAckermannDriveStamped,
@@ -95,7 +95,7 @@ class TestExtractROSBagFeature:
 
     def test_no_existing_feature_dimension(self, setup_rosbag_three_topics_filtered):
         with pytest.raises(ValueError):
-            extract_single_feature_from_rosbag(
+            extract_rosbag_feature(
                 rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
                 feature_name="/aaaaaaackermann_cmddd",
                 data_container_type=NavMsgsOdometry,
@@ -106,7 +106,7 @@ class TestExtractROSBagFeature:
         bag_path, bag_name = get_rosbag_vaul_f110_grand_salon_path(offending=True)
 
         with pytest.raises(TimestampCausalOrderingError) as exc_info:
-            extract_single_feature_from_rosbag(
+            extract_rosbag_feature(
                 rosbag_path=bag_path,
                 feature_name="/teleop",
                 data_container_type=AckermannMsgsAckermannDriveStamped,
@@ -151,7 +151,7 @@ class TestExtractROSBagMultifeature:
     def test_aggregate_multiple_features_from_rosbag_with_new_type(
         self, setup_rosbag_three_topics_filtered, setup_feature_config_new_type
     ):
-        features_container = aggregate_multiple_features_from_rosbag(
+        features_container = from_rosbag(
             rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
             dataset_info=None,
             features_config=setup_feature_config_new_type,
@@ -177,7 +177,7 @@ class TestExtractROSBagMultifeature:
     def test_aggregate_multiple_features_from_rosbag_with_known_type(
         self, setup_rosbag_three_topics_filtered, setup_feature_config_known_type
     ):
-        features_container = aggregate_multiple_features_from_rosbag(
+        features_container = from_rosbag(
             rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
             dataset_info=None,
             features_config=setup_feature_config_known_type,
@@ -207,7 +207,7 @@ class TestExtractROSBagMultifeature:
         )
 
         with pytest.raises(KeyError):
-            feats = aggregate_multiple_features_from_rosbag(
+            feats = from_rosbag(
                 rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
                 dataset_info="",
                 features_config=setup_feature_config_known_type_bad,
@@ -224,7 +224,7 @@ class TestExtractROSBagMultifeature:
         #   - "/sensors/imu/raw": SensorMsgsImu,
         #   - "/sensors/imu": VescMsgsVescImuStamped,
 
-        container = aggregate_multiple_features_from_rosbag(
+        container = from_rosbag(
             setup_rosbag_six_topics_filtered.bag_path,
             dataset_info=setup_rosbag_six_topics_filtered.bag_name,
             features_config={

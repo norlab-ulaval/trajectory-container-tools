@@ -6,13 +6,13 @@ from typing import List, Optional, Union
 
 from tqdm import tqdm
 
-from trajectory_container_tools import check_rosbag_path_and_show_available_topics
+from trajectory_container_tools import check_bag_topics
 from trajectory_container_tools.utils.general import (
     dn_validate_path,
     show_directory_content,
 )
 from trajectory_container_tools.utils.ros2_non_native_msg import (
-    register_ros2_non_native_msg,
+    register_non_native_msgs,
 )
 from trajectory_container_tools.utils.ros2_utils import get_rosbag_typestore_auto_distro
 
@@ -48,7 +48,7 @@ def create_filtered_rosbag(
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     typestore = get_rosbag_typestore_auto_distro()
-    typestore = register_ros2_non_native_msg(typestore)
+    typestore = register_non_native_msgs(typestore)
 
     with Reader(input_path) as reader:
         # Filter connections for selected topics
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     ]
 
     # .............................................................................................
-    rosbag_path = check_rosbag_path_and_show_available_topics(rosbag_path)
+    rosbag_path = check_bag_topics(rosbag_path)
 
     create_filtered_rosbag(
         input_rosbag_path=rosbag_path,

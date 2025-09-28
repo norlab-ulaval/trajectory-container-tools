@@ -7,7 +7,7 @@ import numpy as np
 from typing import Any, List, Optional, Tuple, Union
 
 from ..utils.temporal_tools.timestamps import Timestamps
-from ..utils.temporal_tools.timestep_indexing import timestep_indices_sanity_check
+from ..utils.temporal_tools.timestep_indexing import validate_timestep_indices
 from ..utils.general import (
     check_typing_list_and_extract_list_type,
     extract_class_name_from_instance,
@@ -396,7 +396,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                         _timesteps_indices_vs_index_len_check(
                             self.timesteps_indices, self._timestep_indexes
                         )
-                        timestep_indices_sanity_check(self.timesteps_indices)
+                        validate_timestep_indices(self.timesteps_indices)
 
                 elif isinstance(data_property, np.ndarray):
                     # Case leaf: initialize time-steps index

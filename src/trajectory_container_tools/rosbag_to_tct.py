@@ -21,14 +21,14 @@ from .trj_dataclasses.ros2_feature_dataclass import (
     RosStampedDataclass,
 )
 from .utils.factory import (
-    parse_to_feature_dataclass,
+    parse_feature_spec,
 )
 from .utils.general import (
     camelcase_to_snake_case,
     extract_class_name_from_type,
     setup_progressbar, dn_validate_path,
 )
-from .utils.ros2_non_native_msg import register_ros2_non_native_msg
+from .utils.ros2_non_native_msg import register_non_native_msgs
 from .utils.ros2_utils import (
     get_rosbag_typestore_auto_distro,
     rosbag_topic_time_to_timestamp,
@@ -41,7 +41,7 @@ from .utils.temporal_tools.timestamps import TimestampCausalOrderingError, Times
 from .utils.typing import MultifeatureTrajectoryDataclass, ShadowDataContainer
 
 
-def check_rosbag_path_and_show_available_topics(rosbag_path: Union[str, Path]) -> Path:
+def check_bag_topics(rosbag_path: Union[str, Path]) -> Path:
     """Display available topics and messages in a specified ROS bag file.
 
     This function reads a ROS bag file from the specified path and lists all the available
@@ -72,7 +72,7 @@ def check_rosbag_path_and_show_available_topics(rosbag_path: Union[str, Path]) -
     return Path(rosbag_path)
 
 
-def aggregate_multiple_features_from_rosbag(
+def from_rosbag(
     rosbag_path: Path,
     dataset_info: Optional[str],
     features_config: Dict[str, Union[type[RosDataclass], type[RosStampedDataclass], Tuple[str, ...]]],
@@ -124,18 +124,18 @@ def aggregate_multiple_features_from_rosbag(
 
     if not typestore:
         typestore = get_rosbag_typestore_auto_distro()
-        typestore = register_ros2_non_native_msg(typestore)
+        typestore = register_non_native_msgs(typestore)
 
     for feature_name, feature_dataclass in features_config.items():
         # Case: features_config require parsing topic msg property
         if isinstance(feature_dataclass, tuple):
-            feature_dataclass = parse_to_feature_dataclass(
+            feature_dataclass = parse_feature_spec(
                 feature_dataclass,
                 target_subclass=RosStampedDataclass,
                 feature_name=feature_name,
             )
 
-        feature = extract_single_feature_from_rosbag(
+        feature = extract_rosbag_feature(
             rosbag_path=rosbag_path,
             feature_name=feature_name,
             data_container_type=feature_dataclass,
@@ -168,7 +168,7 @@ def aggregate_multiple_features_from_rosbag(
     )
 
 
-def extract_single_feature_from_rosbag(
+def extract_rosbag_feature(
     rosbag_path: Path,
     feature_name: str,
     data_container_type: Union[type[RosDataclass], type[RosStampedDataclass]],
@@ -189,7 +189,7 @@ def extract_single_feature_from_rosbag(
         >>> from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import \
         >>>     NavMsgsOdometry
         >>>
-        >>> extract_single_feature_from_rosbag(
+        >>> extract_rosbag_feature(
         >>>     rosbag_path=Path("</path/to/rosbag>"),
         >>>     feature_name="/odom",data_container_type=NavMsgsOdometry
         >>> )
@@ -221,7 +221,7 @@ def extract_single_feature_from_rosbag(
         # .... Crawl topic msgs ...................................................................
         if not typestore:
             typestore = get_rosbag_typestore_auto_distro()
-            typestore = register_ros2_non_native_msg(typestore)
+            typestore = register_non_native_msgs(typestore)
 
         with Reader(rosbag_path) as reader:
             connections = [

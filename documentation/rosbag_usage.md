@@ -45,9 +45,9 @@ The ROS bag converter extracts trajectory data from ROS 2 bag files and converts
 ```python
 from pathlib import Path
 from trajectory_container_tools.rosbag_to_tct import (
-    aggregate_multiple_features_from_rosbag,
-    extract_single_feature_from_rosbag,
-    check_rosbag_path_and_show_available_topics
+    from_rosbag,
+    extract_rosbag_feature,
+    check_bag_topics
     )
 from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
     NavMsgsOdometry, RosStampedDataclass
@@ -59,7 +59,7 @@ from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
 ```python
 # Inspect available topics in the bag
 rosbag_path = Path("path/to/your/rosbag")
-check_rosbag_path_and_show_available_topics(rosbag_path)
+check_bag_topics(rosbag_path)
 ```
 
 **Example Output:**
@@ -85,7 +85,7 @@ features_config = {
 
 ```python
 # Extract multiple features from rosbag
-trajectory_container = aggregate_multiple_features_from_rosbag(
+trajectory_container = from_rosbag(
     rosbag_path=rosbag_path,
     dataset_info="Robot experiment - Outdoor navigation",
     features_config=features_config
@@ -121,7 +121,7 @@ features_config = {
 
 ```python
 from pathlib import Path
-from trajectory_container_tools.rosbag_to_tct import aggregate_multiple_features_from_rosbag
+from trajectory_container_tools.rosbag_to_tct import from_rosbag
 from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import NavMsgsOdometry
 
 rosbag_path = Path("experiments/robot_nav_2024_01_15.db3").parent
@@ -142,7 +142,7 @@ features_config = {
         }
 
 # Extract trajectory data
-robot_data = aggregate_multiple_features_from_rosbag(
+robot_data = from_rosbag(
         rosbag_path=rosbag_path,
         dataset_info="Outdoor navigation experiment - 2024-01-15",
         features_config=features_config
@@ -170,14 +170,14 @@ plt.show()
 ### Example 2: Single Topic Extraction
 
 ```python
-from trajectory_container_tools.rosbag_to_tct import extract_single_feature_from_rosbag
+from trajectory_container_tools.rosbag_to_tct import extract_rosbag_feature
 
 # Extract only odometry data
-odom_container = extract_single_feature_from_rosbag(
-    rosbag_path=rosbag_path,
-    feature_name="odom",  # ROS topic name
-    data_container_type=NavMsgsOdometry
-)
+odom_container = extract_rosbag_feature(
+        rosbag_path=rosbag_path,
+        feature_name="odom",  # ROS topic name
+        data_container_type=NavMsgsOdometry
+        )
 
 print(f"Odometry timestamps: {len(odom_container.header.timestamps)}")
 print(f"Position data shape: {odom_container.x.shape}")
@@ -196,7 +196,7 @@ angular_vel = odom_container.twist.angular.z
 
 ```python
 # Extract only a portion of the rosbag
-partial_data = aggregate_multiple_features_from_rosbag(
+partial_data = from_rosbag(
     rosbag_path=rosbag_path,
     dataset_info="Partial trajectory - middle section",
     features_config=features_config,
@@ -212,7 +212,7 @@ print(f"Partial trajectory length: {partial_data.odometry.trajectory_len}")
 ### Registering Custom Messages
 
 ```python
-from trajectory_container_tools.utils.ros2_non_native_msg import register_ros2_non_native_msg
+from trajectory_container_tools.utils.ros2_non_native_msg import register_non_native_msgs
 from rosbags.typesys import get_types_from_msg, register_types
 
 # Register custom message type
@@ -225,12 +225,12 @@ float64 velocity
 uint32 timestamp
 """
 
-register_ros2_non_native_msg('custom_msgs/msg/TrajectoryPoint', custom_msg_def)
+register_non_native_msgs('custom_msgs/msg/TrajectoryPoint', custom_msg_def)
 
 # Use in feature configuration
 features_config = {
-    'trajectory_points': ('TrajectoryPoint', 'x', 'y', 'theta', 'velocity')
-}
+        'trajectory_points': ('TrajectoryPoint', 'x', 'y', 'theta', 'velocity')
+        }
 ```
 
 ### Custom Dataclass for Complex Messages
@@ -279,7 +279,7 @@ Error: Topic '/odom' not found in rosbag
 **Solutions:**
 ```python
 # Check available topics
-check_rosbag_path_and_show_available_topics(rosbag_path)
+check_bag_topics(rosbag_path)
 
 # Common topic name variations
 common_odom_topics = ['/odom', '/odometry', '/robot/odom', '/base_link/odom']
@@ -287,7 +287,7 @@ common_odom_topics = ['/odom', '/odometry', '/robot/odom', '/base_link/odom']
 # Try different topic names
 for topic in common_odom_topics:
     try:
-        container = extract_single_feature_from_rosbag(rosbag_path, topic, NavMsgsOdometry)
+        container = extract_rosbag_feature(rosbag_path, topic, NavMsgsOdometry)
         print(f"Success with topic: {topic}")
         break
     except:
@@ -326,7 +326,7 @@ Error: MemoryError - Unable to allocate array
 chunks = process_large_rosbag(rosbag_path, features_config, chunk_size=5000)
 
 # Or use start/stop parameters
-partial_data = aggregate_multiple_features_from_rosbag(
+partial_data = from_rosbag(
     rosbag_path=rosbag_path,
     features_config=features_config,
     start=0,

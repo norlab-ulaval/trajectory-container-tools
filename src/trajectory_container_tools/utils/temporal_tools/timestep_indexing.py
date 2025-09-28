@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 
 
-def timestep_indices_sanity_check(
-    timestep_index: np.ndarray, trajectory_expected_len: Optional[int] = None
+def validate_timestep_indices(
+    timesteps_indices: np.ndarray, trajectory_expected_len: Optional[int] = None
 ) -> np.ndarray:
     """
     Checks and validates if the provided timestep index satisfies monotonicity
@@ -16,23 +16,23 @@ def timestep_indices_sanity_check(
     and verify that the trajectory length corresponds to a constant increment sequence. If these
     conditions are not met, an `IndexError` is raised.
 
-    :param timestep_index: The array representing the timestep indices to be validated.
+    :param timesteps_indices: The array representing the timestep indices to be validated.
     :param trajectory_expected_len: Optional; Expected trajectory length. If not provided, it is
         derived from the shape of `timestep_index`.
     :return: The validated timestep index.
     :raises IndexError: If the `timestep_index` is not monotonically increasing, or
         the trajectory length does not correspond to a constant increment.
     """
-    np_diff = np.diff(timestep_index)
+    np_diff = np.diff(timesteps_indices)
 
     index_is_monoticaly_increasing = np.all(np_diff > 0)
 
     if not trajectory_expected_len:
-        trajectory_expected_len = timestep_index.shape[-1]
+        trajectory_expected_len = timesteps_indices.shape[-1]
 
-    index_start = timestep_index[0]
+    index_start = timesteps_indices[0]
     index_start -= 1
-    index_end = timestep_index[-1]
+    index_end = timesteps_indices[-1]
     delta = index_end - index_start
     index_has_constant_increment = trajectory_expected_len == delta
 
@@ -45,10 +45,10 @@ def timestep_indices_sanity_check(
             f"increassing"
         )
 
-    return timestep_index
+    return timesteps_indices
 
 
-def dataframe_timestep_indexing_sanity_check(
+def validate_dataframe_timesteps_indexing(
     the_dataframe: pd.DataFrame, indexed_column_label: str
 ) -> np.ndarray:
     """Utility for validating timestep index in column label by checking if it is either
@@ -67,6 +67,6 @@ def dataframe_timestep_indexing_sanity_check(
     timestep_index = np.array(col_index)
     column_nb = the_dataframe.shape[1]
 
-    timestep_index = timestep_indices_sanity_check(timestep_index, column_nb)
+    timestep_index = validate_timestep_indices(timestep_index, column_nb)
 
     return timestep_index

@@ -208,14 +208,14 @@ class CustomStatePose2D(BaseTrajectoryDataclass):
 
 ```python
 from trajectory_container_tools.rosbag_to_tct import (
-    aggregate_multiple_features_from_rosbag,
+    from_rosbag,
     )
 from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
     NavMsgsOdometry,
     AckermannMsgsAckermannDriveStamped,
     )
 
-trajectory_from_rosbag = aggregate_multiple_features_from_rosbag(
+trajectory_from_rosbag = from_rosbag(
         rosbag_path,
         dataset_info="Warthog Mont-Morency 1 Dec 2025",
         features_config={
@@ -325,10 +325,10 @@ Multifeature(
 #### From pandas DataFrame
 
 ```python
-from trajectory_container_tools.dataframe_to_tct import aggregate_multiple_features_from_dataframe
+from trajectory_container_tools.dataframe_to_tct import from_dataframe
 from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import StatePose2D
 
-trajectory_from_dataframe = aggregate_multiple_features_from_dataframe(
+trajectory_from_dataframe = from_dataframe(
         mock_dataset_snow,
         dataset_info="Marmote Mont-Morency 1 Dec 2025",
         features_config={

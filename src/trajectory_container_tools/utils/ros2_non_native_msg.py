@@ -45,7 +45,7 @@ VescImu imu
 """
 
 
-def register_ros2_non_native_msg(typestore: Optional[Typestore] = None) -> Typestore:
+def register_non_native_msgs(typestore: Optional[Typestore] = None) -> Typestore:
     if not typestore:
         typestore = get_rosbag_typestore_auto_distro()
 

@@ -126,7 +126,7 @@ TCT provides factory functions for dynamic trajectory dataclass creation:
 ```python
 from trajectory_container_tools.utils.factory import (
     TrjDataClassFeatureSpecification,
-    trajectory_dataclass_factory
+    create_dataclass
     )
 
 mock_data = np.random.randn(100, 4)  # 100 timesteps, 4 dimensions
@@ -138,7 +138,7 @@ spec = TrjDataClassFeatureSpecification(
         )
 
 # Create the dataclass type
-DynamicTrajectory = trajectory_dataclass_factory(specification=spec)
+DynamicTrajectory = create_dataclass(specification=spec)
 
 # Use the dynamically created class
 factory_generated_trajectory = DynamicTrajectory(
@@ -337,8 +337,8 @@ Expected error caught: ValueError
 ### Factory Functions
 
 - `TrjDataClassFeatureSpecification`: Specification class for dynamic creation
-- `trajectory_dataclass_factory()`: Creates dataclass types from specifications
-- `parse_to_feature_dataclass()`: Parses feature specifications for dataclass generation
+- `create_dataclass()`: Creates dataclass types from specifications
+- `parse_feature_spec()`: Parses feature specifications for dataclass generation
 
 ## Usage Recommendations
 

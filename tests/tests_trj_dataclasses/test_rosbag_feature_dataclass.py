@@ -2,7 +2,7 @@
 import pytest
 
 from trajectory_container_tools.rosbag_to_tct import (
-    aggregate_multiple_features_from_rosbag,
+    from_rosbag,
 )
 from trajectory_container_tools.trj_dataclasses.ros2_primitive_dataclass import (
     Header,
@@ -191,7 +191,7 @@ class TestTrajectoryDataclassFromROSBagCaseIntegration:
         self, setup_rosbag_six_topics_filtered
     ):
 
-        container = aggregate_multiple_features_from_rosbag(
+        container = from_rosbag(
             setup_rosbag_six_topics_filtered.bag_path,
             dataset_info=setup_rosbag_six_topics_filtered.bag_name,
             features_config=setup_rosbag_six_topics_filtered.feature_config,
@@ -202,7 +202,7 @@ class TestTrajectoryDataclassFromROSBagCaseIntegration:
 
     def test_integration_feature_iterable(self, setup_rosbag_six_topics_filtered):
 
-        container = aggregate_multiple_features_from_rosbag(
+        container = from_rosbag(
             setup_rosbag_six_topics_filtered.bag_path,
             dataset_info=setup_rosbag_six_topics_filtered.bag_name,
             features_config=setup_rosbag_six_topics_filtered.feature_config,
@@ -238,7 +238,7 @@ class TestTrajectoryDataclassFromROSBagCaseIntegration:
 
     def test_integration_feature_getitem(self, setup_rosbag_six_topics_filtered):
 
-        container = aggregate_multiple_features_from_rosbag(
+        container = from_rosbag(
             setup_rosbag_six_topics_filtered.bag_path,
             dataset_info=setup_rosbag_six_topics_filtered.bag_name,
             features_config=setup_rosbag_six_topics_filtered.feature_config,

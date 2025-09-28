@@ -6,7 +6,7 @@ from trajectory_container_tools.utils.temporal_tools.sequence_ordering import (
     fix_sequence_ordering_base_on_timestamps,
 )
 from trajectory_container_tools.utils.temporal_tools.timestamps import (
-    timestamp_causal_ordering_sanity_check,
+    validate_timestamps_ordering,
 )
 
 
@@ -22,7 +22,7 @@ class TestTrajectorySequenceOrderingLogic:
         ts = fixed_trajectory_dict["header"].timestamps
 
         # Validate the results
-        timestamp_causal_ordering_sanity_check(ts)
+        validate_timestamps_ordering(ts)
 
     def test_fix_sequence_ordering_base_on_timestamps_case_input_unordered(
         self, mock_trajectory_dict_unordered, mock_trajectory_dict_ordered
@@ -35,7 +35,7 @@ class TestTrajectorySequenceOrderingLogic:
         ts = fixed_trajectory_dict["header"].timestamps
 
         # Validate the results
-        timestamp_causal_ordering_sanity_check(ts)
+        validate_timestamps_ordering(ts)
 
         assert fixed_trajectory_dict == mock_trajectory_dict_ordered
 

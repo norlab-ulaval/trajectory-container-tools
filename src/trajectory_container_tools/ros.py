@@ -10,15 +10,13 @@ This module provides ROS-related functionality including:
 
 Usage:
     >>> import trajectory_container_tools as tct
-    >>> tct.ros.check_topics(rosbag_path)
+    >>> tct.ros.check_bag_topics(rosbag_path)
     >>> tct.ros.register_non_native_msgs()
 """
 
 # ROS utilities
-from .rosbag_to_tct import check_rosbag_path_and_show_available_topics as check_topics
-from .utils.ros2_non_native_msg import (
-    register_ros2_non_native_msg as register_non_native_msgs,
-)
+from .rosbag_to_tct import check_bag_topics
+from .utils.ros2_non_native_msg import register_non_native_msgs
 from .utils.ros2_utils import (
     get_rosbag_typestore_auto_distro,
     rosbag_topic_time_to_timestamp,
@@ -26,7 +24,7 @@ from .utils.ros2_utils import (
 
 __all__ = [
     # Utilities
-    "check_topics",
+    "check_bag_topics",
     "register_non_native_msgs",
     "get_rosbag_typestore_auto_distro",
     "rosbag_topic_time_to_timestamp",

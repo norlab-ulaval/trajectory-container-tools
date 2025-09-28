@@ -130,12 +130,12 @@ class Timestamps:
           nanoseconds or (seconds, nanoseconds ), default is True.
         :return: A list of integers representing IDs of events that violate causal ordering.
         """
-        return timestamp_causal_ordering_sanity_check(
+        return validate_timestamps_ordering(
             self, show_offending_in_nanoseconds
         )
 
 
-def timestamp_causal_ordering_sanity_check(
+def validate_timestamps_ordering(
     timestamp_object: Timestamps, show_offending_in_nanoseconds: bool = True
 ) -> List[int]:
     """Checks the causal order of timestamps in the given data container to ensure they are
@@ -148,7 +148,7 @@ def timestamp_causal_ordering_sanity_check(
     Usage example:
 
     >>> mock_trajectory_timestamp_object: Timestamps
-    >>> offending_index = timestamp_causal_ordering_sanity_check(mock_trajectory_timestamp_object)
+    >>> offending_index = validate_timestamps_ordering(mock_trajectory_timestamp_object)
     >>> # TimestampCausalOrderingError: Timestamp causal ordering violations:
     >>> #     Number of offending timestamps 4/3409
     >>> #
