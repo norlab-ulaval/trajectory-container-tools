@@ -28,3 +28,8 @@ pyclean
 #   >>> requires = ["setuptools>=61.0", "setuptools-scm>=8"]
 #   >>> [tool.setuptools_scm]
 #setuptools-scm
+
+# Note: Set DNA to build for Numpy 2 but let the pyproject.toml dependencies open so that we keep
+# support for Numpy 1
+matplotlib >= 3.8.0  # These versions support NumPy 2.x
+numpy >= 2.0.0

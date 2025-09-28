@@ -116,18 +116,18 @@ class TestTimestamps:
         ts = Timestamps(stamps=mock_ts_array)
 
         # Case individual key
-        assert ts[0] == mock_ts_array[0]
-        assert ts[-1] == mock_ts_array[-1]
+        assert ts[0].stamps == mock_ts_array[0]
+        assert ts[-1].stamps == mock_ts_array[-1]
 
         # Case slicing
-        assert np.allclose(ts[0:2], mock_ts_array[0:2])
+        assert np.allclose(ts[0:2].stamps, mock_ts_array[0:2])
 
     def test_iterator(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)
 
         for idx, value in enumerate(ts):
-            assert value == mock_ts_array[idx]
+            assert value.stamps == mock_ts_array[idx]
 
     def test_seconds_nanoseconds(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps

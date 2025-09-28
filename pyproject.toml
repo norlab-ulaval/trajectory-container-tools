@@ -8,23 +8,21 @@ dynamic = ["version"]
 
 description = "Trajectory Container Tools for Robotic Deep Reinforcement Learning"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 authors = [
     { name = "RedLeader Research", email = "research@redleader.com" }
 ]
 keywords = ["robotics", "reinforcement-learning", "trajectory", "dataclass"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 3 - Beta",
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
-#    "matplotlib",
-#    "numpy",
-    "matplotlib >= 3.8.0",  # These versions support NumPy 2.x
-    "numpy >= 2.0.0",
+    "numpy",
+    "matplotlib",
     "pandas",
     "tqdm",
     "rosbags", # For ROS bag functionality
@@ -48,7 +46,6 @@ where = [
 # Recommended directory exclusion to prevent build faillure for cases where python projects
 # are collocated along side ros2 projects in the same repository.
 exclude = [
-    #"src/ros2_packages*", # <-- uncomment and update with your ros pkg path
     "*/build",
     "*/install",
     "*/log"

@@ -12,9 +12,6 @@ import sys
 import tempfile
 import subprocess
 
-# Add the src directory to path for importing the modules under test
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
 from trajectory_container_tools.version import _get_version, _get_fallback_version, __version__
 
 
