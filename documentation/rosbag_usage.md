@@ -56,7 +56,7 @@ from trajectory_container_tools.dataclasses import NavMsgsOdometry, RosStampedDa
 ```python
 # Inspect available topics in the bag
 rosbag_path = Path("path/to/your/rosbag")
-tct.check_bag_topics(rosbag_path)
+tct.extractor.check_bag_topics(rosbag_path)
 ```
 
 **Example Output:**
