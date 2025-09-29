@@ -14,6 +14,7 @@ from .timestamps import (
     Timestamps,
     TimestampCausalOrderingError,
     validate_timestamps_ordering,
+    compute_delta_timestamp,
     to_seconds_nanoseconds
 )
 from .timestep_indexing import (
@@ -27,5 +28,6 @@ __all__ = [
     'validate_timestamps_ordering',
     'validate_timestep_indices',
     'validate_dataframe_timesteps_indexing',
+    "compute_delta_timestamp",
     'to_seconds_nanoseconds',
 ]

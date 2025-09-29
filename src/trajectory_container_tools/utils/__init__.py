@@ -10,8 +10,11 @@ Usage:
 from .general import (
     camelcase_to_snake_case,
     extract_class_name_from_type,
+    extract_class_name_from_instance,
     setup_progressbar,
     dn_validate_path,
+    show_directory_content,
+    get_directory_size_mb,
 )
 
 
@@ -19,6 +22,9 @@ __all__ = [
     # General utilities
     "camelcase_to_snake_case",
     "extract_class_name_from_type",
+    "extract_class_name_from_instance",
     "setup_progressbar",
     "dn_validate_path",
+    "show_directory_content",
+    "get_directory_size_mb",
 ]
