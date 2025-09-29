@@ -4,8 +4,8 @@ from typing import Union
 import pytest
 import numpy as np
 
-from .rosbag_test_utils import get_rosbag_vaul_f110_grand_salon_path
-from trajectory_container_tools.rosbag_to_tct import (
+from ..rosbag_test_utils import get_rosbag_vaul_f110_grand_salon_path
+from trajectory_container_tools.extractor.rosbag_to_tct import (
     from_rosbag,
     extract_rosbag_feature,
 )
@@ -21,7 +21,7 @@ from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
     Tf2MsgsTFMessage,
     VescMsgsVescImuStamped,
 )
-from trajectory_container_tools.utils.temporal_tools.timestamps import (
+from trajectory_container_tools.temporal.timestamps import (
     TimestampCausalOrderingError,
 )
 

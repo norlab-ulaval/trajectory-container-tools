@@ -29,9 +29,9 @@ Quick Start:
 from .version import __version__
 
 # Main API - Top-level convenience functions
-from .rosbag_to_tct import from_rosbag, extract_rosbag_feature, check_bag_topics
+from trajectory_container_tools.extractor.rosbag_to_tct import from_rosbag, extract_rosbag_feature, check_bag_topics
 
-from .dataframe_to_tct import (
+from trajectory_container_tools.extractor.dataframe_to_tct import (
     from_dataframe,
     extract_dataframe_feature,
     unpack_dataframe_and_show_topic,
@@ -50,7 +50,7 @@ from .dataclasses.base_trajectory_dataclass import (
 )
 
 # Common exceptions
-from .utils.temporal_tools.timestamps import TimestampCausalOrderingError
+from trajectory_container_tools.temporal import TimestampCausalOrderingError
 
 # Submodule imports for namespace organization (moved to end to avoid circular imports)
 from . import dataclasses as dataclasses
@@ -63,7 +63,7 @@ __all__ = [
     # Version
     "__version__",
 
-    # Main API functions (new names)
+    # Main API functions
     "from_rosbag",
     "from_dataframe",
     "extract_rosbag_feature",

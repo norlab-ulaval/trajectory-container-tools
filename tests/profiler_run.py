@@ -1,22 +1,17 @@
 # coding=utf-8
 import os
-from pathlib import Path
 from typing import Union
 
 from trajectory_container_tools.dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
 )
 from trajectory_container_tools.utils.optimization import detect_docker_cpu_limits
-from trajectory_container_tools.rosbag_to_tct import (
+from trajectory_container_tools.extractor.rosbag_to_tct import (
     check_bag_topics,
 )
-from trajectory_container_tools.utils.ros2_non_native_msg import (
-    register_non_native_msgs,
-)
-from trajectory_container_tools.rosbag_to_tct import (
+from trajectory_container_tools.extractor.rosbag_to_tct import (
     from_rosbag,
-    extract_rosbag_feature,
-)
+    )
 from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
     AckermannMsgsAckermannDriveStamped,
     NavMsgsOdometry,

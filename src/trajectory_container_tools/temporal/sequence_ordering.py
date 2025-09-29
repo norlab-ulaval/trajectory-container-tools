@@ -9,9 +9,6 @@ from trajectory_container_tools.dataclasses.base_trajectory_dataclass import (
 from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
     RosStampedDataclass,
 )
-from trajectory_container_tools.utils.temporal_tools.timestamps import (
-    Timestamps,
-)
 from trajectory_container_tools.utils.shadow_data_container import (
     fetch_timestamps_from_shadow_data_container,
 )

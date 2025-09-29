@@ -9,36 +9,36 @@ import numpy as np
 from rosbags.rosbag2 import Reader
 from rosbags.typesys.store import Typestore
 
-from .dataclasses.abstract_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
 )
-from .dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
-from .dataclasses.ros2_primitive_dataclass import Header
-from .dataclasses.ros2_feature_dataclass import (
+from trajectory_container_tools.dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
+from trajectory_container_tools.dataclasses.ros2_primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
     NavMsgsOdometry,
     NestedRosStampedDataclass,
     RosDataclass,
     RosStampedDataclass,
 )
-from .utils.factory import (
+from trajectory_container_tools.utils.factory import (
     parse_feature_spec,
 )
-from .utils.general import (
+from trajectory_container_tools.utils.general import (
     camelcase_to_snake_case,
     extract_class_name_from_type,
     setup_progressbar, dn_validate_path,
 )
-from .utils.ros2_non_native_msg import register_non_native_msgs
-from .utils.ros2_utils import (
+from trajectory_container_tools.utils.ros2_non_native_msg import register_non_native_msgs
+from trajectory_container_tools.utils.ros2_utils import (
     get_rosbag_typestore_auto_distro,
     rosbag_topic_time_to_timestamp,
 )
-from .utils.shadow_data_container import (
+from trajectory_container_tools.utils.shadow_data_container import (
     instanciate_shadow_data_container,
     post_process_shadown_data_container,
 )
-from .utils.temporal_tools.timestamps import TimestampCausalOrderingError, Timestamps
-from .utils.typing import MultifeatureTrajectoryDataclass, ShadowDataContainer
+from trajectory_container_tools.temporal.timestamps import TimestampCausalOrderingError, Timestamps
+from trajectory_container_tools.utils.typing import MultifeatureTrajectoryDataclass, ShadowDataContainer
 
 
 def check_bag_topics(rosbag_path: Union[str, Path]) -> Path:

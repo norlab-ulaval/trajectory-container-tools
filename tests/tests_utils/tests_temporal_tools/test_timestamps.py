@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from rclpy.time import Time as ROSTime
 
-from trajectory_container_tools.utils.temporal_tools.timestamps import (
+from trajectory_container_tools.temporal.timestamps import (
     TimestampCausalOrderingError,
     Timestamps,
     compute_delta_timestamp,

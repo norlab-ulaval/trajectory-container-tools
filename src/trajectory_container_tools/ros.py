@@ -15,7 +15,7 @@ Usage:
 """
 
 # ROS utilities
-from .rosbag_to_tct import check_bag_topics
+from trajectory_container_tools.extractor.rosbag_to_tct import check_bag_topics
 from .utils.ros2_non_native_msg import register_non_native_msgs
 from .utils.ros2_utils import (
     get_rosbag_typestore_auto_distro,

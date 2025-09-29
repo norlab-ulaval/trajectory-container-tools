@@ -11,7 +11,7 @@ from ..dataclasses.base_trajectory_dataclass import (
     BaseNoTrajectoryDataclass,
     NestedBaseTrajectoryDataclass,
 )
-from .temporal_tools.timestamps import Timestamps
+from trajectory_container_tools.temporal import Timestamps
 
 
 def instanciate_shadow_data_container(

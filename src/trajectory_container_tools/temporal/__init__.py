@@ -6,16 +6,17 @@ Includes timestamp handling, sequence ordering, and temporal indexing.
 
 Usage:
     >>> import trajectory_container_tools as tct
-    >>> timestamps = tct.temporal.Timestamps(data)
-    >>> tct.temporal.validate_timestamps_ordering(timestamps)
+    >>> trajectory_timestamps = tct.temporal.Timestamps(data)
+    >>> tct.temporal.validate_timestamps_ordering(trajectory_timestamps)
 """
 
-from .utils.temporal_tools.timestamps import (
+from .timestamps import (
     Timestamps,
     TimestampCausalOrderingError,
-    validate_timestamps_ordering
+    validate_timestamps_ordering,
+    to_seconds_nanoseconds
 )
-from .utils.temporal_tools.timestep_indexing import (
+from .timestep_indexing import (
     validate_timestep_indices,
     validate_dataframe_timesteps_indexing
 )
@@ -26,4 +27,5 @@ __all__ = [
     'validate_timestamps_ordering',
     'validate_timestep_indices',
     'validate_dataframe_timesteps_indexing',
+    'to_seconds_nanoseconds',
 ]

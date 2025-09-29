@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from trajectory_container_tools.utils.temporal_tools.timestep_indexing import (
+from trajectory_container_tools.temporal.timestep_indexing import (
     validate_dataframe_timesteps_indexing,
     validate_timestep_indices,
 )

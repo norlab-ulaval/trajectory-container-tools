@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pandas as pd
 from typing import Dict, Tuple, Union
-from dataclasses import fields as fields, make_dataclass
+from dataclasses import make_dataclass
 
-from .utils.typing import MultifeatureTrajectoryDataclass, TrajectoryDataclass
+from trajectory_container_tools.utils.typing import MultifeatureTrajectoryDataclass
 from trajectory_container_tools.dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
 )
@@ -14,7 +14,7 @@ from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass im
     BaseDataframeFeatureDataclass,
 )
 
-from trajectory_container_tools.utils.temporal_tools.timestep_indexing import (
+from trajectory_container_tools.temporal.timestep_indexing import (
     validate_dataframe_timesteps_indexing,
 )
 from trajectory_container_tools.utils.factory import parse_feature_spec

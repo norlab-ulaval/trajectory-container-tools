@@ -7,7 +7,7 @@ import numpy as np
 from trajectory_container_tools.dataclasses.base_trajectory_dataclass import (
     NestedBaseTrajectoryDataclass,
 )
-from trajectory_container_tools.utils.temporal_tools.timestamps import Timestamps
+from trajectory_container_tools.temporal.timestamps import Timestamps
 
 
 @dataclass()

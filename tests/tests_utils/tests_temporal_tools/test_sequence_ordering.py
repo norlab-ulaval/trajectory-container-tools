@@ -2,10 +2,10 @@
 from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
     RosStampedDataclass,
 )
-from trajectory_container_tools.utils.temporal_tools.sequence_ordering import (
+from trajectory_container_tools.temporal.sequence_ordering import (
     fix_sequence_ordering_base_on_timestamps,
 )
-from trajectory_container_tools.utils.temporal_tools.timestamps import (
+from trajectory_container_tools.temporal.timestamps import (
     validate_timestamps_ordering,
 )
 

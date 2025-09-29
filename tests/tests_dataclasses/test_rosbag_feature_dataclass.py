@@ -1,7 +1,7 @@
 # coding=utf-8
 import pytest
 
-from trajectory_container_tools.rosbag_to_tct import (
+from trajectory_container_tools.extractor.rosbag_to_tct import (
     from_rosbag,
 )
 from trajectory_container_tools.dataclasses.ros2_primitive_dataclass import (

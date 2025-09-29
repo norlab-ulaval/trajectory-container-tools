@@ -6,8 +6,9 @@ from dataclasses import dataclass, field, fields
 import numpy as np
 from typing import Any, List, Optional, Tuple, Union
 
-from ..utils.temporal_tools.timestamps import Timestamps
-from ..utils.temporal_tools.timestep_indexing import validate_timestep_indices
+import trajectory_container_tools as tct
+from trajectory_container_tools.temporal import Timestamps
+from trajectory_container_tools.temporal import validate_timestep_indices
 from ..utils.general import (
     check_typing_list_and_extract_list_type,
     extract_class_name_from_instance,

@@ -1,17 +1,16 @@
 # coding=utf-8
 import os
-import os.path as os_path
 import pytest
 import numpy as np
 import pandas as pd
 
-from trajectory_container_tools.dataframe_to_tct import unpack_dataframe_and_show_topic
+from trajectory_container_tools.extractor.dataframe_to_tct import unpack_dataframe_and_show_topic
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     CmdSkidSteer,
     CmdStandard,
     StatePose2D,
 )
-from trajectory_container_tools import dataframe_to_tct as dtd
+from trajectory_container_tools.extractor import dataframe_to_tct as dtd
 from trajectory_container_tools.dataclasses import (
     abstract_trajectory_dataclass as atd,
 )
