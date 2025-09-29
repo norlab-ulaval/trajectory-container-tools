@@ -62,14 +62,15 @@ df = pd.DataFrame(data)
 ### 1. Import Required Modules
 
 ```python
-from trajectory_container_tools.dataframe_to_tct import (
-    aggregate_multiple_features_from_dataframe,
-    extract_single_feature_from_dataframe,
-    unpack_dataframe_and_show_topic
-)
-from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
-    StatePose2D, StatePose3D, Velocity, VelocitySkidSteer,
-    CmdStandard, CmdSkidSteer
+import trajectory_container_tools as tct
+
+from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
+    StatePose2D, 
+    StatePose3D, 
+    Velocity, 
+    VelocitySkidSteer, 
+    CmdStandard, 
+    CmdSkidSteer
 )
 ```
 
@@ -78,7 +79,7 @@ from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclas
 ```python
 # Load and inspect your data
 dataset_path = "path/to/your/data.pkl"
-df, actual_path = unpack_dataframe_and_show_topic(dataset_path)
+df, actual_path = tct.extractor.unpack_dataframe_and_show_topic(dataset_path)
 
 print(f"DataFrame shape: {df.shape}")
 print(f"Columns: {df.columns.tolist()}")
@@ -99,8 +100,10 @@ features_config = {
 ### 4. Convert DataFrame to Trajectory Container
 
 ```python
+import trajectory_container_tools as tct
+
 # Convert multiple features
-trajectory_container = aggregate_multiple_features_from_dataframe(
+trajectory_container = tct.extractor.from_dataframe(
     dataset_frame=df,
     dataset_info="Robot navigation experiment - Lab conditions",
     features_config=features_config
@@ -116,42 +119,45 @@ print(trajectory_container)
 TCT provides several predefined trajectory dataclasses:
 
 #### Pose Dataclasses
+
 ```python
-from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
-    StatePose2D,    # x, y, yaw
-    StatePose3D     # x, y, z, roll, pitch, yaw  
-)
+from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
+    StatePose2D,  # x, y, yaw
+    StatePose3D  # x, y, z, roll, pitch, yaw  
+    )
 
 features_config = {
-    'robot_pose_2d': StatePose2D,
-    'robot_pose_3d': StatePose3D
-}
+        'robot_pose_2d': StatePose2D,
+        'robot_pose_3d': StatePose3D
+        }
 ```
 
 #### Velocity Dataclasses
+
 ```python
-from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
-    Velocity,           # vx, vy, vtheta
-    VelocitySkidSteer   # left_vel, right_vel
-)
+from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
+    Velocity,  # vx, vy, vtheta
+    VelocitySkidSteer  # left_vel, right_vel
+    )
 
 features_config = {
-    'body_velocity': Velocity,
-    'wheel_velocity': VelocitySkidSteer
-}
+        'body_velocity':  Velocity,
+        'wheel_velocity': VelocitySkidSteer
+        }
 ```
 
 #### Command Dataclasses
+
 ```python
-from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
-    CmdStandard,    # linear_x, linear_y, angular_z
-    CmdSkidSteer    # left_cmd, right_cmd
-)
+from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
+    CmdStandard,  # linear_x, linear_y, angular_z
+    CmdSkidSteer  # left_cmd, right_cmd
+    )
 
 features_config = {
-    'velocity_commands': CmdStandard,
-    'motor_commands': CmdSkidSteer
-}
+        'velocity_commands': CmdStandard,
+        'motor_commands':    CmdSkidSteer
+        }
 ```
 
 ### Custom Dataclasses with Tuples
@@ -172,28 +178,28 @@ features_config = {
 
 ```python
 import pandas as pd
-from trajectory_container_tools.dataframe_to_tct import aggregate_multiple_features_from_dataframe
-from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import *
+import trajectory_container_tools as tct 
+from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import *
 
 # Load robotics dataset
 df = pd.read_pickle("robot_trajectories.pkl")
 
 # Configure multiple features
 features_config = {
-    'odometry': StatePose2D,
-    'ground_truth': StatePose2D, 
-    'velocity_estimate': Velocity,
-    'control_commands': CmdStandard,
-    'imu_raw': ('IMUData', 'accel_x', 'accel_y', 'accel_z', 'gyro_z'),
-    'lidar_features': ('LidarFeatures', 'range_front', 'range_left', 'range_right')
-}
+        'odometry':          StatePose2D,
+        'ground_truth':      StatePose2D,
+        'velocity_estimate': Velocity,
+        'control_commands':  CmdStandard,
+        'imu_raw':           ('IMUData', 'accel_x', 'accel_y', 'accel_z', 'gyro_z'),
+        'lidar_features':    ('LidarFeatures', 'range_front', 'range_left', 'range_right')
+        }
 
 # Convert to trajectory container
-multi_feature_container = aggregate_multiple_features_from_dataframe(
-    dataset_frame=df,
-    dataset_info="Multi-sensor robot navigation dataset",
-    features_config=features_config
-)
+multi_feature_container = tct.extractor.from_dataframe(
+        dataset_frame=df,
+        dataset_info="Multi-sensor robot navigation dataset",
+        features_config=features_config
+        )
 
 # Access trajectory data
 print(f"Dataset contains {multi_feature_container.odometry.trajectory_len} timesteps")
@@ -208,11 +214,11 @@ control_linear_x = multi_feature_container.control_commands.linear_x
 ### Example 2: Single Feature Extraction
 
 ```python
-from trajectory_container_tools.dataframe_to_tct import extract_single_feature_from_dataframe
+import trajectory_container_tools as tct
 
 # Extract only pose data
-pose_container = extract_single_feature_from_dataframe(dataset=df, feature_name="odometry",
-                                                       data_container_type=StatePose2D)
+pose_container = tct.extractor.extract_dataframe_feature(dataset=df, feature_name="odometry",
+                                           data_container_type=StatePose2D)
 
 print(f"Pose data shape: {pose_container.x.shape}")
 print(f"Available dimensions: {pose_container.get_dimension_names()}")
@@ -227,9 +233,10 @@ Create custom dataclasses with specialized processing:
 ```python
 from dataclasses import dataclass
 import numpy as np
+import trajectory_container_tools as tct
 
 @dataclass
-class StatePose2DSteadyState(StatePose2D):
+class StatePose2DSteadyState(tct.dataclasses.StatePose2D):
     """Custom pose class that computes steady-state metrics"""
     
     def post_init_feature_callback(self, feature_name: str):
@@ -258,10 +265,10 @@ class StatePose2DSteadyState(StatePose2D):
 # Use custom class
 features_config = {
     'steady_state_pose': StatePose2DSteadyState,
-    'reference_pose': StatePose2D
+    'reference_pose': tct.dataclasses.StatePose2D
 }
 
-container = aggregate_multiple_features_from_dataframe(df, "Steady-state analysis", features_config)
+container = tct.extractor.from_dataframe(df, "Steady-state analysis", features_config)
 
 # Access computed metrics
 initial_x = container.steady_state_pose.x_initial
@@ -271,8 +278,10 @@ x_deviation = container.steady_state_pose.x_deviation
 ### Example: Data Filtering and Transformation
 
 ```python
+import trajectory_container_tools as tct
+
 @dataclass
-class FilteredVelocity(Velocity):
+class FilteredVelocity(tct.dataclasses.Velocity):
     """Velocity class with filtering and outlier removal"""
     
     def post_init_feature_callback(self, feature_name: str):
@@ -310,13 +319,12 @@ TCT performs automatic validation for:
 ### Manual Validation
 
 ```python
-
-from trajectory_container_tools.utils.temporal_tools.timestep_indexing import dataframe_timestep_indexing_sanity_check
+import trajectory_container_tools as tct
 
 # Validate DataFrame structure before conversion
 feature_names = ['pose', 'velocity', 'commands']
 try:
-    dataframe_timestep_indexing_sanity_check(df, feature_names)
+    tct.temporal.validate_dataframe_timesteps_indexing(df, feature_names)
     print("DataFrame structure is valid")
 except Exception as e:
     print(f"Validation error: {e}")
@@ -325,8 +333,10 @@ except Exception as e:
 ### Custom Validation
 
 ```python
+import trajectory_container_tools as tct
+
 @dataclass
-class ValidatedPose(StatePose2D):
+class ValidatedPose(tct.dataclasses.StatePose2D):
     """Pose class with custom validation"""
     
     def post_init_feature_callback(self, feature_name: str):
@@ -350,6 +360,8 @@ class ValidatedPose(StatePose2D):
 ### 1. Data Organization
 
 ```python
+from trajectory_container_tools.dataclasses import StatePose2D, Velocity, CmdStandard, CmdSkidSteer
+
 # Organize features logically
 features_config = {
     # State estimation
@@ -370,6 +382,8 @@ features_config = {
 ### 2. Configuration Management
 
 ```python
+from trajectory_container_tools.dataclasses import StatePose2D, Velocity
+
 # Use configuration dictionaries for reproducibility
 EXPERIMENT_CONFIG = {
     'dataset_info': 'Experiment 2024-01-15: Indoor navigation',
@@ -383,7 +397,7 @@ EXPERIMENT_CONFIG = {
 def load_trajectory_data(df_path, config=EXPERIMENT_CONFIG):
     df = pd.read_pickle(df_path)
     
-    return aggregate_multiple_features_from_dataframe(
+    return from_dataframe(
         dataset_frame=df,
         dataset_info=config['dataset_info'],
         features_config=config['features_config']
@@ -393,15 +407,17 @@ def load_trajectory_data(df_path, config=EXPERIMENT_CONFIG):
 ### 3. Error Handling
 
 ```python
+import trajectory_container_tools as tct
+
 def safe_trajectory_conversion(df, features_config, dataset_info=""):
     """Safely convert DataFrame with error handling"""
     try:
         # Validate first
         feature_names = list(features_config.keys())
-        dataframe_timestep_indexing_sanity_check(df, feature_names)
+        tct.temporal.validate_dataframe_timesteps_indexing(df, feature_names)
         
         # Convert
-        container = aggregate_multiple_features_from_dataframe(
+        container = tct.extractor.from_dataframe(
             dataset_frame=df,
             dataset_info=dataset_info,
             features_config=features_config

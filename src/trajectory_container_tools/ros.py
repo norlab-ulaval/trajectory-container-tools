@@ -10,40 +10,26 @@ This module provides ROS-related functionality including:
 
 Usage:
     >>> import trajectory_container_tools as tct
-    >>> tct.ros.check_topics(rosbag_path)
+    >>> tct.ros.check_bag_topics(rosbag_path)
     >>> tct.ros.register_non_native_msgs()
 """
 
 # ROS utilities
-from .rosbag_to_tct import check_rosbag_path_and_show_available_topics as check_topics
-from .utils.ros2_non_native_msg import register_ros2_non_native_msg as register_non_native_msgs
-from .utils.ros2_utils import (
+from trajectory_container_tools.extractor.rosbag_to_tct import check_bag_topics
+from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import register_non_native_msgs
+from .utils.ros2_utils.ros2_general import (
     get_rosbag_typestore_auto_distro,
-    rosbag_topic_time_to_timestamp
+    get_ros2_distro,
 )
-
-# ROS dataclasses (convenient access)
-from .trj_dataclasses.ros2_feature_dataclass import (
-    NavMsgsOdometry,
-    SensorMsgsImu,
-    AckermannMsgsAckermannDriveStamped,
-    Tf2MsgsTFMessage,
-    VescMsgsVescImuStamped,
-    Scan
-)
+from .utils.ros2_utils.ros2_timestamps import rosbag_topic_time_to_timestamp
+from .utils.ros2_utils.filtered_rosbag_creator import create_filtered_rosbag
 
 __all__ = [
-    # Utilities
-    'check_topics',
-    'register_non_native_msgs', 
-    'get_rosbag_typestore_auto_distro',
-    'rosbag_topic_time_to_timestamp',
-    
-    # Common ROS dataclasses
-    'NavMsgsOdometry',
-    'SensorMsgsImu',
-    'AckermannMsgsAckermannDriveStamped', 
-    'Tf2MsgsTFMessage',
-    'VescMsgsVescImuStamped',
-    'Scan',
+    # Ros2 utilities
+    "create_filtered_rosbag",
+    "check_bag_topics",
+    "register_non_native_msgs",
+    "get_rosbag_typestore_auto_distro",
+    "rosbag_topic_time_to_timestamp",
+    'get_ros2_distro',
 ]

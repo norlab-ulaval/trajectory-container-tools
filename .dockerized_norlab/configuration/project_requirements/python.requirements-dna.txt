@@ -29,7 +29,9 @@ pyclean
 #   >>> [tool.setuptools_scm]
 #setuptools-scm
 
+# (CRITICAL) inprogress: NMO-802 fix: matplotlib double install conflict
+# (Priority) ToDo: on task NMO-802 end >> validate it's still required ↓↓
 # Note: Set DNA to build for Numpy 2 but let the pyproject.toml dependencies open so that we keep
 # support for Numpy 1
-matplotlib >= 3.8.0  # These versions support NumPy 2.x
-numpy >= 2.0.0
+#matplotlib >= 3.8.0  # These versions support NumPy 2.x
+#numpy >= 2.0.0

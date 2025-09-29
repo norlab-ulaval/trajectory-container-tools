@@ -3,11 +3,11 @@ import numpy as np
 import pytest
 from rclpy.time import Time as ROSTime
 
-from trajectory_container_tools.utils.temporal_tools.timestamps import (
+from trajectory_container_tools.temporal.timestamps import (
     TimestampCausalOrderingError,
     Timestamps,
     compute_delta_timestamp,
-    timestamp_causal_ordering_sanity_check,
+    validate_timestamps_ordering,
     to_seconds_nanoseconds,
 )
 
@@ -155,14 +155,14 @@ class TestTimestamps:
 
 class TestTimestampCausalOrderingSanityCheck:
     def test_base_case_pass(self, setup_Timestamps_object):
-        assert timestamp_causal_ordering_sanity_check(setup_Timestamps_object) == []
+        assert validate_timestamps_ordering(setup_Timestamps_object) == []
 
     def test_case_non_causal_ordering_detected(self, setup_mock_timestamps):
         setup_mock_timestamps[5] = 1711038330132760208
         setup_mock_timestamps[9] = 1711038330177285488
 
         with pytest.raises(TimestampCausalOrderingError) as exc_info:
-            assert timestamp_causal_ordering_sanity_check(
+            assert validate_timestamps_ordering(
                 Timestamps(setup_mock_timestamps)
             ) == [5, 9]
 

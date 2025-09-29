@@ -14,8 +14,8 @@ Usage:
 """
 
 from .utils.factory import (
-    trajectory_dataclass_factory as create_dataclass,
-    parse_to_feature_dataclass as parse_feature_spec,
+    create_dataclass,
+    parse_feature_spec,
     TrjDataClassFeatureSpecification
 )
 

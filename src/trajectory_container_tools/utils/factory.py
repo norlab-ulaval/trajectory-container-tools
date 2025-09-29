@@ -4,12 +4,8 @@ from typing import Tuple, Union
 
 import numpy as np
 
-from .typing import TrajectoryDataclass
-from ..utils.typing import TrajectoryDataclass
-from ..trj_dataclasses.abstract_trajectory_dataclass import (
-    AbstractTrajectoryDataclass,
-    )
-from ..trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
+from trajectory_container_tools.typing import TrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryDataclass
 
 
 @dataclass()
@@ -33,7 +29,7 @@ class TrjDataClassFeatureSpecification:
     dimension_names: Tuple[str, ...]
 
 
-def trajectory_dataclass_factory(
+def create_dataclass(
         specification: TrjDataClassFeatureSpecification,
         trj_dataclass_subclass: type[TrajectoryDataclass] = BaseTrajectoryDataclass,
         ) -> Union[type, type[TrajectoryDataclass]]:
@@ -45,7 +41,7 @@ def trajectory_dataclass_factory(
         >>>             new_feature_dataclass_type='my_new_feature_type',
         >>>             dimension_names=('xx', 'yy', 'yawww')
         >>>         )
-        >>> the_new_cls = trajectory_dataclass_factory(specification=spec_)
+        >>> the_new_cls = create_dataclass(specification=spec_)
         >>> assert issubclass(the_new_cls, BaseTrajectoryDataclass)
         >>> # True
         >>> assert isinstance(the_new_cls, BaseTrajectoryDataclass)
@@ -84,9 +80,9 @@ def trajectory_dataclass_factory(
     return trajectory_dataclass
 
 
-def parse_to_feature_dataclass(feature_dataclass_spec: tuple[str, ...],
-                               target_subclass: type[TrajectoryDataclass],
-                               feature_name: str) -> type[TrajectoryDataclass]:
+def parse_feature_spec(feature_dataclass_spec: tuple[str, ...],
+                       target_subclass: type[TrajectoryDataclass],
+                       feature_name: str) -> type[TrajectoryDataclass]:
     """ Parses the feature specification tuple to generate a new TrajectoryDataclass type based on
     the provided specification and target subclass.
 
@@ -113,7 +109,7 @@ def parse_to_feature_dataclass(feature_dataclass_spec: tuple[str, ...],
             new_feature_dataclass_type=new_type_name, dimension_names=tuple(dimensions)
             )
 
-    feature_dataclass = trajectory_dataclass_factory(
+    feature_dataclass = create_dataclass(
             specification=feat_spec, trj_dataclass_subclass=target_subclass
             )
     return feature_dataclass

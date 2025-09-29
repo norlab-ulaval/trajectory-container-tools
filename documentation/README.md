@@ -8,13 +8,22 @@ Welcome to the comprehensive documentation for **Trajectory Container Tools (TCT
 * [Trajectory Container Tools Documentation](#trajectory-container-tools-documentation)
   * [📚 Table of Contents](#-table-of-contents)
   * [Overview](#overview)
+    * [Core Flow Explanation](#core-flow-explanation)
+  * [Interactive Jupyter notebook examples:](#interactive-jupyter-notebook-examples)
   * [Usage Guides](#usage-guides)
+    * [🔧 TCT Direct Instantiation Guide](#-tct-direct-instantiation-guide)
+    * [📊 DataFrame To TCT Usage Guide](#-dataframe-to-tct-usage-guide)
+    * [🤖 ROS Bag To TCT  Usage Guide](#-ros-bag-to-tct--usage-guide-)
   * [Core Concepts](#core-concepts)
+    * [Trajectory Containers](#trajectory-containers)
+    * [Factory Pattern](#factory-pattern)
+    * [Feature Specifications](#feature-specifications)
   * [Data Sources & Converters](#data-sources--converters)
-  * [Trajectory Dataclasses](#trajectory-dataclasses)
-  * [Utilities](#utilities)
-  * [API Reference](#api-reference)
+    * [1. Pandas DataFrame Converter](#1-pandas-dataframe-converter)
+    * [2. ROS Bag Converter](#2-ros-bag-converter)
+    * [3. Direct Instantiation](#3-direct-instantiation)
   * [Need Help?](#need-help)
+  * [Documentation](#documentation)
 <!-- TOC -->
 
 ## Overview
@@ -132,7 +141,7 @@ Comprehensive guide for extracting trajectory data from ROS bags:
 ### Trajectory Containers
 
 Trajectory containers are type-safe dataclasses that store trajectory data with:
-- **Structured access** to trajectory dimensions (x, y, z, roll, pitch, yaw, etc.)
+- **Structured access** to trajectory dimensions (e.g., x, y, z, roll, pitch, yaw, etc.)
 - **Metadata management** (timestamps, dataset information)
 - **Data validation** (shape consistency, monotonic timestamps)
 
@@ -141,10 +150,11 @@ Trajectory containers are type-safe dataclasses that store trajectory data with:
 TCT uses a factory pattern to dynamically create trajectory containers based on configuration:
 
 ```python
+import trajectory_container_tools as tct 
 features_config = {
-    'pose': StatePose2D,
+    'pose': tct.dataclasses.StatePose2D,
     'velocity': ('CustomVel', 'vx', 'vy', 'vtheta'),
-    'commands': CmdStandard
+    'commands': tct.dataclasses.CmdStandard
 }
 ```
 
@@ -161,9 +171,9 @@ Features are defined using either:
 Convert structured DataFrame data to trajectory containers:
 
 **Key Functions:**
-- `aggregate_multiple_features_from_dataframe()` - Multiple features from DataFrame
-- `extract_single_feature_from_dataframe()` - Single feature extraction
-- `unpack_dataframe_and_show_topic()` - Inspect DataFrame structure
+- `extractor.from_dataframe()` - Multiple features from DataFrame
+- `extractor.extract_dataframe_feature()` - Single feature extraction
+- `extractor.unpack_dataframe_and_show_topic()` - Inspect DataFrame structure
 
 **Requirements:**
 - DataFrame with timestep-indexed columns (e.g., `feature_1`, `feature_2`, ...)
@@ -174,9 +184,9 @@ Convert structured DataFrame data to trajectory containers:
 Extract trajectory data from ROS bag files:
 
 **Key Functions:**
-- `aggregate_multiple_features_from_rosbag()` - Multiple ROS topics
-- `extract_single_feature_from_rosbag()` - Single topic extraction
-- `check_rosbag_path_and_show_available_topics()` - Inspect available topics
+- `extractor.from_rosbag()` - Multiple ROS topics
+- `extractor.extract_rosbag_feature()` - Single topic extraction
+- `extractor.check_bag_topics()` - Inspect available topics
 
 **Requirements:**
 - ROS2
@@ -190,119 +200,6 @@ Create trajectory containers directly from data arrays:
 - `BaseTrajectoryDataclass` - Basic trajectory container
 - `NestedBaseTrajectoryDataclass` - Basic trajectory container intended to be nested in a `BaseTrajectoryDataclass` 
 - Custom dataclasses inheriting from `AbstractTrajectoryDataclass`
-
-## Trajectory Dataclasses
-
-### Abstract Base Classes
-
-#### `AbstractTrajectoryDataclass`
-- Base class for all trajectory containers
-- Provides core functionality: indexing, iteration, dimension access
-- Abstract methods for customization
-
-#### `AbstractMultifeatureDataclass`
-- Container for multiple trajectory features
-- Aggregates related trajectory data
-- Provides unified access to all features
-
-### Predefined Dataclasses
-
-#### DataFrame Feature Dataclasses
-- `StatePose2D` - 2D pose (x, y, yaw)
-- `StatePose3D` - 3D pose (x, y, z, roll, pitch, yaw)
-- `Velocity` - Linear/angular velocities
-- `VelocitySkidSteer` - Skid-steer robot velocities
-- `CmdStandard` - Standard command interface
-- `CmdSkidSteer` - Skid-steer command interface
-
-#### ROS Bag Feature Dataclasses
-- `RosStampedDataclass` - Base for ROS message containers
-- `NavMsgsOdometry` - nav_msgs/Odometry messages
-- `AckermannMsgsAckermannDriveStamped` - teleop or cmd messages 
-- `Tf2MsgsTFMessage` - transform messages
-- `SensorMsgsImu` - imu messages
-
-### Specialized Dataclasses
-- `ErllTrajectoryDataclass` - ERLL-specific trajectories
-- `F110GymTrajectoryDataclass` - F110 racing trajectories
-- `MathGymnasiumTrajectoryDataclass` - Math Gymnasium environments
-
-
-## Utilities
-
-### Data Validation (`utils/data_sanity_checks.py`)
-- `dataframe_timestep_indexing_sanity_check()` - Validate DataFrame structure
-- Trajectory data consistency checks
-- Dimension and shape validation
-
-### Container Validation (`utils/containers_sanity_checks.py`)
-- Trajectory container integrity checks
-- Multi-feature consistency validation
-- Metadata validation
-
-### Factory Functions (`utils/factory.py`)
-- `trajectory_dataclass_factory()` - Dynamic dataclass creation
-- `TrjDataClassFeatureSpecification` - Feature specification handling
-- Configuration validation
-
-### General Utilities (`utils/general.py`)
-- Class name extraction and conversion
-- Progress bar setup
-- Common helper functions
-
-### ROS Utilities (`utils/ros2_utils.py`)
-- ROS 2 type system integration
-- Message type registration
-- Typestore management
-
-### Plotting Tools (`utils/plot.py`)
-- Trajectory visualization utilities
-- Multi-feature plotting
-- Research-ready plot formatting
-
-### Optimization Tools (`utils/optimization.py`)
-- Performance optimization utilities
-- Memory management helpers
-
-## API Reference
-
-### Main Modules
-
-#### `trajectory_container_tools.dataframe_to_tct`
-```python
-def aggregate_multiple_features_from_dataframe(
-    dataset_frame: pd.DataFrame,
-    dataset_info: str,
-    features_config: Dict[str, Union[type[BaseDataframeFeatureDataclass], Tuple[str, ...]]]
-) -> AbstractMultifeatureDataclass
-
-def extract_single_feature_from_dataframe(
-    dataset: pd.DataFrame,
-    feature_name: str,
-    data_container_type: type[BaseDataframeFeatureDataclass]
-) -> BaseDataframeFeatureDataclass
-```
-
-#### `trajectory_container_tools.rosbag_to_tct`
-```python
-def aggregate_multiple_features_from_rosbag(
-    rosbag_path: Path,
-    dataset_info: Optional[str],
-    features_config: Dict[str, Union[type[RosStampedDataclass], Tuple[str, ...]]],
-    start: Optional[int] = None,
-    stop: Optional[int] = None,
-    typestore: Optional[Typestore] = None
-) -> AbstractMultifeatureDataclass
-
-def extract_single_feature_from_rosbag(
-    rosbag_path: Path,
-    feature_name: str,
-    data_container_type: type[RosStampedDataclass],
-    start: Optional[int] = None,
-    stop: Optional[int] = None,
-    typestore: Optional[Typestore] = None
-) -> RosStampedDataclass
-```
 
 ---
 

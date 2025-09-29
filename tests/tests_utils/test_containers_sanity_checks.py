@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from trajectory_container_tools.trj_dataclasses.f110_gym_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.f110_gym_trajectory_dataclass import (
     F110MotionDynamicDataclass,
 )
 from trajectory_container_tools.utils.containers_sanity_checks import (

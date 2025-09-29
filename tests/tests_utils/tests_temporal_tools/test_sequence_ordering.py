@@ -1,12 +1,10 @@
 # coding=utf-8
-from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
-    RosStampedDataclass,
-)
-from trajectory_container_tools.utils.temporal_tools.sequence_ordering import (
+from trajectory_container_tools.dataclasses import RosStampedDataclass
+from trajectory_container_tools.temporal.sequence_ordering import (
     fix_sequence_ordering_base_on_timestamps,
 )
-from trajectory_container_tools.utils.temporal_tools.timestamps import (
-    timestamp_causal_ordering_sanity_check,
+from trajectory_container_tools.temporal.timestamps import (
+    validate_timestamps_ordering,
 )
 
 
@@ -22,7 +20,7 @@ class TestTrajectorySequenceOrderingLogic:
         ts = fixed_trajectory_dict["header"].timestamps
 
         # Validate the results
-        timestamp_causal_ordering_sanity_check(ts)
+        validate_timestamps_ordering(ts)
 
     def test_fix_sequence_ordering_base_on_timestamps_case_input_unordered(
         self, mock_trajectory_dict_unordered, mock_trajectory_dict_ordered
@@ -35,7 +33,7 @@ class TestTrajectorySequenceOrderingLogic:
         ts = fixed_trajectory_dict["header"].timestamps
 
         # Validate the results
-        timestamp_causal_ordering_sanity_check(ts)
+        validate_timestamps_ordering(ts)
 
         assert fixed_trajectory_dict == mock_trajectory_dict_ordered
 

@@ -75,7 +75,7 @@ Maintainer <a href="https://github.com/RedLeader962">RedLeader962</a>
 **Trajectory Container Tools (TCT)** is a Python library designed to simplify the management and analysis of trajectory
 data from various sources.
 
-### 🎯 High-Level Overview
+### High-Level Overview
 
 TCT provides:
 
@@ -133,9 +133,8 @@ Common use cases:
 
 ```python
 import numpy as np
-from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
-    StatePose2D,
-    )
+import trajectory_container_tools as tct
+from trajectory_container_tools.dataclasses import StatePose2D
 
 trajectory = StatePose2D(
         feature_name="odom pose",
@@ -192,12 +191,9 @@ print(trajectory[-1].yaw)
 
 ```python
 import numpy as np
-from trajectory_container_tools.trj_dataclasses.base_trajectory_dataclass import (
-    BaseTrajectoryDataclass,
-)
+import trajectory_container_tools as tct
 
-
-class CustomStatePose2D(BaseTrajectoryDataclass):
+class CustomStatePose2D(tct.BaseTrajectoryDataclass):
     x: np.ndarray
     y: np.ndarray
     yaw: np.ndarray
@@ -207,15 +203,10 @@ class CustomStatePose2D(BaseTrajectoryDataclass):
 #### From ROS bag
 
 ```python
-from trajectory_container_tools.rosbag_to_tct import (
-    aggregate_multiple_features_from_rosbag,
-    )
-from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
-    NavMsgsOdometry,
-    AckermannMsgsAckermannDriveStamped,
-    )
+import trajectory_container_tools as tct
+from trajectory_container_tools.dataclasses import NavMsgsOdometry, AckermannMsgsAckermannDriveStamped
 
-trajectory_from_rosbag = aggregate_multiple_features_from_rosbag(
+trajectory_from_rosbag = tct.extractor.from_rosbag(
         rosbag_path,
         dataset_info="Warthog Mont-Morency 1 Dec 2025",
         features_config={
@@ -325,19 +316,20 @@ Multifeature(
 #### From pandas DataFrame
 
 ```python
-from trajectory_container_tools.dataframe_to_tct import aggregate_multiple_features_from_dataframe
-from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import StatePose2D
+import trajectory_container_tools as tct
+from trajectory_container_tools.dataclasses import StatePose2D
 
-trajectory_from_dataframe = aggregate_multiple_features_from_dataframe(
-        mock_dataset_snow,
-        dataset_info="Marmote Mont-Morency 1 Dec 2025",
-        features_config={
-                'icp_vel': StatePose2D,
-                'idd_vel': StatePose2D,
-                }
-        )
+trajectory_from_dataframe = tct.extractor.from_dataframe(
+    mock_dataset_snow,
+    dataset_info="Marmote Mont-Morency 1 Dec 2025",
+    features_config={
+        "icp_vel": StatePose2D,
+        "idd_vel": StatePose2D,
+    },
+)
 
 print(trajectory_from_dataframe)
+
 ```
 
 ```terminaloutput
