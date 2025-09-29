@@ -130,9 +130,7 @@ class Timestamps:
           nanoseconds or (seconds, nanoseconds ), default is True.
         :return: A list of integers representing IDs of events that violate causal ordering.
         """
-        return validate_timestamps_ordering(
-            self, show_offending_in_nanoseconds
-        )
+        return validate_timestamps_ordering(self, show_offending_in_nanoseconds)
 
 
 def validate_timestamps_ordering(
@@ -240,6 +238,15 @@ def to_seconds_nanoseconds(nanoseconds: int) -> Tuple[int, int]:
         nanoseconds // NANOSECONDS_CONVERSION_CONSTANT,
         nanoseconds % NANOSECONDS_CONVERSION_CONSTANT,
     )
+
+
+def to_seconds(nanoseconds: int) -> float:
+    """Convert timestamp in nanosecond to seconds.
+
+    :returns: Timestamp converted in second
+    """
+    SECONDS_CONVERSION_CONSTANT = 1e9
+    return nanoseconds / SECONDS_CONVERSION_CONSTANT
 
 
 def compute_delta_timestamp(time_space: np.ndarray) -> np.ndarray:
