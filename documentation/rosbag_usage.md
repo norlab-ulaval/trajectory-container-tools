@@ -237,8 +237,8 @@ tc_with_custom_type = tct.extractor.from_rosbag(
         rosbag_path=rosbag_path,
         dataset_info="Trajectory with custom type",
         features_config={
-                'trajectory_points': ('TrajectoryPoint', 'x', 'y', 'theta', 'velocity')
-                '/odometry':         tct.dataclasses.NavMsgsOdometry
+                'trajectory_points': ('TrajectoryPoint', 'x', 'y', 'theta', 'velocity'),
+                '/odometry':         tct.dataclasses.NavMsgsOdometry,
                 },
         typestore=typestore
         )
