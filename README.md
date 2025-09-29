@@ -206,7 +206,7 @@ class CustomStatePose2D(tct.BaseTrajectoryDataclass):
 import trajectory_container_tools as tct
 from trajectory_container_tools.dataclasses import NavMsgsOdometry, AckermannMsgsAckermannDriveStamped
 
-trajectory_from_rosbag = tct.from_rosbag(
+trajectory_from_rosbag = tct.extractor.from_rosbag(
         rosbag_path,
         dataset_info="Warthog Mont-Morency 1 Dec 2025",
         features_config={
@@ -319,7 +319,7 @@ Multifeature(
 import trajectory_container_tools as tct
 from trajectory_container_tools.dataclasses import StatePose2D
 
-trajectory_from_dataframe = tct.from_dataframe(
+trajectory_from_dataframe = tct.extractor.from_dataframe(
     mock_dataset_snow,
     dataset_info="Marmote Mont-Morency 1 Dec 2025",
     features_config={

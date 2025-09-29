@@ -9,9 +9,9 @@ from trajectory_container_tools.extractor.rosbag_to_tct import (
     from_rosbag,
     extract_rosbag_feature,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.ros2_primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
 
-from trajectory_container_tools.dataclasses.ros_msgs.ros2_non_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
     Tf2MsgsTFMessage,
     )
 from trajectory_container_tools.dataclasses import AckermannMsgsAckermannDrive, \

@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .ros2_core_dataclass import NestedRosStampedDataclass, RosStampedDataclass, NestedBaseTrajectoryDataclass
-from trajectory_container_tools.dataclasses.ros_msgs.ros2_primitive_dataclass import Point, \
+from .core_dataclass import NestedRosStampedDataclass, RosStampedDataclass, NestedBaseTrajectoryDataclass
+from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Point, \
     Quaternion, Transform, Vector3
 
 

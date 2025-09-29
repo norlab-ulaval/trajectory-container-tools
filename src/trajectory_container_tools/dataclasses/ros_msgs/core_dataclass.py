@@ -6,7 +6,7 @@ from ..core.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
     NestedBaseTrajectoryDataclass,
 )
-from ..ros_msgs.ros2_primitive_dataclass import Header
+from ..ros_msgs.primitive_dataclass import Header
 
 
 @dataclass()

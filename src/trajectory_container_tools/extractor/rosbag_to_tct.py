@@ -13,7 +13,7 @@ from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass i
     AbstractMultifeatureDataclass,
 )
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryDataclass
-from trajectory_container_tools.dataclasses.ros_msgs.ros2_primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
 from trajectory_container_tools.dataclasses import NavMsgsOdometry, NestedRosStampedDataclass, RosDataclass, \
     RosStampedDataclass
 from trajectory_container_tools.utils.factory import (

@@ -10,7 +10,7 @@ from trajectory_container_tools import (
     AbstractMultifeatureDataclass,
     )
 from trajectory_container_tools.dataclasses import RosStampedDataclass
-from trajectory_container_tools.dataclasses.ros_msgs.ros2_primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
 from trajectory_container_tools.temporal.timestamps import Timestamps
 
 

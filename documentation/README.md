@@ -141,7 +141,7 @@ Comprehensive guide for extracting trajectory data from ROS bags:
 ### Trajectory Containers
 
 Trajectory containers are type-safe dataclasses that store trajectory data with:
-- **Structured access** to trajectory dimensions (x, y, z, roll, pitch, yaw, etc.)
+- **Structured access** to trajectory dimensions (e.g., x, y, z, roll, pitch, yaw, etc.)
 - **Metadata management** (timestamps, dataset information)
 - **Data validation** (shape consistency, monotonic timestamps)
 
@@ -150,10 +150,11 @@ Trajectory containers are type-safe dataclasses that store trajectory data with:
 TCT uses a factory pattern to dynamically create trajectory containers based on configuration:
 
 ```python
+import trajectory_container_tools as tct 
 features_config = {
-    'pose': StatePose2D,
+    'pose': tct.dataclasses.StatePose2D,
     'velocity': ('CustomVel', 'vx', 'vy', 'vtheta'),
-    'commands': CmdStandard
+    'commands': tct.dataclasses.CmdStandard
 }
 ```
 
@@ -170,9 +171,9 @@ Features are defined using either:
 Convert structured DataFrame data to trajectory containers:
 
 **Key Functions:**
-- `from_dataframe()` - Multiple features from DataFrame
-- `extract_dataframe_feature()` - Single feature extraction
-- `unpack_dataframe_and_show_topic()` - Inspect DataFrame structure
+- `extractor.from_dataframe()` - Multiple features from DataFrame
+- `extractor.extract_dataframe_feature()` - Single feature extraction
+- `extractor.unpack_dataframe_and_show_topic()` - Inspect DataFrame structure
 
 **Requirements:**
 - DataFrame with timestep-indexed columns (e.g., `feature_1`, `feature_2`, ...)
@@ -183,9 +184,9 @@ Convert structured DataFrame data to trajectory containers:
 Extract trajectory data from ROS bag files:
 
 **Key Functions:**
-- `from_rosbag()` - Multiple ROS topics
-- `extract_rosbag_feature()` - Single topic extraction
-- `check_bag_topics()` - Inspect available topics
+- `extractor.from_rosbag()` - Multiple ROS topics
+- `extractor.extract_rosbag_feature()` - Single topic extraction
+- `extractor.check_bag_topics()` - Inspect available topics
 
 **Requirements:**
 - ROS2

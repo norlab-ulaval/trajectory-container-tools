@@ -28,16 +28,16 @@ from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass impor
 )
 
 # ROS2 dataclasses
-from trajectory_container_tools.dataclasses.ros_msgs.ros2_non_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
     Tf2MsgsTFMessage,
     )
-from .ros_msgs.ros2_stamped_dataclass import AckermannMsgsAckermannDriveStamped, NavMsgsOdometry, \
+from .ros_msgs.stamped_dataclass import AckermannMsgsAckermannDriveStamped, NavMsgsOdometry, \
     Scan, VescMsgsVescImuStamped
-from .ros_msgs.ros2_nested_dataclass import AckermannMsgsAckermannDrive, SensorMsgsImu
-from .ros_msgs.ros2_core_dataclass import NestedRosStampedDataclass, RosDataclass, \
+from .ros_msgs.nested_dataclass import AckermannMsgsAckermannDrive, SensorMsgsImu
+from .ros_msgs.core_dataclass import NestedRosStampedDataclass, RosDataclass, \
     RosStampedDataclass
 
-from trajectory_container_tools.dataclasses.ros_msgs.ros2_primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
 
 # Simulation environment dataclasses  
 from .f110_gym_trajectory_dataclass import (

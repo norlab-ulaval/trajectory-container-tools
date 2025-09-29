@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 
 from tqdm import tqdm
 
-from trajectory_container_tools import check_bag_topics
+from trajectory_container_tools.extractor.rosbag_to_tct import check_bag_topics
 from trajectory_container_tools.utils.general import (
     dn_validate_path,
     show_directory_content,

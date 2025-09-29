@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .ros2_core_dataclass import RosStampedDataclass
-from trajectory_container_tools.dataclasses.ros_msgs.ros2_nested_dataclass import (
+from .core_dataclass import RosStampedDataclass
+from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import (
     PoseWithCovariance,
     TwistWithCovariance,
     VescMsgsVescImu,
@@ -25,9 +25,9 @@ class NavMsgsOdometry(RosStampedDataclass):
     the navigation-related data are critical.
 
     :ivar pose: Contains the pose along with its associated covariance information.
-    :type pose: trajectory_container_tools.dataclasses.ros_msgs.ros2_nested_dataclass.PoseWithCovariance
+    :type pose: trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass.PoseWithCovariance
     :ivar twist: Contains the twist along with its associated covariance information.
-    :type twist: trajectory_container_tools.dataclasses.ros_msgs.ros2_nested_dataclass.TwistWithCovariance
+    :type twist: trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass.TwistWithCovariance
     """
 
     pose: PoseWithCovariance
@@ -103,7 +103,7 @@ class VescMsgsVescImuStamped(RosStampedDataclass):
     representation of IMU measurements retrieved from a VESC-based system.
 
     :ivar imu: Instance of the VescMsgsVescImu class, representing IMU data.
-    :type imu: trajectory_container_tools.dataclasses.ros_msgs.ros2_nested_dataclass.VescMsgsVescImu
+    :type imu: trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass.VescMsgsVescImu
     """
 
     imu: VescMsgsVescImu

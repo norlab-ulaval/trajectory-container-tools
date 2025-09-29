@@ -4,21 +4,21 @@ import pytest
 from trajectory_container_tools.extractor.rosbag_to_tct import (
     from_rosbag,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.ros2_primitive_dataclass import (
+from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import (
     Header,
     Point,
     Quaternion,
     Transform,
     Vector3,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.ros2_non_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
     Tf2MsgsTFMessage,
     )
 from trajectory_container_tools.dataclasses import AckermannMsgsAckermannDrive, \
     AckermannMsgsAckermannDriveStamped, NavMsgsOdometry, Scan, SensorMsgsImu
-from trajectory_container_tools.dataclasses.ros_msgs.ros2_flat_version_dataclass import \
+from trajectory_container_tools.dataclasses.ros_msgs.flat_version_dataclass import \
     NavMsgsOdometryFlat, SensorMsgsImuFlat
-from trajectory_container_tools.dataclasses.ros_msgs.ros2_nested_dataclass import Pose, \
+from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import Pose, \
     PoseWithCovariance, TransformStamped, Twist, TwistWithCovariance
 
 

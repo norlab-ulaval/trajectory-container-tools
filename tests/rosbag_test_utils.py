@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Tuple, Union
 
-from trajectory_container_tools import check_bag_topics
+from trajectory_container_tools.extractor import check_bag_topics
 
 
 @dataclass()

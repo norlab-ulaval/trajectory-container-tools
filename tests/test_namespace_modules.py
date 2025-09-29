@@ -106,38 +106,74 @@ class TestTemporalNamespaceModule:
         assert len(tct.temporal.__all__) > 0
 
 
-class TestMainNamespaceAPI:
-    """Test the API functions in the main namespace."""
+class TestExtractorNamespaceModule:
+    """Test the extractor namespace module."""
+
+    def test_extractor_module_exists(self):
+        """Test that extractor namespace exists."""
+        assert hasattr(tct, "extractor")
+        assert tct.extractor is not None
 
     def test_from_rosbag_function_exists(self):
-        """Test that from_rosbag convenience function is available."""
-        assert hasattr(tct, "from_rosbag")
-        assert callable(tct.from_rosbag)
+        """Test that from_rosbag function is available in extractor namespace."""
+        assert hasattr(tct.extractor, "from_rosbag")
+        assert callable(tct.extractor.from_rosbag)
 
     def test_from_dataframe_function_exists(self):
-        """Test that from_dataframe convenience function is available."""
-        assert hasattr(tct, "from_dataframe")
-        assert callable(tct.from_dataframe)
+        """Test that from_dataframe function is available in extractor namespace."""
+        assert hasattr(tct.extractor, "from_dataframe")
+        assert callable(tct.extractor.from_dataframe)
 
     def test_extract_rosbag_feature_function_exists(self):
-        """Test that extract_rosbag_feature convenience function is available."""
-        assert hasattr(tct, "extract_rosbag_feature")
-        assert callable(tct.extract_rosbag_feature)
+        """Test that extract_rosbag_feature function is available in extractor namespace."""
+        assert hasattr(tct.extractor, "extract_rosbag_feature")
+        assert callable(tct.extractor.extract_rosbag_feature)
 
     def test_extract_dataframe_feature_function_exists(self):
-        """Test that extract_dataframe_feature convenience function is available."""
-        assert hasattr(tct, "extract_dataframe_feature")
-        assert callable(tct.extract_dataframe_feature)
+        """Test that extract_dataframe_feature function is available in extractor namespace."""
+        assert hasattr(tct.extractor, "extract_dataframe_feature")
+        assert callable(tct.extractor.extract_dataframe_feature)
 
-    def test_check_rosbag_function_exists(self):
-        """Test that check_bag_topics convenience function is available."""
-        assert hasattr(tct, "check_bag_topics")
-        assert callable(tct.check_bag_topics)
+    def test_check_bag_topics_function_exists(self):
+        """Test that check_bag_topics function is available in extractor namespace."""
+        assert hasattr(tct.extractor, "check_bag_topics")
+        assert callable(tct.extractor.check_bag_topics)
 
-    def test_check_dataframe_function_exists(self):
-        """Test that unpack_dataframe_and_show_topic convenience function is available."""
-        assert hasattr(tct, "unpack_dataframe_and_show_topic")
-        assert callable(tct.unpack_dataframe_and_show_topic)
+    def test_unpack_dataframe_and_show_topic_function_exists(self):
+        """Test that unpack_dataframe_and_show_topic function is available in extractor namespace."""
+        assert hasattr(tct.extractor, "unpack_dataframe_and_show_topic")
+        assert callable(tct.extractor.unpack_dataframe_and_show_topic)
+
+    def test_extractor_all_attribute(self):
+        """Test that extractor module has proper __all__ attribute."""
+        assert hasattr(tct.extractor, "__all__")
+        assert isinstance(tct.extractor.__all__, list)
+        assert len(tct.extractor.__all__) > 0
+
+
+class TestTypingNamespaceModule:
+    """Test the typing namespace module."""
+
+    def test_typing_module_exists(self):
+        """Test that typing namespace exists."""
+        assert hasattr(tct, "typing")
+        assert tct.typing is not None
+
+    def test_trajectory_dataclass_type_exists(self):
+        """Test that TrajectoryDataclass type is available in typing namespace."""
+        assert hasattr(tct.typing, "TrajectoryDataclass")
+
+    def test_multifeature_trajectory_dataclass_type_exists(self):
+        """Test that MultifeatureTrajectoryDataclass type is available in typing namespace."""
+        assert hasattr(tct.typing, "MultifeatureTrajectoryDataclass")
+
+    def test_shadow_data_container_type_exists(self):
+        """Test that ShadowDataContainer type is available in typing namespace."""
+        assert hasattr(tct.typing, "ShadowDataContainer")
+
+
+class TestMainNamespaceAPI:
+    """Test the core API in the main namespace."""
 
     def test_common_exception_available(self):
         """Test that TimestampCausalOrderingError is available in main namespace."""
@@ -215,7 +251,7 @@ class TestNamespacesConsistency:
 
     def test_all_namespaces_have_all_attribute(self):
         """Test that all namespace modules have __all__ attribute properly defined."""
-        namespaces = ["ros", "factory", "temporal", "dataclasses", "utils"]
+        namespaces = ["ros", "factory", "temporal", "dataclasses", "extractor", "utils"]
 
         for namespace_name in namespaces:
             namespace = getattr(tct, namespace_name)
@@ -238,12 +274,12 @@ class TestNamespacesConsistency:
         # Check that key sections are included
         expected_sections = [
             "__version__",
-            "from_rosbag",
-            "from_dataframe",
             "dataclasses",
+            "extractor",
             "ros",
             "factory",
             "temporal",
+            "typing",
             "utils",
         ]
 

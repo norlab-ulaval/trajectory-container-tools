@@ -79,7 +79,7 @@ from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass im
 ```python
 # Load and inspect your data
 dataset_path = "path/to/your/data.pkl"
-df, actual_path = tct.unpack_dataframe_and_show_topic(dataset_path)
+df, actual_path = tct.extractor.unpack_dataframe_and_show_topic(dataset_path)
 
 print(f"DataFrame shape: {df.shape}")
 print(f"Columns: {df.columns.tolist()}")
@@ -103,7 +103,7 @@ features_config = {
 import trajectory_container_tools as tct
 
 # Convert multiple features
-trajectory_container = tct.from_dataframe(
+trajectory_container = tct.extractor.from_dataframe(
     dataset_frame=df,
     dataset_info="Robot navigation experiment - Lab conditions",
     features_config=features_config
@@ -195,7 +195,7 @@ features_config = {
         }
 
 # Convert to trajectory container
-multi_feature_container = tct.from_dataframe(
+multi_feature_container = tct.extractor.from_dataframe(
         dataset_frame=df,
         dataset_info="Multi-sensor robot navigation dataset",
         features_config=features_config
@@ -217,7 +217,7 @@ control_linear_x = multi_feature_container.control_commands.linear_x
 import trajectory_container_tools as tct
 
 # Extract only pose data
-pose_container = tct.extract_dataframe_feature(dataset=df, feature_name="odometry",
+pose_container = tct.extractor.extract_dataframe_feature(dataset=df, feature_name="odometry",
                                            data_container_type=StatePose2D)
 
 print(f"Pose data shape: {pose_container.x.shape}")
@@ -268,7 +268,7 @@ features_config = {
     'reference_pose': tct.dataclasses.StatePose2D
 }
 
-container = tct.from_dataframe(df, "Steady-state analysis", features_config)
+container = tct.extractor.from_dataframe(df, "Steady-state analysis", features_config)
 
 # Access computed metrics
 initial_x = container.steady_state_pose.x_initial
@@ -417,7 +417,7 @@ def safe_trajectory_conversion(df, features_config, dataset_info=""):
         tct.temporal.validate_dataframe_timesteps_indexing(df, feature_names)
         
         # Convert
-        container = tct.from_dataframe(
+        container = tct.extractor.from_dataframe(
             dataset_frame=df,
             dataset_info=dataset_info,
             features_config=features_config

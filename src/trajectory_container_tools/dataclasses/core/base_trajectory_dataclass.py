@@ -3,8 +3,10 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from .abstract_trajectory_dataclass import AbstractNoTrajectoryDataclass, \
-    AbstractTrajectoryDataclass
+from .abstract_trajectory_dataclass import (
+    AbstractNoTrajectoryDataclass,
+    AbstractTrajectoryDataclass,
+)
 
 
 @dataclass()
@@ -65,6 +67,7 @@ class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
     feature_name: str = field(default=None, init=False)
     _nested: str = field(default=True, init=False)
 
+
 @dataclass()
 class BaseNoTrajectoryDataclass(AbstractNoTrajectoryDataclass):
     """
@@ -75,4 +78,5 @@ class BaseNoTrajectoryDataclass(AbstractNoTrajectoryDataclass):
     and manage data that does not involve trajectory-specific information at top-level but might
     in nested ones e.g., `Tf2MsgsTFMessage.transforms` a list of `TransformStamped` trj container
     """
+
     pass

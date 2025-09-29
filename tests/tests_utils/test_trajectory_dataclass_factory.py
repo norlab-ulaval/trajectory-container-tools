@@ -5,7 +5,7 @@ import pytest
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     BaseDataframeFeatureDataclass,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.ros2_primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
 from trajectory_container_tools.dataclasses import RosStampedDataclass
 from trajectory_container_tools.utils.factory import (
     TrjDataClassFeatureSpecification,

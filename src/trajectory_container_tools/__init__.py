@@ -10,32 +10,24 @@ A library for managing trajectory-related data with support for:
 - Visualization utilities
 
 Quick Start:
-import trajectory_container_tools.dataclasses.ros_msgs.ros2_stamped_dataclass    >>> import trajectory_container_tools as tct
+    >>> import trajectory_container_tools as tct
     >>>
     >>> # Extract from ROS bag
-    >>> data = tct.from_rosbag(rosbag_path, features_config)
+    >>> data = tct.extractor.from_rosbag(rosbag_path, features_config)
     >>>
     >>> # Extract from DataFrame
-    >>> data = tct.from_dataframe(df, features_config)
+    >>> data = tct.extractor.from_dataframe(df, features_config)
     >>>
     >>> # Access dataclasses
-    >>> odom_class = trajectory_container_tools.dataclasses.ros_msgs.ros2_stamped_dataclass.NavMsgsOdometry
+    >>> odom_class = tct.dataclasses.ros_msgs.stamped_dataclass.NavMsgsOdometry
     >>>
     >>> # Utilities
-    >>> tct.ros.check_bag_topics(rosbag_path)
+    >>> tct.extractor.check_bag_topics(rosbag_path)
 """
 
 # Version info
 from .version import __version__
 
-# Main API - Top-level convenience functions
-from trajectory_container_tools.extractor.rosbag_to_tct import from_rosbag, extract_rosbag_feature, check_bag_topics
-
-from trajectory_container_tools.extractor.dataframe_to_tct import (
-    from_dataframe,
-    extract_dataframe_feature,
-    unpack_dataframe_and_show_topic,
-)
 
 # Core abstract classes
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
@@ -54,22 +46,16 @@ from trajectory_container_tools.temporal import TimestampCausalOrderingError
 
 # Submodule imports for namespace organization (moved to end to avoid circular imports)
 from . import dataclasses as dataclasses
+from . import extractor
 from . import ros
 from . import factory
 from . import temporal
+from . import typing
 from . import utils
 
 __all__ = [
     # Version
     "__version__",
-
-    # Main API functions
-    "from_rosbag",
-    "from_dataframe",
-    "extract_rosbag_feature",
-    "extract_dataframe_feature",
-    "check_bag_topics",
-    "unpack_dataframe_and_show_topic",
 
     # Core classes
     "AbstractTrajectoryDataclass",
@@ -81,9 +67,11 @@ __all__ = [
 
     # Namespaces
     "dataclasses",
+    "extractor",
     "ros",
     "factory",
     "temporal",
+    "typing",
     "utils",
 
     # Common exceptions

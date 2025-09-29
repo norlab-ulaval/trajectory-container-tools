@@ -6,7 +6,7 @@ from typing import Optional, Tuple, Union
 import numpy as np
 import pytest
 
-from trajectory_container_tools import (
+from trajectory_container_tools.extractor import (
     check_bag_topics,
     extract_rosbag_feature,
 )
