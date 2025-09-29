@@ -226,22 +226,26 @@ def validate_timestamps_ordering(
     return offending_idx
 
 
-def to_seconds_nanoseconds(nanoseconds: int) -> Tuple[int, int]:
-    """Get time as separate seconds and nanoseconds components.
+def to_seconds_nanoseconds(
+    nanoseconds: Union[int, np.ndarray],
+) -> Tuple[Union[int, np.ndarray], Union[int, np.ndarray]]:
+    """Get timestamp(s) as separate seconds and nanoseconds components.
 
     Output is compatible with the ROS2 time (seconds nanoseconds) format
 
     :returns: 2-tuple seconds and nanoseconds
     """
     NANOSECONDS_CONVERSION_CONSTANT = 10**9
+
+    second = copy(nanoseconds)
     return (
-        nanoseconds // NANOSECONDS_CONVERSION_CONSTANT,
+        second // NANOSECONDS_CONVERSION_CONSTANT,
         nanoseconds % NANOSECONDS_CONVERSION_CONSTANT,
     )
 
 
-def to_seconds(nanoseconds: int) -> float:
-    """Convert timestamp in nanosecond to seconds.
+def to_seconds(nanoseconds: Union[int, np.ndarray]) -> Union[float, np.ndarray]:
+    """Convert timestamp(s) in nanosecond to seconds.
 
     :returns: Timestamp converted in second
     """

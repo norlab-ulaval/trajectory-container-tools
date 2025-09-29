@@ -183,11 +183,18 @@ class TestTimestampConversionHelper:
         assert to_seconds_nanoseconds(int(1e9)) == (1, 000000000)
         assert to_seconds_nanoseconds(1711038330132760208) == (1711038330, 132760208)
 
+        t_second, t_nano = to_seconds_nanoseconds(np.ones(10)*1711038330132760208)
+        assert t_second == pytest.approx(np.ones(10)* 1711038330)
+        assert t_nano == pytest.approx(np.ones(10) * 132760208)
+
     def test_to_seconds(self):
 
         assert to_seconds(int(1e9)) == 1.0
         assert to_seconds(int(1e8)) == 0.1
         assert to_seconds(1711038330132760208) == 1711038330.132760208
+
+        assert to_seconds(np.ones(10)*int(1e9)) == pytest.approx(np.ones(10) * 1.0)
+        assert to_seconds(np.ones(10)*int(1e8)) == pytest.approx(np.ones(10) * 0.1)
 
     def test_compute_delta_timestamp(self):
         t_time_space = np.arange(100) * 100000000  # Mock timestamp with uniform delta
