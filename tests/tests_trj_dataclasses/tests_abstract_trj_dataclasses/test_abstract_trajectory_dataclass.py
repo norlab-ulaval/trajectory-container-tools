@@ -9,10 +9,10 @@ from .mock import (
     MockTrajectoryComposedParent,
     MockTrajectoryComposedParentNestedOnly,
 )
-from trajectory_container_tools.trj_dataclasses.abstract_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.abstract_trajectory_dataclass import (
     AbstractTrajectoryDataclass,
 )
-from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
+from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     StatePose2D,
 )
 

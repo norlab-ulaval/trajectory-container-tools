@@ -4,14 +4,14 @@ import pytest
 from trajectory_container_tools.rosbag_to_tct import (
     from_rosbag,
 )
-from trajectory_container_tools.trj_dataclasses.ros2_primitive_dataclass import (
+from trajectory_container_tools.dataclasses.ros2_primitive_dataclass import (
     Header,
     Point,
     Quaternion,
     Transform,
     Vector3,
 )
-from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
+from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
     AckermannMsgsAckermannDrive,
     AckermannMsgsAckermannDriveStamped,
     NavMsgsOdometry,

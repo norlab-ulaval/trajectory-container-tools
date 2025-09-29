@@ -3,14 +3,14 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from trajectory_container_tools.trj_dataclasses.ros2_primitive_dataclass import (
+from trajectory_container_tools.dataclasses.ros2_primitive_dataclass import (
     Point,
     Quaternion,
 )
 from trajectory_container_tools.utils.shadow_data_container import (
     instanciate_shadow_data_container,
 )
-from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
+from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
     Pose,
     RosDataclass,
 )

@@ -22,11 +22,11 @@ The most straightforward way to create a trajectory is by extending `BaseTraject
 ```python
 from dataclasses import dataclass
 import numpy as np
-from trajectory_container_tools.trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
+import trajectory_container_tools as tct
 
 
 @dataclass()
-class Simple2DTrajectory(BaseTrajectoryDataclass):
+class Simple2DTrajectory(tct.BaseTrajectoryDataclass):
     x: np.ndarray
     y: np.ndarray
     timestamps: np.ndarray
@@ -73,9 +73,7 @@ Available dimensions: ('x', 'y', 'timestamps')
 For more complex data organization, use `NestedBaseTrajectoryDataclass` for custom implementation or use dataclasses from `primitive_dataclass` module:
 
 ```python
-from trajectory_container_tools.trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
-from trajectory_container_tools.trj_dataclasses.primitive_dataclass import Vector2D
-
+from trajectory_container_tools.dataclasses import BaseTrajectoryDataclass, NestedBaseTrajectoryDataclass, Vector2D
 
 @dataclass()
 class CustomPoseContainer(NestedBaseTrajectoryDataclass):
@@ -124,21 +122,18 @@ print(sin_cos_trajectory_object)
 TCT provides factory functions for dynamic trajectory dataclass creation:
 
 ```python
-from trajectory_container_tools.utils.factory import (
-    TrjDataClassFeatureSpecification,
-    create_dataclass
-    )
+import trajectory_container_tools as tct
 
 mock_data = np.random.randn(100, 4)  # 100 timesteps, 4 dimensions
 
 # Define the specification
-spec = TrjDataClassFeatureSpecification(
-        new_feature_dataclass_type='DynamicTrajectory',
-        dimension_names=('x', 'y', 'velocity', 'acceleration')
+spec = tct.factory.TrjDataClassFeatureSpecification(
+        new_feature_dataclass_type="DynamicTrajectory",
+        dimension_names=("x", "y", "velocity", "acceleration"),
         )
 
 # Create the dataclass type
-DynamicTrajectory = create_dataclass(specification=spec)
+DynamicTrajectory = tct.factory.create_dataclass(specification=spec)
 
 # Use the dynamically created class
 factory_generated_trajectory = DynamicTrajectory(
@@ -150,6 +145,7 @@ factory_generated_trajectory = DynamicTrajectory(
         )
 
 print(factory_generated_trajectory)
+
 ```
 ```terminaloutput
          DynamicTrajectory(
@@ -215,6 +211,8 @@ Point 4: x=0.397, y=0.918
 TCT supports batch trajectories for processing multiple trajectories simultaneously:
 
 ```python
+from trajectory_container_tools.dataclasses import BaseTrajectoryDataclass
+
 # Create batch trajectories (3 trajectories, 20 timesteps each)
 batch_size, time_steps = 3, 20
 batch_x = np.random.randn(batch_size, time_steps)

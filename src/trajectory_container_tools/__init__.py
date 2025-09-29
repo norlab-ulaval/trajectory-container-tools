@@ -38,12 +38,12 @@ from .dataframe_to_tct import (
 )
 
 # Core abstract classes
-from .trj_dataclasses.abstract_trajectory_dataclass import (
+from .dataclasses.abstract_trajectory_dataclass import (
     AbstractTrajectoryDataclass,
     AbstractMultifeatureDataclass,
     AbstractNoTrajectoryDataclass,
 )
-from .trj_dataclasses.base_trajectory_dataclass import (
+from .dataclasses.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
     NestedBaseTrajectoryDataclass,
     BaseNoTrajectoryDataclass,
@@ -53,7 +53,7 @@ from .trj_dataclasses.base_trajectory_dataclass import (
 from .utils.temporal_tools.timestamps import TimestampCausalOrderingError
 
 # Submodule imports for namespace organization (moved to end to avoid circular imports)
-from . import trj_dataclasses as dataclasses
+from . import dataclasses as dataclasses
 from . import ros
 from . import factory
 from . import temporal

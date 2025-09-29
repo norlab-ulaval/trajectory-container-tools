@@ -6,10 +6,10 @@ import numpy as np
 
 from .typing import TrajectoryDataclass
 from ..utils.typing import TrajectoryDataclass
-from ..trj_dataclasses.abstract_trajectory_dataclass import (
+from ..dataclasses.abstract_trajectory_dataclass import (
     AbstractTrajectoryDataclass,
     )
-from ..trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
+from ..dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
 
 
 @dataclass()

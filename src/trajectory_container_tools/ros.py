@@ -20,6 +20,7 @@ from .utils.ros2_non_native_msg import register_non_native_msgs
 from .utils.ros2_utils import (
     get_rosbag_typestore_auto_distro,
     rosbag_topic_time_to_timestamp,
+    get_ros2_distro,
 )
 
 __all__ = [
@@ -28,4 +29,5 @@ __all__ = [
     "register_non_native_msgs",
     "get_rosbag_typestore_auto_distro",
     "rosbag_topic_time_to_timestamp",
+    'get_ros2_distro',
 ]

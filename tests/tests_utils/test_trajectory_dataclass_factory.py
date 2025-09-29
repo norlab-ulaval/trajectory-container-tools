@@ -2,18 +2,18 @@
 import numpy as np
 import pytest
 
-from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
+from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     BaseDataframeFeatureDataclass,
 )
-from trajectory_container_tools.trj_dataclasses.ros2_primitive_dataclass import Header
-from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
+from trajectory_container_tools.dataclasses.ros2_primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
     RosStampedDataclass,
 )
 from trajectory_container_tools.utils.factory import (
     TrjDataClassFeatureSpecification,
     create_dataclass,
 )
-from trajectory_container_tools.trj_dataclasses import (
+from trajectory_container_tools.dataclasses import (
     abstract_trajectory_dataclass as atd,
 )
 

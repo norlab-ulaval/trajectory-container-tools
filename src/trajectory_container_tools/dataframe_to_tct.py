@@ -7,10 +7,10 @@ from typing import Dict, Tuple, Union
 from dataclasses import fields as fields, make_dataclass
 
 from .utils.typing import MultifeatureTrajectoryDataclass, TrajectoryDataclass
-from trajectory_container_tools.trj_dataclasses.abstract_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
 )
-from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
+from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     BaseDataframeFeatureDataclass,
 )
 

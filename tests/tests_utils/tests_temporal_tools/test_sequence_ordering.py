@@ -1,5 +1,5 @@
 # coding=utf-8
-from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
+from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
     RosStampedDataclass,
 )
 from trajectory_container_tools.utils.temporal_tools.sequence_ordering import (

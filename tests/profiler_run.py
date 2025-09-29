@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import Union
 
-from trajectory_container_tools.trj_dataclasses.abstract_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
 )
 from trajectory_container_tools.utils.optimization import detect_docker_cpu_limits
@@ -17,7 +17,7 @@ from trajectory_container_tools.rosbag_to_tct import (
     from_rosbag,
     extract_rosbag_feature,
 )
-from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
+from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
     AckermannMsgsAckermannDriveStamped,
     NavMsgsOdometry,
     Scan,

@@ -3,10 +3,10 @@ from typing import Any, Union
 
 import numpy as np
 
-from trajectory_container_tools.trj_dataclasses.base_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.base_trajectory_dataclass import (
     NestedBaseTrajectoryDataclass,
 )
-from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
+from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
     RosStampedDataclass,
 )
 from trajectory_container_tools.utils.temporal_tools.timestamps import (

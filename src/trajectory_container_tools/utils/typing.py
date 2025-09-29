@@ -5,13 +5,13 @@ from typing import Dict, List, NewType, TypeAlias, Union
 import numpy as np
 
 from .temporal_tools.timestamps import Timestamps
-from ..trj_dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
+from ..dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
 
-from ..trj_dataclasses.abstract_trajectory_dataclass import (
+from ..dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
     AbstractTrajectoryDataclass,
 )
-from ..trj_dataclasses.ros2_feature_dataclass import RosDataclass, RosStampedDataclass
+from ..dataclasses.ros2_feature_dataclass import RosDataclass, RosStampedDataclass
 
 TrajectoryDataclass = NewType("TrajectoryDataclass", AbstractTrajectoryDataclass)
 
@@ -28,9 +28,10 @@ ShadowDataContainer: TypeAlias = Dict[
         Dict,
         Union[
             type[RosDataclass],
+            type[RosStampedDataclass],
             type[NestedBaseTrajectoryDataclass],
             type[Timestamps],
         ],
-        Union[RosDataclass, NestedBaseTrajectoryDataclass, Timestamps],
+        Union[RosDataclass, RosStampedDataclass, NestedBaseTrajectoryDataclass, Timestamps],
     ],
 ]

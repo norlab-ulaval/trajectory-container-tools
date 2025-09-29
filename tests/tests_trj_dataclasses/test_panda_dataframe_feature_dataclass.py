@@ -1,6 +1,6 @@
 # coding=utf-8
 import pytest
-from trajectory_container_tools.trj_dataclasses.panda_dataframe_feature_dataclass import (
+from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     CmdStandard,
     StatePose2D,
     Velocity,

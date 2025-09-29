@@ -6,8 +6,8 @@ from tqdm import tqdm
 
 from .general import extract_class_name_from_type, setup_progressbar
 from .typing import ShadowDataContainer
-from ..trj_dataclasses.ros2_feature_dataclass import RosDataclass, RosStampedDataclass
-from ..trj_dataclasses.base_trajectory_dataclass import (
+from ..dataclasses.ros2_feature_dataclass import RosDataclass, RosStampedDataclass
+from ..dataclasses.base_trajectory_dataclass import (
     BaseNoTrajectoryDataclass,
     NestedBaseTrajectoryDataclass,
 )

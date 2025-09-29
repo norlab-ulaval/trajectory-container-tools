@@ -46,6 +46,18 @@ VescImu imu
 
 
 def register_non_native_msgs(typestore: Optional[Typestore] = None) -> Typestore:
+    """ Registers non-native message types with the provided or default typestore.
+
+    This function checks and registers specific non-native ROS message types into
+    a given `typestore`. If no `typestore` is provided, it initializes one using
+    a default method. The function ensures that the necessary message types are
+    available in the provided or initialized typestore by registering them using
+    predefined data and paths.
+
+    :param typestore: Optional. The typestore instance to register the non-native
+        messages. If not provided, a default typestore will be initialized.
+    :return: The typestore with registered non-native ROS message types.
+    """
     if not typestore:
         typestore = get_rosbag_typestore_auto_distro()
 

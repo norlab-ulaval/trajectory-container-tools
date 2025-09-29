@@ -62,7 +62,7 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
         self.__setattr__(feature_name, value)
         return None
 
-    def fetch_nested_attribute(self, nested_attribute_list: str) -> Any:
+    def fetch_nested_attribute(self, nested_attribute_path: str) -> Any:
         """Retrieves a nested attribute from an object based on a dot-separated string.
 
         This function allows accessing nested attributes of an object dynamically, based on a
@@ -76,11 +76,11 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
 
             >>> position_x_value = self.fetch_nested_attribute("topic_odom.pose.pose.position.x")
 
-        :param nested_attribute_list: A dot-separated string representing the hierarchical
+        :param nested_attribute_path: A dot-separated string representing the hierarchical
           structure of the attribute to retrieve.
         :return: The value of the resolved nested attribute.
         """
-        return _fetch_nested_attribute(self, nested_attribute_list)
+        return _fetch_nested_attribute(self, nested_attribute_path)
 
     @abc.abstractmethod
     def __post_init__(self):

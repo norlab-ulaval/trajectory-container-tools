@@ -1,7 +1,7 @@
 # coding=utf-8
 import numpy as np
 
-from trajectory_container_tools.trj_dataclasses.f110_gym_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.f110_gym_trajectory_dataclass import (
     F110MotionDynamicDataclass,
 )
 

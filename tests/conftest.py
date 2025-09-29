@@ -11,7 +11,7 @@ from .rosbag_test_utils import (
     get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short,
     get_rosbag_vaul_f1tenth_nx_orin_path_offending_timestamps,
 )
-from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
+from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
     AckermannMsgsAckermannDriveStamped,
     NavMsgsOdometry,
     Scan,
@@ -19,7 +19,7 @@ from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
     Tf2MsgsTFMessage,
     VescMsgsVescImuStamped,
 )
-from trajectory_container_tools.trj_dataclasses.ros2_primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros2_primitive_dataclass import Header
 
 TRJ_LEN = 40
 

@@ -9,12 +9,12 @@ import numpy as np
 from rosbags.rosbag2 import Reader
 from rosbags.typesys.store import Typestore
 
-from .trj_dataclasses.abstract_trajectory_dataclass import (
+from .dataclasses.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
 )
-from .trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
-from .trj_dataclasses.ros2_primitive_dataclass import Header
-from .trj_dataclasses.ros2_feature_dataclass import (
+from .dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
+from .dataclasses.ros2_primitive_dataclass import Header
+from .dataclasses.ros2_feature_dataclass import (
     NavMsgsOdometry,
     NestedRosStampedDataclass,
     RosDataclass,
@@ -95,7 +95,7 @@ def from_rosbag(
     '<topic_property_name_2>', ...)`.
 
     `NewFeatureDataclassTypeName` is the ros topic type in camelback notation, without the
-    `/msg` directory e.g. tf2_msgs/msg/TFMessage = Tf2MsgsTFMessage.
+    `/msg` directory e.g., `NavMsgsOdometry` = `nav_msgs/msg/Odometry`.
 
     Topic property name `drive_steeringAngleVelocity` would convert to ros topic msg
     `drive.steering_angle_velocity`. The parsing rule for topic property name is the following
@@ -104,9 +104,9 @@ def from_rosbag(
         >>> feature_config = {
         >>>     '/pf/pose/odom': NavMsgsOdometry,
         >>>     '/odom':         NavMsgsOdometry,
-        >>>     '/tf':           ('Tf2MsgsTFMessage', 'transform_translation_x',
-        >>>                                           'transform_translation_y',
-        >>>                                           'transform_translation_z')
+        >>>     '/sensors/imu/raw':     ('SensorMsgsImu2D', 'linearAcceleration_x',
+        >>>                                                 'linearAcceleration_y',
+        >>>                                                 'angularVelocity_z')
         >>> }
 
     :param rosbag_path: Path to rosbag.
@@ -186,7 +186,7 @@ def extract_rosbag_feature(
 
     Usage:
 
-        >>> from trajectory_container_tools.trj_dataclasses.rosbag_feature_dataclass import \
+        >>> from trajectory_container_tools.dataclasses.rosbag_feature_dataclass import \
         >>>     NavMsgsOdometry
         >>>
         >>> extract_rosbag_feature(

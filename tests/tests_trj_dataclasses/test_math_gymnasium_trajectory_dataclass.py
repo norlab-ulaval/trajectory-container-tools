@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from trajectory_container_tools.trj_dataclasses.math_gymnasium_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.math_gymnasium_trajectory_dataclass import (
     MathEnvTrajectoryDataclass,
     StateAxDataclass,
     TimeAxDataclass,

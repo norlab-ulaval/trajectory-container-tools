@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 
 from .general import extract_class_name_from_instance
 from .. import AbstractMultifeatureDataclass
-from ..trj_dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
+from ..dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
 
 
 def plot_trajectory_2d(

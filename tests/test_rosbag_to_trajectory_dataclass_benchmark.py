@@ -10,7 +10,7 @@ from trajectory_container_tools import (
     check_bag_topics,
     extract_rosbag_feature,
 )
-from trajectory_container_tools.trj_dataclasses.ros2_feature_dataclass import (
+from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
     NavMsgsOdometry,
     RosStampedDataclass,
 )
