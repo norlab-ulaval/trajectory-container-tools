@@ -5,17 +5,13 @@ import pytest
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     BaseDataframeFeatureDataclass,
 )
-from trajectory_container_tools.dataclasses.ros2_primitive_dataclass import Header
-from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
-    RosStampedDataclass,
-)
+from trajectory_container_tools.dataclasses.ros_msgs.ros2_primitive_dataclass import Header
+from trajectory_container_tools.dataclasses import RosStampedDataclass
 from trajectory_container_tools.utils.factory import (
     TrjDataClassFeatureSpecification,
     create_dataclass,
 )
-from trajectory_container_tools.dataclasses import (
-    abstract_trajectory_dataclass as atd,
-)
+from trajectory_container_tools.dataclasses.core import abstract_trajectory_dataclass as atd
 
 
 # ====Pandas dataframe cases=======================================================================

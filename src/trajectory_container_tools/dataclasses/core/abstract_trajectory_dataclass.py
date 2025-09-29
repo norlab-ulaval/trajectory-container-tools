@@ -9,7 +9,7 @@ from typing import Any, List, Optional, Tuple, Union
 import trajectory_container_tools as tct
 from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.temporal import validate_timestep_indices
-from ..utils.general import (
+from trajectory_container_tools.utils.general import (
     check_typing_list_and_extract_list_type,
     extract_class_name_from_instance,
     check_typing_union_and_extract_first_union_type,

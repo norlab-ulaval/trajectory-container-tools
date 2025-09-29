@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .base_trajectory_dataclass import BaseTrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryDataclass
 
 
 @dataclass()

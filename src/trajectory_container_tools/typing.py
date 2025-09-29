@@ -5,13 +5,13 @@ from typing import Dict, List, NewType, TypeAlias, Union
 import numpy as np
 
 from trajectory_container_tools.temporal import Timestamps
-from ..dataclasses.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
 
-from ..dataclasses.abstract_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
     AbstractTrajectoryDataclass,
 )
-from ..dataclasses.ros2_feature_dataclass import RosDataclass, RosStampedDataclass
+from trajectory_container_tools.dataclasses import RosDataclass, RosStampedDataclass
 
 TrajectoryDataclass = NewType("TrajectoryDataclass", AbstractTrajectoryDataclass)
 

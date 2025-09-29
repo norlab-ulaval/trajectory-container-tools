@@ -4,44 +4,40 @@ Trajectory dataclasses for different data sources and formats.
 
 Available dataclasses:
 - ROS2 message types (NavMsgsOdometry, SensorMsgsImu, etc.)
-- Simulation environments (F110Gym, MathGymnasium, etc.) 
+- Simulation environments (F110Gym, MathGymnasium, etc.)
 - Generic containers (BaseTrajectoryDataclass, etc.)
 
 Usage:
     >>> import trajectory_container_tools as tct
     >>> odom_class = tct.dataclasses.NavMsgsOdometry
-    >>> imu_class = tct.dataclasses.SensorMsgsImu
+    >>> imu_class = tct.dataclasses.ros_msgs.ros2_nested_dataclass.SensorMsgsImu
 """
 
 # Abstract base classes
-from .abstract_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
     AbstractTrajectoryDataclass,
     AbstractMultifeatureDataclass,
     AbstractNoTrajectoryDataclass
 )
 
 # Base implementations
-from .base_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
     NestedBaseTrajectoryDataclass,
     BaseNoTrajectoryDataclass
 )
 
 # ROS2 dataclasses
-from .ros2_feature_dataclass import (
-    RosStampedDataclass,
-    RosDataclass,
-    NestedRosStampedDataclass,
-    NavMsgsOdometry,
-    SensorMsgsImu,
-    AckermannMsgsAckermannDriveStamped,
-    AckermannMsgsAckermannDrive,
+from trajectory_container_tools.dataclasses.ros_msgs.ros2_non_trajectory_dataclass import (
     Tf2MsgsTFMessage,
-    VescMsgsVescImuStamped,
-    Scan,
-)
+    )
+from .ros_msgs.ros2_stamped_dataclass import AckermannMsgsAckermannDriveStamped, NavMsgsOdometry, \
+    Scan, VescMsgsVescImuStamped
+from .ros_msgs.ros2_nested_dataclass import AckermannMsgsAckermannDrive, SensorMsgsImu
+from .ros_msgs.ros2_core_dataclass import NestedRosStampedDataclass, RosDataclass, \
+    RosStampedDataclass
 
-from .ros2_primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros_msgs.ros2_primitive_dataclass import Header
 
 # Simulation environment dataclasses  
 from .f110_gym_trajectory_dataclass import (

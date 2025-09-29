@@ -1,7 +1,5 @@
 # coding=utf-8
-from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
-    RosStampedDataclass,
-)
+from trajectory_container_tools.dataclasses import RosStampedDataclass
 from trajectory_container_tools.temporal.sequence_ordering import (
     fix_sequence_ordering_base_on_timestamps,
 )

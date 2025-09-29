@@ -9,17 +9,13 @@ import numpy as np
 from rosbags.rosbag2 import Reader
 from rosbags.typesys.store import Typestore
 
-from trajectory_container_tools.dataclasses.abstract_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
 )
-from trajectory_container_tools.dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
-from trajectory_container_tools.dataclasses.ros2_primitive_dataclass import Header
-from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
-    NavMsgsOdometry,
-    NestedRosStampedDataclass,
-    RosDataclass,
-    RosStampedDataclass,
-)
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryDataclass
+from trajectory_container_tools.dataclasses.ros_msgs.ros2_primitive_dataclass import Header
+from trajectory_container_tools.dataclasses import NavMsgsOdometry, NestedRosStampedDataclass, RosDataclass, \
+    RosStampedDataclass
 from trajectory_container_tools.utils.factory import (
     parse_feature_spec,
 )
@@ -28,17 +24,16 @@ from trajectory_container_tools.utils.general import (
     extract_class_name_from_type,
     setup_progressbar, dn_validate_path,
 )
-from trajectory_container_tools.utils.ros2_non_native_msg import register_non_native_msgs
-from trajectory_container_tools.utils.ros2_utils import (
-    get_rosbag_typestore_auto_distro,
-    rosbag_topic_time_to_timestamp,
-)
+from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import register_non_native_msgs
+from trajectory_container_tools.utils.ros2_utils.ros2_general import get_rosbag_typestore_auto_distro
+from trajectory_container_tools.utils.ros2_utils.ros2_timestamps import rosbag_topic_time_to_timestamp
+
 from trajectory_container_tools.utils.shadow_data_container import (
     instanciate_shadow_data_container,
     post_process_shadown_data_container,
 )
 from trajectory_container_tools.temporal.timestamps import TimestampCausalOrderingError, Timestamps
-from trajectory_container_tools.utils.typing import MultifeatureTrajectoryDataclass, ShadowDataContainer
+from trajectory_container_tools.typing import MultifeatureTrajectoryDataclass, ShadowDataContainer
 
 
 def check_bag_topics(rosbag_path: Union[str, Path]) -> Path:

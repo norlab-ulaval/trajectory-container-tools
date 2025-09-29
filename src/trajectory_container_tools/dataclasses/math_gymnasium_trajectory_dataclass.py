@@ -4,7 +4,7 @@ from typing import Optional
 
 import numpy as np
 
-from .base_trajectory_dataclass import BaseTrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryDataclass
 from ..utils.general import check_is_finite
 
 

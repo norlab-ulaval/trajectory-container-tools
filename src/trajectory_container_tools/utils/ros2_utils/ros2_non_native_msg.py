@@ -4,7 +4,7 @@ from typing import Optional
 from rosbags.typesys import get_types_from_msg
 from rosbags.typesys.store import Typestore
 
-from trajectory_container_tools.utils.ros2_utils import get_rosbag_typestore_auto_distro
+from trajectory_container_tools.utils.ros2_utils.ros2_general import get_rosbag_typestore_auto_distro
 
 # from ackermann_msgs.msg import AckermannDriveStamped, AckermannDrive
 # from vesc_msgs.msg import VescStateStamped

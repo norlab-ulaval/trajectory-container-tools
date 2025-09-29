@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from .abstract_trajectory_dataclass import AbstractTrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import AbstractTrajectoryDataclass
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////

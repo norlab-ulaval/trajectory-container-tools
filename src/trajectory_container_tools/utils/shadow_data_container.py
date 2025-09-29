@@ -5,9 +5,9 @@ import numpy as np
 from tqdm import tqdm
 
 from .general import extract_class_name_from_type, setup_progressbar
-from .typing import ShadowDataContainer
-from ..dataclasses.ros2_feature_dataclass import RosDataclass, RosStampedDataclass
-from ..dataclasses.base_trajectory_dataclass import (
+from trajectory_container_tools.typing import ShadowDataContainer
+from ..dataclasses import RosDataclass, RosStampedDataclass
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
     BaseNoTrajectoryDataclass,
     NestedBaseTrajectoryDataclass,
 )

@@ -1,11 +1,10 @@
 # coding=utf-8
-from typing import Union
 
 from matplotlib import pyplot as plt
 
 from .general import extract_class_name_from_instance
 from .. import AbstractMultifeatureDataclass
-from ..dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryDataclass
 
 
 def plot_trajectory_2d(

@@ -4,7 +4,7 @@ from typing import Union
 
 import numpy as np
 
-from trajectory_container_tools.dataclasses.base_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
     NestedBaseTrajectoryDataclass,
 )
 from trajectory_container_tools.temporal.timestamps import Timestamps

@@ -6,8 +6,8 @@ import pandas as pd
 from typing import Dict, Tuple, Union
 from dataclasses import make_dataclass
 
-from trajectory_container_tools.utils.typing import MultifeatureTrajectoryDataclass
-from trajectory_container_tools.dataclasses.abstract_trajectory_dataclass import (
+from trajectory_container_tools.typing import MultifeatureTrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
 )
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (

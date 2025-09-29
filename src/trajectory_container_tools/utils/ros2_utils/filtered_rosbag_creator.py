@@ -11,10 +11,10 @@ from trajectory_container_tools.utils.general import (
     dn_validate_path,
     show_directory_content,
 )
-from trajectory_container_tools.utils.ros2_non_native_msg import (
+from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
     register_non_native_msgs,
 )
-from trajectory_container_tools.utils.ros2_utils import get_rosbag_typestore_auto_distro
+from trajectory_container_tools.utils.ros2_utils.ros2_general import get_rosbag_typestore_auto_distro
 
 
 def create_filtered_rosbag(

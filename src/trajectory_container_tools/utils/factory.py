@@ -4,12 +4,8 @@ from typing import Tuple, Union
 
 import numpy as np
 
-from .typing import TrajectoryDataclass
-from ..utils.typing import TrajectoryDataclass
-from ..dataclasses.abstract_trajectory_dataclass import (
-    AbstractTrajectoryDataclass,
-    )
-from ..dataclasses.base_trajectory_dataclass import BaseTrajectoryDataclass
+from trajectory_container_tools.typing import TrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryDataclass
 
 
 @dataclass()

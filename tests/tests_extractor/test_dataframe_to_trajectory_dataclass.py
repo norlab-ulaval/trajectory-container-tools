@@ -11,9 +11,8 @@ from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass im
     StatePose2D,
 )
 from trajectory_container_tools.extractor import dataframe_to_tct as dtd
-from trajectory_container_tools.dataclasses import (
-    abstract_trajectory_dataclass as atd,
-)
+from trajectory_container_tools.dataclasses.core import abstract_trajectory_dataclass as atd
+
 
 @pytest.fixture(scope="function")
 def setup_panda_dataframe() -> pd.DataFrame:

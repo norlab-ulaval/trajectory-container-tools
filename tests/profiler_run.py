@@ -2,7 +2,7 @@
 import os
 from typing import Union
 
-from trajectory_container_tools.dataclasses.abstract_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
     AbstractMultifeatureDataclass,
 )
 from trajectory_container_tools.utils.optimization import detect_docker_cpu_limits
@@ -12,13 +12,8 @@ from trajectory_container_tools.extractor.rosbag_to_tct import (
 from trajectory_container_tools.extractor.rosbag_to_tct import (
     from_rosbag,
     )
-from trajectory_container_tools.dataclasses.ros2_feature_dataclass import (
-    AckermannMsgsAckermannDriveStamped,
-    NavMsgsOdometry,
-    Scan,
-    SensorMsgsImu,
-    RosStampedDataclass,
-)
+from trajectory_container_tools.dataclasses import AckermannMsgsAckermannDriveStamped, \
+    NavMsgsOdometry, RosStampedDataclass, Scan, SensorMsgsImu
 
 
 def profiler_run():

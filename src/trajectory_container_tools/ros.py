@@ -16,15 +16,17 @@ Usage:
 
 # ROS utilities
 from trajectory_container_tools.extractor.rosbag_to_tct import check_bag_topics
-from .utils.ros2_non_native_msg import register_non_native_msgs
-from .utils.ros2_utils import (
+from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import register_non_native_msgs
+from .utils.ros2_utils.ros2_general import (
     get_rosbag_typestore_auto_distro,
-    rosbag_topic_time_to_timestamp,
     get_ros2_distro,
 )
+from .utils.ros2_utils.ros2_timestamps import rosbag_topic_time_to_timestamp
+from .utils.ros2_utils.filtered_rosbag_creator import create_filtered_rosbag
 
 __all__ = [
-    # Utilities
+    # Ros2 utilities
+    "create_filtered_rosbag",
     "check_bag_topics",
     "register_non_native_msgs",
     "get_rosbag_typestore_auto_distro",
