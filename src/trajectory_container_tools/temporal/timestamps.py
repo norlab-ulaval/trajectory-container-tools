@@ -130,9 +130,7 @@ class Timestamps:
           nanoseconds or (seconds, nanoseconds ), default is True.
         :return: A list of integers representing IDs of events that violate causal ordering.
         """
-        return validate_timestamps_ordering(
-            self, show_offending_in_nanoseconds
-        )
+        return validate_timestamps_ordering(self, show_offending_in_nanoseconds)
 
 
 def validate_timestamps_ordering(
@@ -228,18 +226,31 @@ def validate_timestamps_ordering(
     return offending_idx
 
 
-def to_seconds_nanoseconds(nanoseconds: int) -> Tuple[int, int]:
-    """Get time as separate seconds and nanoseconds components.
+def to_seconds_nanoseconds(
+    nanoseconds: Union[int, np.ndarray],
+) -> Tuple[Union[int, np.ndarray], Union[int, np.ndarray]]:
+    """Get timestamp(s) as separate seconds and nanoseconds components.
 
     Output is compatible with the ROS2 time (seconds nanoseconds) format
 
     :returns: 2-tuple seconds and nanoseconds
     """
     NANOSECONDS_CONVERSION_CONSTANT = 10**9
+
+    second = copy(nanoseconds)
     return (
-        nanoseconds // NANOSECONDS_CONVERSION_CONSTANT,
+        second // NANOSECONDS_CONVERSION_CONSTANT,
         nanoseconds % NANOSECONDS_CONVERSION_CONSTANT,
     )
+
+
+def to_seconds(nanoseconds: Union[int, np.ndarray]) -> Union[float, np.ndarray]:
+    """Convert timestamp(s) in nanosecond to seconds.
+
+    :returns: Timestamp converted in second
+    """
+    SECONDS_CONVERSION_CONSTANT = 1e9
+    return nanoseconds / SECONDS_CONVERSION_CONSTANT
 
 
 def compute_delta_timestamp(time_space: np.ndarray) -> np.ndarray:

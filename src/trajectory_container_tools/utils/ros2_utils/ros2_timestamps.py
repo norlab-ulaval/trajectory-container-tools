@@ -41,6 +41,16 @@ def convert_timestamp_from_rosbag_message(
 
 
 def rosbag_topic_time_to_timestamp(msg_timestamp: builtin_interfaces__msg__Time) -> int:
+    """
+    Converts a ROS2 message timestamp to an integer timestamp in nanoseconds.
+
+    This function processes a rosbag time object, and calculates an integer representation in
+    nanoseconds by combining its `sec` (seconds) and `nanosec` (nanoseconds) fields.
+
+    :param msg_timestamp: A rosbag time object containing separate fields for seconds
+        and nanoseconds.
+    :return: An integer representation of the given timestamp in nanoseconds.
+    """
     NANOSECONDS_CONVERSION_CONSTANT = 10**9
 
     assert isinstance(msg_timestamp, builtin_interfaces__msg__Time)
@@ -56,6 +66,19 @@ def rosbag_timestamp_to_ros_time(
     bag_timestamp: int,
     use_msg_timestamp: bool,
 ) -> RosTime:
+    """
+    Converts bag and topic level timestamps from a rosbag time object to ROS2 time object.
+
+    This function converts a message timestamp from a rosbag time object into a ROS2 time object.
+    The conversion can use either the message's inherent timestamp or the bag's timestamp depending
+     on the `use_msg_timestamp` flag.
+
+    :param msg_timestamp: The timestamp from the message, given in ROS message time type.
+    :param bag_timestamp: The bag timestamp, given as an integer in nanoseconds.
+    :param use_msg_timestamp: A boolean flag indicating whether to use the message's
+        timestamp (if True) or the bag's timestamp (if False).
+    :return: The converted ROS time object.
+    """
     if use_msg_timestamp:
         _timestamp = rosbag_topic_time_to_ros_time(msg_timestamp)
     else:
@@ -66,6 +89,17 @@ def rosbag_timestamp_to_ros_time(
 def rosbag_topic_time_to_ros_time(
     msg_timestamp: builtin_interfaces__msg__Time,
 ) -> RosTime:
+    """
+    Converts a rosbag time object to a ROS2 time object.
+
+    This function takes a rosbag time object, extracts its seconds and nanoseconds components,
+    and constructs a ROS2 time object (`RosTime`) which encapsulates these components.
+
+    :param msg_timestamp: ROS 2 timestamp to convert.
+    :type msg_timestamp: builtin_interfaces__msg__Time
+    :return: The equivalent ROS time object.
+    :rtype: RosTime
+    """
     assert isinstance(msg_timestamp, builtin_interfaces__msg__Time)
 
     _timestamp = RosTime(seconds=msg_timestamp.sec, nanoseconds=msg_timestamp.nanosec)

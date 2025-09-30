@@ -56,7 +56,7 @@ from trajectory_container_tools.dataclasses import NavMsgsOdometry, RosStampedDa
 ```python
 # Inspect available topics in the bag
 rosbag_path = Path("path/to/your/rosbag")
-tct.check_bag_topics(rosbag_path)
+tct.extractor.check_bag_topics(rosbag_path)
 ```
 
 **Example Output:**
@@ -237,8 +237,8 @@ tc_with_custom_type = tct.extractor.from_rosbag(
         rosbag_path=rosbag_path,
         dataset_info="Trajectory with custom type",
         features_config={
-                'trajectory_points': ('TrajectoryPoint', 'x', 'y', 'theta', 'velocity')
-                '/odometry':         tct.dataclasses.NavMsgsOdometry
+                'trajectory_points': ('TrajectoryPoint', 'x', 'y', 'theta', 'velocity'),
+                '/odometry':         tct.dataclasses.NavMsgsOdometry,
                 },
         typestore=typestore
         )

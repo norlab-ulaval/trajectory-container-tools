@@ -30,19 +30,21 @@ from .version import __version__
 
 
 # Core abstract classes
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
+from .dataclasses.core.abstract_trajectory_dataclass import (
     AbstractTrajectoryDataclass,
     AbstractMultifeatureDataclass,
     AbstractNoTrajectoryDataclass,
 )
-from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
+from .dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
     NestedBaseTrajectoryDataclass,
     BaseNoTrajectoryDataclass,
 )
 
+from .utils.containers_sanity_checks import containers_timestep_alignment_sanity_check
+
 # Common exceptions
-from trajectory_container_tools.temporal import TimestampCausalOrderingError
+from .temporal import TimestampCausalOrderingError
 
 # Submodule imports for namespace organization (moved to end to avoid circular imports)
 from . import dataclasses as dataclasses
@@ -73,6 +75,9 @@ __all__ = [
     "temporal",
     "typing",
     "utils",
+
+    # Container level check
+    "containers_timestep_alignment_sanity_check",
 
     # Common exceptions
     "TimestampCausalOrderingError",
