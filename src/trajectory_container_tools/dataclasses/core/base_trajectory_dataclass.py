@@ -4,9 +4,9 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from .abstract_trajectory_dataclass import (
-    AbstractNoTrajectoryDataclass,
     AbstractTrajectoryDataclass,
 )
+from .abstract_no_trajectory_dataclass import AbstractNoTrajectoryDataclass
 
 
 @dataclass()

@@ -9,9 +9,7 @@ import numpy as np
 from rosbags.rosbag2 import Reader
 from rosbags.typesys.store import Typestore
 
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
-    AbstractMultifeatureDataclass,
-)
+from trajectory_container_tools import AbstractMultifeatureDataclass
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
 )
@@ -167,15 +165,10 @@ def from_rosbag(
         features.append(feature)
 
     with Reader(rosbag_path) as reader:
-        feature_names = features_config.keys()
-        connections = [
-            conn for conn in reader.connections if conn.topic == feature_names
-        ]
         bag_timestamps = []
-        for _, timestamp, _ in reader.messages(
-            connections=connections, start=start, stop=stop
-        ):
-            bag_timestamps.append(timestamp)
+        for connection, timestamp, _ in reader.messages(start=start, stop=stop):
+            if connection.topic in features_config:
+                bag_timestamps.append(timestamp)
 
     rosbag_multifeature = make_dataclass(
         "multifeature",

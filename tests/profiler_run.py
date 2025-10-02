@@ -2,9 +2,7 @@
 import os
 from typing import Union
 
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
-    AbstractMultifeatureDataclass,
-)
+from trajectory_container_tools import AbstractMultifeatureDataclass
 from trajectory_container_tools.utils.optimization import detect_docker_cpu_limits
 from trajectory_container_tools.extractor.rosbag_to_tct import (
     check_bag_topics,

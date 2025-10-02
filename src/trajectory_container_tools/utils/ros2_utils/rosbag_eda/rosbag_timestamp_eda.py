@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 from rosbags.typesys.store import Typestore
 
-
+import trajectory_container_tools.dataclasses.core.abstract_multi_trajectory_dataclass
 from trajectory_container_tools.utils.general import dn_validate_path
 from trajectory_container_tools.temporal.timestamps import to_seconds
 from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.rosbag_window_crawler import (
@@ -48,7 +48,7 @@ def run_rosbag_timestamp_eda(
     figsize: Tuple[int, int] = (28, 10),
     save_dpi: int = 100,
     typestore: Optional[Typestore] = None,
-) -> tct_dataclasses.AbstractMultifeatureDataclass:
+) -> trajectory_container_tools.dataclasses.core.abstract_multi_trajectory_dataclass.AbstractMultifeatureDataclass:
     """
     Executes timestamp-based Exploratory Data Analysis (EDA) on a ROSbag file by analyzing
     specific time window chunks, generating logs, and plotting timestamp data.

@@ -1,4 +1,5 @@
 # coding=utf-8
+import warnings
 from typing import Optional, Tuple, Union
 import os
 from pathlib import Path
@@ -14,32 +15,9 @@ def rosbag_log_file_name(
     bag_path_abs: Path, file_postfix: Optional[Union[str, int]] = None
 ) -> str:
     if file_postfix is not None:
-        return (
-            f"{os.path.basename(bag_path_abs)}-{file_postfix}.log"
-        )
+        return f"{os.path.basename(bag_path_abs)}-{file_postfix}.log"
     else:
         return f"{os.path.basename(bag_path_abs)}.log"
-
-
-def collect_bag_lvl_timestamps(
-    bag_path_abs: Path,
-    features_config: dict,
-    mf_container: tct.typing.MultifeatureTrajectoryDataclass,
-    start: Optional[int],
-    stop: Optional[int],
-) -> tct.typing.MultifeatureTrajectoryDataclass:
-    # (Priority) ToDo: RLRP-449 refactor: move bag lvl timestamps collecting to TCT mf dataclass
-    with Reader(bag_path_abs) as reader:
-        bag_timestamps = []
-        for connection, timestamp, _ in reader.messages(start=start, stop=stop):
-            if connection.topic in features_config:
-                bag_timestamps.append(timestamp)
-
-        if len(bag_timestamps) > 0:
-            mf_container.set_dynamic_field(
-                "bag_timestamps", tct.temporal.Timestamps(np.array(bag_timestamps))
-            )
-    return mf_container
 
 
 def gather_rosbag_informations(bag_path_abs: Path) -> Tuple[int, int, int, str]:

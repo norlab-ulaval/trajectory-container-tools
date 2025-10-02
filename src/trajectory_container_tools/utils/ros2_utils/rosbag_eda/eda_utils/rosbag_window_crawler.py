@@ -7,10 +7,7 @@ from rosbags.typesys.store import Typestore
 
 import trajectory_container_tools as tct
 
-from .general_utils import (
-    collect_bag_lvl_timestamps,
-    gather_rosbag_trajectory_window_informations,
-)
+from .general_utils import gather_rosbag_trajectory_window_informations
 
 
 def crawl_rosbag_window(
@@ -53,11 +50,6 @@ def crawl_rosbag_window(
         start=start,
         stop=stop,
         typestore=typestore,
-    )
-
-    # (Priority) ToDo: RLRP-449 refactor: move bag lvl timestamps collecting to TCT mf dataclass
-    mf_container = collect_bag_lvl_timestamps(
-        bag_path_abs, features_config, mf_container, start, stop
     )
 
     print(mf_container, file=log_file)

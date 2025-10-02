@@ -32,9 +32,9 @@ from .version import __version__
 # Core abstract classes
 from .dataclasses.core.abstract_trajectory_dataclass import (
     AbstractTrajectoryDataclass,
-    AbstractMultifeatureDataclass,
-    AbstractNoTrajectoryDataclass,
-)
+    )
+from .dataclasses.core.abstract_no_trajectory_dataclass import AbstractNoTrajectoryDataclass
+from .dataclasses.core.abstract_multi_trajectory_dataclass import AbstractMultifeatureDataclass
 from .dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
     NestedBaseTrajectoryDataclass,
