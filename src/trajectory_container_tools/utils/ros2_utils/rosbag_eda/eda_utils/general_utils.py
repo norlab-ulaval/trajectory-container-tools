@@ -21,12 +21,6 @@ def rosbag_log_file_name(
         return f"{os.path.basename(bag_path_abs)}.log"
 
 
-def convert_rosbag_topic_key_to_tct_mf_topic_key(feature_name: str) -> str:
-    # (NICE TO HAVE) ToDo: refactor out to TCT
-    # (NICE TO HAVE) ToDo: integrate in TCT extractor from_rosbag() fct
-    return f"topic{feature_name.replace('/', '_')}"
-
-
 def collect_bag_lvl_timestamps(
     bag_path_abs: Path,
     features_config: dict,

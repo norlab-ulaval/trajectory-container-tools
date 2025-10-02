@@ -7,9 +7,7 @@ from matplotlib import pyplot as plt
 
 import trajectory_container_tools as tct
 
-from .general_utils import (
-    convert_rosbag_topic_key_to_tct_mf_topic_key,
-)
+from ...ros2_general import convert_rosbag_topic_key_to_tct_mf_topic_key
 from .plot_management import plot_manager
 
 

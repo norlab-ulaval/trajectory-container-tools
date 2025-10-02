@@ -617,6 +617,7 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
 
     @property
     def summary(self) -> None:
+        # (NICE TO HAVE) ToDo: TCT-68 feat: deprecate AbstractMultifeatureDataclass summary property
         print(self)
         return None
 

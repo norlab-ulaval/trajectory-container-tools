@@ -3,7 +3,7 @@
 """
 Usage:
 
-    1. execute example: $ python src/tools/ros2_tools/rosbag_eda/rosbag_eda.py
+    1. execute example: $ python src/trajectory_container_tools/utils/ros2_utils/rosbag_eda/rosbag_timestamp_eda.py
     2. analyze the plots and logs at "artifact/rosbag_eda/<EXPERIMENT_NAME>/"
 
 """
@@ -13,25 +13,34 @@ import os
 from pathlib import Path
 from rosbags.typesys.store import Typestore
 
-import trajectory_container_tools as tct
 
-from .utils.rosbag_window_crawler import crawl_rosbag_window
-from .utils.general_utils import (
+from trajectory_container_tools.utils.general import dn_validate_path
+from trajectory_container_tools.temporal.timestamps import to_seconds
+from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.rosbag_window_crawler import (
+    crawl_rosbag_window,
+)
+from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
+    register_non_native_msgs,
+)
+from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.general_utils import (
     compute_bag_target_window_nb,
     compute_window_start_and_stop,
     find_max_timestamp_delta_over_all_topics,
     gather_rosbag_informations,
     rosbag_log_file_name,
 )
-from .utils.plot import plot_bag_timestamp_delta
+from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.plot import (
+    plot_bag_timestamp_delta,
+)
+import trajectory_container_tools.dataclasses as tct_dataclasses
 
 
 def run_rosbag_timestamp_eda(
     bag_path: Union[str, Path],
     eda_dir_path: Union[str, Path],
     features_config: dict,
-    fast_forward_ns: Optional[int] = int(1e8),
-    window_ns: Optional[int] = int(0.5e9),
+    fast_forward_ns: Optional[Union[int, float]] = 0.1e9,
+    window_ns: Optional[Union[int, float]] = 0.5e9,
     track_action: str = "/teleop",
     plot_ylim: Optional[float] = None,
     experiment_dir: Optional[str] = None,
@@ -39,7 +48,7 @@ def run_rosbag_timestamp_eda(
     figsize: Tuple[int, int] = (28, 10),
     save_dpi: int = 100,
     typestore: Optional[Typestore] = None,
-) -> tct.AbstractMultifeatureDataclass:
+) -> tct_dataclasses.AbstractMultifeatureDataclass:
     """
     Executes timestamp-based Exploratory Data Analysis (EDA) on a ROSbag file by analyzing
     specific time window chunks, generating logs, and plotting timestamp data.
@@ -48,7 +57,7 @@ def run_rosbag_timestamp_eda(
     :param eda_dir_path: Directory where EDA artifacts and logs will be saved.
     :param features_config: Configuration dictionary containing feature extraction settings.
     :param fast_forward_ns: Time in nanoseconds to fast-forward for each data chunk.
-        Defaults to 1e8 nanoseconds (1/10 of a second).
+        Defaults to 0.1e9 nanoseconds (1/10 of a second).
     :param window_ns: Duration of the time window in nanoseconds for analyzing data chunks.
         Defaults to 0.5e9 nanoseconds (half a second).
     :param track_action: Action topic in the ROSbag to monitor for chunk split. Defaults to "/teleop".
@@ -62,7 +71,7 @@ def run_rosbag_timestamp_eda(
         messages. If not provided, a default typestore will be initialized.
     :return: None
     """
-    typestore = tct.ros.register_non_native_msgs(typestore)
+    typestore = register_non_native_msgs(typestore)
 
     bag_path_abs = Path(bag_path)
 
@@ -73,6 +82,7 @@ def run_rosbag_timestamp_eda(
     experiment_dir_path = Path(os.path.join(eda_dir_path, experiment_dir))
 
     log_path_dir = os.path.join(experiment_dir_path, "logs")
+
     os.makedirs(log_path_dir, exist_ok=True)
 
     print(
@@ -126,7 +136,7 @@ def run_rosbag_timestamp_eda(
                     bag_path_abs,
                     experiment_dir_path,
                     chunk_end_on=track_action,
-                    append_to_title=f"trajectory window size: {tct.temporal.to_seconds(stop - start)} (s)",
+                    append_to_title=f"trajectory window size: {to_seconds(stop - start)} (s)",
                     comment=None,
                     plot_ylim=plot_ylim,
                     plot_postfix=each_idx,
@@ -146,28 +156,30 @@ if __name__ == "__main__":
     """
     Rosbag timestamp Exploratory Data Analysis example
     """
-    TS_FAST_FORWARD = 1e8
-    TS_WINDOW = 5e8  # half a second window
-    BAG = "rosbag2_2023_09_24-20_30_12-filtered-short"
-    BAG_DIR = "bags_vaul-f1tenth-nx-orin"
-    BAG_PATH = tct.utils.dn_validate_path(
-        os.path.join("data/shared_data", BAG_DIR, BAG)
+
+    bag_name_ = "rosbag2_2023_09_24-20_30_12-filtered-short"
+    bag_path_ = dn_validate_path(
+        os.path.join(
+            "data/repository_data/tests_data/rosbag_test_data",
+            "bags_vaul-f1tenth-nx-orin",
+            bag_name_,
+        )
     )
-    TRACK_ACTION = "/teleop"
 
     run_rosbag_timestamp_eda(
-        BAG_PATH,
-        tct.utils.dn_validate_path("artifact/rosbag_eda"),
-        {
-            "/odom": tct.dataclasses.NavMsgsOdometry,
-            # "/tf": tct.dataclasses.Tf2MsgsTFMessage,
-            "/scan": tct.dataclasses.Scan,
-            "/teleop": tct.dataclasses.AckermannMsgsAckermannDriveStamped,
-            "/sensors/imu/raw": tct.dataclasses.SensorMsgsImu,
-            "/sensors/imu": tct.dataclasses.VescMsgsVescImuStamped,
+        bag_path_,
+        eda_dir_path=dn_validate_path("artifact/rosbag_eda"),
+        features_config={
+            "/odom": tct_dataclasses.NavMsgsOdometry,
+            "/tf": tct_dataclasses.Tf2MsgsTFMessage,
+            "/scan": tct_dataclasses.Scan,
+            "/teleop": tct_dataclasses.AckermannMsgsAckermannDriveStamped,
+            "/sensors/imu/raw": tct_dataclasses.SensorMsgsImu,
+            "/sensors/imu": tct_dataclasses.VescMsgsVescImuStamped,
         },
-        TS_FAST_FORWARD,
-        TS_WINDOW,
-        TRACK_ACTION,
+        fast_forward_ns=0.1e9,  # 1/10 of a second forward
+        window_ns=0.5e9,  # half a second window
+        track_action="/teleop",
+        show_plot=True,
         plot_ylim=1.2e8,
     )
