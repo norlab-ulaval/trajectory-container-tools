@@ -30,10 +30,12 @@ from .utils.ros2_utils.ros2_timestamps import (
     rosbag_topic_time_to_ros_time,
 )
 from .utils.ros2_utils.filtered_rosbag_creator import create_filtered_rosbag
+from .utils.ros2_utils.rosbag_eda.rosbag_timestamp_eda import run_rosbag_timestamp_eda
 
 __all__ = [
     # Ros2 utilities
     "create_filtered_rosbag",
+    "run_rosbag_timestamp_eda",
     "register_non_native_msgs",
     "check_bag_topics",
     "get_ros2_distro",

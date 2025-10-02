@@ -19,15 +19,30 @@ class TestRosNamespaceModule:
         assert hasattr(tct, "ros")
         assert tct.ros is not None
 
-    def test_check_topics_function_exists(self):
-        """Test that check_bag_topics function is available in ros namespace."""
-        assert hasattr(tct.ros, "check_bag_topics")
-        assert callable(tct.ros.check_bag_topics)
+    def test_create_filtered_rosbag_function_exists(self):
+        """Test that create_filtered_rosbag function is available in ros namespace."""
+        assert hasattr(tct.ros, "create_filtered_rosbag")
+        assert callable(tct.ros.create_filtered_rosbag)
+
+    def test_run_rosbag_timestamp_eda_function_exists(self):
+        """Test that run_rosbag_timestamp_eda function is available in ros namespace."""
+        assert hasattr(tct.ros, "run_rosbag_timestamp_eda")
+        assert callable(tct.ros.run_rosbag_timestamp_eda)
 
     def test_register_non_native_msgs_function_exists(self):
         """Test that register_non_native_msgs function is available in ros namespace."""
         assert hasattr(tct.ros, "register_non_native_msgs")
         assert callable(tct.ros.register_non_native_msgs)
+
+    def test_check_bag_topics_function_exists(self):
+        """Test that check_bag_topics function is available in ros namespace."""
+        assert hasattr(tct.ros, "check_bag_topics")
+        assert callable(tct.ros.check_bag_topics)
+
+    def test_get_ros2_distro_function_exists(self):
+        """Test that get_ros2_distro function is available in ros namespace."""
+        assert hasattr(tct.ros, "get_ros2_distro")
+        assert callable(tct.ros.get_ros2_distro)
 
     def test_get_rosbag_typestore_auto_distro_function_exists(self):
         """Test that get_rosbag_typestore_auto_distro function is available in ros namespace."""
@@ -38,6 +53,21 @@ class TestRosNamespaceModule:
         """Test that rosbag_topic_time_to_timestamp function is available in ros namespace."""
         assert hasattr(tct.ros, "rosbag_topic_time_to_timestamp")
         assert callable(tct.ros.rosbag_topic_time_to_timestamp)
+
+    def test_convert_timestamp_from_rosbag_message_function_exists(self):
+        """Test that convert_timestamp_from_rosbag_message function is available in ros namespace."""
+        assert hasattr(tct.ros, "convert_timestamp_from_rosbag_message")
+        assert callable(tct.ros.convert_timestamp_from_rosbag_message)
+
+    def test_rosbag_timestamp_to_ros_time_function_exists(self):
+        """Test that rosbag_timestamp_to_ros_time function is available in ros namespace."""
+        assert hasattr(tct.ros, "rosbag_timestamp_to_ros_time")
+        assert callable(tct.ros.rosbag_timestamp_to_ros_time)
+
+    def test_rosbag_topic_time_to_ros_time_function_exists(self):
+        """Test that rosbag_topic_time_to_ros_time function is available in ros namespace."""
+        assert hasattr(tct.ros, "rosbag_topic_time_to_ros_time")
+        assert callable(tct.ros.rosbag_topic_time_to_ros_time)
 
     def test_ros_all_attribute(self):
         """Test that ros module has proper __all__ attribute."""

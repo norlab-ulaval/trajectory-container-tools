@@ -13,9 +13,14 @@ from .rosbag_test_utils import (
 )
 from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
     Tf2MsgsTFMessage,
-    )
-from trajectory_container_tools.dataclasses import AckermannMsgsAckermannDriveStamped, \
-    NavMsgsOdometry, Scan, SensorMsgsImu, VescMsgsVescImuStamped
+)
+from trajectory_container_tools.dataclasses import (
+    AckermannMsgsAckermannDriveStamped,
+    NavMsgsOdometry,
+    Scan,
+    SensorMsgsImu,
+    VescMsgsVescImuStamped,
+)
 from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
 
 TRJ_LEN = 40
@@ -149,7 +154,9 @@ def mock_trajectory_dict_ordered(
 
     timestamps_ = []
     for each_idx in np.arange(mock_ROSbag_2_trj_DC_range.header.trajectory_len):
-        timestamps_.append(mock_ROSbag_2_trj_DC_range.header.timestamps[each_idx].stamps)
+        timestamps_.append(
+            mock_ROSbag_2_trj_DC_range.header.timestamps[each_idx].stamps
+        )
 
     ordered_trajectory_dict["feature_name"] = "/mock_ROSbag_2_trj_DC_range"
     ordered_trajectory_dict["header"] = Header(
@@ -203,12 +210,14 @@ def setup_rosbag_three_topics_filtered():
 
 @pytest.fixture(scope="function")
 def setup_rosbag_six_topics_filtered():
-    bag_path, bag_name, selected_topic = get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short()
+    bag_path, bag_name, selected_topic = (
+        get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short()
+    )
 
     ros_bag_config = RosBagConfig(
         bag_name=bag_name,
-        ts_fast_forward=None,
-        ts_window=None,
+        ts_fast_forward=5e9,
+        ts_window=1e10,
         bag_path=bag_path,
         feature_config={
             "/odom": NavMsgsOdometry,
@@ -221,9 +230,12 @@ def setup_rosbag_six_topics_filtered():
     )
     return ros_bag_config
 
+
 @pytest.fixture(scope="function")
 def setup_rosbag_six_topics_offending_timestamps():
-    bag_path, bag_name, selected_topic = get_rosbag_vaul_f1tenth_nx_orin_path_offending_timestamps()
+    bag_path, bag_name, selected_topic = (
+        get_rosbag_vaul_f1tenth_nx_orin_path_offending_timestamps()
+    )
 
     ros_bag_config = RosBagConfig(
         bag_name=bag_name,
