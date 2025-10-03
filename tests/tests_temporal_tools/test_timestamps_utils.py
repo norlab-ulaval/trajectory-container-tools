@@ -2,8 +2,8 @@
 import numpy as np
 import pytest
 
-from trajectory_container_tools import TimestampCausalOrderingError
 from trajectory_container_tools.temporal import (
+    TimestampCausalOrderingError,
     Timestamps,
     compute_delta_timestamp,
     to_seconds,

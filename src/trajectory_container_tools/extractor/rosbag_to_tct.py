@@ -116,13 +116,13 @@ def from_rosbag(
     `drive.steering_angle_velocity`. The parsing rule for topic property name is the following
     underscore `_` convert to dot `.` and `CamelCase` convert to `snake_case`.
 
-        >>> feature_config = {
-        >>>     '/pf/pose/odom': NavMsgsOdometry,
-        >>>     '/odom':         NavMsgsOdometry,
-        >>>     '/sensors/imu/raw':     ('SensorMsgsImu2D', 'linearAcceleration_x',
-        >>>                                                 'linearAcceleration_y',
-        >>>                                                 'angularVelocity_z')
-        >>> }
+    >>> feature_config = {
+    >>>     '/pf/pose/odom': NavMsgsOdometry,
+    >>>     '/odom':         NavMsgsOdometry,
+    >>>     '/sensors/imu/raw':     ('SensorMsgsImu2D', 'linearAcceleration_x',
+    >>>                                                 'linearAcceleration_y',
+    >>>                                                 'angularVelocity_z')
+    >>> }
 
     :param rosbag_path: Path to rosbag.
     :param dataset_info: Any relevant information on the rosbag (location, robot, condition).
@@ -198,13 +198,12 @@ def extract_rosbag_feature(
 
     Usage:
 
-        >>> from trajectory_container_tools.dataclasses.rosbag_feature_dataclass import \
-        >>>     NavMsgsOdometry
-        >>>
-        >>> extract_rosbag_feature(
-        >>>     rosbag_path=Path("</path/to/rosbag>"),
-        >>>     feature_name="/odom",data_container_type=NavMsgsOdometry
-        >>> )
+    >>> from trajectory_container_tools.dataclasses.rosbag_feature_dataclass import NavMsgsOdometry
+    >>>
+    >>> extract_rosbag_feature(
+    >>>     rosbag_path=Path("</path/to/rosbag>"),
+    >>>     feature_name="/odom",data_container_type=NavMsgsOdometry
+    >>> )
 
     :param rosbag_path: Path to the input ROS bag file.
     :param feature_name: Name of the topic to extract data from.

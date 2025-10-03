@@ -37,15 +37,16 @@ def create_dataclass(
     from a TrjDataClassFeatureSpecification dataclass object.
 
     Usage example:
-        >>> spec_ = TrjDataClassFeatureSpecification(
-        >>>             new_feature_dataclass_type='my_new_feature_type',
-        >>>             dimension_names=('xx', 'yy', 'yawww')
-        >>>         )
-        >>> the_new_cls = create_dataclass(specification=spec_)
-        >>> assert issubclass(the_new_cls, BaseTrajectoryDataclass)
-        >>> # True
-        >>> assert isinstance(the_new_cls, BaseTrajectoryDataclass)
-        >>> # False
+
+    >>> spec_ = TrjDataClassFeatureSpecification(
+    >>>             new_feature_dataclass_type='my_new_feature_type',
+    >>>             dimension_names=('xx', 'yy', 'yawww')
+    >>>         )
+    >>> the_new_cls = create_dataclass(specification=spec_)
+    >>> assert issubclass(the_new_cls, BaseTrajectoryDataclass)
+    >>> # True
+    >>> assert isinstance(the_new_cls, BaseTrajectoryDataclass)
+    >>> # False
 
     :param specification: A TrjDataClassFeatureSpecification object,
     :param trj_dataclass_subclass: a subclass of 'AbstractTrajectoryDataclass'

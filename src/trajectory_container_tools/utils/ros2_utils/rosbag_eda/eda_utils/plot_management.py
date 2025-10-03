@@ -49,9 +49,11 @@ def manage_matplotlib_backend(show_plot: bool, headless: bool) -> None:
 def manage_matplotlib_warnings() -> None:
     """Note: use inside a context manager.
     Example:
-        >>> with warnings.catch_warnings():
-        >>>     manage_matplotlib_warnings()
-        >>>     ...
+
+    >>> with warnings.catch_warnings():
+    >>>     manage_matplotlib_warnings()
+    >>>     ...
+
     """
     warnings.filterwarnings(
         "ignore",

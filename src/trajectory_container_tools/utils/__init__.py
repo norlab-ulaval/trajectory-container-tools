@@ -3,8 +3,10 @@
 General utilities and helper functions.
 
 Usage:
-    >>> import trajectory_container_tools as tct
-    >>> tct.utils.camelcase_to_snake_case(name)
+
+>>> import trajectory_container_tools as tct
+>>> tct.utils.camelcase_to_snake_case(name)
+
 """
 
 from .general import (

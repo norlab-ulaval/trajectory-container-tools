@@ -23,12 +23,12 @@ class BaseTrajectoryDataclass(AbstractTrajectoryDataclass):
     Note: this example would represent a flat data representation as oposed to a nested one
     (see ``NestedBaseTrajectoryDataclass`` usage example).
 
-        >>> @dataclass()
-        >>> class MockContainer(BaseTrajectoryDataclass):
-        >>>     timestamps: np.ndarray
-        >>>     position_x: np.ndarray
-        >>>     position_y: np.ndarray
-        >>>     position_z: np.ndarray
+    >>> @dataclass()
+    >>> class MockContainer(BaseTrajectoryDataclass):
+    >>>     timestamps: np.ndarray
+    >>>     position_x: np.ndarray
+    >>>     position_y: np.ndarray
+    >>>     position_z: np.ndarray
 
     """
 
@@ -47,18 +47,18 @@ class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
 
     1. Define the nested trajectory container
 
-        >>> @dataclass()
-        >>> class MockNestedContainer(NestedBaseTrajectoryDataclass):
-        >>>     x: np.ndarray
-        >>>     y: np.ndarray
-        >>>     z: np.ndarray
+    >>> @dataclass()
+    >>> class MockNestedContainer(NestedBaseTrajectoryDataclass):
+    >>>     x: np.ndarray
+    >>>     y: np.ndarray
+    >>>     z: np.ndarray
 
     2. Define the main trajectory container
 
-        >>> @dataclass()
-        >>> class MockContainer(BaseTrajectoryDataclass):
-        >>>     timestamps: np.ndarray
-        >>>     position: MockNestedContainer
+    >>> @dataclass()
+    >>> class MockContainer(BaseTrajectoryDataclass):
+    >>>     timestamps: np.ndarray
+    >>>     position: MockNestedContainer
 
     :ivar feature_name: This attribute is set to None by default and is immutable.
     :type feature_name: str

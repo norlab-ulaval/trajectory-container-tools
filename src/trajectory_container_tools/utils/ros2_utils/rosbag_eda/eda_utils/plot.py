@@ -6,6 +6,7 @@ from typing import Optional, Tuple, Union
 from matplotlib import pyplot as plt
 
 import trajectory_container_tools as tct
+import trajectory_container_tools.temporal.timestamps
 
 from ...ros2_general import convert_rosbag_topic_key_to_tct_mf_topic_key
 from .plot_management import plot_manager
@@ -75,7 +76,7 @@ def plot_bag_timestamp_delta(
                 if topic_ts_delta is not None and len(topic_ts_delta) > 0:
                     y = topic_ts_delta
                     x = topic_ts_stamps - bag_start_time
-                    x_in_second = tct.temporal.to_seconds(x)
+                    x_in_second = trajectory_container_tools.temporal.timestamps.to_seconds(x)
 
                     if "ackermann" in each_topic_name:
                         _l = "-"
@@ -124,7 +125,7 @@ def plot_bag_timestamp_delta(
                 topic_ts_delta = each_topic.delta_stamps[1:]
                 if topic_ts_delta is not None and len(topic_ts_delta) > 0:
                     x = topic_ts_stamps - bag_start_time
-                    x_in_second = tct.temporal.to_seconds(x)
+                    x_in_second = trajectory_container_tools.temporal.timestamps.to_seconds(x)
 
                     plt.vlines(
                         x=x_in_second,
@@ -161,7 +162,7 @@ def plot_bag_timestamp_delta(
         fig.text(
             0.99,
             footer_comment_v,
-            f"+ bag start time {tct.temporal.to_seconds(bag_start_time)} (s)",
+            f"+ bag start time {trajectory_container_tools.temporal.timestamps.to_seconds(bag_start_time)} (s)",
             horizontalalignment="right",
         )
 

@@ -90,13 +90,14 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         Note: The method scope include all field.
 
         Example:
-            >>> @dataclass
-            >>> class StatePose2DSteadyState(StatePose2D):
-            >>>
-            >>>     def on_begin_post_init_callback(self):
-            >>>         feature = self.get_dynamic_field("<feature-name>")
-            >>>         self.set_dynamic_field(f"<other-feature>", np.cumsum(feature))
-            >>>         return None
+
+        >>> @dataclass
+        >>> class StatePose2DSteadyState(StatePose2D):
+        >>>
+        >>>     def on_begin_post_init_callback(self):
+        >>>         feature = self.get_dynamic_field("<feature-name>")
+        >>>         self.set_dynamic_field(f"<other-feature>", np.cumsum(feature))
+        >>>         return None
 
         """
         pass
@@ -111,23 +112,24 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
               and `trajectory_metadata_field`.
 
         Example:
-            >>> steady_state_mask = dataset_snow['steady_state_mask'].to_numpy() == True
-            >>>
-            >>> @dataclass
-            >>> class StatePose2DSteadyState(StatePose2D):
-            >>>
-            >>>     def post_init_feature_callback(self, feature_name):
-            >>>         # Example for creating an explicit timestep t=0 property named "<feature_name>_init"
-            >>>         feature = self.get_dynamic_field(feature_name)
-            >>>         if isinstance(feature, np.ndarray):
-            >>>             if self.batch:
-            >>>                 # Case batch data
-            >>>                 feature_ini = feature[:, 0, ...]
-            >>>             else:
-            >>>                 # Case time-serie data
-            >>>                 feature_ini = feature[0, ...]
-            >>>             self.set_dynamic_field(f"{feature_name}_init", feature_ini)
-            >>>         return None
+
+        >>> steady_state_mask = dataset_snow['steady_state_mask'].to_numpy() == True
+        >>>
+        >>> @dataclass
+        >>> class StatePose2DSteadyState(StatePose2D):
+        >>>
+        >>>     def post_init_feature_callback(self, feature_name):
+        >>>         # Example for creating an explicit timestep t=0 property named "<feature_name>_init"
+        >>>         feature = self.get_dynamic_field(feature_name)
+        >>>         if isinstance(feature, np.ndarray):
+        >>>             if self.batch:
+        >>>                 # Case batch data
+        >>>                 feature_ini = feature[:, 0, ...]
+        >>>             else:
+        >>>                 # Case time-serie data
+        >>>                 feature_ini = feature[0, ...]
+        >>>             self.set_dynamic_field(f"{feature_name}_init", feature_ini)
+        >>>         return None
 
         """
         pass

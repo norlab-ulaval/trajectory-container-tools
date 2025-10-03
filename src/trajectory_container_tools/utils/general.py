@@ -35,8 +35,8 @@ def extract_class_name_from_type(data_container_type: type) -> str:
 
     Example:
 
-        >>> extract_class_name_from_type(np.ndarray)
-        >>> # "ndarray"
+    >>> extract_class_name_from_type(np.ndarray)
+    >>> # "ndarray"
 
     :param data_container_type: The type from which the class name will be extracted.
     :return: The name of the class extracted from the provided type.
@@ -53,8 +53,8 @@ def extract_class_name_from_instance(the_object: object) -> str:
 
     Example:
 
-        >>> extract_class_name_from_instance(np.ones((2,2)))
-        >>> # "ndarray"
+    >>> extract_class_name_from_instance(np.ones((2,2)))
+    >>> # "ndarray"
 
     :param the_object: an instance
     :return: the instance class name as a string
@@ -78,10 +78,10 @@ def camelcase_to_snake_case(name: str) -> str:
 
     Example:
 
-        >>> camelcase_to_snake_case("drive_steeringAngleVelocity")
-        >>> # drive_steering_angle_velocity
-        >>> camelcase_to_snake_case("drive_SteeringAngleVelocity")
-        >>> # drive__steering_angle_velocity
+    >>> camelcase_to_snake_case("drive_steeringAngleVelocity")
+    >>> # drive_steering_angle_velocity
+    >>> camelcase_to_snake_case("drive_SteeringAngleVelocity")
+    >>> # drive__steering_angle_velocity
 
     :param name: The camelCase formatted string that needs to be converted to snake_case.
     :return: A string formatted in snake_case.

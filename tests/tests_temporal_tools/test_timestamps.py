@@ -5,8 +5,8 @@ import pytest
 from trajectory_container_tools.temporal.timestamps import (
     TimestampCausalOrderingError,
     Timestamps,
-    to_seconds_nanoseconds,
-)
+    )
+from trajectory_container_tools.temporal import to_seconds_nanoseconds
 
 
 class TestTimestamps:

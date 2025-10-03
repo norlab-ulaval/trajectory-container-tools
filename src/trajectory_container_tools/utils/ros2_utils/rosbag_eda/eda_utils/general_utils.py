@@ -9,6 +9,7 @@ from rosbags.rosbag2 import Reader
 from rosbags.typesys.store import Typestore
 
 import trajectory_container_tools as tct
+import trajectory_container_tools.temporal.timestamps
 
 
 def rosbag_log_file_name(
@@ -97,12 +98,12 @@ def gather_rosbag_trajectory_window_informations(
             _str += f"       window: {stop - start} ns\n"
 
         if start is not None:
-            _str += f"\nCrawl bag (second):\n        start: {tct.temporal.to_seconds(start)} s\n"
+            _str += f"\nCrawl bag (second):\n        start: {trajectory_container_tools.temporal.timestamps.to_seconds(start)} s\n"
 
         if stop is not None:
-            _str += f"         stop: {tct.temporal.to_seconds(stop)} s\n"
+            _str += f"         stop: {trajectory_container_tools.temporal.timestamps.to_seconds(stop)} s\n"
         if stop is not None and start is not None:
-            _str += f"       window: {tct.temporal.to_seconds(stop - start)} s\n"
+            _str += f"       window: {trajectory_container_tools.temporal.timestamps.to_seconds(stop - start)} s\n"
 
         MSG = "Selected topics"
         _str += f"\n...{MSG:.<80}\n\n"
