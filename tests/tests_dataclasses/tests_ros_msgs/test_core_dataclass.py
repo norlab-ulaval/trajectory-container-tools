@@ -33,22 +33,6 @@ def test_RosStampedDataclass():
     assert np.array_equal(t_container.mock_attribute, np.ones(10))
 
 
-def test_RosDataclass():
-
-    @dataclass()
-    class MockSubRosDataclass(RosDataclass):
-        mock_attribute: np.ndarray
-
-    t_container = MockSubRosDataclass(feature_name="mock", mock_attribute=np.ones(10))
-
-    assert t_container.feature_name == "mock"
-    assert np.array_equal(t_container.mock_attribute, np.ones(10))
-
-    with pytest.raises(AttributeError) as exc_info:
-        # The 'timestamps' attribute should not exist
-        assert t_container.__getattribute__("header")
-
-
 def test_NestedRosStampedDataclass():
 
     @dataclass()
@@ -77,3 +61,19 @@ def test_NestedRosStampedDataclass():
             ),
             mock_attribute=np.ones(10),
         )
+
+
+def test_RosDataclass():
+
+    @dataclass()
+    class MockSubRosDataclass(RosDataclass):
+        mock_attribute: np.ndarray
+
+    t_container = MockSubRosDataclass(feature_name="mock", mock_attribute=np.ones(10))
+
+    assert t_container.feature_name == "mock"
+    assert np.array_equal(t_container.mock_attribute, np.ones(10))
+
+    with pytest.raises(AttributeError) as exc_info:
+        # The 'timestamps' attribute should not exist
+        assert t_container.__getattribute__("header")

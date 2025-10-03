@@ -31,18 +31,6 @@ class RosStampedDataclass(BaseTrajectoryDataclass):
 
 
 @dataclass()
-class RosDataclass(BaseNoTrajectoryDataclass):
-    """
-    Represents a ROS dataclass containing trajectory information.
-
-    This dataclass is used to store trajectory data. This class inherits from
-    `BaseTrajectoryDataclass` to provide trajectory-specific attributes and behaviors.
-    """
-
-    pass
-
-
-@dataclass()
 class NestedRosStampedDataclass(NestedBaseTrajectoryDataclass):
     """
     Represents a ROS-stamped dataclass containing trajectory information (nested version).
@@ -57,3 +45,15 @@ class NestedRosStampedDataclass(NestedBaseTrajectoryDataclass):
     """
 
     header: Header
+
+
+@dataclass()
+class RosDataclass(BaseNoTrajectoryDataclass):
+    """
+    Represents a ROS dataclass containing trajectory information.
+
+    This dataclass is used to store trajectory data. This class inherits from
+    `BaseTrajectoryDataclass` to provide trajectory-specific attributes and behaviors.
+    """
+
+    pass

@@ -1,7 +1,5 @@
 # coding=utf-8
-from collections import namedtuple
 from copy import copy, deepcopy
-from dataclasses import dataclass
 from typing import Any, List, Tuple, Union
 
 import numpy as np
@@ -11,12 +9,6 @@ class TimestampCausalOrderingError(Exception):
     """Exception raised when a causal order violation is detected."""
 
     pass
-
-
-@dataclass
-class Stamps:
-    stamps: Union[np.ndarray, int]
-    dt: Union[np.ndarray, int]
 
 
 class Timestamps:
