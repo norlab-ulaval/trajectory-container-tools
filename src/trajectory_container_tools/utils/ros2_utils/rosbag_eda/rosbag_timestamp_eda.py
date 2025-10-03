@@ -14,6 +14,7 @@ from pathlib import Path
 from rosbags.typesys.store import Typestore
 
 import trajectory_container_tools.dataclasses.core.abstract_multi_trajectory_dataclass
+import trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass
 from trajectory_container_tools.utils.general import dn_validate_path
 from trajectory_container_tools.temporal.timestamps import to_seconds
 from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.rosbag_window_crawler import (
@@ -170,12 +171,12 @@ if __name__ == "__main__":
         bag_path_,
         eda_dir_path=dn_validate_path("artifact/rosbag_eda"),
         features_config={
-            "/odom": tct_dataclasses.NavMsgsOdometry,
-            "/tf": tct_dataclasses.Tf2MsgsTFMessage,
-            "/scan": tct_dataclasses.Scan,
-            "/teleop": tct_dataclasses.AckermannMsgsAckermannDriveStamped,
-            "/sensors/imu/raw": tct_dataclasses.SensorMsgsImu,
-            "/sensors/imu": tct_dataclasses.VescMsgsVescImuStamped,
+            "/odom":            tct_dataclasses.NavMsgsOdometry,
+            "/tf":              tct_dataclasses.Tf2MsgsTFMessage,
+            "/scan":            tct_dataclasses.Scan,
+            "/teleop":          tct_dataclasses.AckermannMsgsAckermannDriveStamped,
+            "/sensors/imu/raw": trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass.SensorMsgsImu,
+            "/sensors/imu":     tct_dataclasses.VescMsgsVescImuStamped,
         },
         fast_forward_ns=0.1e9,  # 1/10 of a second forward
         window_ns=0.5e9,  # half a second window

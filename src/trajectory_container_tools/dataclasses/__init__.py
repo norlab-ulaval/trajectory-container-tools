@@ -8,9 +8,12 @@ Available dataclasses:
 - Generic containers (BaseTrajectoryDataclass, etc.)
 
 Usage:
-    >>> import trajectory_container_tools as tct
-    >>> odom_class = tct.dataclasses.NavMsgsOdometry
-    >>> imu_class = tct.dataclasses.ros_msgs.ros2_nested_dataclass.SensorMsgsImu
+
+>>> import trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass
+>>> import trajectory_container_tools as tct
+>>> odom_class = tct.dataclasses.NavMsgsOdometry
+>>> imu_class = trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass.SensorMsgsImu
+
 """
 
 # Abstract base classes and base classes
@@ -31,9 +34,10 @@ from .ros_msgs.stamped_dataclass import (
     AckermannMsgsAckermannDriveStamped,
     NavMsgsOdometry,
     Scan,
+    SensorMsgsImu,
     VescMsgsVescImuStamped,
 )
-from .ros_msgs.nested_dataclass import AckermannMsgsAckermannDrive, SensorMsgsImu
+from .ros_msgs.nested_dataclass import AckermannMsgsAckermannDrive
 from .ros_msgs.core_dataclass import (
     NestedRosStampedDataclass,
     RosDataclass,

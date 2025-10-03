@@ -10,6 +10,7 @@ from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import (
     VescMsgsVescImu,
     AckermannMsgsAckermannDrive,
 )
+from .primitive_dataclass import Quaternion, Vector3
 
 
 @dataclass()
@@ -107,3 +108,39 @@ class VescMsgsVescImuStamped(RosStampedDataclass):
     """
 
     imu: VescMsgsVescImu
+
+
+@dataclass()
+class SensorMsgsImu(RosStampedDataclass):
+    """Represents IMU (Inertial Measurement Unit) sensor data with orientation,
+    angular velocity, and
+    linear acceleration, including their covariance values.
+
+    Compatible ros2 message interface: sensor_msgs/msg/Imu
+
+    This dataclass is used to store data typically obtained from an IMU sensor. It contains
+    information about the orientation, angular velocity, and linear acceleration of a body, along
+    with their respective covariance matrices to represent variability or uncertainty in
+    measurements.
+
+    :ivar orientation: The orientation of the sensor expressed as a quaternion.
+    :type orientation: Quaternion
+    :ivar orientationCovariance: The covariance matrix of the orientation measurement.
+    :type orientationCovariance: np.ndarray
+    :ivar angularVelocity: The angular velocity of the sensor.
+    :type angularVelocity: Vector3
+    :ivar angularVelocityCovariance: The covariance matrix of the angular velocity measurement.
+    :type angularVelocityCovariance: np.ndarray
+    :ivar linearAcceleration: The linear acceleration of the sensor.
+    :type linearAcceleration: Vector3
+    :ivar linearAccelerationCovariance: The covariance matrix of the linear acceleration
+    measurement.
+    :type linearAccelerationCovariance: np.ndarray
+    """
+
+    orientation: Quaternion
+    orientationCovariance: np.ndarray
+    angularVelocity: Vector3
+    angularVelocityCovariance: np.ndarray
+    linearAcceleration: Vector3
+    linearAccelerationCovariance: np.ndarray

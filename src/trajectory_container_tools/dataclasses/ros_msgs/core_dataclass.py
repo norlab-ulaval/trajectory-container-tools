@@ -10,18 +10,6 @@ from ..ros_msgs.primitive_dataclass import Header
 
 
 @dataclass()
-class RosDataclass(BaseNoTrajectoryDataclass):
-    """
-    Represents a ROS dataclass containing trajectory information.
-
-    This dataclass is used to store trajectory data. This class inherits from
-    `BaseTrajectoryDataclass` to provide trajectory-specific attributes and behaviors.
-    """
-
-    pass
-
-
-@dataclass()
 class RosStampedDataclass(BaseTrajectoryDataclass):
     """
     Represents a ROS-stamped dataclass containing trajectory information.
@@ -40,6 +28,18 @@ class RosStampedDataclass(BaseTrajectoryDataclass):
     """
 
     header: Header
+
+
+@dataclass()
+class RosDataclass(BaseNoTrajectoryDataclass):
+    """
+    Represents a ROS dataclass containing trajectory information.
+
+    This dataclass is used to store trajectory data. This class inherits from
+    `BaseTrajectoryDataclass` to provide trajectory-specific attributes and behaviors.
+    """
+
+    pass
 
 
 @dataclass()
