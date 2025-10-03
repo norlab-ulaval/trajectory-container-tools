@@ -7,14 +7,14 @@ from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass im
 )
 
 
-class TestTrajectoryDataclassFromDataframeCase:
-    def test_init_empty_data_properties(self, mock_DF_2_trj_DC):
-        md = mock_DF_2_trj_DC
+class TestDataframeTrajectoryDataclass:
+    def test_init_empty_data_properties(self, mock_batched_trj_DC):
+        md = mock_batched_trj_DC
         with pytest.raises(TypeError):
             dc_ = StatePose2D(feature_name=md.name)
 
-    def test_StatePose2D_init(self, mock_DF_2_trj_DC):
-        md = mock_DF_2_trj_DC
+    def test_StatePose2D_init(self, mock_batched_trj_DC):
+        md = mock_batched_trj_DC
         dc_ = StatePose2D(
             feature_name=md.name,
             x=md.a,
@@ -25,8 +25,8 @@ class TestTrajectoryDataclassFromDataframeCase:
         )
         print(dc_)
 
-    def test_CmdStandard_init(self, mock_DF_2_trj_DC):
-        md = mock_DF_2_trj_DC
+    def test_CmdStandard_init(self, mock_batched_trj_DC):
+        md = mock_batched_trj_DC
         dc_ = CmdStandard(
             feature_name=md.name,
             linear_vel=md.a,
@@ -36,8 +36,8 @@ class TestTrajectoryDataclassFromDataframeCase:
         )
         print(dc_)
 
-    def test_Velocity_init(self, mock_DF_2_trj_DC):
-        md = mock_DF_2_trj_DC
+    def test_Velocity_init(self, mock_batched_trj_DC):
+        md = mock_batched_trj_DC
         dc_ = Velocity(
             feature_name=md.name,
             linear_vel=md.a,

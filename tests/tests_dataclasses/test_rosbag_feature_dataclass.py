@@ -22,7 +22,7 @@ from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import Pos
     PoseWithCovariance, TransformStamped, Twist, TwistWithCovariance
 
 
-class TestTrajectoryDataclassFromROSBagCase:
+class TestRosTrajectoryDataclass:
     def test_NavMsgsOdometry_init_nested_version(self, mock_ROSbag_2_trj_DC):
         md = mock_ROSbag_2_trj_DC
         dc_ = NavMsgsOdometry(
@@ -179,7 +179,7 @@ class TestTrajectoryDataclassFromROSBagCase:
         assert dc_._time_axis == 0
 
 
-class TestTrajectoryDataclassFromROSBagCaseIntegration:
+class TestIntegrationFromROSBag:
 
     def test_RosDataclass_and_RosStampedDataclass_inheriter_on_rosbag(
         self, setup_rosbag_six_topics_filtered

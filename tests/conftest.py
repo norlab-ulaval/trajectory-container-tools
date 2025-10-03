@@ -38,8 +38,8 @@ class MockDataContainer:
 
 
 @pytest.fixture(scope="function")
-def mock_DF_2_trj_DC() -> MockDataContainer:
-    """Mock pandas dataframe to trajectory dataclass: case even data"""
+def mock_batched_trj_DC() -> MockDataContainer:
+    """Mock batched trajectory: case even data"""
     return MockDataContainer(
         name="mock_data",
         a=np.ones((10, TRJ_LEN)),
@@ -51,8 +51,8 @@ def mock_DF_2_trj_DC() -> MockDataContainer:
 
 
 @pytest.fixture(scope="function")
-def mock_DF_2_trj_DC_range() -> MockDataContainer:
-    """Mock pandas dataframe to trajectory dataclass: case incremental data"""
+def mock_batched_trj_DC_range() -> MockDataContainer:
+    """Mock batched trajectory: case incremental data"""
     return MockDataContainer(
         name="mock_data_incremental",
         a=np.arange(10 * TRJ_LEN).reshape((TRJ_LEN, 10)).T,
@@ -64,8 +64,8 @@ def mock_DF_2_trj_DC_range() -> MockDataContainer:
 
 
 @pytest.fixture(scope="function")
-def mock_DF_2_trj_DC_uneven_time_index() -> MockDataContainer:
-    """Mock pandas dataframe to trajectory dataclass, case uneven dimensions across feature"""
+def mock_batched_trj_DC_uneven_time_index() -> MockDataContainer:
+    """Mock batched trajectory, case uneven dimensions across feature"""
     return MockDataContainer(
         name="mock_data_uneven",
         a=np.ones((10, TRJ_LEN)),

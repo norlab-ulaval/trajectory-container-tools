@@ -349,9 +349,6 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 if isinstance(
                     data_property, (np.ndarray, AbstractTrajectoryDataclass, Timestamps)
                 ):
-                    # if isinstance(data_property, Timestamps):
-                    #     # raise NotImplementedError("(CRITICAL) ToDo: implement fix")
-
                     if self.current_trj_axe == 0:
                         # Case: time-serie
                         data_value = data_property[key]
