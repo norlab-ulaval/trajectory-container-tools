@@ -21,7 +21,7 @@ def setup_mock_timestamps() -> np.ndarray:
         1711038330436485488,
     ]
 
-    return np.array(mock_timestamps)
+    return np.array(mock_timestamps, dtype=int)
 
 
 @pytest.fixture
@@ -48,7 +48,7 @@ def setup_mock_ros_timestamps():
 
     mock_container = {
         "feature_name": "/mock_topic",
-        "timestamps": np.array(mock_timestamps),
+        "timestamps": np.array(mock_timestamps, dtype=int),
     }
 
     return mock_container

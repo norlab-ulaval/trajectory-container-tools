@@ -50,7 +50,7 @@ class Timestamps:
         if np.min(stamps) < 0:
             raise ValueError("[TCT error] stamps must be positive values")
 
-        self._stamps = np.array(stamps)
+        self._stamps = np.array(stamps, dtype=int)
         self._delta_stamps = compute_delta_timestamp(self._stamps)
 
     @property
@@ -88,6 +88,135 @@ class Timestamps:
             feature_dataclass_at_t.__setattr__(each_name, data_value)
 
         return feature_dataclass_at_t
+
+    def __contains__(
+        self, timestamp: Union[int, List[int], np.ndarray[Any, np.dtype[int]]]
+    ) -> bool:
+        """
+        Check whether a timestamp or collection of timestamps exists within the stored stamps.
+
+        This method validates if the provided `timestamp`, which can be a single integer,
+        a list of integers, or a numpy array of integers, is present in the internally
+        stored `stamps`. It performs membership testing using numpy's efficient array operations.
+
+        :param timestamp: A single timestamp, a list of timestamps, or a numpy array of
+            integers to check against the internal collection of stamps.
+        :return: A boolean indicating whether any of the given timestamps exist within
+            the stored set of stamps.
+        """
+        mask = np.isin(self._stamps, timestamp, assume_unique=True)
+        if isinstance(timestamp, (int, np.integer)):
+            return np.any(mask)
+        else:
+            return mask[mask == True].size == len(timestamp)
+
+    def get_indexes(
+        self, timestamps: Union[int, List[int], np.ndarray[Any, np.dtype[int]]]
+    ) -> Union[None, int, List[int]]:
+        """
+        Determines the indexes of given timestamps in the internal storage.
+
+        This function checks for the existence of given timestamps in the internal
+        storage and retrieves their respective indexes if found. It supports single
+        timestamps or lists/arrays of timestamps as input. For lists or arrays, it
+        returns a list of corresponding indexes. If the timestamps are not found, it
+        returns `None`. Timestamps must be in nanoseconds format as integers.
+
+        :param timestamps: A single timestamp as an integer, a list of integers, or a
+            numpy array of integers representing the timestamps to look up.
+        :return: If `timestamps` is a single integer and found, returns its index as
+            an integer. If `timestamps` is a list or numpy array of integers, returns
+            a list of indexes. If `timestamps` are not found, returns `None`.
+        :raises TypeError: If the input is not an integer or a numpy array of integers.
+        """
+        if isinstance(timestamps, list):
+            timestamps = np.array(timestamps, dtype=int)
+
+        _check_precondition_nanoseconds_are_integers(timestamps)
+
+        if timestamps not in self:
+            return None
+
+        if isinstance(timestamps, np.ndarray):
+            mask = np.isin(self._stamps, timestamps, assume_unique=True)
+            return np.squeeze(np.nonzero(mask)).tolist()
+        else:
+            mask = self._stamps == timestamps
+            indice = int(np.squeeze(np.nonzero(mask)))
+            return indice
+
+    # (NICE TO HAVE) ToDo: unit-test get_nearest_stamp (ref task TCT-52) Component are individualy tested for now.
+    def get_nearest_stamp(self, timestamp: int, future: bool = True, include: bool = False) -> int | None:
+        """
+        Finds the nearest available timestamp in the dataset based on the given criteria.
+
+        This method determines the nearest timestamp either in the future or in the past
+        relative to the specified timestamp. The search criteria can also include whether
+        to consider the given timestamp as part of the valid result, depending on the
+        value of the `include` parameter.
+
+        :param timestamp: The reference timestamp to find the nearest match.
+        :param future: Whether to find the nearest timestamp in the future (default) or the past.
+        :param include: Whether to include the given timestamp itself as a valid match if
+            it exists in 'Timestamps.stamps'. Defaults to False.
+        :return: The nearest timestamp matching the criteria or None if no match is found.
+        """
+
+        if include and timestamp in self:
+            return timestamp
+
+        if future:
+            return self.get_nearest_futur_stamp(timestamp)
+        else:
+            return  self.get_nearest_past_stamp(timestamp)
+
+    def get_nearest_futur_stamp(self, timestamp: int) -> int | None:
+        """
+        Finds the nearest next timestamp greater than the given input timestamp.
+
+        :param timestamp: The input timestamp to compare against.
+        :return: The nearest next timestamp greater than the input, or None if no such
+                 timestamp exists.
+        """
+        mask = timestamp < self._stamps
+        return self._nearest_stamp(mask)
+
+    def get_nearest_past_stamp(self, timestamp: int) -> int | None:
+        """
+        Finds the nearest previous timestamp i.e., the one that is strictly less than the given one
+
+        :param timestamp: The timestamp to compare against, given as an integer.
+        :return: The nearest previous timestamp as an integer, or None if no such timestamp
+            exists.
+        """
+        mask = timestamp > self._stamps
+        return self._nearest_stamp(mask)
+
+    def _nearest_stamp(self, mask: bool | np.ndarray[Any, np.dtype[bool]]) -> int | None:
+        nearest_index = np.squeeze(np.nonzero(mask))
+        if nearest_index.size > 1:
+            nearest_index = nearest_index[0]
+        if nearest_index.size > 0:
+            return int(np.squeeze(self._stamps[nearest_index]))
+        else:
+            return None
+
+    def __str__(self):
+        t_sp = " " * 0
+        m_sp = " " * 3
+        item_space = " " * 3
+        m_sp += t_sp
+        repr_str = "\nTimestamps(\n"
+        for k in ["stamps", "delta_stamps"]:
+            repr_str += f"{m_sp}{item_space}{k}: "
+            v = self.__getattribute__(k)
+            if k == "delta_stamps" and v.size > 1:
+                range_str = f"range {np.min(v[1:])} ←→ {np.max(v[1:])} (nanosec)"
+            else:
+                range_str = f"range {np.min(v)} ←→ {np.max(v)} (nanosec)"
+            repr_str += f"shape {v.shape} {range_str}\n"
+        repr_str += f"{t_sp})"
+        return repr_str
 
     def seconds_nanoseconds(self, key) -> Tuple[int, int]:
         """
@@ -219,33 +348,84 @@ def validate_timestamps_ordering(
 
 
 def to_seconds_nanoseconds(
-    nanoseconds: Union[int, np.ndarray],
-) -> Tuple[Union[int, np.ndarray], Union[int, np.ndarray]]:
+    nanoseconds: Union[int, np.ndarray[Any, np.dtype[int]]],
+) -> Tuple[
+    Union[int, np.ndarray[Any, np.dtype[int]]],
+    Union[int, np.ndarray[Any, np.dtype[int]]],
+]:
     """Get timestamp(s) as separate seconds and nanoseconds components.
 
     Output is compatible with the ROS2 time (seconds nanoseconds) format
 
+    Note: Input are required to be an integer or an array of integer for numerical stability.
+    For example, the following input np.array([1711038330132760208], dtype=np.float64) actualy
+    truncate the last two digit which would result in the nanosecond part being returned with a
+    numerical error (i.e., 132760320) instead of the expected value 132760208.
+
     :returns: 2-tuple seconds and nanoseconds
+    :raises TypeError: If the input is not an integer or a numpy array of integers.
     """
+    _check_precondition_nanoseconds_are_integers(nanoseconds)
+
     NANOSECONDS_CONVERSION_CONSTANT = 10**9
 
     second = copy(nanoseconds)
+
     return (
         second // NANOSECONDS_CONVERSION_CONSTANT,
         nanoseconds % NANOSECONDS_CONVERSION_CONSTANT,
     )
 
 
-def to_seconds(nanoseconds: Union[int, np.ndarray]) -> Union[float, np.ndarray]:
+def to_seconds(
+    nanoseconds: Union[int, np.ndarray[Any, np.dtype[int]]],
+) -> Union[float, np.ndarray[Any, np.dtype[int]]]:
     """Convert timestamp(s) in nanosecond to seconds.
 
     :returns: Timestamp converted in second
+    :raises TypeError: If the input is not an integer or a numpy array of integers.
     """
+    _check_precondition_nanoseconds_are_integers(nanoseconds)
     SECONDS_CONVERSION_CONSTANT = 1e9
     return nanoseconds / SECONDS_CONVERSION_CONSTANT
 
 
-def compute_delta_timestamp(time_space: np.ndarray) -> np.ndarray:
+def compute_delta_timestamp(
+    time_space: np.ndarray, prepend_zero: bool = True
+) -> np.ndarray:
+    """Compute the delta timestamps from a given 1D array of time points.
+
+    This function calculates the differences between successive elements in a 1D NumPy array.
+    Optionally, it can prepend a zero to the resulting array to return an array of same length
+    as the one given as intput.
+
+    :param time_space: 1D NumPy array containing time points.
+    :param prepend_zero: Whether to prepend a zero at the beginning of the resulting
+        delta timestamps. Defaults to True.
+    :return: A NumPy array containing the calculated delta timestamps.
+    """
     assert time_space.ndim == 1
-    delta_time = np.ediff1d(time_space, to_begin=0)
+    if prepend_zero:
+        delta_time = np.ediff1d(time_space, to_begin=0)
+    else:
+        delta_time = np.ediff1d(time_space)
     return delta_time
+
+
+def _check_precondition_nanoseconds_are_integers(
+    nanoseconds: Union[int, float, np.ndarray],
+) -> None:
+    """ Validates that the input `nanoseconds` is of integer types or a numpy array of integers.
+
+    :param nanoseconds: The input value to validate.
+    :return: None.
+    :raises TypeError: If the input is not an integer or a numpy array of integers.
+    """
+    try:
+        if isinstance(nanoseconds, np.ndarray):
+            assert np.issubdtype(nanoseconds.dtype, np.integer)
+        else:
+            assert isinstance(nanoseconds, (int, np.integer))
+    except AssertionError:
+        raise TypeError("Input must be an integer or a numpy array or intergers")
+    return None

@@ -16,7 +16,7 @@ The `data/` sub-directories are configured for handling input data such as _test
 and mounted _local data volume_ while the `artifact/` directory is configured for handling output data such as log, plot
 and trained model.
 
-```terminaloutput
+```text
 ⋮
 ├── artifact/                           ← Runtime produced data
 ├── data/

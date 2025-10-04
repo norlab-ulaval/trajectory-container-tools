@@ -5,7 +5,7 @@ import pytest
 from trajectory_container_tools.temporal.timestamps import (
     TimestampCausalOrderingError,
     Timestamps,
-    )
+)
 from trajectory_container_tools.temporal import to_seconds_nanoseconds
 
 
@@ -101,4 +101,146 @@ class TestTimestamps:
                 9,
             ]
 
+    def test_str_representation(self, setup_mock_timestamps):
+        # Test string representation
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        print(ts)
 
+    def test_contains_case_input_single_value(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        t_timestamp_in: int = mock_ts_array[0]
+        t_timestamp_not_in = 1711038330290158992
+
+        # sanity check
+        assert not np.all(t_timestamp_not_in == mock_ts_array)
+
+        # test casses
+        assert t_timestamp_in in ts
+        assert t_timestamp_not_in not in ts
+
+    def test_contains_case_input_list(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        t_timestamp_in = mock_ts_array[0:2].tolist()
+        t_timestamp_not_in = [1711038330290158992, 1711038330462958992]
+
+        # sanity check
+        assert not np.all(t_timestamp_not_in[0] == mock_ts_array)
+        assert not np.all(t_timestamp_not_in[1] == mock_ts_array)
+
+        # test casses
+        assert t_timestamp_in in ts
+        assert t_timestamp_not_in not in ts
+
+    def test_contains_case_input_array(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        t_timestamp_in = mock_ts_array[0:2]
+        t_timestamp_not_in = np.array([1711038330290158992, 1711038330462958992])
+
+        # sanity check
+        assert not np.all(t_timestamp_not_in[0] == mock_ts_array)
+        assert not np.all(t_timestamp_not_in[1] == mock_ts_array)
+
+        # test casses
+        assert t_timestamp_in in ts
+        assert t_timestamp_not_in not in ts
+
+    def test_get_indexes_case_input_single_stamp(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        # print(ts)
+        for idx, each_stamp in enumerate(mock_ts_array):
+            print(f"idx: {idx}, each_stamp: {each_stamp}")
+            assert isinstance(ts.get_indexes(each_stamp), int)
+            assert ts.get_indexes(each_stamp) == idx
+
+    def test_get_indexes_case_input_array_or_list(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        # print(ts)
+
+        # Case input is numpy array or stamp
+        t_output = ts.get_indexes(mock_ts_array[0:3])
+        assert isinstance(t_output, list)
+        assert isinstance(t_output[0], int)
+        assert t_output == [0, 1, 2]
+
+        # Case input is list of stamp
+        t_output = ts.get_indexes(mock_ts_array[0:3].tolist())
+        assert isinstance(t_output, list)
+        assert isinstance(t_output[0], int)
+        assert t_output == [0, 1, 2]
+
+    def test_get_indexes_case_input_not_in_storage(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        # print(ts)
+        t_timestamp_not_in = 1711038330290158992
+        assert ts.get_indexes(t_timestamp_not_in) is None
+
+    def test_get_nearest_futur_stamp_case_input_stamp_exist(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        assert ts.get_nearest_futur_stamp(mock_ts_array[0]) == mock_ts_array[1]
+
+    def test_get_nearest_futur_stamp_case_input_stamp_not_exist(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        t_timestamp_in = 1711038330346603696 # the one at index 0
+        t_timestamp_not_in = 1711038330346603696 + 300
+
+        # sanity check
+        assert t_timestamp_in == mock_ts_array[0]
+        assert not np.all(t_timestamp_not_in == mock_ts_array)
+        assert mock_ts_array[0] < t_timestamp_not_in
+        assert t_timestamp_not_in < mock_ts_array[1]
+
+        assert ts.get_nearest_futur_stamp(t_timestamp_not_in) == mock_ts_array[1]
+
+    def test_get_nearest_futur_stamp_case_input_stamp_out_of_bound(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        t_timestamp_in = 1711038330436485488 # the one at index -1
+        t_timestamp_not_in = t_timestamp_in + 300
+
+        # sanity check
+        assert t_timestamp_in == mock_ts_array[-1]
+        assert not np.all(t_timestamp_not_in == mock_ts_array)
+        assert mock_ts_array[-1] < t_timestamp_not_in
+
+        assert ts.get_nearest_futur_stamp(t_timestamp_not_in) is None
+
+    def test_get_nearest_past_stamp_case_input_stamp_exist(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        assert ts.get_nearest_past_stamp(mock_ts_array[1]) == mock_ts_array[0]
+
+    def test_get_nearest_past_stamp_case_input_stamp_not_exist(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        t_timestamp_in = 1711038330346603696  # the one at index 0
+        t_timestamp_not_in = t_timestamp_in + 300
+
+        # sanity check
+        assert t_timestamp_in == mock_ts_array[0]
+        assert not np.all(t_timestamp_not_in == mock_ts_array)
+        assert mock_ts_array[0] < t_timestamp_not_in
+        assert t_timestamp_not_in < mock_ts_array[1]
+
+        assert ts.get_nearest_past_stamp(t_timestamp_not_in) == mock_ts_array[0]
+
+    def test_get_nearest_past_stamp_case_input_stamp_out_of_bound(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        t_timestamp_in = 1711038330346603696  # the one at index 0
+        t_timestamp_not_in = t_timestamp_in - 300
+
+        # sanity check
+        assert t_timestamp_in == mock_ts_array[0]
+        assert not np.all(t_timestamp_not_in == mock_ts_array)
+        assert t_timestamp_not_in < mock_ts_array[0]
+
+        assert ts.get_nearest_past_stamp(t_timestamp_not_in) is None

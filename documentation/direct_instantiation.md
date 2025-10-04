@@ -52,7 +52,7 @@ print((
         f"Available dimensions: {trajectory.get_dimension_names()}\n"
 ), trajectory)
 ```
-```terminaloutput
+```text
 Created trajectory with 50 timesteps
 Available dimensions: ('x', 'y', 'timestamps')
 
@@ -61,10 +61,10 @@ Available dimensions: ('x', 'y', 'timestamps')
              trajectory_len: 50
              transposed: False
              dimensions:
-                timesteps_indices: (ndarray) shape (50,) range 0 ⟶ 49
-                x: (ndarray) shape (50,) range -0.9998286683840896 ⟶ 0.9991927284190055
-                y: (ndarray) shape (50,) range -0.9997651572585272 ⟶ 1.0
-                timestamps: (ndarray) shape (50,) range 0.0 ⟶ 4.9
+                timesteps_indices: (ndarray) shape (50,) range 0 ←→ 49
+                x: (ndarray) shape (50,) range -0.9998286683840896 ←→ 0.9991927284190055
+                y: (ndarray) shape (50,) range -0.9997651572585272 ←→ 1.0
+                timestamps: (ndarray) shape (50,) range 0.0 ←→ 4.9
           )
 ```
 
@@ -96,23 +96,23 @@ sin_cos_trajectory_object = ComplexTrajectory(feature_name="mock",
 
 print(sin_cos_trajectory_object)
 ```
-```terminaloutput
+```text
          ComplexTrajectory(
             feature_name: mock
             trajectory_len: 50
             transposed: False
             dimensions:
-               timesteps_indices: (ndarray) shape (50,) range 0 ⟶ 49
-               timestamps: (ndarray) shape (50,) range 0.0 ⟶ 4.9
+               timesteps_indices: (ndarray) shape (50,) range 0 ←→ 49
+               timestamps: (ndarray) shape (50,) range 0.0 ←→ 4.9
                position:          
                    CustomPoseContainer(
-                         x: (ndarray) shape (50,) range -0.9998286683840896 ⟶ 0.9991927284190055
-                         y: (ndarray) shape (50,) range -0.9997651572585272 ⟶ 1.0
+                         x: (ndarray) shape (50,) range -0.9998286683840896 ←→ 0.9991927284190055
+                         y: (ndarray) shape (50,) range -0.9997651572585272 ←→ 1.0
                    )
                velocity:          
                    Vector2D(
-                         x: (ndarray) shape (50,) range 1.0 ⟶ 1.0
-                         y: (ndarray) shape (50,) range 1.0 ⟶ 1.0
+                         x: (ndarray) shape (50,) range 1.0 ←→ 1.0
+                         y: (ndarray) shape (50,) range 1.0 ←→ 1.0
                    )
          )
 ```
@@ -147,17 +147,17 @@ factory_generated_trajectory = DynamicTrajectory(
 print(factory_generated_trajectory)
 
 ```
-```terminaloutput
+```text
          DynamicTrajectory(
             feature_name: Factory-made-mock-trajectory
             trajectory_len: 100
             transposed: False
             dimensions:
-               timesteps_indices: (ndarray) shape (100,) range 0 ⟶ 99
-               x: (ndarray) shape (100,) range -2.668217448357629 ⟶ 1.7040474539547208
-               y: (ndarray) shape (100,) range -2.899056595784132 ⟶ 2.1778232004028846
-               velocity: (ndarray) shape (100,) range -2.988045089298118 ⟶ 2.3266689826139912
-               acceleration: (ndarray) shape (100,) range -3.268652367137654 ⟶ 3.207941836262994
+               timesteps_indices: (ndarray) shape (100,) range 0 ←→ 99
+               x: (ndarray) shape (100,) range -2.668217448357629 ←→ 1.7040474539547208
+               y: (ndarray) shape (100,) range -2.899056595784132 ←→ 2.1778232004028846
+               velocity: (ndarray) shape (100,) range -2.988045089298118 ←→ 2.3266689826139912
+               acceleration: (ndarray) shape (100,) range -3.268652367137654 ←→ 3.207941836262994
          )
 ```
 
@@ -196,7 +196,7 @@ for i, point in enumerate(trajectory):
         break
     print(f"Point {i}: x={point.x:.3f}, y={point.y:.3f}")
 ```
-```terminaloutput
+```text
 First 5 trajectory points:
 Point 0: x=0.000, y=1.000
 Point 1: x=0.102, y=0.995
@@ -244,7 +244,7 @@ print(f"Trajectory length: {len(batch_trajectory)}")
 
 print(batch_trajectory)
 ```
-```terminaloutput
+```text
 Batch trajectory shape: (3, 20)
 Number of trajectories: 3
 Timesteps per trajectory: 20
@@ -256,11 +256,11 @@ Trajectory length: 20
              batch: True
              transposed: False
              dimensions:
-                timesteps_indices: (ndarray) shape (20,) range 0 ⟶ 19
-                x: (ndarray) shape (3, 20) range -2.4020509174861138 ⟶ 2.5615769128477175
-                frame: (ndarray) shape (3, 20, 10) range -2.6836947874667425 ⟶ 2.771730818854544
-                y: (ndarray) shape (3, 20) range -2.8252275991392053 ⟶ 1.779143195513082
-                timestamps: (ndarray) shape (3, 20) range 0.0 ⟶ 1.9000000000000001
+                timesteps_indices: (ndarray) shape (20,) range 0 ←→ 19
+                x: (ndarray) shape (3, 20) range -2.4020509174861138 ←→ 2.5615769128477175
+                frame: (ndarray) shape (3, 20, 10) range -2.6836947874667425 ←→ 2.771730818854544
+                y: (ndarray) shape (3, 20) range -2.8252275991392053 ←→ 1.779143195513082
+                timestamps: (ndarray) shape (3, 20) range 0.0 ←→ 1.9000000000000001
           )
 ```
 
@@ -307,7 +307,7 @@ except ValueError as e:
     print(f"Expected error caught: {type(e).__name__}")
     print(e)
 ```
-```terminaloutput
+```text
 Valid trajectory created successfully!
 Trajectory length: 5
 

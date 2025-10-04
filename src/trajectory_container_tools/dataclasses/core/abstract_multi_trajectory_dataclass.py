@@ -59,10 +59,10 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
             elif isinstance(v, (np.ndarray, Timestamps)):
                 if isinstance(v, Timestamps):
                     range_str = (
-                        f"range(nanosec) {np.min(v.stamps)} ⟶ {np.max(v.stamps)}"
+                        f"range(nanosec) {np.min(v.stamps)} ←→ {np.max(v.stamps)}"
                     )
                 else:
-                    range_str = f"range {np.min(v)} ⟶ {np.max(v)}"
+                    range_str = f"range {np.min(v)} ←→ {np.max(v)}"
                 repr_str += (
                     f"{m_sp}{k}: ({extract_class_name_from_instance(v)}) "
                     f"shape {v.shape} {range_str}\n"

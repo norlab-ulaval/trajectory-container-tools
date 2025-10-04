@@ -148,16 +148,16 @@ print(trajectory)
 
 ```
 
-```terminaloutput
+```text
           StatePose2D(
              feature_name: odom pose
              trajectory_len: 100
              transposed: False
              dimensions:
-                timesteps_indices: (ndarray) shape (100,) range 0 ⟶ 99
-                x: (ndarray) shape (100,) range 0.0 ⟶ 99.0
-                y: (ndarray) shape (100,) range 0.0 ⟶ 99.0
-                yaw: (ndarray) shape (100,) range 0.0 ⟶ 360.0
+                timesteps_indices: (ndarray) shape (100,) range 0 ←→ 99
+                x: (ndarray) shape (100,) range 0.0 ←→ 99.0
+                y: (ndarray) shape (100,) range 0.0 ←→ 99.0
+                yaw: (ndarray) shape (100,) range 0.0 ←→ 360.0
           )
 ```
 
@@ -168,16 +168,16 @@ print(trajectory)
 print(trajectory[10:15])
 ```
 
-```terminaloutput
+```text
           StatePose2D(
              feature_name: odom pose
              trajectory_len: 5
              transposed: False
              dimensions:
-                timesteps_indices: (ndarray) shape (5,) range 10 ⟶ 14
-                x: (ndarray) shape (5,) range 10.0 ⟶ 14.0
-                y: (ndarray) shape (5,) range 10.0 ⟶ 14.0
-                yaw: (ndarray) shape (5,) range 36.375 ⟶ 50.90625
+                timesteps_indices: (ndarray) shape (5,) range 10 ←→ 14
+                x: (ndarray) shape (5,) range 10.0 ←→ 14.0
+                y: (ndarray) shape (5,) range 10.0 ←→ 14.0
+                yaw: (ndarray) shape (5,) range 36.375 ←→ 50.90625
           )       
 ```
 
@@ -219,34 +219,38 @@ print(trajectory_from_rosbag)
 
 ```
 
-```terminaloutput
+```text
 Fetch rosbag typestore for ros2 humble
 [TCT] Extract single feature from rosbag › seeking /odom
 [TCT] Collect topic /odom msg from rosbag
-       ↳ 100%|██████████| 3120/3120
+       ↳ 100%|██████████| 864/864
 [TCT] Post-process rosbag data and configure NavMsgsOdometry container
        ↳ 100%|██████████| 4/4
 [TCT] Extract single feature from rosbag › seeking /teleop
 [TCT] Collect topic /teleop msg from rosbag
-       ↳ 100%|██████████| 1595/1595
+       ↳ 100%|██████████| 783/783
 [TCT] Post-process rosbag data and configure AckermannMsgsAckermannDriveStamped container
        ↳ 100%|██████████| 3/3
 
 Multifeature(
    dataset_info: Warthog Mont-Morency 1 Dec 2025
-   aggregated_date: 2025-09-15 15:38:12.200037
-   bag_timestamps: (Timestamps) shape (9080,) range(nanosec) 1711047206006295099 ⟶ 1711047237194116148
+   aggregated_date: 2025-10-04 16:41:39.432044
+   bag_timestamps: (Timestamps) shape (1647,) range(nanosec) 1695601812731601521 ←→ 1695601829992486976
    topic_odom: 
           NavMsgsOdometry(
              feature_name: /odom
-             trajectory_len: 3120
+             trajectory_len: 864
              transposed: False
              dimensions:
-                timesteps_indices: (ndarray) shape (3120,) range 0 ⟶ 3119
+                timesteps_indices: (ndarray) shape (864,) range 0 ←→ 863
                 header:          
                     Header(
                           frame_id: (str) odom
-                          timestamps: (Timestamps) shape (3120,) range(nanosec) 1711047206005983664 ⟶ 1711047237192449915
+                          timestamps:                          
+                                    Timestamps(
+                                          stamps: shape (864,) range 1695601812731516173 ←→ 1695601829991973387 (nanosec)
+                                          delta_stamps: shape (864,) range 14921477 ←→ 24975650 (nanosec)
+                                    )
                     )
                 pose:          
                     PoseWithCovariance(
@@ -254,19 +258,19 @@ Multifeature(
                               Pose(
                                     position:          
                                         Point(
-                                              x: (ndarray) shape (3120,) range 9.457935261856177 ⟶ 19.850153430290995
-                                              y: (ndarray) shape (3120,) range -12.009628679971007 ⟶ -3.585588249996557
-                                              z: (ndarray) shape (3120,) range 0.0 ⟶ 0.0
+                                              x: (ndarray) shape (864,) range -1.7077189281656129 ←→ 2.135440133972323
+                                              y: (ndarray) shape (864,) range -1.8602605361391937 ←→ 1.84745732132406
+                                              z: (ndarray) shape (864,) range 0.0 ←→ 0.0
                                         )
                                     orientation:          
                                         Quaternion(
-                                              x: (ndarray) shape (3120,) range 0.0 ⟶ 0.0
-                                              y: (ndarray) shape (3120,) range 0.0 ⟶ 0.0
-                                              z: (ndarray) shape (3120,) range -0.9869060638636511 ⟶ 0.9999998290334356
-                                              w: (ndarray) shape (3120,) range -0.9999999917131062 ⟶ 0.9999998921371264
+                                              x: (ndarray) shape (864,) range 0.0 ←→ 0.0
+                                              y: (ndarray) shape (864,) range 0.0 ←→ 0.0
+                                              z: (ndarray) shape (864,) range -0.9999998984079552 ←→ 0.7856382323820762
+                                              w: (ndarray) shape (864,) range -0.999999584403138 ←→ 0.8295177267380831
                                         )
                               )
-                          covariance: (ndarray) shape (3120, 36) range 0.0 ⟶ 0.4
+                          covariance: (ndarray) shape (864, 36) range 0.0 ←→ 0.4
                     )
                 twist:          
                     TwistWithCovariance(
@@ -274,42 +278,48 @@ Multifeature(
                               Twist(
                                     linear:          
                                         Vector3(
-                                              x: (ndarray) shape (3120,) range 0.0 ⟶ 1.663764705882353
-                                              y: (ndarray) shape (3120,) range 0.0 ⟶ 0.0
-                                              z: (ndarray) shape (3120,) range 0.0 ⟶ 0.0
+                                              x: (ndarray) shape (864,) range 0.0 ←→ 1.578
+                                              y: (ndarray) shape (864,) range 0.0 ←→ 0.0
+                                              z: (ndarray) shape (864,) range 0.0 ←→ 0.0
                                         )
                                     angular:          
                                         Vector3(
-                                              x: (ndarray) shape (3120,) range 0.0 ⟶ 0.0
-                                              y: (ndarray) shape (3120,) range 0.0 ⟶ 0.0
-                                              z: (ndarray) shape (3120,) range -2.3060095651558883 ⟶ 2.338791722960373
+                                              x: (ndarray) shape (864,) range 0.0 ←→ 0.0
+                                              y: (ndarray) shape (864,) range 0.0 ←→ 0.0
+                                              z: (ndarray) shape (864,) range -2.0234378278138845 ←→ 1.4445453875396634
                                         )
                               )
-                          covariance: (ndarray) shape (3120, 36) range 0.0 ⟶ 0.04
+                          covariance: (ndarray) shape (864, 36) range 0.0 ←→ 0.0
                     )
           )
    topic_teleop: 
           AckermannMsgsAckermannDriveStamped(
              feature_name: /teleop
-             trajectory_len: 1595
+             trajectory_len: 783
              transposed: False
              dimensions:
-                timesteps_indices: (ndarray) shape (1595,) range 0 ⟶ 1594
+                timesteps_indices: (ndarray) shape (783,) range 0 ←→ 782
                 header:          
                     Header(
                           frame_id: (str) 
-                          timestamps: (Timestamps) shape (1595,) range(nanosec) 1711047206050062820 ⟶ 1711047237193651812
+                          timestamps:                          
+                                    Timestamps(
+                                          stamps: shape (783,) range 1695601812730780687 ←→ 1695601829988774760 (nanosec)
+                                          delta_stamps: shape (783,) range 499509 ←→ 172056987 (nanosec)
+                                    )
                     )
                 drive:          
                     AckermannMsgsAckermannDrive(
-                          steeringAngle: (ndarray) shape (1595,) range -0.4399999976158142 ⟶ 0.4399999976158142
-                          steeringAngleVelocity: (ndarray) shape (1595,) range 0.0 ⟶ 0.0
-                          speed: (ndarray) shape (1595,) range 0.0 ⟶ 1.666792631149292
-                          acceleration: (ndarray) shape (1595,) range 0.0 ⟶ 0.0
-                          jerk: (ndarray) shape (1595,) range 0.0 ⟶ 0.0
+                          steeringAngle: (ndarray) shape (783,) range -0.4399999976158142 ←→ 0.4399999976158142
+                          steeringAngleVelocity: (ndarray) shape (783,) range 0.0 ←→ 0.0
+                          speed: (ndarray) shape (783,) range 0.0 ←→ 1.5618410110473633
+                          acceleration: (ndarray) shape (783,) range 0.0 ←→ 0.0
+                          jerk: (ndarray) shape (783,) range 0.0 ←→ 0.0
                     )
           )
    )
+
+
 
 ```
 
@@ -332,7 +342,7 @@ print(trajectory_from_dataframe)
 
 ```
 
-```terminaloutput
+```text
 Multifeature(
    dataset_info: Marmote Mont-Morency 1 Dec 2025
    aggregated_date: 2025-09-15 15:44:30.815538
@@ -343,10 +353,10 @@ Multifeature(
              batch: True
              transposed: False
              dimensions:
-                timesteps_indices: (ndarray) shape (40,) range 0 ⟶ 39
-                x: (ndarray) shape (309, 40) range -2.592808355332108 ⟶ 2.2912484904743624
-                y: (ndarray) shape (309, 40) range -1.1001163567627252 ⟶ 2.1924347573561866
-                yaw: (ndarray) shape (309, 40) range -5.1769010506208675 ⟶ 5.4285684489000285
+                timesteps_indices: (ndarray) shape (40,) range 0 ←→ 39
+                x: (ndarray) shape (309, 40) range -2.592808355332108 ←→ 2.2912484904743624
+                y: (ndarray) shape (309, 40) range -1.1001163567627252 ←→ 2.1924347573561866
+                yaw: (ndarray) shape (309, 40) range -5.1769010506208675 ←→ 5.4285684489000285
           )
    idd_vel: 
           StatePose2D(
@@ -355,10 +365,10 @@ Multifeature(
              batch: True
              transposed: False
              dimensions:
-                timesteps_indices: (ndarray) shape (40,) range 0 ⟶ 39
-                x: (ndarray) shape (309, 40) range -1.2428955645039088 ⟶ 1.1297213512973234
-                y: (ndarray) shape (309, 40) range 0.0 ⟶ 0.0
-                yaw: (ndarray) shape (309, 40) range -2.778633612843154 ⟶ 2.8262693649539012
+                timesteps_indices: (ndarray) shape (40,) range 0 ←→ 39
+                x: (ndarray) shape (309, 40) range -1.2428955645039088 ←→ 1.1297213512973234
+                y: (ndarray) shape (309, 40) range 0.0 ←→ 0.0
+                yaw: (ndarray) shape (309, 40) range -2.778633612843154 ←→ 2.8262693649539012
           )
    )
 ```

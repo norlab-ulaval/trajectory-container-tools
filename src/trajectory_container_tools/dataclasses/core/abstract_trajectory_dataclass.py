@@ -303,18 +303,23 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 pass
             elif isinstance(v, (np.ndarray, Timestamps)):
                 if isinstance(v, Timestamps):
-                    range_str = (
-                        f"range(nanosec) {np.min(v.stamps)} ⟶ {np.max(v.stamps)}"
-                    )
+                    # range_str = (
+                    #     f"range(nanosec) {np.min(v.stamps)} ←→ {np.max(v.stamps)}"
+                    # )
+                    indent_v = []
+                    for each_line in str(v).splitlines():
+                        indent_v.append(f"{t_sp}{m_sp}{item_space}{each_line}\n")
+                    indent_v = "".join(indent_v)
+                    repr_str += f"{m_sp}{item_space}{k}:{indent_v}"
                 else:
                     if v.size == 0:
                         range_str = f"empty"
                     else:
-                        range_str = f"range {np.min(v)} ⟶ {np.max(v)}"
-                repr_str += (
-                    f"{m_sp}{item_space}{k}: ({extract_class_name_from_instance(v)}) "
-                    f"shape {v.shape} {range_str}\n"
-                )
+                        range_str = f"range {np.min(v)} ←→ {np.max(v)}"
+                    repr_str += (
+                        f"{m_sp}{item_space}{k}: ({extract_class_name_from_instance(v)}) "
+                        f"shape {v.shape} {range_str}\n"
+                    )
             elif isinstance(v, AbstractTrajectoryDataclass):
                 indent_v = []
                 for each_line in str(v).splitlines():
