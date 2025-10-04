@@ -25,9 +25,6 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
 
     :ivar dataset_info: Information about the dataset.
     :type dataset_info: str
-    :ivar aggregated_date: The datetime when the data was aggregated. This is automatically
-                          set during initialization.
-    :type aggregated_date: datetime.datetime
     :ivar bag_timestamps: Optional timestamps related to bags. Defaults to None.
     :type bag_timestamps: Optional[Timestamps]
     """
@@ -58,15 +55,17 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
                 pass
             elif isinstance(v, (np.ndarray, Timestamps)):
                 if isinstance(v, Timestamps):
-                    range_str = (
-                        f"range(nanosec) {np.min(v.stamps)} ←→ {np.max(v.stamps)}"
-                    )
+                    indent_v = []
+                    for each_line in str(v).splitlines():
+                        indent_v.append(f"{t_sp}{m_sp*3} {each_line}\n")
+                    indent_v = "".join(indent_v)
+                    repr_str += f"{m_sp}{k}:{indent_v}"
                 else:
                     range_str = f"range {np.min(v)} ←→ {np.max(v)}"
-                repr_str += (
-                    f"{m_sp}{k}: ({extract_class_name_from_instance(v)}) "
-                    f"shape {v.shape} {range_str}\n"
-                )
+                    repr_str += (
+                        f"{m_sp}{k}: ({extract_class_name_from_instance(v)}) "
+                        f"shape {v.shape} {range_str}\n"
+                    )
             else:
                 repr_str += f"{m_sp}{k}: {str(v)}\n"
         repr_str += f"{m_sp})"
