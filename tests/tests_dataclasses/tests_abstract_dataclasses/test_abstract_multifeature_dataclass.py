@@ -2,7 +2,7 @@
 import datetime
 from dataclasses import dataclass
 from typing import Tuple
-
+import deprecated
 import numpy as np
 import pytest
 

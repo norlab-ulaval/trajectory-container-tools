@@ -1,5 +1,6 @@
 # coding=utf-8
 import datetime
+from deprecated import deprecated
 from dataclasses import dataclass, field, fields
 from typing import List, Optional
 
@@ -72,13 +73,14 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
         return repr_str
 
     @property
-    def summary(self) -> None:
-        # (NICE TO HAVE) ToDo: TCT-68 feat: deprecate AbstractMultifeatureDataclass summary property
-        print(self)
-        return None
-
-    @property
     def topic_key_list(self):
         return [
             topic.name for topic in fields(self) if str(topic.name).startswith("topic_")
         ]
+
+    @property
+    @deprecated(reason="Directly print the MultifeatureTrajectoryDataclass object instead.")
+    def summary(self) -> None:
+        # (NICE TO HAVE) ToDo: TCT-68 feat: deprecate AbstractMultifeatureDataclass summary property
+        print(self)
+        return None
