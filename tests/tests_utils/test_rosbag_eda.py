@@ -5,7 +5,7 @@ import shutil
 import pytest
 
 import trajectory_container_tools as tct
-import trajectory_container_tools.dataclasses.core.abstract_multi_trajectory_dataclass
+import trajectory_container_tools.dataclasses.core.abstract_multifeature_dataclass
 from trajectory_container_tools.utils.ros2_utils.rosbag_eda.rosbag_timestamp_eda import (
     run_rosbag_timestamp_eda,
 )
@@ -81,7 +81,7 @@ def test_run_rosbag_timestamp_eda_full_bag(
     )
     print(tc)
     assert isinstance(tc,
-                      trajectory_container_tools.dataclasses.core.abstract_multi_trajectory_dataclass.AbstractMultifeatureDataclass)
+                      trajectory_container_tools.dataclasses.core.abstract_multifeature_dataclass.AbstractMultifeatureDataclass)
 
     assert tc.topic_odom.trajectory_len == 864
     assert tc.topic_tf.transforms[0].trajectory_len == 866
@@ -105,7 +105,7 @@ def test_run_rosbag_timestamp_eda_window(
     )
     print(tc)
     assert isinstance(tc,
-                      trajectory_container_tools.dataclasses.core.abstract_multi_trajectory_dataclass.AbstractMultifeatureDataclass)
+                      trajectory_container_tools.dataclasses.core.abstract_multifeature_dataclass.AbstractMultifeatureDataclass)
 
     assert tc.topic_odom.trajectory_len == 364
     assert tc.topic_tf.transforms[0].trajectory_len == 364

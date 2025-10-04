@@ -338,14 +338,14 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         else:
             return self._time_axis
 
-    def __getitem__(self, key):
+    def __getitem__(self, index):
         feature_dataclass_at_t = deepcopy(self)
 
         feature_dataclass_at_t.__setattr__(
-            "_timestep_indexes", self._timestep_indexes[key]
+            "_timestep_indexes", self._timestep_indexes[index]
         )
         feature_dataclass_at_t.__setattr__(
-            "timesteps_indices", self.timesteps_indices[key]
+            "timesteps_indices", self.timesteps_indices[index]
         )
         for each_name in self.get_dimension_names():
             if each_name in self.trajectory_metadata_field():
@@ -358,13 +358,13 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 ):
                     if self.current_trj_axe == 0:
                         # Case: time-serie
-                        data_value = data_property[key]
+                        data_value = data_property[index]
                     elif self.current_trj_axe == 1:
                         # Case: batch
-                        data_value = data_property[:, key, ...]
+                        data_value = data_property[:, index, ...]
                     elif self.current_trj_axe == -1:
                         # Case: transposed
-                        data_value = data_property[..., key]
+                        data_value = data_property[..., index]
                     else:
                         raise ValueError(
                             f"Unexpected trajectory time axe {self.current_trj_axe=}"

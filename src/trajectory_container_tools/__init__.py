@@ -36,7 +36,7 @@ from .dataclasses.core.abstract_trajectory_dataclass import (
     AbstractTrajectoryDataclass,
     )
 from .dataclasses.core.abstract_no_trajectory_dataclass import AbstractNoTrajectoryDataclass
-from .dataclasses.core.abstract_multi_trajectory_dataclass import AbstractMultifeatureDataclass
+from .dataclasses.core.abstract_multifeature_dataclass import AbstractMultifeatureDataclass
 from .dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
     NestedBaseTrajectoryDataclass,
