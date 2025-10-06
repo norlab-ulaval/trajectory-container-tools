@@ -31,15 +31,19 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
     """
 
     dataset_info: str
-    aggregated_date: datetime.datetime = field(init=False)
     bag_timestamps: Optional[Timestamps] = field(default=None, kw_only=True)
+    _aggregated_date: datetime.datetime = field(init=False)
 
     @classmethod
     def _dataclass_internal_field(cls) -> List[str]:
-        return []
+        return ['_aggregated_date']
 
     def __post_init__(self):
-        self.aggregated_date = datetime.datetime.now()
+        self._aggregated_date = datetime.datetime.now()
+
+    @property
+    def aggregated_date(self):
+        return self._aggregated_date
 
     def __str__(self):
         """User representation. Handle dynamical property added at run time"""
@@ -50,10 +54,10 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
         for k, v in self.__dict__.items():
             if k == "dataset_info":
                 repr_str += f"{m_sp}dataset_info: {v}\n"
-                repr_str += f"{m_sp}aggregated_date: {self.aggregated_date}\n"
-            elif k in ["aggregated_date"]:
-                pass
+                repr_str += f"{m_sp}aggregated_date: {self._aggregated_date}\n"
             elif k in ["bag_timestamps"] and self.bag_timestamps is None:
+                pass
+            elif k in ["_aggregated_date"]:
                 pass
             elif isinstance(v, (np.ndarray, Timestamps)):
                 if isinstance(v, Timestamps):
