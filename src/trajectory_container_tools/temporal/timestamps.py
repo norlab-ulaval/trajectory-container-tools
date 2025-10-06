@@ -39,9 +39,7 @@ class Timestamps:
         is raised.
 
         :param stamps: A NumPy array containing integer timestamps in nanosecond ros time format.
-
-        :raises ValueError: If the stamp array is empty.
-        :raises ValueError: If any value in the stamp array is negative.
+        :raises ValueError: If the stamp array is empty or if any value is negative.
         """
         self._trajectory_len = len(stamps)
         if self._trajectory_len == 0:

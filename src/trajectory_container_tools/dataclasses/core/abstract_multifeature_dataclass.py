@@ -29,6 +29,7 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
     :ivar bag_timestamps: Optional timestamps related to bags. Defaults to None.
     :type bag_timestamps: Optional[Timestamps]
     """
+
     dataset_info: str
     aggregated_date: datetime.datetime = field(init=False)
     bag_timestamps: Optional[Timestamps] = field(default=None, kw_only=True)
@@ -79,8 +80,10 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
         ]
 
     @property
-    @deprecated(reason="Directly print the MultifeatureTrajectoryDataclass object instead.")
+    @deprecated(
+        reason="Directly print the MultifeatureTrajectoryDataclass object instead."
+    )
     def summary(self) -> None:
-        # (NICE TO HAVE) ToDo: TCT-68 feat: deprecate AbstractMultifeatureDataclass summary property
+        # inprogress: TCT-68 feat: deprecate AbstractMultifeatureDataclass summary property
         print(self)
         return None

@@ -28,9 +28,8 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
     fields.
 
     :ivar feature_name: Name of the feature associated with the trajectory.
-    :ivar timesteps_indices: NumPy array representing the indices of timesteps in
-        the trajectory. These may pertain to a subset of a larger trajectory, ignoring
-        prior indices.
+    :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
+        to a subset of a larger trajectory (Automaticaly generated if set to None).
     :ivar batch: Boolean indicating if the data is batched (True) or pertaining to a
         single trajectory (False).
     """

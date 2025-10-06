@@ -9,7 +9,7 @@ from trajectory_container_tools.temporal.timestamps import (
 from trajectory_container_tools.temporal import to_seconds_nanoseconds
 
 
-class TestTimestamps:
+class TestTimestampsCore:
     def test_instanciation(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)
@@ -60,6 +60,37 @@ class TestTimestamps:
         ts = Timestamps(stamps=mock_ts_array)
         assert len(ts) == len(mock_ts_array)
 
+    def test_str_representation(self, setup_mock_timestamps):
+        # Test string representation
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        print(ts)
+
+    def test_causal_ordering_sanity_check(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+
+        # Case pass
+        assert Timestamps(stamps=mock_ts_array).causal_ordering_sanity_check() == []
+
+        # Case expect failure
+        mock_ts_array[5] = 1711038330132760208
+        mock_ts_array[9] = 1711038330177285488
+
+        with pytest.raises(TimestampCausalOrderingError) as exc_info:
+            assert Timestamps(stamps=mock_ts_array).causal_ordering_sanity_check() == [
+                    5,
+                    9,
+                    ]
+
+    def test_seconds_nanoseconds(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+
+        # Case individual key
+        assert ts.seconds_nanoseconds(0) == to_seconds_nanoseconds(mock_ts_array[0])
+
+class TestTimestampsIterableMethods:
+
     def test_indexing(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)
@@ -77,35 +108,6 @@ class TestTimestamps:
 
         for idx, value in enumerate(ts):
             assert value.stamps == mock_ts_array[idx]
-
-    def test_seconds_nanoseconds(self, setup_mock_timestamps):
-        mock_ts_array = setup_mock_timestamps
-        ts = Timestamps(stamps=mock_ts_array)
-
-        # Case individual key
-        assert ts.seconds_nanoseconds(0) == to_seconds_nanoseconds(mock_ts_array[0])
-
-    def test_causal_ordering_sanity_check(self, setup_mock_timestamps):
-        mock_ts_array = setup_mock_timestamps
-
-        # Case pass
-        assert Timestamps(stamps=mock_ts_array).causal_ordering_sanity_check() == []
-
-        # Case expect failure
-        mock_ts_array[5] = 1711038330132760208
-        mock_ts_array[9] = 1711038330177285488
-
-        with pytest.raises(TimestampCausalOrderingError) as exc_info:
-            assert Timestamps(stamps=mock_ts_array).causal_ordering_sanity_check() == [
-                5,
-                9,
-            ]
-
-    def test_str_representation(self, setup_mock_timestamps):
-        # Test string representation
-        mock_ts_array = setup_mock_timestamps
-        ts = Timestamps(stamps=mock_ts_array)
-        print(ts)
 
     def test_contains_case_input_single_value(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
@@ -148,6 +150,7 @@ class TestTimestamps:
         assert t_timestamp_in in ts
         assert t_timestamp_not_in not in ts
 
+class TestTimestampsGetIndexesMethod:
     def test_get_indexes_case_input_single_stamp(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)
@@ -181,6 +184,7 @@ class TestTimestamps:
         t_timestamp_not_in = 1711038330290158992
         assert ts.get_indexes(t_timestamp_not_in) is None
 
+class TestTimestampsGetNearestMethods:
     def test_get_nearest_futur_stamp_case_input_stamp_exist(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)

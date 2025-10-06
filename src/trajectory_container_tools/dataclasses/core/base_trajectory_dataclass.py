@@ -30,6 +30,14 @@ class BaseTrajectoryDataclass(AbstractTrajectoryDataclass):
     >>>     position_y: np.ndarray
     >>>     position_z: np.ndarray
 
+    :ivar feature_name: Name of the feature associated with the trajectory.
+    :type feature_name: str
+    :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
+        to a subset of a larger trajectory (Automaticaly generated if set to None).
+    :type timesteps_indices: numpy ndarray
+    :ivar batch: Boolean indicating if the data is batched (True) or pertaining to a
+        single trajectory (False).
+    :type batch: bool
     """
 
     pass
@@ -60,8 +68,12 @@ class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
     >>>     timestamps: np.ndarray
     >>>     position: MockNestedContainer
 
-    :ivar feature_name: This attribute is set to None by default and is immutable.
-    :type feature_name: str
+    :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
+        to a subset of a larger trajectory (Automaticaly generated if set to None).
+    :type timesteps_indices: numpy ndarray
+    :ivar batch: Boolean indicating if the data is batched (True) or pertaining to a
+        single trajectory (False).
+    :type batch: bool
     """
 
     feature_name: str = field(default=None, init=False)
@@ -77,6 +89,9 @@ class BaseNoTrajectoryDataclass(AbstractNoTrajectoryDataclass):
     a foundation for non-trajectory-based data classes. It is designed to hold
     and manage data that does not involve trajectory-specific information at top-level but might
     in nested ones e.g., `Tf2MsgsTFMessage.transforms` a list of `TransformStamped` trj container
+
+    :ivar feature_name: Name of the feature associated with the trajectory.
+    :type feature_name: str
     """
 
     pass

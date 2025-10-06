@@ -17,6 +17,9 @@ class AbstractNoTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
     Representation of an abstract data structure for entities without trajectory data at top-level
     but might in nested ones e.g., a container that contains many trajectory dataclass of different
     trajectory lenghts.
+
+    :ivar feature_name: Name of the feature associated with the trajectory.
+    :type feature_name: str
     """
 
     feature_name: str
