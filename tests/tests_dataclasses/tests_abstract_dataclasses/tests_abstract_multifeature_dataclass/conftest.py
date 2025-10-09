@@ -106,7 +106,6 @@ def setup_mock_timestamps_case_act_and_obs_shared_stamps() -> MockTopicsTimestam
             2,
             3,
             4,
-            5,
         ],
         t_act_timestamps=[
             3,
@@ -116,15 +115,17 @@ def setup_mock_timestamps_case_act_and_obs_shared_stamps() -> MockTopicsTimestam
 
 
 def setup_mock_timestamps_case_last_stamp_on_obs() -> MockTopicsTimestamps:
+    """
+    Should raise IndexError on `print(mf_container[1])`
+    """
     return MockTopicsTimestamps(
         t_obs_timestamps=[
             1,
-            3,
-            5,
-        ],
-        t_act_timestamps=[
             2,
             4,
+        ],
+        t_act_timestamps=[
+            3,
         ],
     )
 

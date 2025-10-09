@@ -9,7 +9,6 @@ import numpy as np
 from rosbags.rosbag2 import Reader
 from rosbags.typesys.store import Typestore
 
-from trajectory_container_tools import AbstractMultifeatureDataclass
 from trajectory_container_tools.dataclasses.core.abstract_multifeature_dataclass import (
     AbstractMultifeatureStampedDataclass,
 )

@@ -209,13 +209,11 @@ class Timestamps:
             return None
 
     def __str__(self):
-        t_sp = " " * 0
-        m_sp = " " * 3
-        item_space = " " * 3
-        m_sp += t_sp
+        out_sp = " " * 0
+        in_sp = " " * 3
         repr_str = "\nTimestamps(\n"
         for k in ["stamps", "delta_stamps"]:
-            repr_str += f"{m_sp}{item_space}{k}: "
+            repr_str += f"{out_sp}{in_sp}{k}: "
             v = self.__getattribute__(k)
             if k == "delta_stamps" and v.size > 1:
                 range_str = f"range {np.min(v[1:])} ←→ {np.max(v[1:])} (nanosec)"
@@ -224,7 +222,7 @@ class Timestamps:
             else:
                 range_str = "empty"
             repr_str += f"shape {v.shape} {range_str}\n"
-        repr_str += f"{t_sp})"
+        repr_str += f"{out_sp})"
         return repr_str
 
     def seconds_nanoseconds(self, key) -> Tuple[int, int]:

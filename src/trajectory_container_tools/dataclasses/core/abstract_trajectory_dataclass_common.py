@@ -3,8 +3,10 @@ import abc
 from dataclasses import dataclass, fields
 from typing import Any, List, Tuple
 
-from trajectory_container_tools.utils.general import check_typing_list_and_extract_list_type, \
-    check_typing_union_and_extract_first_union_type
+from trajectory_container_tools.utils.general import (
+    check_typing_list_and_extract_list_type,
+    check_typing_union_and_extract_first_union_type,
+)
 
 
 @dataclass()
@@ -42,6 +44,7 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
         :param feature_name: The name of the attribute to retrieve.
         :return: The value of the requested attribute.
         """
+        # ToDo: TCT-65 feat: unify dynamic_field getter setter with fetch_nested_attribute method
         return self.__getattribute__(feature_name)
 
     def set_dynamic_field(self, feature_name: str, value: Any) -> None:
@@ -51,6 +54,7 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
         :param value: The value to assign to the attribute.
         :return: None
         """
+        # ToDo: TCT-65 feat: unify dynamic_field getter setter with fetch_nested_attribute method
         self.__setattr__(feature_name, value)
         return None
 
@@ -72,7 +76,11 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
           structure of the attribute to retrieve.
         :return: The value of the resolved nested attribute.
         """
-        return _fetch_nested_attribute(self, nested_attribute_path)
+        # ToDo: TCT-65 feat: unify dynamic_field getter setter with fetch_nested_attribute method
+        nested_attribute = self
+        for each in nested_attribute_path.split("."):
+            nested_attribute = nested_attribute.get_dynamic_field(each)
+        return nested_attribute
 
     @abc.abstractmethod
     def __post_init__(self):
@@ -119,10 +127,3 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
             if each_field.name not in cls._dataclass_internal_field():
                 field_name.append(each_field.name)
         return tuple(field_name)
-
-
-def _fetch_nested_attribute(self_, nested_attribute_list: str) -> Any:
-    nested_attribute = self_
-    for each in nested_attribute_list.split("."):
-        nested_attribute = nested_attribute.get_dynamic_field(each)
-    return nested_attribute

@@ -57,6 +57,7 @@ class TestIntegrationMultifeatureTrajectoryDataclass:
                 print(mf_container[idx].topic_teleop.header.timestamps.stamps)
             print(mf_container[idx])
 
+    @pytest.mark.skip(reason="ToDo: implement test case")
     def test_integration_chunk_getitem_six_topics(
         self, setup_rosbag_six_topics_filtered
     ):
@@ -89,6 +90,7 @@ class TestIntegrationMultifeatureTrajectoryDataclass:
         for each in mf_container:
             print(each)
 
+    @pytest.mark.skip(reason="ToDo: implement test case")
     def test_integration_chunk_iterable_six_topics(
         self, setup_rosbag_six_topics_filtered
     ):

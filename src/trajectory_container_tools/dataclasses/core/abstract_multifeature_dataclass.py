@@ -16,6 +16,8 @@ from ..ros_msgs.core_dataclass import (
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass_common import (
     AbstractTrajectoryDataclassCommon,
 )
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import AbstractTrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.abstract_no_trajectory_dataclass import AbstractNoTrajectoryDataclass
 from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.utils import extract_class_name_from_instance
 
@@ -43,7 +45,7 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
 
     @classmethod
     def _dataclass_internal_field(cls) -> List[str]:
-        return ["_aggregated_date"]
+        return super()._dataclass_internal_field() + ["_aggregated_date"]
 
     def __post_init__(self):
         self._aggregated_date = datetime.datetime.now()
@@ -61,33 +63,39 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
 
     def __str__(self):
         """User representation. Handle dynamical property added at run time"""
-        t_sp = " " * 0
-        m_sp = " " * 3
-        repr_str = f"\n{t_sp}Multifeature(\n"
-        m_sp += t_sp
+        out_sp = " " * 0
+        in_sp = " " * 3
+        nested_sp = " " * 3
+        repr_str = f"\n{out_sp}Multifeature(\n"
         for k, v in self.__dict__.items():
             if k in self._dataclass_internal_field():
                 pass
             elif k == "dataset_info":
-                repr_str = self._metadata_field_str(m_sp, repr_str, k, v)
+                repr_str = self._metadata_field_str(in_sp, repr_str, k, v)
             elif k in ["bag_timestamps"] and self.bag_timestamps is None:
                 pass
             elif isinstance(v, (np.ndarray, Timestamps)):
                 if isinstance(v, Timestamps):
                     indent_v = []
                     for each_line in str(v).splitlines():
-                        indent_v.append(f"{t_sp}{m_sp*3} {each_line}\n")
+                        indent_v.append(f"{out_sp}{in_sp}{nested_sp} {each_line}\n")
                     indent_v = "".join(indent_v)
-                    repr_str += f"{m_sp}{k}:{indent_v}"
+                    repr_str += f"{out_sp}{in_sp}{k}:{indent_v}"
                 else:
                     range_str = f"range {np.min(v)} ←→ {np.max(v)}"
                     repr_str += (
-                        f"{m_sp}{k}: ({extract_class_name_from_instance(v)}) "
+                        f"{out_sp}{in_sp}{k}: ({extract_class_name_from_instance(v)}) "
                         f"shape {v.shape} {range_str}\n"
                     )
+            elif isinstance(v, (AbstractTrajectoryDataclass, AbstractNoTrajectoryDataclass)):
+                indent_v = []
+                for each_line in str(v).splitlines():
+                    indent_v.append(f"{out_sp}{in_sp}{nested_sp}{each_line}\n")
+                indent_v = "".join(indent_v)
+                repr_str += f"{out_sp}{in_sp}{k}:{indent_v}"
             else:
-                repr_str += f"{m_sp}{k}: {str(v)}\n"
-        repr_str += f"{m_sp})"
+                repr_str += f"{out_sp}{in_sp}{k}: {str(v)}\n"
+        repr_str += f"{out_sp})"
         return repr_str
 
     @property
@@ -127,6 +135,7 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
     :ivar chunk_on: Name of the attribute used to split the data into chunks.
     :type chunk_on: str
     """
+
     chunk_on: str = field(default="topic_teleop", kw_only=True)
     _iter_index: int = field(default=0, init=False)
 
@@ -141,7 +150,9 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
     def __len__(self) -> int:
         return self.chunks_total
 
-    def _metadata_field_str(self, m_space: str, repr_str: str, key: str, value: Any) -> str:
+    def _metadata_field_str(
+        self, m_space: str, repr_str: str, key: str, value: Any
+    ) -> str:
         repr_str = super()._metadata_field_str(m_space, repr_str, key, value)
         repr_str += f"{m_space}chunks_total: {self.chunks_total}\n"
         return repr_str
@@ -189,11 +200,12 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
                         ].stamps
                         startpoint = True
 
+                endpoint = False
                 each_attribute = each_attribute.get_timestamps(
                     start=each_start,
                     stop=chunck_on_timestamp,
                     startpoint=startpoint,
-                    endpoint=False,
+                    endpoint=endpoint,
                 )
 
             mf_dataclass_at_t.__setattr__(each_topic, each_attribute)

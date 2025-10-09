@@ -37,14 +37,15 @@ def get_timestamps_slice(
         next_nearest_stamp = timestamps.get_nearest_stamp(
             stop, future=True, include=True
         )
-        if next_nearest_stamp is not None:
+        if _is_the_last_value_in_timestamps_array(next_nearest_stamp):
+            timestamps_slice = slice(nearest_idx + int(not startpoint), len(timestamps))
+        else:
             next_nearest_idx = timestamps.get_indexes(next_nearest_stamp)
             timestamps_slice = slice(
                 nearest_idx + int(not startpoint), next_nearest_idx + int(endpoint)
             )
-        else:
-            # Case where nearest_stamp is the last value in timestamps array
-            timestamps_slice = slice(
-                nearest_idx + int(not startpoint), nearest_idx + int(startpoint)
-            )
     return timestamps_slice
+
+
+def _is_the_last_value_in_timestamps_array(next_nearest_stamp: int | None) -> bool:
+    return next_nearest_stamp is None

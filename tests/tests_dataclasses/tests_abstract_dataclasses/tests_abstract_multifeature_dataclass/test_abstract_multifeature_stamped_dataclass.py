@@ -62,9 +62,7 @@ class TestAbstractMultifeatureStampedDataclassAllCasses:
 
         for each in mf_container:
             print(f"\n", "." * 80, f"\n")
-            # if each._iter_index == 0:
-            #     print(each)
-            # print(each)
+            print(each)
             print("each._iter_index: ", each._iter_index)
             print(
                 "topic_mock_observation stamps: ",
@@ -104,6 +102,94 @@ class TestAbstractMultifeatureStampedDataclassSelectCasses:
                 mf_container[idx].topic_mock_action.mock_feature
                 == mf_container.topic_mock_action[idx].mock_feature
             )
+
+    def test_indexing_case_act_and_obs_shared_stamps(self, setup_mock_mf_container):
+        """
+        Expected behaviour: next-obs should have an arbitrary delay with respect to intervention.
+        i.e., (obs, act, next-obs)
+        """
+        mf_container = setup_mock_mf_container(
+            setup_mock_timestamps_case_act_and_obs_shared_stamps()
+        )
+
+        print("==== FULL VIEW", "=" * 80, "\n", mf_container, "\n")
+
+        print("==== Indexed VIEW idx: 0", "=" * 71, "\n", mf_container[0], "\n")
+        print("=" * 96, "\n")
+
+        assert np.array_equal(
+            mf_container[0].topic_mock_observation.header.timestamps.stamps,
+            mf_container.topic_mock_observation[0:2].header.timestamps.stamps,
+        )
+        assert np.array_equal(
+            mf_container[0].topic_mock_observation.mock_feature,
+            mf_container.topic_mock_observation[0:2].mock_feature,
+        )
+
+        assert (
+            mf_container[0].topic_mock_action.header.timestamps.stamps
+            == mf_container.topic_mock_action[0].header.timestamps.stamps
+        )
+        assert (
+            mf_container[0].topic_mock_action.mock_feature
+            == mf_container.topic_mock_action[0].mock_feature
+        )
+
+        print("==== Indexed VIEW idx: 1", "=" * 71, "\n", mf_container[1], "\n")
+        print("=" * 96, "\n")
+
+        assert np.array_equal(
+            mf_container[1].topic_mock_observation.header.timestamps.stamps,
+            mf_container.topic_mock_observation[2:4].header.timestamps.stamps,
+        )
+        assert np.array_equal(
+            mf_container[1].topic_mock_observation.mock_feature,
+            mf_container.topic_mock_observation[2:4].mock_feature,
+        )
+
+        assert (
+            mf_container[1].topic_mock_action.header.timestamps.stamps
+            == mf_container.topic_mock_action[1].header.timestamps.stamps
+        )
+        assert (
+            mf_container[1].topic_mock_action.mock_feature
+            == mf_container.topic_mock_action[1].mock_feature
+        )
+
+    def test_indexing_case_last_stamp_on_obs(self, setup_mock_mf_container):
+        """
+        Expected behaviour: next-obs should have an arbitrary delay with respect to intervention.
+        i.e., (obs, act, next-obs)
+        """
+        mf_container = setup_mock_mf_container(
+            setup_mock_timestamps_case_last_stamp_on_obs()
+        )
+
+        print("==== FULL VIEW", "=" * 80, "\n", mf_container, "\n")
+
+        print("==== Indexed VIEW", "=" * 78, "\n", mf_container[0], "\n")
+        print("=" * 96, "\n")
+
+        assert np.array_equal(
+            mf_container[0].topic_mock_observation.header.timestamps.stamps,
+            mf_container.topic_mock_observation[0:2].header.timestamps.stamps,
+        )
+        assert np.array_equal(
+            mf_container[0].topic_mock_observation.mock_feature,
+            mf_container.topic_mock_observation[0:2].mock_feature,
+        )
+
+        assert (
+            mf_container[0].topic_mock_action.header.timestamps.stamps
+            == mf_container.topic_mock_action[0].header.timestamps.stamps
+        )
+        assert (
+            mf_container[0].topic_mock_action.mock_feature
+            == mf_container.topic_mock_action[0].mock_feature
+        )
+
+        with pytest.raises(IndexError) as exc_info:
+            print(mf_container[1])
 
     def test_slicing_case_alternate(self, setup_mock_mf_container):
         mf_container = setup_mock_mf_container(setup_mock_timestamps_case_alternate())

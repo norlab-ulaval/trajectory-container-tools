@@ -49,7 +49,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
     @classmethod
     def _dataclass_internal_field(cls) -> List[str]:
-        return [
+        return super()._dataclass_internal_field() + [
             "feature_name",
             "timesteps_indices",
             "_timestep_indexes",
@@ -270,24 +270,22 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
     def __str__(self):
         """User representation. Dynamically handle property added at run time"""
-        t_sp = " " * 10
-        m_sp = " " * 3
-        item_space = " " * 3
+        out_sp = " " * 0
+        in_sp = " " * 3
+        nested_sp = " " * 3
         dataclass_name = extract_class_name_from_instance(self)
-        repr_str = f"\n{t_sp}{dataclass_name}(\n"
+        repr_str = f"\n{out_sp}{dataclass_name}(\n"
         v: Union[np.ndarray, AbstractTrajectoryDataclass, str, int, float]
-        m_sp += t_sp
 
         v = self.__dict__.get("feature_name")
         if v is not None:
-            repr_str += f"{m_sp}feature_name: {v}\n"
+            repr_str += f"{out_sp}{in_sp}feature_name: \"{v}\"\n"
 
         if not self._nested:
-            repr_str += f"{m_sp}trajectory_len: {self.trajectory_len}\n"
+            repr_str += f"{out_sp}{in_sp}trajectory_len: {self.trajectory_len}\n"
             if self.batch:
-                repr_str += f"{m_sp}batch: {self.batch}\n"
-            repr_str += f"{m_sp}transposed: {self._transposed}\n"
-            repr_str += f"{m_sp}dimensions:\n"
+                repr_str += f"{out_sp}{in_sp}batch: {self.batch}\n"
+            repr_str += f"{out_sp}{in_sp}transposed: {self._transposed}\n"
 
         for k, v in self.__dict__.items():
             if k in self._dataclass_internal_field():
@@ -298,27 +296,27 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 if isinstance(v, Timestamps):
                     indent_v = []
                     for each_line in str(v).splitlines():
-                        indent_v.append(f"{t_sp}{m_sp}{item_space}{each_line}\n")
+                        indent_v.append(f"{out_sp}{in_sp}{nested_sp}{each_line}\n")
                     indent_v = "".join(indent_v)
-                    repr_str += f"{m_sp}{item_space}{k}:{indent_v}"
+                    repr_str += f"{out_sp}{in_sp}{k}:{indent_v}"
                 else:
                     if v.size == 0:
                         range_str = f"empty"
                     else:
                         range_str = f"range {np.min(v)} ←→ {np.max(v)}"
                     repr_str += (
-                        f"{m_sp}{item_space}{k}: ({extract_class_name_from_instance(v)}) "
+                        f"{out_sp}{in_sp}{k}: ({extract_class_name_from_instance(v)}) "
                         f"shape {v.shape} {range_str}\n"
                     )
             elif isinstance(v, AbstractTrajectoryDataclass):
                 indent_v = []
                 for each_line in str(v).splitlines():
-                    indent_v.append(f"{t_sp}{each_line}\n")
+                    indent_v.append(f"{out_sp}{in_sp}{nested_sp}{each_line}\n")
                 indent_v = "".join(indent_v)
-                repr_str += f"{m_sp}{item_space}{k}:{indent_v}"
+                repr_str += f"{out_sp}{in_sp}{k}:{indent_v}"
             else:
-                repr_str += f"{m_sp}{item_space}{k}: ({extract_class_name_from_instance(v)}) {v}\n"
-        repr_str += f"{t_sp})"
+                repr_str += f"{out_sp}{in_sp}{k}: ({extract_class_name_from_instance(v)}) {v}\n"
+        repr_str += f"{out_sp})"
         return repr_str
 
     @property
@@ -344,7 +342,8 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 each_attribute = self.__getattribute__(each_name)
 
                 if isinstance(
-                    each_attribute, (np.ndarray, AbstractTrajectoryDataclass, Timestamps)
+                    each_attribute,
+                    (np.ndarray, AbstractTrajectoryDataclass, Timestamps),
                 ):
                     if self.current_trj_axe == 0:
                         # Case: time-serie
