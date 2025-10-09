@@ -10,6 +10,9 @@ from rosbags.rosbag2 import Reader
 from rosbags.typesys.store import Typestore
 
 from trajectory_container_tools import AbstractMultifeatureDataclass
+from trajectory_container_tools.dataclasses.core.abstract_multifeature_dataclass import (
+    AbstractMultifeatureStampedDataclass,
+)
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
 )
@@ -91,10 +94,11 @@ def from_rosbag(
     features_config: Dict[
         str, Union[type[RosDataclass], type[RosStampedDataclass], Tuple[str, ...]]
     ],
+    chunk_on="/teleop",
     start: Optional[int] = None,
     stop: Optional[int] = None,
     typestore: Optional[Typestore] = None,
-) -> MultifeatureTrajectoryDataclass:
+) -> AbstractMultifeatureStampedDataclass:
     """Extract multiple features (i.e. topics) from a rosbag_path based on a configuration
     dictionary.
 
@@ -127,6 +131,7 @@ def from_rosbag(
     :param rosbag_path: Path to rosbag.
     :param dataset_info: Any relevant information on the rosbag (location, robot, condition).
     :param features_config: The features to agregate from the rosbag as a configuration dictionary.
+    :param chunk_on: The topic in the ROSbag to monitor for chunk split. Defaults to "/teleop".
     :param start: The rosbag timestamp where to start in nanosecond.
     :param stop: The rosbag timestamp where to stop in nanosecond.
     :param typestore: Optional overrides the custom TCT rosbag typestore.
@@ -172,11 +177,14 @@ def from_rosbag(
 
     rosbag_multifeature = make_dataclass(
         "multifeature",
-        bases=(AbstractMultifeatureDataclass,),
+        bases=(AbstractMultifeatureStampedDataclass,),
         fields=features_type,
     )
     return rosbag_multifeature(
-        dataset_info, *features, bag_timestamps=Timestamps(np.array(bag_timestamps))
+        dataset_info,
+        *features,
+        bag_timestamps=Timestamps(np.array(bag_timestamps)),
+        chunk_on=convert_rosbag_topic_key_to_tct_mf_topic_key(chunk_on),
     )
 
 

@@ -206,14 +206,11 @@ class CustomStatePose2D(tct.BaseTrajectoryDataclass):
 import trajectory_container_tools as tct
 from trajectory_container_tools.dataclasses import NavMsgsOdometry, AckermannMsgsAckermannDriveStamped
 
-trajectory_from_rosbag = tct.extractor.from_rosbag(
-        rosbag_path,
-        dataset_info="Warthog Mont-Morency 1 Dec 2025",
-        features_config={
-                "/odom":   NavMsgsOdometry,
-                "/teleop": AckermannMsgsAckermannDriveStamped,
-                },
-        )
+trajectory_from_rosbag = tct.extractor.from_rosbag(rosbag_path, dataset_info="Warthog Mont-Morency 1 Dec 2025",
+                                                   features_config={
+                                                           "/odom":   NavMsgsOdometry,
+                                                           "/teleop": AckermannMsgsAckermannDriveStamped,
+                                                           })
 
 print(trajectory_from_rosbag)
 

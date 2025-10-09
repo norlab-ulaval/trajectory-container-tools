@@ -43,14 +43,9 @@ def crawl_rosbag_window(
     MSG = "Begin extracting trajectory window from message stream"
     print(f"\n...{MSG:.<80}\n", file=log_file)
 
-    mf_container = tct.extractor.from_rosbag(
-        rosbag_path=bag_path_abs,
-        dataset_info=None,
-        features_config=features_config,
-        start=start,
-        stop=stop,
-        typestore=typestore,
-    )
+    mf_container = tct.extractor.from_rosbag(rosbag_path=bag_path_abs, dataset_info=None,
+                                             features_config=features_config, start=start,
+                                             stop=stop, typestore=typestore)
 
     print(mf_container, file=log_file)
 

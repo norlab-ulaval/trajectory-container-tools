@@ -144,7 +144,9 @@ class Timestamps:
             return indice
 
     # (NICE TO HAVE) ToDo: unit-test get_nearest_stamp (ref task TCT-52) Component are individualy tested for now.
-    def get_nearest_stamp(self, timestamp: int, future: bool = True, include: bool = False) -> int | None:
+    def get_nearest_stamp(
+        self, timestamp: int, future: bool = True, include: bool = False
+    ) -> int | None:
         """
         Finds the nearest available timestamp in the dataset based on the given criteria.
 
@@ -166,7 +168,7 @@ class Timestamps:
         if future:
             return self.get_nearest_futur_stamp(timestamp)
         else:
-            return  self.get_nearest_past_stamp(timestamp)
+            return self.get_nearest_past_stamp(timestamp)
 
     def get_nearest_futur_stamp(self, timestamp: int) -> int | None:
         """
@@ -176,6 +178,7 @@ class Timestamps:
         :return: The nearest next timestamp greater than the input, or None if no such
                  timestamp exists.
         """
+        assert isinstance(timestamp, (int, np.integer))
         mask = timestamp < self._stamps
         return self._nearest_stamp(mask)
 
@@ -187,14 +190,20 @@ class Timestamps:
         :return: The nearest previous timestamp as an integer, or None if no such timestamp
             exists.
         """
+        assert isinstance(timestamp, (int, np.integer))
         mask = timestamp > self._stamps
         return self._nearest_stamp(mask)
 
-    def _nearest_stamp(self, mask: bool | np.ndarray[Any, np.dtype[bool]]) -> int | None:
+    def _nearest_stamp(
+        self, mask: bool | np.ndarray[Any, np.dtype[bool]]
+    ) -> int | None:
         nearest_index = np.squeeze(np.nonzero(mask))
+
+        # Only pick the first
         if nearest_index.size > 1:
             nearest_index = nearest_index[0]
-        if nearest_index.size > 0:
+
+        if nearest_index.size > 0 and self._stamps.size > 0:
             return int(np.squeeze(self._stamps[nearest_index]))
         else:
             return None
@@ -210,8 +219,10 @@ class Timestamps:
             v = self.__getattribute__(k)
             if k == "delta_stamps" and v.size > 1:
                 range_str = f"range {np.min(v[1:])} ←→ {np.max(v[1:])} (nanosec)"
-            else:
+            elif v.size > 0:
                 range_str = f"range {np.min(v)} ←→ {np.max(v)} (nanosec)"
+            else:
+                range_str = "empty"
             repr_str += f"shape {v.shape} {range_str}\n"
         repr_str += f"{t_sp})"
         return repr_str
@@ -413,7 +424,7 @@ def compute_delta_timestamp(
 def _check_precondition_nanoseconds_are_integers(
     nanoseconds: Union[int, float, np.ndarray],
 ) -> None:
-    """ Validates that the input `nanoseconds` is of integer types or a numpy array of integers.
+    """Validates that the input `nanoseconds` is of integer types or a numpy array of integers.
 
     :param nanoseconds: The input value to validate.
     :return: None.

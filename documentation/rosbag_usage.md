@@ -82,11 +82,9 @@ features_config = {
 
 ```python
 # Extract multiple features from rosbag
-trajectory_container = tct.extractor.from_rosbag(
-    rosbag_path=rosbag_path,
-    dataset_info="Robot experiment - Outdoor navigation",
-    features_config=features_config
-)
+trajectory_container = tct.extractor.from_rosbag(rosbag_path=rosbag_path,
+                                                 dataset_info="Robot experiment - Outdoor navigation",
+                                                 features_config=features_config)
 
 print(trajectory_container)
 ```
@@ -138,11 +136,9 @@ features_config = {
         }
 
 # Extract trajectory data
-robot_data = tct.extractor.from_rosbag(
-        rosbag_path=rosbag_path,
-        dataset_info="Outdoor navigation experiment - 2024-01-15",
-        features_config=features_config
-        )
+robot_data = tct.extractor.from_rosbag(rosbag_path=rosbag_path,
+                                       dataset_info="Outdoor navigation experiment - 2024-01-15",
+                                       features_config=features_config)
 
 # Access extracted data
 print(f"Odometry data shape: {robot_data.topic_odometry.x.shape}")
@@ -194,15 +190,10 @@ angular_vel = tc_odom.topic_odom.twist.angular
 import trajectory_container_tools as tct
 
 # Extract only a portion of the rosbag
-partial_data = tct.extractor.from_rosbag(
-        rosbag_path=rosbag_path,
-        dataset_info="Partial trajectory - middle section",
-        features_config={
-                '/odometry': tct.dataclasses.NavMsgsOdometry
-                },
-        start=1000,  # Start from message index 1000
-        stop=5000  # Stop at message index 5000
-        )
+partial_data = tct.extractor.from_rosbag(rosbag_path=rosbag_path, dataset_info="Partial trajectory - middle section",
+                                         features_config={
+                                                 '/odometry': tct.dataclasses.NavMsgsOdometry
+                                                 }, start=1000, stop=5000)
 
 print(f"Partial trajectory length: {partial_data.topic_odometry.trajectory_len}")
 ```
@@ -233,15 +224,12 @@ typestore.register(
 
 typestore = tct.ros.register_non_native_msgs(typestore)
 
-tc_with_custom_type = tct.extractor.from_rosbag(
-        rosbag_path=rosbag_path,
-        dataset_info="Trajectory with custom type",
-        features_config={
-                'trajectory_points': ('TrajectoryPoint', 'x', 'y', 'theta', 'velocity'),
-                '/odometry':         tct.dataclasses.NavMsgsOdometry,
-                },
-        typestore=typestore
-        )
+tc_with_custom_type = tct.extractor.from_rosbag(rosbag_path=rosbag_path, dataset_info="Trajectory with custom type",
+                                                features_config={
+                                                        'trajectory_points': ('TrajectoryPoint', 'x', 'y', 'theta',
+                                                                              'velocity'),
+                                                        '/odometry':         tct.dataclasses.NavMsgsOdometry,
+                                                        }, typestore=typestore)
 ```
 
 ### Custom Dataclass for Complex Messages
@@ -250,6 +238,7 @@ tc_with_custom_type = tct.extractor.from_rosbag(
 from dataclasses import dataclass
 import numpy as np
 from trajectory_container_tools.dataclasses import RosStampedDataclass
+
 
 @dataclass
 class CustomRobotState(RosStampedDataclass):
@@ -268,15 +257,12 @@ class CustomRobotState(RosStampedDataclass):
             wrapped_theta = np.arctan2(np.sin(theta), np.cos(theta))
             setattr(self, feature_name, wrapped_theta)
 
-            
+
 # Use custom dataclass
-tc_with_custom_type = tct.extractor.from_rosbag(
-    rosbag_path=rosbag_path,
-    dataset_info="Trajectory with custom dataclass",
-    features_config={
-        'robot_state': CustomRobotState
-        },
-)
+tc_with_custom_type = tct.extractor.from_rosbag(rosbag_path=rosbag_path,
+                                                dataset_info="Trajectory with custom dataclass", features_config={
+            'robot_state': CustomRobotState
+            })
 ```
 
 

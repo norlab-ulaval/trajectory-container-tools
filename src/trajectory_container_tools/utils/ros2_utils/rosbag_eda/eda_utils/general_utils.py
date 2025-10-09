@@ -187,12 +187,8 @@ def find_max_timestamp_delta_over_all_topics(
     :param typestore: Typestore object for managing type-related information.
     :return: The maximum timestamp delta across all qualifying topics.
     """
-    mf_container = tct.extractor.from_rosbag(
-        rosbag_path=bag_path_abs,
-        dataset_info=None,
-        features_config=features_config,
-        typestore=typestore,
-    )
+    mf_container = tct.extractor.from_rosbag(rosbag_path=bag_path_abs, dataset_info=None,
+                                             features_config=features_config, typestore=typestore)
 
     topics_max_delta_stamp = []
     for each in mf_container.topic_key_list:

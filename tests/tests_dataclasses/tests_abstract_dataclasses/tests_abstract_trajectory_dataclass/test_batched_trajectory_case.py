@@ -95,7 +95,9 @@ class TestAbstractTrajectoryDataclassBatchedTrajectoryCase:
         mfc = setup_mock_feature_child
         assert np.allclose(mfc.get_dynamic_field("aa"), mock_batched_trj_DC.a)
 
-    def test_fetch_nested_attribute(self, setup_mock_feature_child, mock_batched_trj_DC):
+    def test_fetch_nested_attribute(
+        self, setup_mock_feature_child, mock_batched_trj_DC
+    ):
         # Note: should work even if the trj data container has a flat structure
         mfc = setup_mock_feature_child
         assert np.allclose(mfc.fetch_nested_attribute("aa"), mock_batched_trj_DC.a)
@@ -106,7 +108,7 @@ class TestAbstractTrajectoryDataclassBatchedTrajectoryCase:
 
     def test_string_representation(self, setup_mock_feature_child, mock_batched_trj_DC):
         mdc = setup_mock_feature_child
-        # print(mdc) # <- Don't comment this line
+        print(mdc)  # <- Don't comment this line
 
     def test_trajectory_len(self, setup_mock_feature_child, mock_batched_trj_DC):
         mdc = setup_mock_feature_child
@@ -118,13 +120,13 @@ class TestAbstractTrajectoryDataclassBatchedTrajectoryCase:
         mdc = setup_mock_feature_child_range
         mdc.ravel_dimensions_in_place()
         assert mdc.aa.shape == (
-                mock_batched_trj_DC_range.a.shape[0] * mock_batched_trj_DC_range.a.shape[1],
+            mock_batched_trj_DC_range.a.shape[0] * mock_batched_trj_DC_range.a.shape[1],
         )
         assert mdc.bb.shape == (
-                mock_batched_trj_DC_range.b.shape[0] * mock_batched_trj_DC_range.b.shape[1],
+            mock_batched_trj_DC_range.b.shape[0] * mock_batched_trj_DC_range.b.shape[1],
         )
         assert mdc.cc.shape == (
-                mock_batched_trj_DC_range.c.shape[0] * mock_batched_trj_DC_range.c.shape[1],
+            mock_batched_trj_DC_range.c.shape[0] * mock_batched_trj_DC_range.c.shape[1],
         )
         # print(mdc)
         # (Priority) ToDo: implement test asserting a range

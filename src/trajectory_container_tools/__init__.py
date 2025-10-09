@@ -13,8 +13,13 @@ Quick Start:
 
 >>> import trajectory_container_tools as tct
 >>>
+>>> features_config = {
+>>>     '/odom': tct.dataclasses.NavMsgsOdometry,
+>>>     '/tf': tct.dataclasses.Tf2MsgsTFMessage,
+>>> }
+>>>
 >>> # Extract from ROS bag
->>> data = tct.extractor.from_rosbag(rosbag_path, features_config)
+>>> data = tct.extractor.from_rosbag("/rosbag/path", features_config)
 >>>
 >>> # Extract from DataFrame
 >>> data = tct.extractor.from_dataframe(df, features_config)
@@ -34,9 +39,13 @@ from .version import __version__
 # Core abstract classes
 from .dataclasses.core.abstract_trajectory_dataclass import (
     AbstractTrajectoryDataclass,
-    )
-from .dataclasses.core.abstract_no_trajectory_dataclass import AbstractNoTrajectoryDataclass
-from .dataclasses.core.abstract_multifeature_dataclass import AbstractMultifeatureDataclass
+)
+from .dataclasses.core.abstract_no_trajectory_dataclass import (
+    AbstractNoTrajectoryDataclass,
+)
+from .dataclasses.core.abstract_multifeature_dataclass import (
+    AbstractMultifeatureDataclass,
+)
 from .dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
     NestedBaseTrajectoryDataclass,
@@ -60,7 +69,6 @@ from . import utils
 __all__ = [
     # Version
     "__version__",
-
     # Core classes
     "AbstractTrajectoryDataclass",
     "AbstractMultifeatureDataclass",
@@ -68,7 +76,6 @@ __all__ = [
     "BaseTrajectoryDataclass",
     "NestedBaseTrajectoryDataclass",
     "BaseNoTrajectoryDataclass",
-
     # Namespaces
     "dataclasses",
     "extractor",
@@ -77,10 +84,8 @@ __all__ = [
     "temporal",
     "typing",
     "utils",
-
     # Container level check
     "containers_timestep_alignment_sanity_check",
-
     # Common exceptions
     "TimestampCausalOrderingError",
 ]

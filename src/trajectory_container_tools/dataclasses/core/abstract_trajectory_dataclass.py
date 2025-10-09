@@ -290,13 +290,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
             repr_str += f"{m_sp}dimensions:\n"
 
         for k, v in self.__dict__.items():
-            if k in [
-                "_iter_index",
-                "_transposed",
-                "feature_name",
-                "_timestep_indexes",
-                "batch",
-            ]:
+            if k in self._dataclass_internal_field():
                 pass
             elif k == "timesteps_indices" and self._nested:
                 pass
@@ -347,20 +341,20 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
             if each_name in self.trajectory_metadata_field():
                 pass
             else:
-                data_property = self.__getattribute__(each_name)
+                each_attribute = self.__getattribute__(each_name)
 
                 if isinstance(
-                    data_property, (np.ndarray, AbstractTrajectoryDataclass, Timestamps)
+                    each_attribute, (np.ndarray, AbstractTrajectoryDataclass, Timestamps)
                 ):
                     if self.current_trj_axe == 0:
                         # Case: time-serie
-                        data_value = data_property[index]
+                        data_value = each_attribute[index]
                     elif self.current_trj_axe == 1:
                         # Case: batch
-                        data_value = data_property[:, index, ...]
+                        data_value = each_attribute[:, index, ...]
                     elif self.current_trj_axe == -1:
                         # Case: transposed
-                        data_value = data_property[..., index]
+                        data_value = each_attribute[..., index]
                     else:
                         raise ValueError(
                             f"Unexpected trajectory time axe {self.current_trj_axe=}"

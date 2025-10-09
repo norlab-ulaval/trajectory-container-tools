@@ -2,7 +2,6 @@
 import datetime
 from dataclasses import dataclass
 from typing import Tuple
-import deprecated
 import numpy as np
 import pytest
 
@@ -119,3 +118,4 @@ class TestAbstractMultifeatureDataclass:
         assert len(topic_key_list) == 2
         assert "topic_mock_1" in topic_key_list
         assert "topic_mock_2" in topic_key_list
+

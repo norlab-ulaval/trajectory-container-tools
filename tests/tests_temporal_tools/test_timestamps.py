@@ -194,7 +194,7 @@ class TestTimestampsGetNearestMethods:
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)
         t_timestamp_in = 1711038330346603696 # the one at index 0
-        t_timestamp_not_in = 1711038330346603696 + 300
+        t_timestamp_not_in = t_timestamp_in + 300
 
         # sanity check
         assert t_timestamp_in == mock_ts_array[0]

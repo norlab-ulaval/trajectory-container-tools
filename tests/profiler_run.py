@@ -80,11 +80,9 @@ def profiler_run():
     }
     # "/robot_description",
 
-    container = from_rosbag(
-        rosbag_path,
-        dataset_info=f"Robot: f110_race_car, Track: grand_salon, Run: {BAG}",
-        features_config=features_config_1,
-    )
+    container = from_rosbag(rosbag_path,
+                            dataset_info=f"Robot: f110_race_car, Track: grand_salon, Run: {BAG}",
+                            features_config=features_config_1)
 
     # Minimum logic to validate run success
     print(container)
