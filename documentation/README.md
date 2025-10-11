@@ -53,6 +53,7 @@ graph TB
         
         subgraph MFC["🗂️&nbsp;MULTIFEATURE&nbsp;CONTAINERS"]
             AMC[AbstractMultifeatureDataclass<br/><br/>Contains multiple<br/>trajectory features<br/>in one container]
+            AMSC[AbstractMultifeatureStampedDataclass<br/><br/>Multifeature container with<br/>chunk-based iteration<br/>over timestamps]
         end
         
         subgraph TC["📦&nbsp;TRAJECTORY&nbsp;CONTAINERS"]
@@ -144,6 +145,23 @@ Trajectory containers are type-safe dataclasses that store trajectory data with:
 - **Structured access** to trajectory dimensions (e.g., x, y, z, roll, pitch, yaw, etc.)
 - **Metadata management** (timestamps, dataset information)
 - **Data validation** (shape consistency, monotonic timestamps)
+
+#### Multi-Feature Containers
+
+TCT provides specialized containers for aggregating multiple trajectory features:
+
+- **`AbstractMultifeatureDataclass`**: Base container for multiple trajectory features
+  - Aggregates different data sources (e.g., odometry, IMU, commands) into a single object
+  - Provides unified access to all features through named attributes
+  - Maintains metadata across all features
+
+- **`AbstractMultifeatureStampedDataclass`**: Extended multifeature container with chunk-based iteration
+  - Inherits all features from `AbstractMultifeatureDataclass`
+  - Enables iteration over synchronized timestamp chunks across all features
+  - Useful for processing large datasets incrementally
+  - Supports indexing and slicing by chunk
+
+**Use Case Example**: When extracting data from a ROS bag with multiple topics (e.g., `/odom`, `/imu`, `/cmd`), the resulting container is an `AbstractMultifeatureStampedDataclass` that allows you to iterate through synchronized time windows of all sensor data together.
 
 ### Factory Pattern
 

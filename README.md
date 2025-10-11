@@ -85,6 +85,15 @@ TCT provides:
     - Trajectory wide iterable i.e., timesteps iterable from `t=0` to `t=T`
     - Time logical and causal ordering validation i.e., guarantee to have strictly monotonicaly increassing timestep
       indices and timestamps
+- **Multi-Feature Containers**:
+    - Aggregate multiple trajectory features (e.g., odometry + commands + IMU) in a single container
+    - Chunk-based iteration over timestamp windows for synchronized multi-feature data access
+    - Support for both `AbstractMultifeatureDataclass` and `AbstractMultifeatureStampedDataclass`
+- **Enhanced Timestamp Utilities**:
+    - Timestamp indexing and slicing support
+    - Find nearest timestamps (past/future) for data synchronization
+    - Temporal ordering validation with detailed error reporting
+    - Convert between nanoseconds and seconds representation
 - **Data Converters**: Extract trajectory data from pandas DataFrames and ROS2 bags
 - **Factory Functions**: Dynamically create trajectory containers based on configuration
 - **Utilities**: Timestamps ordering validation, container timestamp alignment check, plotting, and filtering tools
@@ -369,6 +378,44 @@ Multifeature(
           )
    )
 ```
+
+#### Chunk-based Iteration with AbstractMultifeatureStampedDataclass
+
+When extracting data from ROS bags, you can iterate over synchronized timestamp chunks across multiple features:
+
+```python
+import trajectory_container_tools as tct
+
+# Extract features from ROS bag (returns AbstractMultifeatureStampedDataclass)
+multifeature_data = tct.extractor.from_rosbag(
+    rosbag_path,
+    features_config={
+        "/odom": tct.dataclasses.NavMsgsOdometry,
+        "/cmd": tct.dataclasses.AckermannMsgsAckermannDriveStamped,
+    },
+    chunk_on="/cmd",
+)
+
+# Iterate over timestamp chunks
+for chunk_idx, chunk in enumerate(multifeature_data):
+    print(f"Chunk {chunk_idx}:")
+    print(f"  Odometry data: {chunk.topic_odom}")
+    print(f"  Command data: {chunk.topic_cmd}")
+    
+# Access specific chunk by index
+first_chunk = multifeature_data[0]
+last_chunk = multifeature_data[-1]
+
+# Get total number of chunks
+total_chunks = multifeature_data.chunks_total
+print(f"Total chunks: {total_chunks}")
+```
+
+This enables processing synchronized multi-sensor data in manageable time windows, particularly useful for:
+- (Reinforcement Learnind) Processing ros data while preserving causal relationship between observation and action
+- Synchronizing data across multiple sensors/topics
+- Time-windowed analysis and feature extraction
+- Processing large ROS bags incrementally
 
 ## Getting started
 

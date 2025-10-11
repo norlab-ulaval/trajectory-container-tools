@@ -198,6 +198,62 @@ partial_data = tct.extractor.from_rosbag(rosbag_path=rosbag_path, dataset_info="
 print(f"Partial trajectory length: {partial_data.topic_odometry.trajectory_len}")
 ```
 
+### 4. Chunk-Based Iteration with AbstractMultifeatureStampedDataclass
+
+When extracting multiple features from a ROS bag, the result is an `AbstractMultifeatureStampedDataclass` that supports chunk-based iteration over synchronized timestamp windows:
+
+```python
+import trajectory_container_tools as tct
+
+# Extract multiple features from ROS bag
+multifeature_data = tct.extractor.from_rosbag(
+    rosbag_path=rosbag_path,
+    dataset_info="Multi-sensor robot experiment",
+    features_config={
+        '/odom': tct.dataclasses.NavMsgsOdometry,
+        '/imu': tct.dataclasses.SensorMsgsImu,
+        '/cmd': tct.dataclasses.AckermannMsgsAckermannDriveStamped,
+    },
+    chunk_on="/cmd",
+)
+
+# Get number of chunks
+print(f"Total chunks: {multifeature_data.chunks_total}")
+print(f"Container length: {len(multifeature_data)}")
+
+# Iterate over chunks
+for chunk_idx, chunk in enumerate(multifeature_data):
+    print(f"\nProcessing chunk {chunk_idx}:")
+    print(f"  Odometry trajectory length: {chunk.topic_odom.trajectory_len}")
+    print(f"  IMU trajectory length: {chunk.topic_imu.trajectory_len}")
+    print(f"  Command trajectory length: {chunk.topic_cmd.trajectory_len}")
+    
+    # Process synchronized data within this chunk
+    # Example: Calculate average speed from odometry in this chunk
+    avg_speed = chunk.topic_odom.twist.twist.linear.x.mean()
+    print(f"  Average speed in chunk: {avg_speed:.2f} m/s")
+
+# Access specific chunks by index
+first_chunk = multifeature_data[0]
+last_chunk = multifeature_data[-1]
+middle_chunk = multifeature_data[len(multifeature_data) // 2]
+
+# Slice chunks
+first_three_chunks = multifeature_data[0:3]
+```
+
+**Benefits of chunk-based iteration:**
+- **Memory efficiency**: Process large ROS bags incrementally without loading all data at once
+- **Synchronized access**: All features within a chunk share the same timestamp window
+- **Incremental processing**: Ideal for streaming analysis, feature extraction, or data preprocessing
+- **Flexible indexing**: Access chunks by index, slice, or iterate sequentially
+
+**Use cases:**
+- Processing multi-hour robot missions in manageable time windows
+- Synchronizing data from multiple sensors with different sampling rates
+- Extracting features from aligned time windows across different data sources
+- Implementing sliding window algorithms over multi-sensor trajectories
+
 ## Custom Message Types
 
 ### Registering Custom Messages

@@ -338,6 +338,128 @@ Expected error caught: ValueError
 - `create_dataclass()`: Creates dataclass types from specifications
 - `parse_feature_spec()`: Parses feature specifications for dataclass generation
 
+## 7. Working with Timestamps
+
+TCT provides enhanced timestamp utilities through the `Timestamps` class for managing and querying temporal data:
+
+### Creating Timestamps
+
+```python
+import numpy as np
+import trajectory_container_tools as tct
+
+# Create timestamps in nanoseconds (ROS2 format)
+stamps_ns = np.array([
+    1695601812731601521,
+    1695601812751577171,
+    1695601812771552821,
+    1695601812791528471,
+    1695601812811504121
+])
+
+timestamps = tct.temporal.Timestamps(stamps_ns)
+print(timestamps)
+```
+
+### Timestamp Indexing and Slicing
+
+```python
+# Index access
+first_stamp = timestamps[0]
+last_stamp = timestamps[-1]
+
+# Slice timestamps
+first_three = timestamps[0:3]
+print(f"First three timestamps: {first_three}")
+
+# Get length
+print(f"Number of timestamps: {len(timestamps)}")
+```
+
+### Finding Nearest Timestamps
+
+```python
+# Find nearest timestamp to a query time
+query_time = 1695601812741589346
+
+# Get nearest future timestamp (default)
+nearest_future = timestamps.get_nearest_stamp(query_time, future=True)
+print(f"Nearest future stamp: {nearest_future}")
+
+# Get nearest past timestamp
+nearest_past = timestamps.get_nearest_stamp(query_time, future=False)
+print(f"Nearest past stamp: {nearest_past}")
+
+# Convenience methods
+nearest_future = timestamps.get_nearest_futur_stamp(query_time)
+nearest_past = timestamps.get_nearest_past_stamp(query_time)
+```
+
+### Timestamp Queries and Validation
+
+```python
+# Check if timestamp exists
+query_stamp = 1695601812751577171
+if query_stamp in timestamps:
+    print(f"Timestamp {query_stamp} exists in the dataset")
+
+# Get indices for specific timestamps
+query_stamps = [1695601812731601521, 1695601812771552821]
+indices = timestamps.get_indexes(query_stamps)
+print(f"Indices for query timestamps: {indices}")
+
+# Validate timestamp ordering (causal consistency check)
+try:
+    timestamps.causal_ordering_sanity_check(show_offending_in_nanoseconds=True)
+    print("Timestamps are causally ordered (monotonically increasing)")
+except tct.TimestampCausalOrderingError as e:
+    print(f"Timestamp ordering error: {e}")
+```
+
+### Time Conversion Utilities
+
+```python
+# Convert nanoseconds to seconds
+seconds = tct.temporal.to_seconds(stamps_ns)
+print(f"Timestamps in seconds: {seconds}")
+
+# Convert to seconds and nanoseconds components
+secs, nsecs = tct.temporal.to_seconds_nanoseconds(stamps_ns)
+print(f"Seconds: {secs}, Nanoseconds: {nsecs}")
+
+# Compute delta timestamps (time differences)
+delta_stamps = tct.temporal.compute_delta_timestamp(stamps_ns)
+print(f"Time deltas: {delta_stamps}")
+```
+
+### Practical Example: Synchronizing Data Sources
+
+```python
+# Synchronize data from two sensors with different sampling rates
+sensor_a_timestamps = tct.temporal.Timestamps(np.array([100, 120, 140, 160, 180]))
+sensor_b_timestamps = tct.temporal.Timestamps(np.array([105, 125, 145, 165, 185]))
+
+# Find matching timestamps from sensor B for each sensor A timestamp
+synchronized_indices = []
+for stamp_a in sensor_a_timestamps.stamps:
+    # Find nearest past timestamp in sensor B
+    nearest_b = sensor_b_timestamps.get_nearest_past_stamp(stamp_a)
+    idx_b = sensor_b_timestamps.get_indexes([nearest_b])[0]
+    synchronized_indices.append(idx_b)
+
+print(f"Synchronized indices: {synchronized_indices}")
+```
+
+### Key Timestamp Features
+
+- **Indexing & Slicing**: Full numpy-like indexing support
+- **Nearest Neighbor Search**: Find closest timestamps (past/future) for data synchronization
+- **Membership Testing**: Check if specific timestamps exist using `in` operator
+- **Index Retrieval**: Get array indices for timestamp values
+- **Causal Ordering Validation**: Ensure timestamps are monotonically increasing
+- **Time Conversions**: Convert between nanoseconds, seconds, and (seconds, nanoseconds) pairs
+- **Delta Computation**: Calculate time differences between consecutive timestamps
+
 ## Usage Recommendations
 
 1. **Start Simple**: Begin with `BaseTrajectoryDataclass` for basic use cases
