@@ -8,9 +8,9 @@ from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
 
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
-    AbstractMultifeatureDataclass,
     AbstractTrajectoryDataclass,
 )
+from trajectory_container_tools import AbstractMultifeatureDataclass
 from trajectory_container_tools.dataclasses import RosDataclass, RosStampedDataclass
 
 TrajectoryDataclass = NewType("TrajectoryDataclass", AbstractTrajectoryDataclass)

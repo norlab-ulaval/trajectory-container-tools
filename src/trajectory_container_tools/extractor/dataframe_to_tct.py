@@ -7,9 +7,7 @@ from typing import Dict, Tuple, Union
 from dataclasses import make_dataclass
 
 from trajectory_container_tools.typing import MultifeatureTrajectoryDataclass
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
-    AbstractMultifeatureDataclass,
-)
+from trajectory_container_tools import AbstractMultifeatureDataclass
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     BaseDataframeFeatureDataclass,
 )
@@ -85,11 +83,11 @@ def from_dataframe(
     or by using tuple of strings such as ('<new feature dataclass type name>', '<dimension
         names 1>', '<dimension names 2>', ...).
 
-        >>> feature_config = {
-        >>>             'icp_interpolated': StatePose2D,
-        >>>             'idd_vel':          StatePose2D,
-        >>>             'icp':              ('StatePose3D', 'x', 'y', 'z', 'roll', 'pitch', 'yaw')
-        >>>             }
+    >>> feature_config = {
+    >>>             'icp_interpolated': StatePose2D,
+    >>>             'idd_vel':          StatePose2D,
+    >>>             'icp':              ('StatePose3D', 'x', 'y', 'z', 'roll', 'pitch', 'yaw')
+    >>>             }
 
     :param dataset_frame: Dataset as a panda dataframe.
     :param dataset_info: Any relevant information about the dataset (location, robot,

@@ -26,6 +26,7 @@ dependencies = [
     "pandas",
     "tqdm",
     "rosbags", # For ROS bag functionality
+    "deprecated",
 ]
 
 [project.optional-dependencies]

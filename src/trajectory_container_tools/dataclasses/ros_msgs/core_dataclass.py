@@ -1,24 +1,15 @@
 # coding=utf-8
+import abc
 from dataclasses import dataclass
+from typing import Optional
 
+from .core_dataclass_utils import get_timestamps_slice
 from ..core.base_trajectory_dataclass import (
     BaseNoTrajectoryDataclass,
     BaseTrajectoryDataclass,
     NestedBaseTrajectoryDataclass,
 )
 from ..ros_msgs.primitive_dataclass import Header
-
-
-@dataclass()
-class RosDataclass(BaseNoTrajectoryDataclass):
-    """
-    Represents a ROS dataclass containing trajectory information.
-
-    This dataclass is used to store trajectory data. This class inherits from
-    `BaseTrajectoryDataclass` to provide trajectory-specific attributes and behaviors.
-    """
-
-    pass
 
 
 @dataclass()
@@ -37,9 +28,43 @@ class RosStampedDataclass(BaseTrajectoryDataclass):
     :ivar header: The ROS message header, which includes timestamp and frame of
         reference information.
     :type header: Header
+    :ivar feature_name: Name of the feature associated with the trajectory.
+    :type feature_name: str
+    :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
+        to a subset of a larger trajectory (Automaticaly generated if set to None).
+    :type timesteps_indices: numpy ndarray
+    :ivar batch: Boolean indicating if the data is batched (True) or pertaining to a
+        single trajectory (False).
+    :type batch: bool
     """
 
     header: Header
+
+    def get_timestamps(
+        self,
+        start: int,
+        stop: Optional[int] = None,
+        startpoint: bool = True,
+        endpoint: bool = False,
+    ):
+        """
+        Retrieve a trajectory interval within a specified timestamps range.
+
+        This function allows extracting trajectory associated data from a given timestamps range
+        defined by the start, stop, and optional parameters controlling the
+        inclusion of the range startpoint and endpoint.
+
+        :param start: The starting timestamp value of the slice.
+        :param stop: The optional stopping timestamp value of the slice. If not specified,
+            the slice will retrive a trajectory of length 1.
+        :param startpoint: A boolean indicating whether to include the starting point in the slice.
+        :param endpoint: A boolean indicating whether to include the stopping point in the slice.
+        :return: A data slice corresponding to the timestamps within the specified range.
+        """
+        timestamps_slice = get_timestamps_slice(
+            self.header.timestamps, start, stop, startpoint, endpoint
+        )
+        return self[timestamps_slice]
 
 
 @dataclass()
@@ -52,8 +77,53 @@ class NestedRosStampedDataclass(NestedBaseTrajectoryDataclass):
     :ivar header: The ROS message header, which includes timestamp and frame of
         reference information.
     :type header: Header
-    :ivar feature_name: This attribute is set to None by default and is immutable.
-    :type feature_name: str
+    :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
+        to a subset of a larger trajectory (Automaticaly generated if set to None).
+    :type timesteps_indices: numpy ndarray
+    :ivar batch: Boolean indicating if the data is batched (True) or pertaining to a
+        single trajectory (False).
+    :type batch: bool
     """
 
     header: Header
+
+    def get_timestamps(
+        self,
+        start: int,
+        stop: Optional[int] = None,
+        startpoint: bool = True,
+        endpoint: bool = False,
+    ):
+        """
+        Retrieve a trajectory interval within a specified timestamps range.
+
+        This function allows extracting trajectory associated data from a given timestamps range
+        defined by the start, stop, and optional parameters controlling the
+        inclusion of the range startpoint and endpoint.
+
+        :param start: The starting timestamp value of the slice.
+        :param stop: The optional stopping timestamp value of the slice. If not specified,
+            the slice will retrive a trajectory of length 1.
+        :param startpoint: A boolean indicating whether to include the starting point in the slice.
+        :param endpoint: A boolean indicating whether to include the stopping point in the slice.
+        :return: A data slice corresponding to the timestamps within the specified range.
+        """
+        timestamps_slice = get_timestamps_slice(
+            self.header.timestamps, start, stop, startpoint, endpoint
+        )
+        return self[timestamps_slice]
+
+
+@dataclass()
+class RosDataclass(BaseNoTrajectoryDataclass):
+    """
+    Represents a ROS dataclass containing trajectory information.
+
+    This dataclass is used to store trajectory data. This class inherits from
+    `BaseTrajectoryDataclass` to provide trajectory-specific attributes and behaviors.
+
+    :ivar feature_name: Name of the feature associated with the trajectory.
+    :type feature_name: str
+    """
+
+    pass

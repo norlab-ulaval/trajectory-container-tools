@@ -9,31 +9,51 @@ import numpy as np
 from rosbags.rosbag2 import Reader
 from rosbags.typesys.store import Typestore
 
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
-    AbstractMultifeatureDataclass,
+from trajectory_container_tools.dataclasses.core.abstract_multifeature_dataclass import (
+    AbstractMultifeatureStampedDataclass,
 )
-from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
+    BaseTrajectoryDataclass,
+)
 from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
-from trajectory_container_tools.dataclasses import NavMsgsOdometry, NestedRosStampedDataclass, RosDataclass, \
-    RosStampedDataclass
+from trajectory_container_tools.dataclasses import (
+    NavMsgsOdometry,
+    NestedRosStampedDataclass,
+    RosDataclass,
+    RosStampedDataclass,
+)
 from trajectory_container_tools.utils.factory import (
     parse_feature_spec,
 )
 from trajectory_container_tools.utils.general import (
     camelcase_to_snake_case,
     extract_class_name_from_type,
-    setup_progressbar, dn_validate_path,
+    setup_progressbar,
+    dn_validate_path,
 )
-from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import register_non_native_msgs
-from trajectory_container_tools.utils.ros2_utils.ros2_general import get_rosbag_typestore_auto_distro
-from trajectory_container_tools.utils.ros2_utils.ros2_timestamps import rosbag_topic_time_to_timestamp
+from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
+    register_non_native_msgs,
+)
+from trajectory_container_tools.utils.ros2_utils.ros2_general import (
+    convert_rosbag_topic_key_to_tct_mf_topic_key,
+    get_rosbag_typestore_auto_distro,
+)
+from trajectory_container_tools.utils.ros2_utils.ros2_timestamps import (
+    rosbag_topic_time_to_timestamp,
+)
 
 from trajectory_container_tools.utils.shadow_data_container import (
     instanciate_shadow_data_container,
     post_process_shadown_data_container,
 )
-from trajectory_container_tools.temporal.timestamps import TimestampCausalOrderingError, Timestamps
-from trajectory_container_tools.typing import MultifeatureTrajectoryDataclass, ShadowDataContainer
+from trajectory_container_tools.temporal.timestamps import (
+    TimestampCausalOrderingError,
+    Timestamps,
+)
+from trajectory_container_tools.typing import (
+    MultifeatureTrajectoryDataclass,
+    ShadowDataContainer,
+)
 
 
 def check_bag_topics(rosbag_path: Union[str, Path]) -> Path:
@@ -70,11 +90,14 @@ def check_bag_topics(rosbag_path: Union[str, Path]) -> Path:
 def from_rosbag(
     rosbag_path: Path,
     dataset_info: Optional[str],
-    features_config: Dict[str, Union[type[RosDataclass], type[RosStampedDataclass], Tuple[str, ...]]],
+    features_config: Dict[
+        str, Union[type[RosDataclass], type[RosStampedDataclass], Tuple[str, ...]]
+    ],
+    chunk_on="/teleop",
     start: Optional[int] = None,
     stop: Optional[int] = None,
     typestore: Optional[Typestore] = None,
-) -> MultifeatureTrajectoryDataclass:
+) -> AbstractMultifeatureStampedDataclass:
     """Extract multiple features (i.e. topics) from a rosbag_path based on a configuration
     dictionary.
 
@@ -96,17 +119,18 @@ def from_rosbag(
     `drive.steering_angle_velocity`. The parsing rule for topic property name is the following
     underscore `_` convert to dot `.` and `CamelCase` convert to `snake_case`.
 
-        >>> feature_config = {
-        >>>     '/pf/pose/odom': NavMsgsOdometry,
-        >>>     '/odom':         NavMsgsOdometry,
-        >>>     '/sensors/imu/raw':     ('SensorMsgsImu2D', 'linearAcceleration_x',
-        >>>                                                 'linearAcceleration_y',
-        >>>                                                 'angularVelocity_z')
-        >>> }
+    >>> feature_config = {
+    >>>     '/pf/pose/odom': NavMsgsOdometry,
+    >>>     '/odom':         NavMsgsOdometry,
+    >>>     '/sensors/imu/raw':     ('SensorMsgsImu2D', 'linearAcceleration_x',
+    >>>                                                 'linearAcceleration_y',
+    >>>                                                 'angularVelocity_z')
+    >>> }
 
     :param rosbag_path: Path to rosbag.
     :param dataset_info: Any relevant information on the rosbag (location, robot, condition).
     :param features_config: The features to agregate from the rosbag as a configuration dictionary.
+    :param chunk_on: The topic in the ROSbag to monitor for chunk split. Defaults to "/teleop".
     :param start: The rosbag timestamp where to start in nanosecond.
     :param stop: The rosbag timestamp where to stop in nanosecond.
     :param typestore: Optional overrides the custom TCT rosbag typestore.
@@ -139,27 +163,27 @@ def from_rosbag(
             typestore=typestore,
         )
 
-        features_type.append((f"topic{feature_name.replace('/', '_')}", type(feature)))
+        features_type.append(
+            (convert_rosbag_topic_key_to_tct_mf_topic_key(feature_name), type(feature))
+        )
         features.append(feature)
 
     with Reader(rosbag_path) as reader:
-        feature_names = features_config.keys()
-        connections = [
-            conn for conn in reader.connections if conn.topic == feature_names
-        ]
         bag_timestamps = []
-        for _, timestamp, _ in reader.messages(
-            connections=connections, start=start, stop=stop
-        ):
-            bag_timestamps.append(timestamp)
+        for connection, timestamp, _ in reader.messages(start=start, stop=stop):
+            if connection.topic in features_config:
+                bag_timestamps.append(timestamp)
 
     rosbag_multifeature = make_dataclass(
         "multifeature",
-        bases=(AbstractMultifeatureDataclass,),
+        bases=(AbstractMultifeatureStampedDataclass,),
         fields=features_type,
     )
     return rosbag_multifeature(
-        dataset_info, *features, bag_timestamps=Timestamps(np.array(bag_timestamps))
+        dataset_info,
+        *features,
+        bag_timestamps=Timestamps(np.array(bag_timestamps)),
+        chunk_on=convert_rosbag_topic_key_to_tct_mf_topic_key(chunk_on),
     )
 
 
@@ -181,13 +205,12 @@ def extract_rosbag_feature(
 
     Usage:
 
-        >>> from trajectory_container_tools.dataclasses.rosbag_feature_dataclass import \
-        >>>     NavMsgsOdometry
-        >>>
-        >>> extract_rosbag_feature(
-        >>>     rosbag_path=Path("</path/to/rosbag>"),
-        >>>     feature_name="/odom",data_container_type=NavMsgsOdometry
-        >>> )
+    >>> from trajectory_container_tools.dataclasses import NavMsgsOdometry
+    >>>
+    >>> extract_rosbag_feature(
+    >>>     rosbag_path=Path("</path/to/rosbag>"),
+    >>>     feature_name="/odom",data_container_type=NavMsgsOdometry
+    >>> )
 
     :param rosbag_path: Path to the input ROS bag file.
     :param feature_name: Name of the topic to extract data from.

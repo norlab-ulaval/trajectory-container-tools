@@ -13,10 +13,16 @@ from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import 
 
 from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
     Tf2MsgsTFMessage,
-    )
-from trajectory_container_tools.dataclasses import AckermannMsgsAckermannDrive, \
-    AckermannMsgsAckermannDriveStamped, NavMsgsOdometry, RosStampedDataclass, Scan, SensorMsgsImu, \
-    VescMsgsVescImuStamped
+)
+from trajectory_container_tools.dataclasses import (
+    AckermannMsgsAckermannDrive,
+    AckermannMsgsAckermannDriveStamped,
+    NavMsgsOdometry,
+    RosStampedDataclass,
+    Scan,
+    SensorMsgsImu,
+    VescMsgsVescImuStamped,
+)
 from trajectory_container_tools.temporal.timestamps import (
     TimestampCausalOrderingError,
 )
@@ -119,7 +125,7 @@ class TestExtractROSBagFeature:
 
 class TestExtractROSBagMultifeature:
     @pytest.fixture
-    def setup_feature_config_new_type(self):
+    def setup_feature_config_custom_type(self):
         feature_config: dict = {
             "/odom": NavMsgsOdometry,
             "/sensors/imu/raw": (
@@ -130,8 +136,6 @@ class TestExtractROSBagMultifeature:
             ),
         }
         return feature_config
-
-        # '/sensors/imu/raw': SensorMsgsImu,
 
     @pytest.fixture
     def setup_feature_config_known_type(self):
@@ -144,57 +148,7 @@ class TestExtractROSBagMultifeature:
 
         # '/sensors/imu/raw': SensorMsgsImu,
 
-    def test_aggregate_multiple_features_from_rosbag_with_new_type(
-        self, setup_rosbag_three_topics_filtered, setup_feature_config_new_type
-    ):
-        features_container = from_rosbag(
-            rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
-            dataset_info=None,
-            features_config=setup_feature_config_new_type,
-        )
-
-        print(features_container)
-
-        assert isinstance(features_container.topic_sensors_imu_raw, RosStampedDataclass)
-        assert not isinstance(features_container.topic_sensors_imu_raw, SensorMsgsImu)
-        assert (
-            features_container.topic_sensors_imu_raw.feature_name == "/sensors/imu/raw"
-        )
-        assert features_container.topic_sensors_imu_raw.get_dimension_names() == (
-            "header",
-            "orientation_x",
-            "orientation_y",
-            "orientation_z",
-        )
-
-        assert isinstance(features_container.topic_odom, NavMsgsOdometry)
-        assert features_container.topic_odom.feature_name == "/odom"
-
-    def test_aggregate_multiple_features_from_rosbag_with_known_type(
-        self, setup_rosbag_three_topics_filtered, setup_feature_config_known_type
-    ):
-        features_container = from_rosbag(
-            rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
-            dataset_info=None,
-            features_config=setup_feature_config_known_type,
-        )
-
-        print(features_container)
-
-        assert isinstance(
-            features_container.topic_teleop, AckermannMsgsAckermannDriveStamped
-        )
-        assert features_container.topic_teleop.feature_name == "/teleop"
-
-        assert (
-            features_container.topic_sensors_imu_raw.feature_name == "/sensors/imu/raw"
-        )
-        assert isinstance(features_container.topic_sensors_imu_raw, SensorMsgsImu)
-
-        assert isinstance(features_container.topic_odom, RosStampedDataclass)
-        assert features_container.topic_odom.feature_name == "/odom"
-
-    def test_extract_rosbag_multifeature_misspecification(
+    def test_features_config_misspecification(
         self, setup_rosbag_three_topics_filtered, setup_feature_config_known_type
     ):
         setup_feature_config_known_type_bad = setup_feature_config_known_type.copy()
@@ -203,37 +157,82 @@ class TestExtractROSBagMultifeature:
         )
 
         with pytest.raises(KeyError):
-            feats = from_rosbag(
-                rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
-                dataset_info="",
-                features_config=setup_feature_config_known_type_bad,
-            )
+            feats = from_rosbag(rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
+                                dataset_info="",
+                                features_config=setup_feature_config_known_type_bad)
 
             print(feats)
 
-    def test_extract_rosbag_multifeature_integration(self, setup_rosbag_six_topics_filtered):
-        # Test on a wider selection of topic including some with special case handling e.g., /tf
-        #   - "/odom": NavMsgsOdometry,
-        #   - "/tf": Tf2MsgsTFMessage,
-        #   - "/scan": Scan,
-        #   - "/teleop": AckermannMsgsAckermannDriveStamped,
-        #   - "/sensors/imu/raw": SensorMsgsImu,
-        #   - "/sensors/imu": VescMsgsVescImuStamped,
+    def test_with_custom_type(
+        self, setup_rosbag_three_topics_filtered, setup_feature_config_custom_type
+    ):
+        mf_container = from_rosbag(rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
+                                   dataset_info=None,
+                                   features_config=setup_feature_config_custom_type,
+                                   chunk_on='/odom')
 
-        container = from_rosbag(
-            setup_rosbag_six_topics_filtered.bag_path,
-            dataset_info=setup_rosbag_six_topics_filtered.bag_name,
-            features_config={
-                "/odom": NavMsgsOdometry,
-                "/tf": Tf2MsgsTFMessage,
-                "/scan": Scan,
-                "/teleop": AckermannMsgsAckermannDriveStamped,
-                "/sensors/imu/raw": SensorMsgsImu,
-                "/sensors/imu": VescMsgsVescImuStamped,
-            },
-            start=None,
-            stop=None,
+        print(mf_container)
+
+        assert isinstance(mf_container.topic_sensors_imu_raw, RosStampedDataclass)
+        assert not isinstance(mf_container.topic_sensors_imu_raw, SensorMsgsImu)
+        assert (
+                mf_container.topic_sensors_imu_raw.feature_name == "/sensors/imu/raw"
+        )
+        assert mf_container.topic_sensors_imu_raw.get_dimension_names() == (
+            "header",
+            "orientation_x",
+            "orientation_y",
+            "orientation_z",
         )
 
+        assert isinstance(mf_container.topic_odom, NavMsgsOdometry)
+        assert mf_container.topic_odom.feature_name == "/odom"
+
+    def test_with_known_type_three_topics(
+        self, setup_rosbag_three_topics_filtered, setup_feature_config_known_type
+    ):
+        mf_container = from_rosbag(rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
+                                   dataset_info=None,
+                                   features_config=setup_feature_config_known_type)
+
+        print(mf_container)
+
+        assert isinstance(
+            mf_container.topic_teleop, AckermannMsgsAckermannDriveStamped
+        )
+        assert mf_container.topic_teleop.feature_name == "/teleop"
+
+        assert (
+                mf_container.topic_sensors_imu_raw.feature_name == "/sensors/imu/raw"
+        )
+        assert isinstance(mf_container.topic_sensors_imu_raw, SensorMsgsImu)
+
+        assert isinstance(mf_container.topic_odom, RosStampedDataclass)
+        assert mf_container.topic_odom.feature_name == "/odom"
+
+    def test_with_known_type_six_topics(self, setup_rosbag_six_topics_filtered):
+        """
+        Test on a wider selection of topics including some with special case handling e.g., /tf
+        
+          - '/odom': NavMsgsOdometry,
+          - '/tf': Tf2MsgsTFMessage,
+          - '/scan': Scan,
+          - '/teleop': AckermannMsgsAckermannDriveStamped,
+          - '/sensors/imu/raw': SensorMsgsImu,
+          - '/sensors/imu': VescMsgsVescImuStamped,
+        
+        """""
+
+        mf_container = from_rosbag(setup_rosbag_six_topics_filtered.bag_path,
+                                   dataset_info=setup_rosbag_six_topics_filtered.bag_name,
+                                   features_config={
+                                           "/odom":            NavMsgsOdometry,
+                                           "/tf":              Tf2MsgsTFMessage,
+                                           "/scan":            Scan,
+                                           "/teleop":          AckermannMsgsAckermannDriveStamped,
+                                           "/sensors/imu/raw": SensorMsgsImu,
+                                           "/sensors/imu":     VescMsgsVescImuStamped,
+                                           }, start=None, stop=None)
+
         # Minimum logic to validate run success
-        print(container)
+        print(mf_container)

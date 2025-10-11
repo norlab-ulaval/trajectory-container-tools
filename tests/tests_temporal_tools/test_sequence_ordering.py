@@ -3,9 +3,7 @@ from trajectory_container_tools.dataclasses import RosStampedDataclass
 from trajectory_container_tools.temporal.sequence_ordering import (
     fix_sequence_ordering_base_on_timestamps,
 )
-from trajectory_container_tools.temporal.timestamps import (
-    validate_timestamps_ordering,
-)
+from trajectory_container_tools.temporal import validate_timestamps_ordering
 
 
 class TestTrajectorySequenceOrderingLogic:

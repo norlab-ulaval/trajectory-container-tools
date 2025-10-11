@@ -19,10 +19,10 @@ Project artifact should go in here e.g., experimental log, plot, trained model, 
 # About Artifact And Data Directories
 
 The `artifact/` directory is configured for handling output data such as log, plot and trained model while the `data/`
-sub-directories are configured for handling input data such as _test data_, _demo data_, _experimental data_ and mounted
+subdirectories are configured for handling input data such as _test data_, _demo data_, _experimental data_ and mounted
 _local data volume_
 
-```terminaloutput
+```text
 ⋮
 ├── artifact/                           ← Runtime produced data
 ├── data/

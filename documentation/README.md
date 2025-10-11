@@ -14,6 +14,7 @@ Welcome to the comprehensive documentation for **Trajectory Container Tools (TCT
     * [🔧 TCT Direct Instantiation Guide](#-tct-direct-instantiation-guide)
     * [📊 DataFrame To TCT Usage Guide](#-dataframe-to-tct-usage-guide)
     * [🤖 ROS Bag To TCT  Usage Guide](#-ros-bag-to-tct--usage-guide-)
+    * [🔄 Post-Processing Callbacks Guide](#-post-processing-callbacks-guide)
   * [Core Concepts](#core-concepts)
     * [Trajectory Containers](#trajectory-containers)
     * [Factory Pattern](#factory-pattern)
@@ -53,6 +54,7 @@ graph TB
         
         subgraph MFC["🗂️&nbsp;MULTIFEATURE&nbsp;CONTAINERS"]
             AMC[AbstractMultifeatureDataclass<br/><br/>Contains multiple<br/>trajectory features<br/>in one container]
+            AMSC[AbstractMultifeatureStampedDataclass<br/><br/>Multifeature container with<br/>chunk-based iteration<br/>over timestamps]
         end
         
         subgraph TC["📦&nbsp;TRAJECTORY&nbsp;CONTAINERS"]
@@ -132,6 +134,14 @@ Comprehensive guide for extracting trajectory data from ROS bags:
 - Message type handling
 - Timestamp management
 
+### 🔄 [Post-Processing Callbacks Guide](post_processing_callbacks.md)
+Detailed guide for customizing trajectory data processing at instantiation:
+- Three callback methods: `on_begin_post_init_callback`, `post_init_feature_callback`, `on_exit_post_init_callback`
+- Dynamic field creation and manipulation
+- Advanced examples and common patterns
+- Integration with extractors (ROS bags, DataFrames)
+- Best practices and use cases
+
 
 ---
 
@@ -144,6 +154,23 @@ Trajectory containers are type-safe dataclasses that store trajectory data with:
 - **Structured access** to trajectory dimensions (e.g., x, y, z, roll, pitch, yaw, etc.)
 - **Metadata management** (timestamps, dataset information)
 - **Data validation** (shape consistency, monotonic timestamps)
+
+#### Multi-Feature Containers
+
+TCT provides specialized containers for aggregating multiple trajectory features:
+
+- **`AbstractMultifeatureDataclass`**: Base container for multiple trajectory features
+  - Aggregates different data sources (e.g., odometry, IMU, commands) into a single object
+  - Provides unified access to all features through named attributes
+  - Maintains metadata across all features
+
+- **`AbstractMultifeatureStampedDataclass`**: Extended multifeature container with chunk-based iteration
+  - Inherits all features from `AbstractMultifeatureDataclass`
+  - Enables iteration over synchronized timestamp chunks across all features
+  - Useful for processing large datasets incrementally
+  - Supports indexing and slicing by chunk
+
+**Use Case Example**: When extracting data from a ROS bag with multiple topics (e.g., `/odom`, `/imu`, `/cmd`), the resulting container is an `AbstractMultifeatureStampedDataclass` that allows you to iterate through synchronized time windows of all sensor data together.
 
 ### Factory Pattern
 
@@ -215,6 +242,7 @@ Create trajectory containers directly from data arrays:
 - [Landing page](../README.md#_trajectory-container-tools_)
 - [Overview and Core concept](README.md#trajectory-container-tools-documentation)
     - ↳ [Direct Instantiation](./direct_instantiation.md#trajectory-container-tools---direct-instantiation-guide)
+    - ↳ [Post-Processing Callbacks Guide](./post_processing_callbacks.md#post-processing-callbacks-in-tct)
     - ↳ [ROS Bag Usage](./rosbag_usage.md#ros-bag-to-tct--usage-guide)
     - ↳ [Pandas DataFrame Usage](./dataframe_usage.md#dataframe-to-tct-usage-guide)
 - Interactive Jupyter notebook examples:

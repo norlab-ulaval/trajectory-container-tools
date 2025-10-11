@@ -2,13 +2,12 @@
 import datetime
 from dataclasses import dataclass
 from typing import Tuple
-
 import numpy as np
 import pytest
 
 from trajectory_container_tools import (
     AbstractMultifeatureDataclass,
-    )
+)
 from trajectory_container_tools.dataclasses import RosStampedDataclass
 from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
 from trajectory_container_tools.temporal.timestamps import Timestamps
@@ -54,24 +53,29 @@ class TestAbstractMultifeatureDataclass:
         assert mf_container.topic_mock_1.feature_name == "Mock topic 1"
         assert mf_container.topic_mock_2.feature_name == "Mock topic 2"
 
-    def test_string_representation(self, setup_mock_topic_container):
+    @pytest.mark.parametrize(
+        argnames="t_bag_timestamps",
+        argvalues=[True, False],
+    )
+    def test_string_representation(self, setup_mock_topic_container, t_bag_timestamps):
         topic_mock_1, topic_mock_2 = setup_mock_topic_container
+
+        if t_bag_timestamps:
+            mock_bag_timestamps = Timestamps(stamps=np.arange(20) * 1e9)
+        else:
+            mock_bag_timestamps = None
 
         mf_container = MockMultifeatureDataclass(
             dataset_info="Mock",
             topic_mock_1=topic_mock_1,
             topic_mock_2=topic_mock_2,
-            bag_timestamps=None,
+            bag_timestamps=mock_bag_timestamps,
         )
 
         # Minimum logic to validate run success
         print(mf_container)
 
-        mf_container.summary
-
-    def test_case_no_bag_level_timestamps(
-        self, setup_mock_topic_container
-    ):
+    def test_case_no_bag_level_timestamps(self, setup_mock_topic_container):
         topic_mock_1, topic_mock_2 = setup_mock_topic_container
         mf_container = MockMultifeatureDataclass(
             dataset_info="Mock",
@@ -82,9 +86,7 @@ class TestAbstractMultifeatureDataclass:
 
         assert mf_container.bag_timestamps is None
 
-    def test_case_bag_level_timestamps(
-        self, setup_mock_topic_container
-    ):
+    def test_case_bag_level_timestamps(self, setup_mock_topic_container):
         topic_mock_1, topic_mock_2 = setup_mock_topic_container
 
         mock_bag_timestamps = Timestamps(stamps=np.arange(20) * 1e9)
@@ -98,9 +100,7 @@ class TestAbstractMultifeatureDataclass:
 
         assert isinstance(mf_container.bag_timestamps, Timestamps)
 
-    def test_topic_key_list(
-        self, setup_mock_topic_container
-    ):
+    def test_topic_key_list(self, setup_mock_topic_container):
         topic_mock_1, topic_mock_2 = setup_mock_topic_container
 
         mock_bag_timestamps = Timestamps(stamps=np.arange(20) * 1e9)
@@ -118,3 +118,4 @@ class TestAbstractMultifeatureDataclass:
         assert len(topic_key_list) == 2
         assert "topic_mock_1" in topic_key_list
         assert "topic_mock_2" in topic_key_list
+

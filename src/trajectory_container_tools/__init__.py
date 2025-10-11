@@ -10,19 +10,26 @@ A library for managing trajectory-related data with support for:
 - Visualization utilities
 
 Quick Start:
-    >>> import trajectory_container_tools as tct
-    >>>
-    >>> # Extract from ROS bag
-    >>> data = tct.extractor.from_rosbag(rosbag_path, features_config)
-    >>>
-    >>> # Extract from DataFrame
-    >>> data = tct.extractor.from_dataframe(df, features_config)
-    >>>
-    >>> # Access dataclasses
-    >>> odom_class = tct.dataclasses.ros_msgs.stamped_dataclass.NavMsgsOdometry
-    >>>
-    >>> # Utilities
-    >>> tct.extractor.check_bag_topics(rosbag_path)
+
+>>> import trajectory_container_tools as tct
+>>>
+>>> features_config = {
+>>>     '/odom': tct.dataclasses.NavMsgsOdometry,
+>>>     '/tf': tct.dataclasses.Tf2MsgsTFMessage,
+>>> }
+>>>
+>>> # Extract from ROS bag
+>>> data = tct.extractor.from_rosbag("/rosbag/path", features_config)
+>>>
+>>> # Extract from DataFrame
+>>> data = tct.extractor.from_dataframe(df, features_config)
+>>>
+>>> # Access dataclasses
+>>> odom_class = tct.dataclasses.ros_msgs.stamped_dataclass.NavMsgsOdometry
+>>>
+>>> # Utilities
+>>> tct.extractor.check_bag_topics(rosbag_path)
+
 """
 
 # Version info
@@ -32,8 +39,13 @@ from .version import __version__
 # Core abstract classes
 from .dataclasses.core.abstract_trajectory_dataclass import (
     AbstractTrajectoryDataclass,
-    AbstractMultifeatureDataclass,
+)
+from .dataclasses.core.abstract_no_trajectory_dataclass import (
     AbstractNoTrajectoryDataclass,
+)
+from .dataclasses.core.abstract_multifeature_dataclass import (
+    AbstractMultifeatureDataclass,
+    AbstractMultifeatureStampedDataclass,
 )
 from .dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
@@ -58,15 +70,14 @@ from . import utils
 __all__ = [
     # Version
     "__version__",
-
     # Core classes
     "AbstractTrajectoryDataclass",
     "AbstractMultifeatureDataclass",
+    "AbstractMultifeatureStampedDataclass",
     "AbstractNoTrajectoryDataclass",
     "BaseTrajectoryDataclass",
     "NestedBaseTrajectoryDataclass",
     "BaseNoTrajectoryDataclass",
-
     # Namespaces
     "dataclasses",
     "extractor",
@@ -75,10 +86,8 @@ __all__ = [
     "temporal",
     "typing",
     "utils",
-
     # Container level check
     "containers_timestep_alignment_sanity_check",
-
     # Common exceptions
     "TimestampCausalOrderingError",
 ]

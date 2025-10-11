@@ -52,20 +52,18 @@ print((
         f"Available dimensions: {trajectory.get_dimension_names()}\n"
 ), trajectory)
 ```
-```terminaloutput
+```text
 Created trajectory with 50 timesteps
 Available dimensions: ('x', 'y', 'timestamps')
-
-          Simple2DTrajectory(
-             feature_name: 2D coordinate
-             trajectory_len: 50
-             transposed: False
-             dimensions:
-                timesteps_indices: (ndarray) shape (50,) range 0 ⟶ 49
-                x: (ndarray) shape (50,) range -0.9998286683840896 ⟶ 0.9991927284190055
-                y: (ndarray) shape (50,) range -0.9997651572585272 ⟶ 1.0
-                timestamps: (ndarray) shape (50,) range 0.0 ⟶ 4.9
-          )
+ 
+Simple2DTrajectory(
+   feature_name: "2D coordinate"
+   trajectory_len: 50
+   transposed: False
+   x: (ndarray) shape (50,) range -0.9998286683840896 ←→ 0.9991927284190055
+   y: (ndarray) shape (50,) range -0.9997651572585272 ←→ 1.0
+   timestamps: (ndarray) shape (50,) range 0.0 ←→ 4.9
+)
 ```
 
 ### Nested Trajectory Container Structure
@@ -96,25 +94,23 @@ sin_cos_trajectory_object = ComplexTrajectory(feature_name="mock",
 
 print(sin_cos_trajectory_object)
 ```
-```terminaloutput
-         ComplexTrajectory(
-            feature_name: mock
-            trajectory_len: 50
-            transposed: False
-            dimensions:
-               timesteps_indices: (ndarray) shape (50,) range 0 ⟶ 49
-               timestamps: (ndarray) shape (50,) range 0.0 ⟶ 4.9
-               position:          
-                   CustomPoseContainer(
-                         x: (ndarray) shape (50,) range -0.9998286683840896 ⟶ 0.9991927284190055
-                         y: (ndarray) shape (50,) range -0.9997651572585272 ⟶ 1.0
-                   )
-               velocity:          
-                   Vector2D(
-                         x: (ndarray) shape (50,) range 1.0 ⟶ 1.0
-                         y: (ndarray) shape (50,) range 1.0 ⟶ 1.0
-                   )
-         )
+```text
+ComplexTrajectory(
+   feature_name: "mock"
+   trajectory_len: 50
+   transposed: False
+   timestamps: (ndarray) shape (50,) range 0.0 ←→ 4.9
+   position:      
+      CustomPoseContainer(
+         x: (ndarray) shape (50,) range -0.9998286683840896 ←→ 0.9991927284190055
+         y: (ndarray) shape (50,) range -0.9997651572585272 ←→ 1.0
+      )
+   velocity:      
+      Vector2D(
+         x: (ndarray) shape (50,) range 1.0 ←→ 1.0
+         y: (ndarray) shape (50,) range 1.0 ←→ 1.0
+      )
+)
 ```
 
 ## 2. Factory-Based Creation
@@ -145,20 +141,17 @@ factory_generated_trajectory = DynamicTrajectory(
         )
 
 print(factory_generated_trajectory)
-
 ```
-```terminaloutput
-         DynamicTrajectory(
-            feature_name: Factory-made-mock-trajectory
-            trajectory_len: 100
-            transposed: False
-            dimensions:
-               timesteps_indices: (ndarray) shape (100,) range 0 ⟶ 99
-               x: (ndarray) shape (100,) range -2.668217448357629 ⟶ 1.7040474539547208
-               y: (ndarray) shape (100,) range -2.899056595784132 ⟶ 2.1778232004028846
-               velocity: (ndarray) shape (100,) range -2.988045089298118 ⟶ 2.3266689826139912
-               acceleration: (ndarray) shape (100,) range -3.268652367137654 ⟶ 3.207941836262994
-         )
+```text
+DynamicTrajectory(
+   feature_name: "Factory-made-mock-trajectory"
+   trajectory_len: 100
+   transposed: False
+   x: (ndarray) shape (100,) range -2.8067159942539015 ←→ 2.018059742950711
+   y: (ndarray) shape (100,) range -3.5676843050150926 ←→ 2.0816464902167486
+   velocity: (ndarray) shape (100,) range -4.021012195862169 ←→ 2.298877879591126
+   acceleration: (ndarray) shape (100,) range -2.4792498489875174 ←→ 2.636162133054269
+)
 ```
 
 ## 3. Data Access and Manipulation
@@ -196,7 +189,7 @@ for i, point in enumerate(trajectory):
         break
     print(f"Point {i}: x={point.x:.3f}, y={point.y:.3f}")
 ```
-```terminaloutput
+```text
 First 5 trajectory points:
 Point 0: x=0.000, y=1.000
 Point 1: x=0.102, y=0.995
@@ -244,24 +237,22 @@ print(f"Trajectory length: {len(batch_trajectory)}")
 
 print(batch_trajectory)
 ```
-```terminaloutput
+```text
 Batch trajectory shape: (3, 20)
 Number of trajectories: 3
 Timesteps per trajectory: 20
 Trajectory length: 20
 
-          Simple2DCoordinateTrajectory(
-             feature_name: batch 2d coordinate
-             trajectory_len: 20
-             batch: True
-             transposed: False
-             dimensions:
-                timesteps_indices: (ndarray) shape (20,) range 0 ⟶ 19
-                x: (ndarray) shape (3, 20) range -2.4020509174861138 ⟶ 2.5615769128477175
-                frame: (ndarray) shape (3, 20, 10) range -2.6836947874667425 ⟶ 2.771730818854544
-                y: (ndarray) shape (3, 20) range -2.8252275991392053 ⟶ 1.779143195513082
-                timestamps: (ndarray) shape (3, 20) range 0.0 ⟶ 1.9000000000000001
-          )
+Simple2DCoordinateTrajectory(
+   feature_name: "batch 2d coordinate"
+   trajectory_len: 20
+   batch: True
+   transposed: False
+   x: (ndarray) shape (3, 20) range -2.5113839987831215 ←→ 1.681015962925701
+   frame: (ndarray) shape (3, 20, 10) range -2.73686385455718 ←→ 3.420971060958493
+   y: (ndarray) shape (3, 20) range -1.8188956133014138 ←→ 2.0797921599919524
+   timestamps: (ndarray) shape (3, 20) range 0.0 ←→ 1.9000000000000001
+)
 ```
 
 
@@ -307,7 +298,7 @@ except ValueError as e:
     print(f"Expected error caught: {type(e).__name__}")
     print(e)
 ```
-```terminaloutput
+```text
 Valid trajectory created successfully!
 Trajectory length: 5
 
@@ -338,6 +329,128 @@ Expected error caught: ValueError
 - `create_dataclass()`: Creates dataclass types from specifications
 - `parse_feature_spec()`: Parses feature specifications for dataclass generation
 
+## 7. Working with Timestamps
+
+TCT provides enhanced timestamp utilities through the `Timestamps` class for managing and querying temporal data:
+
+### Creating Timestamps
+
+```python
+import numpy as np
+import trajectory_container_tools as tct
+
+# Create timestamps in nanoseconds (ROS2 format)
+stamps_ns = np.array([
+    1695601812731601521,
+    1695601812751577171,
+    1695601812771552821,
+    1695601812791528471,
+    1695601812811504121
+])
+
+timestamps = tct.temporal.Timestamps(stamps_ns)
+print(timestamps)
+```
+
+### Timestamp Indexing and Slicing
+
+```python
+# Index access
+first_stamp = timestamps[0]
+last_stamp = timestamps[-1]
+
+# Slice timestamps
+first_three = timestamps[0:3]
+print(f"First three timestamps: {first_three}")
+
+# Get length
+print(f"Number of timestamps: {len(timestamps)}")
+```
+
+### Finding Nearest Timestamps
+
+```python
+# Find nearest timestamp to a query time
+query_time = 1695601812741589346
+
+# Get nearest future timestamp (default)
+nearest_future = timestamps.get_nearest_stamp(query_time, future=True)
+print(f"Nearest future stamp: {nearest_future}")
+
+# Get nearest past timestamp
+nearest_past = timestamps.get_nearest_stamp(query_time, future=False)
+print(f"Nearest past stamp: {nearest_past}")
+
+# Convenience methods
+nearest_future = timestamps.get_nearest_futur_stamp(query_time)
+nearest_past = timestamps.get_nearest_past_stamp(query_time)
+```
+
+### Timestamp Queries and Validation
+
+```python
+# Check if timestamp exists
+query_stamp = 1695601812751577171
+if query_stamp in timestamps:
+    print(f"Timestamp {query_stamp} exists in the dataset")
+
+# Get indices for specific timestamps
+query_stamps = [1695601812731601521, 1695601812771552821]
+indices = timestamps.get_indexes(query_stamps)
+print(f"Indices for query timestamps: {indices}")
+
+# Validate timestamp ordering (causal consistency check)
+try:
+    timestamps.causal_ordering_sanity_check(show_offending_in_nanoseconds=True)
+    print("Timestamps are causally ordered (monotonically increasing)")
+except tct.TimestampCausalOrderingError as e:
+    print(f"Timestamp ordering error: {e}")
+```
+
+### Time Conversion Utilities
+
+```python
+# Convert nanoseconds to seconds
+seconds = tct.temporal.to_seconds(stamps_ns)
+print(f"Timestamps in seconds: {seconds}")
+
+# Convert to seconds and nanoseconds components
+secs, nsecs = tct.temporal.to_seconds_nanoseconds(stamps_ns)
+print(f"Seconds: {secs}, Nanoseconds: {nsecs}")
+
+# Compute delta timestamps (time differences)
+delta_stamps = tct.temporal.compute_delta_timestamp(stamps_ns)
+print(f"Time deltas: {delta_stamps}")
+```
+
+### Practical Example: Synchronizing Data Sources
+
+```python
+# Synchronize data from two sensors with different sampling rates
+sensor_a_timestamps = tct.temporal.Timestamps(np.array([100, 120, 140, 160, 180]))
+sensor_b_timestamps = tct.temporal.Timestamps(np.array([105, 125, 145, 165, 185]))
+
+# Find matching timestamps from sensor B for each sensor A timestamp
+synchronized_indices = []
+for stamp_a in sensor_a_timestamps.stamps:
+    # Find nearest past timestamp in sensor B
+    nearest_b = sensor_b_timestamps.get_nearest_past_stamp(stamp_a)
+    idx_b = sensor_b_timestamps.get_indexes([nearest_b])[0]
+    synchronized_indices.append(idx_b)
+
+print(f"Synchronized indices: {synchronized_indices}")
+```
+
+### Key Timestamp Features
+
+- **Indexing & Slicing**: Full numpy-like indexing support
+- **Nearest Neighbor Search**: Find closest timestamps (past/future) for data synchronization
+- **Membership Testing**: Check if specific timestamps exist using `in` operator
+- **Index Retrieval**: Get array indices for timestamp values
+- **Causal Ordering Validation**: Ensure timestamps are monotonically increasing
+- **Time Conversions**: Convert between nanoseconds, seconds, and (seconds, nanoseconds) pairs
+- **Delta Computation**: Calculate time differences between consecutive timestamps
+
 ## Usage Recommendations
 
 1. **Start Simple**: Begin with `BaseTrajectoryDataclass` for basic use cases
@@ -354,6 +467,7 @@ documentation files in this directory.
 ## Documentation
 - [Landing page](../README.md#_trajectory-container-tools_)
 - [Overview and Core concept](README.md#trajectory-container-tools-documentation)
+    - ↳ [Post-Processing Callbacks Guide](./post_processing_callbacks.md#post-processing-callbacks-in-tct) 
   - ↳ [DataFrame To TCT Usage Guide](dataframe_usage.md) - Convert pandas DataFrames to trajectory containers
   - ↳ [ROS To TCT Bag Usage Guide](rosbag_usage.md) - Learn to extract trajectory data from ROS bags
 - Interactive Jupyter notebook examples:

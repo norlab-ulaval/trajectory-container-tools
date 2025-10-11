@@ -525,6 +525,7 @@ def debug_dataframe_conversion(df, features_config):
 ## Documentation
 - [Landing page](../README.md#_trajectory-container-tools_)
 - [Overview and Core concept](README.md#trajectory-container-tools-documentation)
+  - ↳ [Post-Processing Callbacks Guide](./post_processing_callbacks.md#post-processing-callbacks-in-tct) 
   - ↳ [TCT Direct Instantiation Guide](direct_instantiation.md) - Create trajectory containers directly
   - ↳ [ROS To TCT Bag Usage Guide](rosbag_usage.md) - Learn to extract trajectory data from ROS bags
 - Interactive Jupyter notebook examples:

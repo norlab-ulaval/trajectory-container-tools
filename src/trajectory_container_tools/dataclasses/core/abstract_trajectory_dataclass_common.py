@@ -1,0 +1,222 @@
+# coding=utf-8
+import abc
+from dataclasses import dataclass, fields
+from typing import Any, List, Tuple
+
+import numpy as np
+
+from trajectory_container_tools.utils.general import (
+    check_typing_list_and_extract_list_type,
+    check_typing_union_and_extract_first_union_type,
+)
+
+
+@dataclass()
+class AbstractTrajectoryDataclassCommon(abc.ABC):
+    """
+    Provides an abstract base dataclass for dynamically interacting with and managing object
+    attributes, including dynamic fields creation and nested attribute retrieval.
+
+    This class serves as a foundation for implementing objects that must support
+    dynamically added fields, as well as hierarchical retrieval of nested attributes. It is
+    an abstract base class (ABC) and requires implementation of the `__post_init__` method
+    in subclasses.
+
+    """
+
+    @abc.abstractmethod
+    def __post_init__(self):
+        pass
+
+    @classmethod
+    def _dataclass_internal_field(cls) -> List[str]:
+        """
+        List of field marked as internal. Those are field name that will be omited by
+        `get_dimension_names` class method.
+
+        This method is intended to return a predefined list of attribute names that are
+        specific to the internal logic of a data class. These fields often represent
+        key information required for specialized operations or manipulations within
+        the class. The method should be used internally and not be exposed for
+        general use.
+
+        :return: A list containing the names of internal fields used in the data class.
+        """
+        return []
+
+    @classmethod
+    def non_trajectory_field(cls) -> List[str]:
+        """
+        List fields that are declared as trajectory wide metadata i.e. not per timestep.
+        Usefulll for skipping field of type ndarray that are not trajectory timestep information.
+
+        This method provides a default implementation for specifying the fields
+        that should be excluded from certain processes such as `__post_init__`, transpose `T` and
+        `ravel_dimensions_in_place`.
+
+        Usage:
+
+        >>> @dataclass()
+        >>> class TestMotionTrajectoryDataclass(TestTrajectoryDataclass):
+        >>>     initiale_pose: np.ndarray
+        >>>
+        >>>     @classmethod
+        >>>     def non_trajectory_field(cls) -> List[str]:
+        >>>         return super().non_trajectory_field() + ["initiale_pose"]
+
+        :return: A list of string names corresponding to the fields skipped.
+        """
+        return []
+
+    def get_dynamic_field(self, feature_name: str) -> Any:
+        """Retrieves the value of a dynamicaly declared attribute from the object.
+
+        :param feature_name: The name of the attribute to retrieve.
+        :return: The value of the requested attribute.
+        """
+        # ToDo: TCT-65 feat: unify dynamic_field getter setter with fetch_nested_attribute method
+        return self.__getattribute__(feature_name)
+
+    def set_dynamic_field(self, feature_name: str, value: Any) -> None:
+        """Updates or creates a dynamic attribute on an object.
+
+        :param feature_name: The name of the attribute to update or create.
+        :param value: The value to assign to the attribute.
+        :return: None
+        """
+        # ToDo: TCT-65 feat: unify dynamic_field getter setter with fetch_nested_attribute method
+        self.__setattr__(feature_name, value)
+        return None
+
+    def fetch_nested_attribute(self, nested_attribute_path: str) -> Any:
+        """Retrieves a nested attribute from an object based on a dot-separated string.
+
+        This function allows accessing nested attributes of an object dynamically, based on a
+        string representation of the attribute's hierarchical structure.
+        It takes a dot-separated attribute name, traverses the object's nested levels
+        sequentially, and retrieves the final attribute
+        e.g., "topic_odom.pose.pose.position.x" would sequentialy crawl into nested container
+        "topic_odom" -> "pose" -> "pose" -> "position" -> "x".
+
+        Example:
+
+            >>> position_x_value = self.fetch_nested_attribute("topic_odom.pose.pose.position.x")
+
+        :param nested_attribute_path: A dot-separated string representing the hierarchical
+          structure of the attribute to retrieve.
+        :return: The value of the resolved nested attribute.
+        """
+        # ToDo: TCT-65 feat: unify dynamic_field getter setter with fetch_nested_attribute method
+        nested_attribute = self
+        for each in nested_attribute_path.split("."):
+            nested_attribute = nested_attribute.get_dynamic_field(each)
+        return nested_attribute
+
+    def on_begin_post_init_callback(self) -> None:
+        """Overide this methode to execute custom computation on feature dataclass at the begining
+         of `__post_init__` method execution.
+        Note: The method scope include all field.
+
+        Example:
+
+        >>> @dataclass
+        >>> class StatePose2DSteadyState(StatePose2D):
+        >>>
+        >>>     def on_begin_post_init_callback(self):
+        >>>         feature = self.get_dynamic_field("<feature-name>")
+        >>>         self.set_dynamic_field(f"<other-feature>", np.cumsum(feature))
+        >>>         return None
+
+        """
+        pass
+
+    def post_init_feature_callback(self, feature_name: str) -> None:
+        """Overide this methode to execute feature aware custom computation.
+        Usefull for post-processing dynamicaly declare field.
+
+        Note:
+            - Will be executed once for each feature.
+            - The method scope does not include field marked by `_dataclass_internal_field`
+              and `non_trajectory_field`.
+
+        Example:
+
+        >>> steady_state_mask = dataset_snow['steady_state_mask'].to_numpy() == True
+        >>>
+        >>> @dataclass
+        >>> class StatePose2DSteadyState(StatePose2D):
+        >>>
+        >>>     def post_init_feature_callback(self, feature_name):
+        >>>         # Example for creating an explicit timestep t=0 property named "<feature_name>_init"
+        >>>         feature = self.get_dynamic_field(feature_name)
+        >>>         if isinstance(feature, np.ndarray):
+        >>>             if self.batch:
+        >>>                 # Case batch data
+        >>>                 feature_ini = feature[:, 0, ...]
+        >>>             else:
+        >>>                 # Case time-serie data
+        >>>                 feature_ini = feature[0, ...]
+        >>>             self.set_dynamic_field(f"{feature_name}_init", feature_ini)
+        >>>         return None
+
+        """
+        pass
+
+    def on_exit_post_init_callback(self) -> None:
+        """Overide this methode to execute custom computation on feature dataclass at the end
+         of `__post_init__` method execution.
+        Note: The method scope include all field.
+
+        Example:
+            >>> @dataclass
+            >>> class StatePose2DSteadyState(StatePose2D):
+            >>>
+            >>>     def on_exit_post_init_callback(self):
+            >>>         feature = self.get_dynamic_field("<feature-name>")
+            >>>         assert len(feature) > 0
+            >>>         return None
+
+        """
+        pass
+
+    @classmethod
+    def get_dimension_type(cls, dimension_name: str) -> Tuple[type[Any], bool]:
+        """
+        Get the type and whether it is a list for a given dimension name.
+
+        The method inspects the class fields, determining the type of the field associated with the provided dimension name. It identifies whether the type is a list or a union, returning the underlying type if applicable.
+
+        :param dimension_name: The name of the dimension to query.
+        :return: A tuple containing the type of the dimension and a boolean indicating if the dimension is a list.
+        """
+        container_properties = fields(cls)
+        dimension_type = None
+        is_list_of_type = False
+        for each_field in container_properties:
+            if each_field.name is dimension_name:
+                is_list_of_type, dimension_type = (
+                    check_typing_list_and_extract_list_type(each_field.type)
+                )
+                if not is_list_of_type:
+                    is_union, dimension_type = (
+                        check_typing_union_and_extract_first_union_type(each_field.type)
+                    )
+        return dimension_type, is_list_of_type
+
+    @classmethod
+    def get_dimension_names(cls) -> Tuple[str, ...]:
+        """
+        Provides the dimension names of the data class fields that are exposed to user.
+
+        This method retrieves the field names from the data class that are not marked
+        as internal fields. It returns these names as a tuple of strings, making it
+        useful for querying the explicitly defined data attributes of the class.
+
+        :return: A tuple containing the names of non-internal fields defined in the class.
+        """
+        container_properties = fields(cls)
+        field_name = []
+        for each_field in container_properties:
+            if each_field.name not in cls._dataclass_internal_field():
+                field_name.append(each_field.name)
+        return tuple(field_name)

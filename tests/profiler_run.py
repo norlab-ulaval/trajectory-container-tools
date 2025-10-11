@@ -2,9 +2,7 @@
 import os
 from typing import Union
 
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
-    AbstractMultifeatureDataclass,
-)
+from trajectory_container_tools import AbstractMultifeatureDataclass
 from trajectory_container_tools.utils.optimization import detect_docker_cpu_limits
 from trajectory_container_tools.extractor.rosbag_to_tct import (
     check_bag_topics,
@@ -82,11 +80,9 @@ def profiler_run():
     }
     # "/robot_description",
 
-    container = from_rosbag(
-        rosbag_path,
-        dataset_info=f"Robot: f110_race_car, Track: grand_salon, Run: {BAG}",
-        features_config=features_config_1,
-    )
+    container = from_rosbag(rosbag_path,
+                            dataset_info=f"Robot: f110_race_car, Track: grand_salon, Run: {BAG}",
+                            features_config=features_config_1)
 
     # Minimum logic to validate run success
     print(container)

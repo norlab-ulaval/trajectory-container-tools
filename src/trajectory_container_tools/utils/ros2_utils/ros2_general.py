@@ -43,3 +43,5 @@ def get_rosbag_typestore_auto_distro() -> Typestore:
     return typestore
 
 
+def convert_rosbag_topic_key_to_tct_mf_topic_key(feature_name: str) -> str:
+    return f"topic{feature_name.replace('/', '_')}"

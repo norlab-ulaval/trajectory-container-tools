@@ -9,9 +9,11 @@ This module provides ROS-related functionality including:
 - Type store management
 
 Usage:
-    >>> import trajectory_container_tools as tct
-    >>> tct.ros.check_bag_topics(rosbag_path)
-    >>> tct.ros.register_non_native_msgs()
+
+>>> import trajectory_container_tools as tct
+>>> tct.ros.check_bag_topics(rosbag_path)
+>>> tct.ros.register_non_native_msgs()
+
 """
 
 # ROS utilities
@@ -30,10 +32,12 @@ from .utils.ros2_utils.ros2_timestamps import (
     rosbag_topic_time_to_ros_time,
 )
 from .utils.ros2_utils.filtered_rosbag_creator import create_filtered_rosbag
+from .utils.ros2_utils.rosbag_eda.rosbag_timestamp_eda import run_rosbag_timestamp_eda
 
 __all__ = [
     # Ros2 utilities
     "create_filtered_rosbag",
+    "run_rosbag_timestamp_eda",
     "register_non_native_msgs",
     "check_bag_topics",
     "get_ros2_distro",
