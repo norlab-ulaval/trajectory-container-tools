@@ -122,23 +122,39 @@ rosbag_path = Path("experiments/robot_nav_2024_01_15.db3").parent
 
 # Configure multiple ROS topics
 features_config = {
-        # Navigation data
-        '/odometry':          tct.dataclasses.NavMsgsOdometry,
-        '/ground_truth_pose': ('GroundTruth', 'pose_pose_position_x', 'pose_pose_position_y',
-                               'pose_pose_orientation_z'),
-
-        # Control data  
-        '/velocity_commands': ('VelCmd', 'linear_x', 'linear_y', 'angular_z'),
-
-        # Sensor data
-        '/imu_readings':      ('IMUData', 'linear_acceleration_x', 'linear_acceleration_y', 'angular_velocity_z'),
-        '/lidar_features':    ('LidarFeatures', 'ranges[0]', 'ranges[90]', 'ranges[180]', 'ranges[270]')
-        }
+    # Navigation data
+    "/odometry": tct.dataclasses.NavMsgsOdometry,
+    "/ground_truth_pose": (
+        "GroundTruth",
+        "pose_pose_position_x",
+        "pose_pose_position_y",
+        "pose_pose_orientation_z",
+    ),
+    # Control data
+    "/velocity_commands": ("VelCmd", "linear_x", "linear_y", "angular_z"),
+    # Sensor data
+    "/imu_readings": (
+        "IMUData",
+        "linear_acceleration_x",
+        "linear_acceleration_y",
+        "angular_velocity_z",
+    ),
+    "/lidar_features": (
+        "LidarFeatures",
+        "ranges[0]",
+        "ranges[90]",
+        "ranges[180]",
+        "ranges[270]",
+    ),
+}
 
 # Extract trajectory data
-robot_data = tct.extractor.from_rosbag(rosbag_path=rosbag_path,
-                                       dataset_info="Outdoor navigation experiment - 2024-01-15",
-                                       features_config=features_config)
+robot_data = tct.extractor.from_rosbag(
+    rosbag_path=rosbag_path,
+    dataset_info="Outdoor navigation experiment - 2024-01-15",
+    features_config=features_config,
+    chunk_on="/velocity_commands",
+)
 
 # Access extracted data
 print(f"Odometry data shape: {robot_data.topic_odometry.x.shape}")
@@ -149,14 +165,20 @@ print(f"IMU data shape: {robot_data.topic_imu_readings.linear_acceleration_x.sha
 import matplotlib.pyplot as plt
 
 plt.figure(figsize=(10, 6))
-plt.plot(robot_data.topic_odometry.x, robot_data.odometry.y, 'b-', label='Odometry')
-plt.plot(robot_data.topic_ground_truth_pose.x, robot_data.topic_ground_truth_pose.y, 'r--', label='Ground Truth')
-plt.xlabel('X Position (m)')
-plt.ylabel('Y Position (m)')
+plt.plot(robot_data.topic_odometry.x, robot_data.odometry.y, "b-", label="Odometry")
+plt.plot(
+    robot_data.topic_ground_truth_pose.x,
+    robot_data.topic_ground_truth_pose.y,
+    "r--",
+    label="Ground Truth",
+)
+plt.xlabel("X Position (m)")
+plt.ylabel("Y Position (m)")
 plt.legend()
-plt.title('Robot Trajectory Comparison')
-plt.axis('equal')
+plt.title("Robot Trajectory Comparison")
+plt.axis("equal")
 plt.show()
+
 ```
 
 ### Example 2: Single Topic Extraction
@@ -190,12 +212,17 @@ angular_vel = tc_odom.topic_odom.twist.angular
 import trajectory_container_tools as tct
 
 # Extract only a portion of the rosbag
-partial_data = tct.extractor.from_rosbag(rosbag_path=rosbag_path, dataset_info="Partial trajectory - middle section",
-                                         features_config={
-                                                 '/odometry': tct.dataclasses.NavMsgsOdometry
-                                                 }, start=1000, stop=5000)
+partial_data = tct.extractor.from_rosbag(
+    rosbag_path=rosbag_path,
+    dataset_info="Partial trajectory - middle section",
+    features_config={"/odometry": tct.dataclasses.NavMsgsOdometry},
+    chunk_on="/odometry",
+    start=1000,
+    stop=5000,
+)
 
 print(f"Partial trajectory length: {partial_data.topic_odometry.trajectory_len}")
+
 ```
 
 ### 4. Chunk-Based Iteration with AbstractMultifeatureStampedDataclass
@@ -275,17 +302,22 @@ uint32 timestamp
 typestore = tct.ros.get_rosbag_typestore_auto_distro()
 
 typestore.register(
-        get_types_from_msg(custom_msg_def, 'custom_msgs/msg/TrajectoryPoint')
-        )
+    get_types_from_msg(custom_msg_def, "custom_msgs/msg/TrajectoryPoint")
+)
 
 typestore = tct.ros.register_non_native_msgs(typestore)
 
-tc_with_custom_type = tct.extractor.from_rosbag(rosbag_path=rosbag_path, dataset_info="Trajectory with custom type",
-                                                features_config={
-                                                        'trajectory_points': ('TrajectoryPoint', 'x', 'y', 'theta',
-                                                                              'velocity'),
-                                                        '/odometry':         tct.dataclasses.NavMsgsOdometry,
-                                                        }, typestore=typestore)
+tc_with_custom_type = tct.extractor.from_rosbag(
+    rosbag_path=rosbag_path,
+    dataset_info="Trajectory with custom type",
+    features_config={
+        "trajectory_points": ("TrajectoryPoint", "x", "y", "theta", "velocity"),
+        "/odometry": tct.dataclasses.NavMsgsOdometry,
+    },
+    chunk_on="/odometry",
+    typestore=typestore,
+)
+
 ```
 
 ### Custom Dataclass for Complex Messages
@@ -293,6 +325,7 @@ tc_with_custom_type = tct.extractor.from_rosbag(rosbag_path=rosbag_path, dataset
 ```python
 from dataclasses import dataclass
 import numpy as np
+import trajectory_container_tools as tct
 from trajectory_container_tools.dataclasses import RosStampedDataclass
 
 
@@ -315,10 +348,13 @@ class CustomRobotState(RosStampedDataclass):
 
 
 # Use custom dataclass
-tc_with_custom_type = tct.extractor.from_rosbag(rosbag_path=rosbag_path,
-                                                dataset_info="Trajectory with custom dataclass", features_config={
-            'robot_state': CustomRobotState
-            })
+tc_with_custom_type = tct.extractor.from_rosbag(
+    rosbag_path=rosbag_path,
+    dataset_info="Trajectory with custom dataclass",
+    features_config={"/robot_state": CustomRobotState},
+    chunk_on="/robot_state"
+)
+
 ```
 
 
@@ -380,6 +416,7 @@ if msg_type == "geometry_msgs/msg/PoseStamped":
 ## Documentation
 - [Landing page](../README.md#_trajectory-container-tools_)
 - [Overview and Core concept](README.md#trajectory-container-tools-documentation)
+  -  ↳ [Post-Processing Callbacks Guide](./post_processing_callbacks.md#post-processing-callbacks-in-tct) 
   - ↳ **[DataFrame To TCT Usage Guide](dataframe_usage.md)** - Convert pandas DataFrames to trajectory containers
   - ↳ **[TCT Direct Instantiation Guide](direct_instantiation.md)** - Create trajectory containers directly
 - Interactive Jupyter notebook examples:

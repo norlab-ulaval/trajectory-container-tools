@@ -14,6 +14,7 @@ Welcome to the comprehensive documentation for **Trajectory Container Tools (TCT
     * [🔧 TCT Direct Instantiation Guide](#-tct-direct-instantiation-guide)
     * [📊 DataFrame To TCT Usage Guide](#-dataframe-to-tct-usage-guide)
     * [🤖 ROS Bag To TCT  Usage Guide](#-ros-bag-to-tct--usage-guide-)
+    * [🔄 Post-Processing Callbacks Guide](#-post-processing-callbacks-guide)
   * [Core Concepts](#core-concepts)
     * [Trajectory Containers](#trajectory-containers)
     * [Factory Pattern](#factory-pattern)
@@ -133,6 +134,14 @@ Comprehensive guide for extracting trajectory data from ROS bags:
 - Message type handling
 - Timestamp management
 
+### 🔄 [Post-Processing Callbacks Guide](post_processing_callbacks.md)
+Detailed guide for customizing trajectory data processing at instantiation:
+- Three callback methods: `on_begin_post_init_callback`, `post_init_feature_callback`, `on_exit_post_init_callback`
+- Dynamic field creation and manipulation
+- Advanced examples and common patterns
+- Integration with extractors (ROS bags, DataFrames)
+- Best practices and use cases
+
 
 ---
 
@@ -233,6 +242,7 @@ Create trajectory containers directly from data arrays:
 - [Landing page](../README.md#_trajectory-container-tools_)
 - [Overview and Core concept](README.md#trajectory-container-tools-documentation)
     - ↳ [Direct Instantiation](./direct_instantiation.md#trajectory-container-tools---direct-instantiation-guide)
+    - ↳ [Post-Processing Callbacks Guide](./post_processing_callbacks.md#post-processing-callbacks-in-tct)
     - ↳ [ROS Bag Usage](./rosbag_usage.md#ros-bag-to-tct--usage-guide)
     - ↳ [Pandas DataFrame Usage](./dataframe_usage.md#dataframe-to-tct-usage-guide)
 - Interactive Jupyter notebook examples:

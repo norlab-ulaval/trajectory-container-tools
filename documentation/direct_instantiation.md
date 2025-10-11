@@ -55,17 +55,15 @@ print((
 ```text
 Created trajectory with 50 timesteps
 Available dimensions: ('x', 'y', 'timestamps')
-
-          Simple2DTrajectory(
-             feature_name: 2D coordinate
-             trajectory_len: 50
-             transposed: False
-             dimensions:
-                timesteps_indices: (ndarray) shape (50,) range 0 ←→ 49
-                x: (ndarray) shape (50,) range -0.9998286683840896 ←→ 0.9991927284190055
-                y: (ndarray) shape (50,) range -0.9997651572585272 ←→ 1.0
-                timestamps: (ndarray) shape (50,) range 0.0 ←→ 4.9
-          )
+ 
+Simple2DTrajectory(
+   feature_name: "2D coordinate"
+   trajectory_len: 50
+   transposed: False
+   x: (ndarray) shape (50,) range -0.9998286683840896 ←→ 0.9991927284190055
+   y: (ndarray) shape (50,) range -0.9997651572585272 ←→ 1.0
+   timestamps: (ndarray) shape (50,) range 0.0 ←→ 4.9
+)
 ```
 
 ### Nested Trajectory Container Structure
@@ -97,24 +95,22 @@ sin_cos_trajectory_object = ComplexTrajectory(feature_name="mock",
 print(sin_cos_trajectory_object)
 ```
 ```text
-         ComplexTrajectory(
-            feature_name: mock
-            trajectory_len: 50
-            transposed: False
-            dimensions:
-               timesteps_indices: (ndarray) shape (50,) range 0 ←→ 49
-               timestamps: (ndarray) shape (50,) range 0.0 ←→ 4.9
-               position:          
-                   CustomPoseContainer(
-                         x: (ndarray) shape (50,) range -0.9998286683840896 ←→ 0.9991927284190055
-                         y: (ndarray) shape (50,) range -0.9997651572585272 ←→ 1.0
-                   )
-               velocity:          
-                   Vector2D(
-                         x: (ndarray) shape (50,) range 1.0 ←→ 1.0
-                         y: (ndarray) shape (50,) range 1.0 ←→ 1.0
-                   )
-         )
+ComplexTrajectory(
+   feature_name: "mock"
+   trajectory_len: 50
+   transposed: False
+   timestamps: (ndarray) shape (50,) range 0.0 ←→ 4.9
+   position:      
+      CustomPoseContainer(
+         x: (ndarray) shape (50,) range -0.9998286683840896 ←→ 0.9991927284190055
+         y: (ndarray) shape (50,) range -0.9997651572585272 ←→ 1.0
+      )
+   velocity:      
+      Vector2D(
+         x: (ndarray) shape (50,) range 1.0 ←→ 1.0
+         y: (ndarray) shape (50,) range 1.0 ←→ 1.0
+      )
+)
 ```
 
 ## 2. Factory-Based Creation
@@ -145,20 +141,17 @@ factory_generated_trajectory = DynamicTrajectory(
         )
 
 print(factory_generated_trajectory)
-
 ```
 ```text
-         DynamicTrajectory(
-            feature_name: Factory-made-mock-trajectory
-            trajectory_len: 100
-            transposed: False
-            dimensions:
-               timesteps_indices: (ndarray) shape (100,) range 0 ←→ 99
-               x: (ndarray) shape (100,) range -2.668217448357629 ←→ 1.7040474539547208
-               y: (ndarray) shape (100,) range -2.899056595784132 ←→ 2.1778232004028846
-               velocity: (ndarray) shape (100,) range -2.988045089298118 ←→ 2.3266689826139912
-               acceleration: (ndarray) shape (100,) range -3.268652367137654 ←→ 3.207941836262994
-         )
+DynamicTrajectory(
+   feature_name: "Factory-made-mock-trajectory"
+   trajectory_len: 100
+   transposed: False
+   x: (ndarray) shape (100,) range -2.8067159942539015 ←→ 2.018059742950711
+   y: (ndarray) shape (100,) range -3.5676843050150926 ←→ 2.0816464902167486
+   velocity: (ndarray) shape (100,) range -4.021012195862169 ←→ 2.298877879591126
+   acceleration: (ndarray) shape (100,) range -2.4792498489875174 ←→ 2.636162133054269
+)
 ```
 
 ## 3. Data Access and Manipulation
@@ -250,18 +243,16 @@ Number of trajectories: 3
 Timesteps per trajectory: 20
 Trajectory length: 20
 
-          Simple2DCoordinateTrajectory(
-             feature_name: batch 2d coordinate
-             trajectory_len: 20
-             batch: True
-             transposed: False
-             dimensions:
-                timesteps_indices: (ndarray) shape (20,) range 0 ←→ 19
-                x: (ndarray) shape (3, 20) range -2.4020509174861138 ←→ 2.5615769128477175
-                frame: (ndarray) shape (3, 20, 10) range -2.6836947874667425 ←→ 2.771730818854544
-                y: (ndarray) shape (3, 20) range -2.8252275991392053 ←→ 1.779143195513082
-                timestamps: (ndarray) shape (3, 20) range 0.0 ←→ 1.9000000000000001
-          )
+Simple2DCoordinateTrajectory(
+   feature_name: "batch 2d coordinate"
+   trajectory_len: 20
+   batch: True
+   transposed: False
+   x: (ndarray) shape (3, 20) range -2.5113839987831215 ←→ 1.681015962925701
+   frame: (ndarray) shape (3, 20, 10) range -2.73686385455718 ←→ 3.420971060958493
+   y: (ndarray) shape (3, 20) range -1.8188956133014138 ←→ 2.0797921599919524
+   timestamps: (ndarray) shape (3, 20) range 0.0 ←→ 1.9000000000000001
+)
 ```
 
 
@@ -476,6 +467,7 @@ documentation files in this directory.
 ## Documentation
 - [Landing page](../README.md#_trajectory-container-tools_)
 - [Overview and Core concept](README.md#trajectory-container-tools-documentation)
+    - ↳ [Post-Processing Callbacks Guide](./post_processing_callbacks.md#post-processing-callbacks-in-tct) 
   - ↳ [DataFrame To TCT Usage Guide](dataframe_usage.md) - Convert pandas DataFrames to trajectory containers
   - ↳ [ROS To TCT Bag Usage Guide](rosbag_usage.md) - Learn to extract trajectory data from ROS bags
 - Interactive Jupyter notebook examples:

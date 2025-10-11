@@ -164,6 +164,17 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
     chunk_on: str = field(default="topic_teleop", kw_only=True)
     _iter_index: int = field(default=0, init=False)
 
+    def __post_init__(self):
+        chunk_on_is_default = self.chunk_on == "topic_teleop"
+        if len(self.topic_key_list) == 1 and self.chunk_on not in self.topic_key_list and chunk_on_is_default:
+            self.chunk_on = self.topic_key_list[0]
+        elif self.chunk_on not in self.topic_key_list:
+            raise ValueError(f"chunk_on={self.chunk_on} is not in "
+                             f"topic_key_list={self.topic_key_list}. "
+                             f"Please set chunk_on to a valide feature.")
+
+        super().__post_init__()
+
     @classmethod
     def _dataclass_internal_field(cls) -> List[str]:
         return super()._dataclass_internal_field() + ["_iter_index"]
