@@ -78,9 +78,9 @@ class TestTimestampsCore:
 
         with pytest.raises(TimestampCausalOrderingError) as exc_info:
             assert Timestamps(stamps=mock_ts_array).causal_ordering_sanity_check() == [
-                    5,
-                    9,
-                    ]
+                5,
+                9,
+            ]
 
     def test_seconds_nanoseconds(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
@@ -88,6 +88,7 @@ class TestTimestampsCore:
 
         # Case individual key
         assert ts.seconds_nanoseconds(0) == to_seconds_nanoseconds(mock_ts_array[0])
+
 
 class TestTimestampsIterableMethods:
 
@@ -150,6 +151,7 @@ class TestTimestampsIterableMethods:
         assert t_timestamp_in in ts
         assert t_timestamp_not_in not in ts
 
+
 class TestTimestampsGetIndexesMethod:
     def test_get_indexes_case_input_single_stamp(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
@@ -184,16 +186,22 @@ class TestTimestampsGetIndexesMethod:
         t_timestamp_not_in = 1711038330290158992
         assert ts.get_indexes(t_timestamp_not_in) is None
 
-class TestTimestampsGetNearestMethods:
-    def test_get_nearest_futur_stamp_case_input_stamp_exist(self, setup_mock_timestamps):
+
+class TestTimestampsGetNearestMethodsPastAndFutur:
+    def test_get_nearest_futur_stamp_case_input_stamp_exist(
+        self, setup_mock_timestamps
+    ):
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)
         assert ts.get_nearest_futur_stamp(mock_ts_array[0]) == mock_ts_array[1]
 
-    def test_get_nearest_futur_stamp_case_input_stamp_not_exist(self, setup_mock_timestamps):
+    # .... Get nearest futur stamp ................................................................
+    def test_get_nearest_futur_stamp_case_input_stamp_not_exist(
+        self, setup_mock_timestamps
+    ):
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)
-        t_timestamp_in = 1711038330346603696 # the one at index 0
+        t_timestamp_in = 1711038330346603696  # the one at index 0
         t_timestamp_not_in = t_timestamp_in + 300
 
         # sanity check
@@ -204,10 +212,12 @@ class TestTimestampsGetNearestMethods:
 
         assert ts.get_nearest_futur_stamp(t_timestamp_not_in) == mock_ts_array[1]
 
-    def test_get_nearest_futur_stamp_case_input_stamp_out_of_bound(self, setup_mock_timestamps):
+    def test_get_nearest_futur_stamp_case_input_stamp_out_of_bound(
+        self, setup_mock_timestamps
+    ):
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)
-        t_timestamp_in = 1711038330436485488 # the one at index -1
+        t_timestamp_in = 1711038330436485488  # the one at index -1
         t_timestamp_not_in = t_timestamp_in + 300
 
         # sanity check
@@ -215,14 +225,23 @@ class TestTimestampsGetNearestMethods:
         assert not np.all(t_timestamp_not_in == mock_ts_array)
         assert mock_ts_array[-1] < t_timestamp_not_in
 
-        assert ts.get_nearest_futur_stamp(t_timestamp_not_in) is None
+        with pytest.raises(IndexError) as exc_info:
+            ts.get_nearest_futur_stamp(t_timestamp_not_in)
 
+        print(f"{exc_info=}")
+        assert exc_info.value.args == (
+            f"timestamp={t_timestamp_not_in} as no nearest futur candidat stamp in Timestamps object",
+        )
+
+    # .... Get nearest past stamp .................................................................
     def test_get_nearest_past_stamp_case_input_stamp_exist(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)
-        assert ts.get_nearest_past_stamp(mock_ts_array[1]) == mock_ts_array[0]
+        assert ts.get_nearest_past_stamp(int(mock_ts_array[1])) == mock_ts_array[0]
 
-    def test_get_nearest_past_stamp_case_input_stamp_not_exist(self, setup_mock_timestamps):
+    def test_get_nearest_past_stamp_case_input_stamp_not_exist(
+        self, setup_mock_timestamps
+    ):
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)
         t_timestamp_in = 1711038330346603696  # the one at index 0
@@ -236,7 +255,9 @@ class TestTimestampsGetNearestMethods:
 
         assert ts.get_nearest_past_stamp(t_timestamp_not_in) == mock_ts_array[0]
 
-    def test_get_nearest_past_stamp_case_input_stamp_out_of_bound(self, setup_mock_timestamps):
+    def test_get_nearest_past_stamp_case_input_stamp_out_of_bound(
+        self, setup_mock_timestamps
+    ):
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)
         t_timestamp_in = 1711038330346603696  # the one at index 0
@@ -247,4 +268,54 @@ class TestTimestampsGetNearestMethods:
         assert not np.all(t_timestamp_not_in == mock_ts_array)
         assert t_timestamp_not_in < mock_ts_array[0]
 
-        assert ts.get_nearest_past_stamp(t_timestamp_not_in) is None
+        with pytest.raises(IndexError) as exc_info:
+            ts.get_nearest_past_stamp(t_timestamp_not_in)
+
+        print(f"{exc_info=}")
+        assert exc_info.value.args == (
+            f"timestamp={t_timestamp_not_in} as no nearest past candidat stamp in Timestamps object",
+        )
+
+
+@pytest.mark.parametrize(
+    argnames="t_future", argvalues=[True, False], ids=["future=True", "future=False"]
+)
+class TestTimestampsGetNearestMethods:
+
+    @pytest.mark.parametrize(
+        argnames="t_include",
+        argvalues=[True, False],
+        ids=["include=True", "include=False"],
+    )
+    def test_get_nearest_stamp_case_stamp_in_bound(
+        self, setup_mock_timestamps, t_include, t_future
+    ):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+
+        if t_include:
+            t_expected = mock_ts_array[1]
+        elif not t_future:
+            t_expected = mock_ts_array[0]
+        else:
+            t_expected = mock_ts_array[2]
+
+        assert (ts.get_nearest_stamp(int(mock_ts_array[1]), future=t_future, include=t_include) == t_expected)
+
+    def test_get_nearest_stamp_case_stamp_at_bound_limit(
+        self, setup_mock_timestamps, t_future
+    ):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+
+        if t_future:
+            t_idx_bound = -1
+        else:
+            t_idx_bound = 0
+
+        assert (
+            ts.get_nearest_stamp(int(mock_ts_array[t_idx_bound]), future=t_future, include=True)
+            == mock_ts_array[t_idx_bound]
+        )
+        with pytest.raises(IndexError) as exc_info:
+            ts.get_nearest_stamp(int(mock_ts_array[t_idx_bound]), future=t_future, include=False)

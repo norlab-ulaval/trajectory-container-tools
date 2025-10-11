@@ -20,6 +20,7 @@ Usage:
 from trajectory_container_tools.dataclasses.core import (
     AbstractTrajectoryDataclass,
     AbstractMultifeatureDataclass,
+    AbstractMultifeatureStampedDataclass,
     AbstractNoTrajectoryDataclass,
     BaseTrajectoryDataclass,
     NestedBaseTrajectoryDataclass,
@@ -82,6 +83,7 @@ __all__ = [
     # Abstract classes
     "AbstractTrajectoryDataclass",
     "AbstractMultifeatureDataclass",
+    "AbstractMultifeatureStampedDataclass",
     "AbstractNoTrajectoryDataclass",
     # Base classes
     "BaseTrajectoryDataclass",

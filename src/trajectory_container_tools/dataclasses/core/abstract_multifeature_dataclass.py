@@ -1,5 +1,6 @@
 # coding=utf-8
 import datetime
+import time
 from copy import deepcopy
 
 from deprecated import deprecated
@@ -16,8 +17,12 @@ from ..ros_msgs.core_dataclass import (
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass_common import (
     AbstractTrajectoryDataclassCommon,
 )
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import AbstractTrajectoryDataclass
-from trajectory_container_tools.dataclasses.core.abstract_no_trajectory_dataclass import AbstractNoTrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
+    AbstractTrajectoryDataclass,
+)
+from trajectory_container_tools.dataclasses.core.abstract_no_trajectory_dataclass import (
+    AbstractNoTrajectoryDataclass,
+)
 from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.utils import extract_class_name_from_instance
 
@@ -48,7 +53,25 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
         return super()._dataclass_internal_field() + ["_aggregated_date"]
 
     def __post_init__(self):
+        # .... Pre-condition ......................................................................
+        if not self.get_dimension_names():
+            raise TypeError(
+                f"[TCT error] {self.__class__.__name__} is an abstract baseclass, "
+                f"it must be subclassed in order to be instanciated."
+            )
+
+        # .... Base class post init logic .........................................................
         self._aggregated_date = datetime.datetime.now()
+
+        # .... Callback logic .....................................................................
+        self.on_begin_post_init_callback()
+
+        for each_name in self.get_dimension_names():
+            self.post_init_feature_callback(feature_name=each_name)
+
+        self.on_exit_post_init_callback()
+
+        return None
 
     @property
     def aggregated_date(self):
@@ -75,7 +98,7 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
             elif k in ["bag_timestamps"] and self.bag_timestamps is None:
                 pass
             elif isinstance(v, (np.ndarray, Timestamps)):
-                if isinstance(v, Timestamps):
+                if k == "bag_timestamps" and isinstance(v, Timestamps):
                     indent_v = []
                     for each_line in str(v).splitlines():
                         indent_v.append(f"{out_sp}{in_sp}{nested_sp} {each_line}\n")
@@ -87,7 +110,9 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
                         f"{out_sp}{in_sp}{k}: ({extract_class_name_from_instance(v)}) "
                         f"shape {v.shape} {range_str}\n"
                     )
-            elif isinstance(v, (AbstractTrajectoryDataclass, AbstractNoTrajectoryDataclass)):
+            elif isinstance(
+                v, (AbstractTrajectoryDataclass, AbstractNoTrajectoryDataclass)
+            ):
                 indent_v = []
                 for each_line in str(v).splitlines():
                     indent_v.append(f"{out_sp}{in_sp}{nested_sp}{each_line}\n")
@@ -157,55 +182,46 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
         repr_str += f"{m_space}chunks_total: {self.chunks_total}\n"
         return repr_str
 
-    def __getitem__(self, chunk_idx):
+    def __getitem__(self, chunk_idx: Union[int, slice]):
         mf_dataclass_at_t = deepcopy(self)
 
-        chunk_on_topic = self.fetch_nested_attribute(self.chunk_on)
+        chunk_on_attribute = self.fetch_nested_attribute(self.chunk_on)
         if isinstance(chunk_idx, slice):
-            chunck_on_timestamp = chunk_on_topic.header.timestamps[
+            chunck_on_timestamp = chunk_on_attribute.header.timestamps[
+                # chunk_idx.stop
                 chunk_idx.stop - 1
             ].stamps
         else:
-            chunck_on_timestamp = chunk_on_topic.header.timestamps[chunk_idx].stamps
+            chunck_on_timestamp = chunk_on_attribute.header.timestamps[chunk_idx].stamps
 
+        each_attribute: Union[
+            RosStampedDataclass, NestedRosStampedDataclass, RosDataclass
+        ]
         for each_topic in self.topic_key_list:
-            each_attribute: Union[
-                RosStampedDataclass, NestedRosStampedDataclass, RosDataclass
-            ] = self.fetch_nested_attribute(each_topic)
+            each_attribute = self.fetch_nested_attribute(each_topic)
 
             if each_topic is self.chunk_on:
                 each_attribute = each_attribute[chunk_idx]
-            elif isinstance(each_attribute, RosDataclass):
-                raise NotImplementedError(
-                    "ToDo: implement support for non-trajectry dataclass (Ref task TCT-64)"
+            elif isinstance(each_attribute, AbstractNoTrajectoryDataclass):
+                registred_trj_object_list_name = (
+                    each_attribute.registred_trajectory_object_list
                 )
-            else:
-                if isinstance(chunk_idx, slice):
-                    if chunk_idx.start == 0:
-                        each_start = each_attribute.header.timestamps[0].stamps
-                        startpoint = True
-                    else:
-                        each_start = chunk_on_topic.header.timestamps[
-                            chunk_idx.start - 1
-                        ].stamps
-                        startpoint = True
-
+                if registred_trj_object_list_name is not None:
+                    trj_container_list_object = []
+                    for idx, each in enumerate(each_attribute):
+                        each = _get_attribute_timestamps(
+                            chunck_on_timestamp, chunk_idx, chunk_on_attribute, each
+                        )
+                        trj_container_list_object.append(each)
+                    each_attribute.__setattr__(
+                        registred_trj_object_list_name, trj_container_list_object
+                    )
                 else:
-                    if chunk_idx == 0:
-                        each_start = each_attribute.header.timestamps[0].stamps
-                        startpoint = True
-                    else:
-                        each_start = chunk_on_topic.header.timestamps[
-                            chunk_idx - 1
-                        ].stamps
-                        startpoint = True
-
-                endpoint = False
-                each_attribute = each_attribute.get_timestamps(
-                    start=each_start,
-                    stop=chunck_on_timestamp,
-                    startpoint=startpoint,
-                    endpoint=endpoint,
+                    # Note: set attribute as is
+                    pass
+            else:
+                each_attribute = _get_attribute_timestamps(
+                    chunck_on_timestamp, chunk_idx, chunk_on_attribute, each_attribute
                 )
 
             mf_dataclass_at_t.__setattr__(each_topic, each_attribute)
@@ -223,3 +239,30 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
             return item
         else:
             raise StopIteration
+
+
+def _get_attribute_timestamps(
+    chunck_on_timestamp: int,
+    chunk_idx: Union[int, slice],
+    chunk_on_topic: RosStampedDataclass,
+    each_attribute: RosStampedDataclass | NestedRosStampedDataclass,
+) -> RosStampedDataclass | NestedRosStampedDataclass | RosDataclass:
+    if isinstance(chunk_idx, slice):
+        chunk_idx = chunk_idx.start
+
+    if chunk_idx == 0:
+        each_start_timestamp = each_attribute.header.timestamps[0].stamps
+        startpoint = True
+    else:
+        # Fetch the previous `chunck_on_timestamp` value
+        each_start_timestamp = chunk_on_topic.header.timestamps[chunk_idx - 1].stamps
+        startpoint = True
+
+    endpoint = False
+    each_attribute = each_attribute.get_timestamps(
+        start=each_start_timestamp,
+        stop=chunck_on_timestamp,
+        startpoint=startpoint,
+        endpoint=endpoint,
+    )
+    return each_attribute

@@ -3,6 +3,8 @@ import abc
 from dataclasses import dataclass, fields
 from typing import Any, List, Tuple
 
+import numpy as np
+
 from trajectory_container_tools.utils.general import (
     check_typing_list_and_extract_list_type,
     check_typing_union_and_extract_first_union_type,
@@ -22,6 +24,10 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
 
     """
 
+    @abc.abstractmethod
+    def __post_init__(self):
+        pass
+
     @classmethod
     def _dataclass_internal_field(cls) -> List[str]:
         """
@@ -35,6 +41,30 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
         general use.
 
         :return: A list containing the names of internal fields used in the data class.
+        """
+        return []
+
+    @classmethod
+    def non_trajectory_field(cls) -> List[str]:
+        """
+        List fields that are declared as trajectory wide metadata i.e. not per timestep.
+        Usefulll for skipping field of type ndarray that are not trajectory timestep information.
+
+        This method provides a default implementation for specifying the fields
+        that should be excluded from certain processes such as `__post_init__`, transpose `T` and
+        `ravel_dimensions_in_place`.
+
+        Usage:
+
+        >>> @dataclass()
+        >>> class TestMotionTrajectoryDataclass(TestTrajectoryDataclass):
+        >>>     initiale_pose: np.ndarray
+        >>>
+        >>>     @classmethod
+        >>>     def non_trajectory_field(cls) -> List[str]:
+        >>>         return super().non_trajectory_field() + ["initiale_pose"]
+
+        :return: A list of string names corresponding to the fields skipped.
         """
         return []
 
@@ -82,8 +112,71 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
             nested_attribute = nested_attribute.get_dynamic_field(each)
         return nested_attribute
 
-    @abc.abstractmethod
-    def __post_init__(self):
+    def on_begin_post_init_callback(self) -> None:
+        """Overide this methode to execute custom computation on feature dataclass at the begining
+         of `__post_init__` method execution.
+        Note: The method scope include all field.
+
+        Example:
+
+        >>> @dataclass
+        >>> class StatePose2DSteadyState(StatePose2D):
+        >>>
+        >>>     def on_begin_post_init_callback(self):
+        >>>         feature = self.get_dynamic_field("<feature-name>")
+        >>>         self.set_dynamic_field(f"<other-feature>", np.cumsum(feature))
+        >>>         return None
+
+        """
+        pass
+
+    def post_init_feature_callback(self, feature_name: str) -> None:
+        """Overide this methode to execute feature aware custom computation.
+        Usefull for post-processing dynamicaly declare field.
+
+        Note:
+            - Will be executed once for each feature.
+            - The method scope does not include field marked by `_dataclass_internal_field`
+              and `non_trajectory_field`.
+
+        Example:
+
+        >>> steady_state_mask = dataset_snow['steady_state_mask'].to_numpy() == True
+        >>>
+        >>> @dataclass
+        >>> class StatePose2DSteadyState(StatePose2D):
+        >>>
+        >>>     def post_init_feature_callback(self, feature_name):
+        >>>         # Example for creating an explicit timestep t=0 property named "<feature_name>_init"
+        >>>         feature = self.get_dynamic_field(feature_name)
+        >>>         if isinstance(feature, np.ndarray):
+        >>>             if self.batch:
+        >>>                 # Case batch data
+        >>>                 feature_ini = feature[:, 0, ...]
+        >>>             else:
+        >>>                 # Case time-serie data
+        >>>                 feature_ini = feature[0, ...]
+        >>>             self.set_dynamic_field(f"{feature_name}_init", feature_ini)
+        >>>         return None
+
+        """
+        pass
+
+    def on_exit_post_init_callback(self) -> None:
+        """Overide this methode to execute custom computation on feature dataclass at the end
+         of `__post_init__` method execution.
+        Note: The method scope include all field.
+
+        Example:
+            >>> @dataclass
+            >>> class StatePose2DSteadyState(StatePose2D):
+            >>>
+            >>>     def on_exit_post_init_callback(self):
+            >>>         feature = self.get_dynamic_field("<feature-name>")
+            >>>         assert len(feature) > 0
+            >>>         return None
+
+        """
         pass
 
     @classmethod

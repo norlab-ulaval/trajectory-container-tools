@@ -215,6 +215,7 @@ class TestMainNamespaceAPI:
         core_classes = [
             "AbstractTrajectoryDataclass",
             "AbstractMultifeatureDataclass",
+            "AbstractMultifeatureStampedDataclass",
             "AbstractNoTrajectoryDataclass",
             "BaseTrajectoryDataclass",
             "NestedBaseTrajectoryDataclass",
@@ -254,6 +255,7 @@ class TestDataclassesNamespace:
         abstract_classes = [
             "AbstractTrajectoryDataclass",
             "AbstractMultifeatureDataclass",
+            "AbstractMultifeatureStampedDataclass",
             "AbstractNoTrajectoryDataclass",
         ]
 

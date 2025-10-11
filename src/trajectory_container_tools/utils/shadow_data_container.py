@@ -119,7 +119,6 @@ def post_process_shadown_data_container(
         progressbar = setup_progressbar(len(list(shadow_data_container.items())))
 
     for k, v in shadow_data_container.items():
-        # if shadow_data_container["feature_name"]:
 
         if isinstance(v, list):
             for idx, each in enumerate(v):
@@ -134,7 +133,7 @@ def post_process_shadown_data_container(
                     del ppsdc["type"]
                 shadow_data_container[k][idx] = target_type(**ppsdc)
         elif not issubclass(data_container_type, BaseNoTrajectoryDataclass) and (
-            k in data_container_type.trajectory_metadata_field()
+            k in data_container_type.non_trajectory_field()
             or k in data_container_type._dataclass_internal_field()
         ):
             pass

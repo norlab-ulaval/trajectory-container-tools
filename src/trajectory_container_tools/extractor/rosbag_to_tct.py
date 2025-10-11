@@ -205,7 +205,7 @@ def extract_rosbag_feature(
 
     Usage:
 
-    >>> from trajectory_container_tools.dataclasses.rosbag_feature_dataclass import NavMsgsOdometry
+    >>> from trajectory_container_tools.dataclasses import NavMsgsOdometry
     >>>
     >>> extract_rosbag_feature(
     >>>     rosbag_path=Path("</path/to/rosbag>"),

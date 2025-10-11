@@ -2,9 +2,14 @@
 import pytest
 
 from trajectory_container_tools.dataclasses import Header, Tf2MsgsTFMessage
-from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import TransformStamped
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Quaternion, \
-    Transform, Vector3
+from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import (
+    TransformStamped,
+)
+from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import (
+    Quaternion,
+    Transform,
+    Vector3,
+)
 
 
 def test_Tf2MsgsTFMessage_init(mock_ROSbag_2_trj_DC):
@@ -35,6 +40,7 @@ def test_Tf2MsgsTFMessage_init(mock_ROSbag_2_trj_DC):
         ],
     )
     print(dc_)
+    assert dc_.registred_trajectory_object_list == "transforms"
     assert isinstance(dc_.transforms[0].header, Header)
     assert isinstance(dc_.transforms[1].header, Header)
     assert dc_.transforms[0].header.timestamps.stamps == pytest.approx(

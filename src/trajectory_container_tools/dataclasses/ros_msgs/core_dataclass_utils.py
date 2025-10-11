@@ -22,30 +22,37 @@ def get_timestamps_slice(
     :param timestamps: Timestamps object to retrieve nearest time indices.
     :param start: The starting timestamp from which to slice.
     :param stop: Optional stopping timestamp up to which to slice.
-    :param startpoint: Boolean indicating whether to include the start boundary.
-    :param endpoint: Boolean indicating whether to include the stop boundary.
+    :param startpoint: Indicating whether to include the start boundary.
+    :param endpoint: Indicating whether to include the stop boundary.
     :return: A slice object representing the calculated index range.
     """
-    nearest_stamp = timestamps.get_nearest_stamp(start, future=True, include=True)
-    nearest_idx = timestamps.get_indexes(nearest_stamp)
+    try:
+        nearest_stamp = timestamps.get_nearest_stamp(start, future=True, include=True)
+        nearest_idx = timestamps.get_indexes(nearest_stamp) + int(not startpoint)
+    except IndexError as e:
+        nearest_idx = len(timestamps) - 1
 
     if stop is None:
-        timestamps_slice = slice(
-            nearest_idx + int(not startpoint), nearest_idx + int(startpoint)
-        )
+        endpoint_idx = nearest_idx + int(startpoint)
     else:
-        next_nearest_stamp = timestamps.get_nearest_stamp(
-            stop, future=True, include=True
-        )
-        if _is_the_last_value_in_timestamps_array(next_nearest_stamp):
-            timestamps_slice = slice(nearest_idx + int(not startpoint), len(timestamps))
-        else:
-            next_nearest_idx = timestamps.get_indexes(next_nearest_stamp)
-            timestamps_slice = slice(
-                nearest_idx + int(not startpoint), next_nearest_idx + int(endpoint)
+        try:
+            next_nearest_stamp = timestamps.get_nearest_stamp(
+                stop, future=True, include=True
             )
+
+            next_nearest_idx = timestamps.get_indexes(next_nearest_stamp)
+
+            if not nearest_idx < next_nearest_idx:
+                next_nearest_idx += 1
+
+            endpoint_idx = next_nearest_idx + int(endpoint)
+
+            if not endpoint_idx <= len(timestamps):
+                endpoint_idx = len(timestamps)
+
+        except IndexError as e:
+            endpoint_idx = len(timestamps)
+
+    assert nearest_idx < endpoint_idx, f"{nearest_idx} !< {endpoint_idx}"
+    timestamps_slice = slice(nearest_idx, endpoint_idx)
     return timestamps_slice
-
-
-def _is_the_last_value_in_timestamps_array(next_nearest_stamp: int | None) -> bool:
-    return next_nearest_stamp is None

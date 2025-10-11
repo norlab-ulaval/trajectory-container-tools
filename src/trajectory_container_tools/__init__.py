@@ -45,6 +45,7 @@ from .dataclasses.core.abstract_no_trajectory_dataclass import (
 )
 from .dataclasses.core.abstract_multifeature_dataclass import (
     AbstractMultifeatureDataclass,
+    AbstractMultifeatureStampedDataclass,
 )
 from .dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
@@ -72,6 +73,7 @@ __all__ = [
     # Core classes
     "AbstractTrajectoryDataclass",
     "AbstractMultifeatureDataclass",
+    "AbstractMultifeatureStampedDataclass",
     "AbstractNoTrajectoryDataclass",
     "BaseTrajectoryDataclass",
     "NestedBaseTrajectoryDataclass",

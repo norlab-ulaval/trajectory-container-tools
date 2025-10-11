@@ -59,97 +59,6 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
             "batch",
         ]
 
-    @classmethod
-    def trajectory_metadata_field(cls) -> List[str]:
-        """
-        List fields that are declared as trajectory wide metadata i.e. not per timestep.
-        Usefulll for skipping field of type ndarray that are not trajectory timestep information.
-
-        This method provides a default implementation for specifying the fields
-        that should be excluded from certain processes such as `__post_init__`, transpose `T` and
-        `ravel_dimensions_in_place`.
-
-        Usage:
-
-        >>> @dataclass()
-        >>> class TestMotionTrajectoryDataclass(TestTrajectoryDataclass):
-        >>>     initiale_pose: np.ndarray
-        >>>
-        >>>     @classmethod
-        >>>     def trajectory_metadata_field(cls) -> List[str]:
-        >>>         return super().trajectory_metadata_field() + ["initiale_pose"]
-
-        :return: A list of string names corresponding to the fields skipped.
-        """
-        return []
-
-    def on_begin_post_init_callback(self) -> None:
-        """Overide this methode to execute custom computation on feature dataclass at the begining
-         of `__post_init__` method execution.
-        Note: The method scope include all field.
-
-        Example:
-
-        >>> @dataclass
-        >>> class StatePose2DSteadyState(StatePose2D):
-        >>>
-        >>>     def on_begin_post_init_callback(self):
-        >>>         feature = self.get_dynamic_field("<feature-name>")
-        >>>         self.set_dynamic_field(f"<other-feature>", np.cumsum(feature))
-        >>>         return None
-
-        """
-        pass
-
-    def post_init_feature_callback(self, feature_name: str) -> None:
-        """Overide this methode to execute feature aware custom computation.
-        Usefull for post-processing dynamicaly declare field.
-
-        Note:
-            - Will be executed once for each feature.
-            - The method scope does not include field marked by `_dataclass_internal_field`
-              and `trajectory_metadata_field`.
-
-        Example:
-
-        >>> steady_state_mask = dataset_snow['steady_state_mask'].to_numpy() == True
-        >>>
-        >>> @dataclass
-        >>> class StatePose2DSteadyState(StatePose2D):
-        >>>
-        >>>     def post_init_feature_callback(self, feature_name):
-        >>>         # Example for creating an explicit timestep t=0 property named "<feature_name>_init"
-        >>>         feature = self.get_dynamic_field(feature_name)
-        >>>         if isinstance(feature, np.ndarray):
-        >>>             if self.batch:
-        >>>                 # Case batch data
-        >>>                 feature_ini = feature[:, 0, ...]
-        >>>             else:
-        >>>                 # Case time-serie data
-        >>>                 feature_ini = feature[0, ...]
-        >>>             self.set_dynamic_field(f"{feature_name}_init", feature_ini)
-        >>>         return None
-
-        """
-        pass
-
-    def on_exit_post_init_callback(self) -> None:
-        """Overide this methode to execute custom computation on feature dataclass at the end
-         of `__post_init__` method execution.
-        Note: The method scope include all field.
-
-        Example:
-            >>> @dataclass
-            >>> class StatePose2DSteadyState(StatePose2D):
-            >>>
-            >>>     def on_exit_post_init_callback(self):
-            >>>         feature = self.get_dynamic_field("<feature-name>")
-            >>>         assert len(feature) > 0
-            >>>         return None
-
-        """
-        pass
-
     @property
     def _time_axis(self) -> int:
         """
@@ -182,7 +91,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         :return: This method does not return a value and performs all operations in-place.
         """
         for each_data_property in self.get_dimension_names():
-            if each_data_property in self.trajectory_metadata_field():
+            if each_data_property in self.non_trajectory_field():
                 pass
             else:
                 attribute_ = self.__getattribute__(each_data_property)
@@ -195,16 +104,16 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         return None
 
     def __post_init__(self):
-        self.on_begin_post_init_callback()
-
         if not self.get_dimension_names():
             raise TypeError(
                 f"[TCT error] AbstractTrajectoryDataclass is an abstract baseclass, "
                 f"it must be subclassed in order to be instanciated."
             )
 
+        self.on_begin_post_init_callback()
+
         for each_name in self.get_dimension_names():
-            if each_name in self.trajectory_metadata_field():
+            if each_name in self.non_trajectory_field():
                 pass
             else:
                 self.post_init_feature_callback(feature_name=each_name)
@@ -279,7 +188,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
         v = self.__dict__.get("feature_name")
         if v is not None:
-            repr_str += f"{out_sp}{in_sp}feature_name: \"{v}\"\n"
+            repr_str += f'{out_sp}{in_sp}feature_name: "{v}"\n'
 
         if not self._nested:
             repr_str += f"{out_sp}{in_sp}trajectory_len: {self.trajectory_len}\n"
@@ -315,7 +224,9 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 indent_v = "".join(indent_v)
                 repr_str += f"{out_sp}{in_sp}{k}:{indent_v}"
             else:
-                repr_str += f"{out_sp}{in_sp}{k}: ({extract_class_name_from_instance(v)}) {v}\n"
+                repr_str += (
+                    f"{out_sp}{in_sp}{k}: ({extract_class_name_from_instance(v)}) {v}\n"
+                )
         repr_str += f"{out_sp})"
         return repr_str
 
@@ -336,7 +247,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
             "timesteps_indices", self.timesteps_indices[index]
         )
         for each_name in self.get_dimension_names():
-            if each_name in self.trajectory_metadata_field():
+            if each_name in self.non_trajectory_field():
                 pass
             else:
                 each_attribute = self.__getattribute__(each_name)
@@ -360,6 +271,8 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                         )
 
                     feature_dataclass_at_t.__setattr__(each_name, data_value)
+                else:
+                    feature_dataclass_at_t.__setattr__(each_name, each_attribute)
 
         return feature_dataclass_at_t
 
@@ -379,14 +292,14 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
     def T(self):
         """Flips the axes of the ndarray properties."""
         for each_name in self.get_dimension_names():
-            if each_name in self.trajectory_metadata_field():
+            if each_name in self.non_trajectory_field():
                 pass
             else:
                 data_property = self.__getattribute__(each_name)
 
                 if isinstance(data_property, (np.ndarray, AbstractTrajectoryDataclass)):
                     self.__setattr__(each_name, data_property.T)
-        # noinspection PyAttributeOutsideInit
+
         self._transposed = not self._transposed
         return self
 

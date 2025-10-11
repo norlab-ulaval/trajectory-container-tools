@@ -1,5 +1,5 @@
 # coding=utf-8
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .nested_dataclass import TransformStamped
 from .core_dataclass import RosDataclass
@@ -20,3 +20,8 @@ class Tf2MsgsTFMessage(RosDataclass):
     """
 
     transforms: list[TransformStamped]
+
+    @property
+    def registred_trajectory_object_list(self) -> str:
+        return 'transforms'
+

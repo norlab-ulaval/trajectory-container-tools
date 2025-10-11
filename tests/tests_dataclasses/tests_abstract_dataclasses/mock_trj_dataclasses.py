@@ -14,8 +14,8 @@ class MockTrajectoryChildDFcase(AbstractTrajectoryDataclass):
     dd_metadata: np.ndarray = np.array([0, 0, 0])
 
     @classmethod
-    def trajectory_metadata_field(cls):
-        return super().trajectory_metadata_field() + ["dd_metadata"]
+    def non_trajectory_field(cls):
+        return super().non_trajectory_field() + ["dd_metadata"]
 
     def on_begin_post_init_callback(self):
         feature = self.__getattribute__("dd_metadata")
@@ -48,8 +48,8 @@ class MockTrajectoryChildRosBagCase(AbstractTrajectoryDataclass):
     dd_metadata: np.ndarray = np.array([0, 0, 0])
 
     @classmethod
-    def trajectory_metadata_field(cls):
-        return super().trajectory_metadata_field() + ["dd_metadata"]
+    def non_trajectory_field(cls):
+        return super().non_trajectory_field() + ["dd_metadata"]
 
     def on_begin_post_init_callback(self):  # self.dd_metadata += 99
         feature = self.__getattribute__("dd_metadata")

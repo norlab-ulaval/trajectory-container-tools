@@ -19,6 +19,9 @@ class TestGetTimestampsSlice:
             timestamps=Timestamps(setup_mock_timestamps), start=t_start
         )
 
+        assert t_slice.start == t_start_idx
+        assert t_slice.stop == t_start_idx + 1
+
         assert setup_mock_timestamps[t_slice] == t_start
 
     def test_case_interval(self, setup_mock_timestamps):
@@ -30,6 +33,9 @@ class TestGetTimestampsSlice:
             start=(int(setup_mock_timestamps[t_start_idx])),
             stop=(int(setup_mock_timestamps[t_stop_idx])),
         )
+
+        assert t_slice.start == t_start_idx
+        assert t_slice.stop == t_stop_idx
 
         assert setup_mock_timestamps[t_slice][0] == int(
             setup_mock_timestamps[t_start_idx]
@@ -47,6 +53,29 @@ class TestGetTimestampsSlice:
             start=(int(setup_mock_timestamps[t_start_idx])),
             stop=(int(setup_mock_timestamps[t_start_idx] + 300)),
         )
+
+        assert t_slice.start == t_start_idx
+        assert t_slice.stop == len(setup_mock_timestamps)
+
+        assert setup_mock_timestamps[t_slice][0] == int(
+            setup_mock_timestamps[t_start_idx]
+        )
+        assert setup_mock_timestamps[t_slice][-1] == int(
+            setup_mock_timestamps[t_start_idx]
+        )
+        print(t_slice)
+
+    def test_case_stop_stamp_is_before_next_stamp(self, setup_mock_timestamps):
+
+        t_start_idx = 1
+        t_slice = get_timestamps_slice(
+            timestamps=Timestamps(setup_mock_timestamps),
+            start=(int(setup_mock_timestamps[t_start_idx])),
+            stop=(int(setup_mock_timestamps[t_start_idx] + 300)),
+        )
+
+        assert t_slice.start == 1
+        assert t_slice.stop == 2
 
         assert setup_mock_timestamps[t_slice][0] == int(
             setup_mock_timestamps[t_start_idx]
@@ -81,6 +110,9 @@ class TestGetTimestampsSlice:
         )
 
         print(t_slice)
+
+        assert t_slice.start == t_start_idx + int(not t_startpoint)
+        assert t_slice.stop == t_stop_idx + int(t_endpoint)
 
         assert np.array_equal(
             setup_mock_timestamps[t_slice],

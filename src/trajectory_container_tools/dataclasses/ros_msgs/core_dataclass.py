@@ -1,4 +1,5 @@
 # coding=utf-8
+import abc
 from dataclasses import dataclass
 from typing import Optional
 

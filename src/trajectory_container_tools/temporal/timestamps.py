@@ -61,6 +61,8 @@ class Timestamps:
 
     @property
     def shape(self) -> Tuple:
+        # ToDo: assess if its still relevant now that there two dimensions to timestamps
+        #   i.e., stamps and delta stamps
         return self._stamps.shape
 
     def __len__(self):
@@ -102,7 +104,10 @@ class Timestamps:
         :return: A boolean indicating whether any of the given timestamps exist within
             the stored set of stamps.
         """
-        mask = np.isin(self._stamps, timestamp, assume_unique=True)
+        assert isinstance(timestamp, (int, np.integer, list)) or isinstance(
+            timestamp[0], (int, np.integer)
+        )
+        mask = np.isin(timestamp, self._stamps, assume_unique=True)
         if isinstance(timestamp, (int, np.integer)):
             return np.any(mask)
         else:
@@ -136,16 +141,15 @@ class Timestamps:
             return None
 
         if isinstance(timestamps, np.ndarray):
-            mask = np.isin(self._stamps, timestamps, assume_unique=True)
+            mask = np.isin(timestamps, self._stamps, assume_unique=True)
             return np.squeeze(np.nonzero(mask)).tolist()
         else:
             mask = self._stamps == timestamps
             indice = int(np.squeeze(np.nonzero(mask)))
             return indice
 
-    # (NICE TO HAVE) ToDo: unit-test get_nearest_stamp (ref task TCT-52) Component are individualy tested for now.
     def get_nearest_stamp(
-        self, timestamp: int, future: bool = True, include: bool = False
+        self, timestamp: int, future: bool = True, include: bool = True
     ) -> int | None:
         """
         Finds the nearest available timestamp in the dataset based on the given criteria.
@@ -161,7 +165,6 @@ class Timestamps:
             it exists in 'Timestamps.stamps'. Defaults to False.
         :return: The nearest timestamp matching the criteria or None if no match is found.
         """
-
         if include and timestamp in self:
             return timestamp
 
@@ -170,33 +173,45 @@ class Timestamps:
         else:
             return self.get_nearest_past_stamp(timestamp)
 
-    def get_nearest_futur_stamp(self, timestamp: int) -> int | None:
+    def get_nearest_futur_stamp(self, timestamp: int) -> int:
         """
         Finds the nearest next timestamp greater than the given input timestamp.
 
         :param timestamp: The input timestamp to compare against.
         :return: The nearest next timestamp greater than the input, or None if no such
                  timestamp exists.
+        :raises IndexError: If timestamp as no next futur stamp candidate in stamps
         """
         assert isinstance(timestamp, (int, np.integer))
-        mask = timestamp < self._stamps
-        return self._nearest_stamp(mask)
+        try:
+            mask = timestamp < self._stamps
+            nearest_futur_stamp = self._nearest_stamp(mask)
+        except IndexError as e:
+            raise IndexError(
+                f"{timestamp=} as no nearest futur candidat stamp in Timestamps object"
+            )
+        return nearest_futur_stamp
 
-    def get_nearest_past_stamp(self, timestamp: int) -> int | None:
+    def get_nearest_past_stamp(self, timestamp: int) -> int:
         """
         Finds the nearest previous timestamp i.e., the one that is strictly less than the given one
 
         :param timestamp: The timestamp to compare against, given as an integer.
         :return: The nearest previous timestamp as an integer, or None if no such timestamp
             exists.
+        :raises IndexError: If timestamp as no next past stamp candidate in stamps
         """
         assert isinstance(timestamp, (int, np.integer))
-        mask = timestamp > self._stamps
-        return self._nearest_stamp(mask)
+        try:
+            mask = timestamp > self._stamps
+            nearest_past_stamp = self._nearest_stamp(mask)
+        except IndexError as e:
+            raise IndexError(
+                f"{timestamp=} as no nearest past candidat stamp in Timestamps object"
+            )
+        return nearest_past_stamp
 
-    def _nearest_stamp(
-        self, mask: bool | np.ndarray[Any, np.dtype[bool]]
-    ) -> int | None:
+    def _nearest_stamp(self, mask: bool | np.ndarray[Any, np.dtype[bool]]) -> int:
         nearest_index = np.squeeze(np.nonzero(mask))
 
         # Only pick the first
@@ -206,7 +221,7 @@ class Timestamps:
         if nearest_index.size > 0 and self._stamps.size > 0:
             return int(np.squeeze(self._stamps[nearest_index]))
         else:
-            return None
+            raise IndexError
 
     def __str__(self):
         out_sp = " " * 0
