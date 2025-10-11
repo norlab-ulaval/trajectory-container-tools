@@ -29,9 +29,32 @@ pyclean
 #   >>> [tool.setuptools_scm]
 #setuptools-scm
 
-# (CRITICAL) inprogress: NMO-802 fix: matplotlib double install conflict
-# (Priority) ToDo: on task NMO-802 end >> validate it's still required ↓↓
+# .................................................................................................
+# (☕minor) ToDo: on task NMO-802 end >> validate it's still required ↓↓
 # Note: Set DNA to build for Numpy 2 but let the pyproject.toml dependencies open so that we keep
 # support for Numpy 1
 #matplotlib >= 3.8.0  # These versions support NumPy 2.x
 #numpy >= 2.0.0
+
+# ....pytest related...............................................................................
+
+# https://pypi.org/project/pytest-dotenv/
+pytest-dotenv
+
+# https://pytest-xdist.readthedocs.io/en/stable/
+pytest-xdist
+
+# https://pytest-benchmark.readthedocs.io/en/latest/
+pytest-benchmark
+
+# https://github.com/Teemu/pytest-sugar
+pytest-sugar
+
+# https://github.com/pytest-dev/pytest-randomly
+pytest-randomly
+
+# https://pypi.org/project/pytest-env/
+pytest-env
+
+# https://pypi.org/project/pytest-deprecate/
+pytest-deprecate

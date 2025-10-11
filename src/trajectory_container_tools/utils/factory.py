@@ -44,9 +44,9 @@ def create_dataclass(
     >>>         )
     >>> the_new_cls = create_dataclass(specification=spec_)
     >>> assert issubclass(the_new_cls, BaseTrajectoryDataclass)
-    >>> # True
+    True
     >>> assert isinstance(the_new_cls, BaseTrajectoryDataclass)
-    >>> # False
+    False
 
     :param specification: A TrjDataClassFeatureSpecification object,
     :param trj_dataclass_subclass: a subclass of 'AbstractTrajectoryDataclass'

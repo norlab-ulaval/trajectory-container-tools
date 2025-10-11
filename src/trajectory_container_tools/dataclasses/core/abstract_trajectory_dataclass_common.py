@@ -4,6 +4,7 @@ from dataclasses import dataclass, fields
 from typing import Any, List, Tuple
 
 import numpy as np
+from deprecated import deprecated
 
 from trajectory_container_tools.utils.general import (
     check_typing_list_and_extract_list_type,
@@ -71,23 +72,56 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
     def get_dynamic_field(self, feature_name: str) -> Any:
         """Retrieves the value of a dynamicaly declared attribute from the object.
 
-        :param feature_name: The name of the attribute to retrieve.
+        This function allows accessing nested attributes of an object dynamically, based on a
+        string representation of the attribute's hierarchical structure. It takes a dot-separated
+        attribute name, traverses the object's nested levels sequentially, and retrieves the final
+        attribute e.g., "topic_odom.pose.pose.position.x" would sequentialy crawl into nested
+        container "topic_odom" -> "pose" -> "pose" -> "position" -> "x".
+
+        Example:
+
+        >>> position_x_value = self.get_dynamic_field("topic_odom.pose.pose.position.x")
+
+        :param feature_name: A dot-separated string representing the hierarchical
+          structure of the attribute to retrieve.
         :return: The value of the requested attribute.
         """
-        # ToDo: TCT-65 feat: unify dynamic_field getter setter with fetch_nested_attribute method
-        return self.__getattribute__(feature_name)
+        nested_attribute = self
+        for each in feature_name.split("."):
+            nested_attribute = nested_attribute.__getattribute__(each)
+        return nested_attribute
 
     def set_dynamic_field(self, feature_name: str, value: Any) -> None:
-        """Updates or creates a dynamic attribute on an object.
+        """ Sets a dynamically resolved nested field or attribute within an object.
 
-        :param feature_name: The name of the attribute to update or create.
-        :param value: The value to assign to the attribute.
+        This function dynamically locates and assigns the specified value to a
+        nested attribute within an object. The attribute path is determined
+        based on the `feature_name`, which can include dot-delimited strings to
+        specify multi-level nested attributes.
+
+        Example:
+
+        >>> self.set_dynamic_field("topic_odom.pose.pose.position.x", 10)
+
+        :param feature_name: A string specifying the name of the target attribute
+            to set. It can be dot-delimited to specify a path to a nested
+            attribute within the object.
+        :param value: The value to assign to the specified feature or attribute.
         :return: None
         """
-        # ToDo: TCT-65 feat: unify dynamic_field getter setter with fetch_nested_attribute method
-        self.__setattr__(feature_name, value)
+        # ToDo: update documentation (re task TCT-65)
+
+        nested_attribute = self
+        feature_name_split = feature_name.split(".")
+        target = feature_name_split.pop()
+        for each in feature_name_split:
+            nested_attribute = nested_attribute.__getattribute__(each)
+        nested_attribute.__setattr__(target, value)
         return None
 
+    @deprecated(
+        reason="Functionality of `fetch_nested_attribute` as been merged into `get_dynamic_field` method."
+    )
     def fetch_nested_attribute(self, nested_attribute_path: str) -> Any:
         """Retrieves a nested attribute from an object based on a dot-separated string.
 
@@ -100,7 +134,7 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
 
         Example:
 
-            >>> position_x_value = self.fetch_nested_attribute("topic_odom.pose.pose.position.x")
+        >>> position_x_value = self.fetch_nested_attribute("topic_odom.pose.pose.position.x")
 
         :param nested_attribute_path: A dot-separated string representing the hierarchical
           structure of the attribute to retrieve.
