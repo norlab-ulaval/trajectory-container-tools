@@ -181,7 +181,7 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
 
     @property
     def chunks_total(self) -> int:
-        return len(self.fetch_nested_attribute(self.chunk_on))
+        return len(self.get_dynamic_field(self.chunk_on))
 
     def __len__(self) -> int:
         return self.chunks_total
@@ -196,7 +196,7 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
     def __getitem__(self, chunk_idx: Union[int, slice]):
         mf_dataclass_at_t = deepcopy(self)
 
-        chunk_on_attribute = self.fetch_nested_attribute(self.chunk_on)
+        chunk_on_attribute = self.get_dynamic_field(self.chunk_on)
         if isinstance(chunk_idx, slice):
             chunck_on_timestamp = chunk_on_attribute.header.timestamps[
                 # chunk_idx.stop
@@ -209,7 +209,7 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
             RosStampedDataclass, NestedRosStampedDataclass, RosDataclass
         ]
         for each_topic in self.topic_key_list:
-            each_attribute = self.fetch_nested_attribute(each_topic)
+            each_attribute = self.get_dynamic_field(each_topic)
 
             if each_topic is self.chunk_on:
                 each_attribute = each_attribute[chunk_idx]

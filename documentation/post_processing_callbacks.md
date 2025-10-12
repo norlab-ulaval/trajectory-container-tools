@@ -163,7 +163,14 @@ All callbacks have access to helper methods for dynamic field manipulation:
 Retrieve the value of any attribute from the dataclass.
 
 ```python
-value = self.get_dynamic_field("x")
+value = self.pose.pose.position.get_dynamic_field("x")
+```
+
+Access nested attributes using dot notation (useful for ROS message structures).
+
+```python
+# For nested structures like NavMsgsOdometry
+position_x = self.get_dynamic_field("pose.pose.position.x")
 ```
 
 ### `set_dynamic_field(feature_name: str, value: Any) -> None`
@@ -174,13 +181,10 @@ Create or update an attribute on the dataclass.
 self.set_dynamic_field("x_squared", self.x ** 2)
 ```
 
-### `fetch_nested_attribute(nested_attribute_path: str) -> Any`
-
-Access nested attributes using dot notation (useful for ROS message structures).
+Create or update nested attributes using dot notation (useful for ROS message structures).
 
 ```python
-# For nested structures like NavMsgsOdometry
-position_x = self.fetch_nested_attribute("pose.pose.position.x")
+self.set_dynamic_field("pose.pose.position.x", 10)
 ```
 
 ## Advanced Example: Complete Trajectory Post-Processing
@@ -372,8 +376,8 @@ class ProcessedOdometry(NavMsgsOdometry):
     def on_exit_post_init_callback(self):
         """Extract and compute additional metrics from odometry."""
         # Access nested ROS message structure
-        pos_x = self.fetch_nested_attribute("pose.pose.position.x")
-        pos_y = self.fetch_nested_attribute("pose.pose.position.y")
+        pos_x = self.get_dynamic_field("pose.pose.position.x")
+        pos_y = self.get_dynamic_field("pose.pose.position.y")
         
         # Compute 2D position magnitude
         position_magnitude = np.sqrt(pos_x**2 + pos_y**2)

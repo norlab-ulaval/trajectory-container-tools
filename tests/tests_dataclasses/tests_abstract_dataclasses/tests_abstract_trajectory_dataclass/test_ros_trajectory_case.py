@@ -103,8 +103,12 @@ class TestAbstractTrajectoryDataclassROSbagCase:
 
     def test_get_dynamic_field(self, setup_mock_feature_child, mock_ROSbag_2_trj_DC):
         mfc = setup_mock_feature_child
+        # Note: should work even if the trj data container has a flat structure
         assert np.allclose(mfc.get_dynamic_field("aa"), mock_ROSbag_2_trj_DC.a)
 
+    @pytest.mark.deprecated(
+        "Method fetch_nested_attribute is marked as deprecated (ref task TCT-65)"
+    )
     def test_fetch_nested_attribute(
         self, setup_mock_feature_child, mock_ROSbag_2_trj_DC
     ):
@@ -231,5 +235,3 @@ class TestAbstractTrajectoryDataclassROSbagCase:
         assert np.array_equal(t_mdc2.cc, t_ref.c)
         # print(t_mdc2)
         # print(t_mdc2.get_dimension_names())
-
-

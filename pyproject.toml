@@ -33,6 +33,11 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-mock",
+    "pytest-xdist",
+    "pytest-benchmark",
+    "pytest-env",
+    "pytest-randomly",
+    "pytest-deprecate",
     "black",
     "flake8",
 ]
