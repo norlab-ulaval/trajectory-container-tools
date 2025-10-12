@@ -107,6 +107,17 @@ class TestAbstractMultifeatureStampedDataclassAllCasses:
             )
         )
 
+    def test_get_features_timestamps(self, setup_mock_mf_container, t_timestamp_case):
+        mf_container = setup_mock_mf_container(t_timestamp_case)
+        print(mf_container.trajectory_timestamps)
+        assert np.array_equal(mf_container.trajectory_timestamps, t_timestamp_case.t_trajectorie_stamps)
+
+    def test_get_features_timestamps_limits(self, setup_mock_mf_container, t_timestamp_case):
+        mf_container = setup_mock_mf_container(t_timestamp_case)
+        print(mf_container.trajectory_timestamps_limits)
+        assert mf_container.trajectory_timestamps_limits.first == t_timestamp_case.t_trajectorie_stamps[0]
+        assert mf_container.trajectory_timestamps_limits.last == t_timestamp_case.t_trajectorie_stamps[-1]
+
 
 class TestAbstractMultifeatureStampedDataclassIndexingAndSlicing:
 

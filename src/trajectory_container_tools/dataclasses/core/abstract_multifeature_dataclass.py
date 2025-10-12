@@ -1,11 +1,12 @@
 # coding=utf-8
 import datetime
 import time
+from collections import namedtuple
 from copy import deepcopy
 
 from deprecated import deprecated
 from dataclasses import dataclass, field, fields
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -318,6 +319,60 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
             mf_dataclass_at_t.__setattr__(each_topic, each_attribute)
 
         return mf_dataclass_at_t
+
+    @property
+    def trajectory_timestamps(self):
+        """
+        Returns all timestamps for all features. The returned numpy array is sorted and contains unique timestamps.
+        Note: Those does not include the `bag_timestamps` ones.
+
+        Usage:
+
+        >>> print(container.trajectory_timestamps)
+        [1711038330346603696, 1711038330351773872, 1711038330411627056, 1711038330436485488]
+
+        :returns: A numpy array of unique timestamps.
+        """
+        all_features_stamps = []
+
+        for each_topic in self.topic_key_list:
+            each_attribute: Union[
+                RosStampedDataclass, NestedRosStampedDataclass, RosDataclass
+            ] = self.get_dynamic_field(each_topic)
+
+            if isinstance(each_attribute, AbstractNoTrajectoryDataclass):
+                registred_trj_object_list_name = (
+                    each_attribute.registred_trajectory_object_list
+                )
+                if registred_trj_object_list_name is not None:
+                    for idx, each in enumerate(each_attribute):
+                        each: Union[RosStampedDataclass, NestedRosStampedDataclass]
+                        all_features_stamps.append(each.header.timestamps.stamps)
+            else:
+                all_features_stamps.append(each_attribute.header.timestamps.stamps)
+
+        return np.unique(np.concatenate(all_features_stamps))
+
+    @property
+    def trajectory_timestamps_limits(self) -> Tuple[int, int]:
+        """
+        Retrieve the first and last timestamps from all features timestamps.
+        Note: Those does not include the `bag_timestamps` ones.
+
+        Usage:
+
+        >>> print(container.trajectory_timestamps_limits)
+        TrajectoryTimestampsLimits(first=1711038330346603696, last=1711038330436485488)
+        >>> print(container.trajectory_timestamps_limits.first)
+        1711038330346603696
+        >>> print(container.trajectory_timestamps_limits.last)
+        1711038330436485488
+
+        :return: A tuple containing the first and the last timestamps from all features timestamps.
+        """
+        limits = namedtuple("TrajectoryTimestampsLimits", ("first", "last"))
+
+        return limits(self.trajectory_timestamps[0], self.trajectory_timestamps[-1])
 
 
 def _get_attribute_timestamps(
