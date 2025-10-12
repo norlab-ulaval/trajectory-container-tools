@@ -17,7 +17,7 @@ def plot_bag_timestamp_delta(
     tct_container: tct.typing.MultifeatureTrajectoryDataclass,
     bag_path_abs: pathlib.Path,
     experiment_dir_path: pathlib.Path,
-    chunk_end_on: Optional[str] = "/teleop",
+    chunk_on: Optional[str] = "/teleop",
     append_to_title: Optional[str] = None,
     comment: Optional[str] = None,
     plot_ylim: float = 1e8,
@@ -39,7 +39,7 @@ def plot_bag_timestamp_delta(
     :param show_plot: Determines whether the plot should be displayed interactively.
     :param plot_ylim: Y-axis limit for the plot, if specified.
     :param plot_postfix: Optional string or integer to append to the plot filename to differentiate it.
-    :param chunk_end_on: The topic name trigger to add visual markers at timestamps.
+    :param chunk_on: The topic name trigger to add visual markers at timestamps.
     :param comment: An optional text comment displayed on the plot.
     :param append_to_title: Additional text appended to the plot title.
     :param figsize: The target figure size. Default to (28, 10)
@@ -60,7 +60,7 @@ def plot_bag_timestamp_delta(
             + f" ({append_to_title}bag: {os.path.basename(bag_path_abs)})"
         )
 
-        chunk_end_on = convert_rosbag_topic_key_to_tct_mf_topic_key(chunk_end_on)
+        chunk_on = convert_rosbag_topic_key_to_tct_mf_topic_key(chunk_on)
 
         # ... Topics plots ........................................................................
         for each_topic_name in [*tct_container.topic_key_list, "bag_timestamps"]:
@@ -100,7 +100,7 @@ def plot_bag_timestamp_delta(
                         _l = "-"
                         _m = "."
 
-                    if chunk_end_on in each_topic_name:
+                    if chunk_on in each_topic_name:
                         plt.vlines(
                             x=x_in_second,
                             ymin=0,
@@ -143,7 +143,7 @@ def plot_bag_timestamp_delta(
         plt.xlabel("Timestamp (s)")
 
         comment_ = (
-            f"Vertical solide lines: Chunk ending on {chunk_end_on}\n"
+            f"Vertical solide lines: Chunk ending on {chunk_on}\n"
             f"Vertical dashed lines: Bag timestamp references"
         )
         if comment:

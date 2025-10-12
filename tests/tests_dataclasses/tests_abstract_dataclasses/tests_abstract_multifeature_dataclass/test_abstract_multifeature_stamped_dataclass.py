@@ -73,8 +73,42 @@ class TestAbstractMultifeatureStampedDataclassAllCasses:
                 each.topic_mock_action.header.timestamps.stamps,
             )
 
+    @pytest.mark.parametrize(
+        argnames="t_startpoint, t_endpoint",
+        argvalues=[(True, False), (False, True), (True, True), (False, False)],
+        ids=[
+            "startpoint=True, endpoint=False",
+            "startpoint=False, endpoint=True",
+            "startpoint=True, endpoint=True",
+            "startpoint=False, endpoint=False",
+        ],
+    )
+    def test_get_timestamps(
+        self, setup_mock_mf_container, t_timestamp_case, t_startpoint, t_endpoint
+    ):
+        mf_container = setup_mock_mf_container(t_timestamp_case)
 
-class TestAbstractMultifeatureStampedDataclassSelectCasses:
+        print(f"\n", "=" * 80, f"\n")
+        print(mf_container)
+        print(f"\n", "=" * 80, f"\n")
+
+        print(t_timestamp_case.t_trajectorie_stamps)
+
+        t_start_idx = 0
+        t_stop_idx = 4
+        t_start_stamp = int(t_timestamp_case.t_trajectorie_stamps[t_start_idx])
+        t_stop_stamp = int(t_timestamp_case.t_trajectorie_stamps[t_stop_idx])
+        print(
+            mf_container.get_timestamps(
+                start=t_start_stamp,
+                stop=t_stop_stamp,
+                startpoint=t_startpoint,
+                endpoint=t_endpoint,
+            )
+        )
+
+
+class TestAbstractMultifeatureStampedDataclassIndexingAndSlicing:
 
     def test_indexing_case_alternate(self, setup_mock_mf_container):
         mf_container = setup_mock_mf_container(setup_mock_timestamps_case_alternate())

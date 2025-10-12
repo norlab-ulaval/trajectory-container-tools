@@ -38,6 +38,13 @@ class MockTopicsTimestamps:
             np.array(self.t_act_timestamps, dtype=int) * 100000000 + 1000000000000000000
         )
 
+    @property
+    def t_trajectorie_stamps(self) -> np.ndarray:
+        all_stamps = np.concatenate((self.t_obs_timestamps, self.t_act_timestamps))
+        return np.unique(all_stamps)
+
+    def __len__(self):
+        return self.t_trajectorie_stamps.size
 
 # ==== Mock timestamps cases ======================================================================
 
@@ -123,6 +130,7 @@ def setup_mock_timestamps_case_last_stamp_on_obs() -> MockTopicsTimestamps:
             1,
             2,
             4,
+            5,
         ],
         t_act_timestamps=[
             3,

@@ -113,9 +113,8 @@ def run_rosbag_timestamp_eda(
             )
         )
 
-        start, stop = compute_window_start_and_stop(
-            bag_end_time, bag_start_time_, each_idx, fast_forward_ns, window_ns
-        )
+        start, stop = compute_window_start_and_stop(bag_start_time_, bag_end_time, each_idx,
+                                                    fast_forward_ns, window_ns)
 
         with open(log_file_path, "w") as log_file:
 
@@ -136,7 +135,7 @@ def run_rosbag_timestamp_eda(
                     tc,
                     bag_path_abs,
                     experiment_dir_path,
-                    chunk_end_on=track_action,
+                    chunk_on=track_action,
                     append_to_title=f"trajectory window size: {to_seconds(stop - start)} (s)",
                     comment=None,
                     plot_ylim=plot_ylim,

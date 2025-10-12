@@ -114,8 +114,8 @@ def gather_rosbag_trajectory_window_informations(
 
 
 def compute_window_start_and_stop(
+    bag_start_time: int,
     bag_end_time: int,
-    bag_start_time_: int,
     each_idx: int,
     fast_forward_ns: Optional[int],
     window_ns: Optional[int],
@@ -126,8 +126,8 @@ def compute_window_start_and_stop(
     This function calculates the start and stop times considering the fast-forward and
     the window duration values, ensuring that the returned values are sanitized as integers.
 
+    :param bag_start_time: The start time of the bag recording.
     :param bag_end_time: The end time of the bag recording.
-    :param bag_start_time_: The start time of the bag recording.
     :param each_idx: The current step/index value.
     :param fast_forward_ns: Optional fast-forward duration in nanoseconds, used for
         adjusting the starting time.
@@ -136,9 +136,9 @@ def compute_window_start_and_stop(
     :return: A tuple containing the computed start and stop times as integers.
     """
     if fast_forward_ns is None:
-        start = bag_start_time_
+        start = bag_start_time
     else:
-        start = bag_start_time_ + fast_forward_ns * each_idx
+        start = bag_start_time + fast_forward_ns * each_idx
 
     if window_ns is None:
         stop = bag_end_time
@@ -187,8 +187,12 @@ def find_max_timestamp_delta_over_all_topics(
     :param typestore: Typestore object for managing type-related information.
     :return: The maximum timestamp delta across all qualifying topics.
     """
-    mf_container = tct.extractor.from_rosbag(rosbag_path=bag_path_abs, dataset_info=None,
-                                             features_config=features_config, typestore=typestore)
+    mf_container = tct.extractor.from_rosbag(
+        rosbag_path=bag_path_abs,
+        dataset_info=None,
+        features_config=features_config,
+        typestore=typestore,
+    )
 
     topics_max_delta_stamp = []
     for each in mf_container.topic_key_list:

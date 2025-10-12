@@ -51,8 +51,9 @@ def get_timestamps_slice(
                 endpoint_idx = len(timestamps)
 
         except IndexError as e:
-            endpoint_idx = len(timestamps)
+            endpoint_idx = None
 
-    assert nearest_idx < endpoint_idx, f"{nearest_idx} !< {endpoint_idx}"
+    if endpoint_idx is not None:
+        assert nearest_idx < endpoint_idx, f"{nearest_idx} !< {endpoint_idx}"
     timestamps_slice = slice(nearest_idx, endpoint_idx)
     return timestamps_slice

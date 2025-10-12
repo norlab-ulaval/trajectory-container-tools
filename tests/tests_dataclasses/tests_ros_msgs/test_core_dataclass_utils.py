@@ -55,7 +55,7 @@ class TestGetTimestampsSlice:
         )
 
         assert t_slice.start == t_start_idx
-        assert t_slice.stop == len(setup_mock_timestamps)
+        assert t_slice.stop is None
 
         assert setup_mock_timestamps[t_slice][0] == int(
             setup_mock_timestamps[t_start_idx]

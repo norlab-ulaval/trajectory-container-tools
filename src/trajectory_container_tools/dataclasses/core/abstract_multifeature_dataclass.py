@@ -166,12 +166,18 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
 
     def __post_init__(self):
         chunk_on_is_default = self.chunk_on == "topic_teleop"
-        if len(self.topic_key_list) == 1 and self.chunk_on not in self.topic_key_list and chunk_on_is_default:
+        if (
+            len(self.topic_key_list) == 1
+            and self.chunk_on not in self.topic_key_list
+            and chunk_on_is_default
+        ):
             self.chunk_on = self.topic_key_list[0]
         elif self.chunk_on not in self.topic_key_list:
-            raise ValueError(f"chunk_on={self.chunk_on} is not in "
-                             f"topic_key_list={self.topic_key_list}. "
-                             f"Please set chunk_on to a valide feature.")
+            raise ValueError(
+                f"chunk_on={self.chunk_on} is not in "
+                f"topic_key_list={self.topic_key_list}. "
+                f"Please set chunk_on to a valide feature."
+            )
 
         super().__post_init__()
 
@@ -199,7 +205,6 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
         chunk_on_attribute = self.get_dynamic_field(self.chunk_on)
         if isinstance(chunk_idx, slice):
             chunck_on_timestamp = chunk_on_attribute.header.timestamps[
-                # chunk_idx.stop
                 chunk_idx.stop - 1
             ].stamps
         else:
@@ -250,6 +255,69 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
             return item
         else:
             raise StopIteration
+
+    def get_timestamps(
+        self,
+        start: int,
+        stop: Optional[int] = None,
+        startpoint: bool = True,
+        endpoint: bool = False,
+    ):
+        """
+        Retrieve a trajectory interval within a specified timestamps range.
+
+        This function allows extracting trajectory associated data from a given timestamps range
+        defined by the start, stop, and optional parameters controlling the inclusion of the range
+        startpoint and endpoint.
+
+        :param start: The starting timestamp value of the slice.
+        :param stop: The optional stopping timestamp value of the slice. If not specified,
+            the slice will retrive a trajectory of length 1.
+        :param startpoint: A boolean indicating whether to include the starting point in the slice.
+        :param endpoint: A boolean indicating whether to include the stopping point in the slice.
+        :return: A data slice corresponding to the timestamps within the specified range.
+        """
+        # ToDo: update doc (ref task TCT-71)
+        mf_dataclass_at_t = deepcopy(self)
+
+        for each_topic in self.topic_key_list:
+            each_attribute: Union[
+                RosStampedDataclass, NestedRosStampedDataclass, RosDataclass
+            ] = self.get_dynamic_field(each_topic)
+
+            if isinstance(each_attribute, AbstractNoTrajectoryDataclass):
+                registred_trj_object_list_name = (
+                    each_attribute.registred_trajectory_object_list
+                )
+                if registred_trj_object_list_name is not None:
+                    trj_container_list_object = []
+                    for idx, each in enumerate(each_attribute):
+                        each: Union[RosStampedDataclass, NestedRosStampedDataclass] = (
+                            each.get_timestamps(
+                                start=start,
+                                stop=stop,
+                                startpoint=startpoint,
+                                endpoint=endpoint,
+                            )
+                        )
+                        trj_container_list_object.append(each)
+                    each_attribute.__setattr__(
+                        registred_trj_object_list_name, trj_container_list_object
+                    )
+                else:
+                    # Note: set attribute as is
+                    pass
+            else:
+                each_attribute = each_attribute.get_timestamps(
+                    start=start,
+                    stop=stop,
+                    startpoint=startpoint,
+                    endpoint=endpoint,
+                )
+
+            mf_dataclass_at_t.__setattr__(each_topic, each_attribute)
+
+        return mf_dataclass_at_t
 
 
 def _get_attribute_timestamps(
