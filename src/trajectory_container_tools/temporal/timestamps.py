@@ -1,6 +1,6 @@
 # coding=utf-8
 from copy import copy, deepcopy
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -9,6 +9,28 @@ class TimestampCausalOrderingError(Exception):
     """Exception raised when a causal order violation is detected."""
 
     pass
+
+
+class TimestampMissingError(Exception):
+    """Exception raised when a timestamp is not in stamps but in stamps bound."""
+
+    def __init__(self, timestamps: Optional[Union[int, np.integer, list]] = None):
+        if timestamps is not None and isinstance(timestamps, (int, np.integer)):
+            self.messages = f"{timestamps=} is not in stamps"
+        else:
+            self.messages = f"At least one value in timestamps is not in stamps"
+        super().__init__(self.messages)
+
+
+class TimestampOutOfBoundError(Exception):
+    """Exception raised when a timestamp is outside the stamps bounds."""
+
+    def __init__(self, timestamps: Optional[Union[int, np.integer, list]] = None):
+        if timestamps is not None and isinstance(timestamps, (int, np.integer)):
+            self.messages = f"{timestamps=} is out of stamps bounds"
+        else:
+            self.messages = f"At least one value in timestamps is out of stamps bounds"
+        super().__init__(self.messages)
 
 
 class Timestamps:
@@ -61,8 +83,8 @@ class Timestamps:
 
     @property
     def shape(self) -> Tuple:
-        # ToDo: assess if its still relevant now that there two dimensions to timestamps
-        #   i.e., stamps and delta stamps
+        # (NICE TO HAVE) ToDo: assess if its still relevant now that there two dimensions
+        #   to the Timestamps classs i.e., stamps and delta stamps
         return self._stamps.shape
 
     def __len__(self):
@@ -80,17 +102,18 @@ class Timestamps:
         else:
             raise StopIteration
 
-    def __getitem__(self, key):
+    def __getitem__(self, index):
         feature_dataclass_at_t = deepcopy(self)
         for each_name in ["_stamps", "_delta_stamps"]:
             data_property = self.__getattribute__(each_name)
-            data_value = data_property[key]
+            data_value = data_property[index]
             feature_dataclass_at_t.__setattr__(each_name, data_value)
 
         return feature_dataclass_at_t
 
     def __contains__(
-        self, timestamp: Union[int, List[int], np.ndarray[Any, np.dtype[int]]]
+        self,
+        timestamp: Union[int, np.integer, List[int], np.ndarray[Any, np.dtype[int]]],
     ) -> bool:
         """
         Check whether a timestamp or collection of timestamps exists within the stored stamps.
@@ -104,8 +127,9 @@ class Timestamps:
         :return: A boolean indicating whether any of the given timestamps exist within
             the stored set of stamps.
         """
-        assert isinstance(timestamp, (int, np.integer, list)) or isinstance(
-            timestamp[0], (int, np.integer)
+        assert isinstance(timestamp, (int, np.integer)) or (
+            isinstance(timestamp, (list, np.ndarray))
+            and isinstance(timestamp[0], (int, np.integer))
         )
         mask = np.isin(timestamp, self._stamps, assume_unique=True)
         if isinstance(timestamp, (int, np.integer)):
@@ -115,7 +139,7 @@ class Timestamps:
 
     def get_indexes(
         self, timestamps: Union[int, List[int], np.ndarray[Any, np.dtype[int]]]
-    ) -> Union[None, int, List[int]]:
+    ) -> Union[int, List[int]]:
         """
         Determines the indexes of given timestamps in the internal storage.
 
@@ -123,14 +147,17 @@ class Timestamps:
         storage and retrieves their respective indexes if found. It supports single
         timestamps or lists/arrays of timestamps as input. For lists or arrays, it
         returns a list of corresponding indexes. If the timestamps are not found, it
-        returns `None`. Timestamps must be in nanoseconds format as integers.
+        raise a TimestampMissingError or a TimestampOutOfBoundError error.
+        Timestamps must be in nanoseconds format as integers.
 
         :param timestamps: A single timestamp as an integer, a list of integers, or a
             numpy array of integers representing the timestamps to look up.
         :return: If `timestamps` is a single integer and found, returns its index as
             an integer. If `timestamps` is a list or numpy array of integers, returns
-            a list of indexes. If `timestamps` are not found, returns `None`.
+            a list of indexes.
         :raises TypeError: If the input is not an integer or a numpy array of integers.
+        :raises TimestampMissingError: If the input is in bound but not in stamps.
+        :raises TimestampOutOfBoundError: If the input is out of stamps bound.
         """
         if isinstance(timestamps, list):
             timestamps = np.array(timestamps, dtype=int)
@@ -138,7 +165,10 @@ class Timestamps:
         _check_precondition_nanoseconds_are_integers(timestamps)
 
         if timestamps not in self:
-            return None
+            if self.is_timestamps_in_bounds(timestamps):
+                raise TimestampMissingError(timestamps)
+            else:
+                raise TimestampOutOfBoundError(timestamps)
 
         if isinstance(timestamps, np.ndarray):
             mask = np.isin(timestamps, self._stamps, assume_unique=True)
@@ -147,6 +177,43 @@ class Timestamps:
             mask = self._stamps == timestamps
             indice = int(np.squeeze(np.nonzero(mask)))
             return indice
+
+    def min(self):
+        return self.stamps.min()
+
+    def max(self):
+        return self.stamps.max()
+
+    def is_timestamps_in_bounds(
+        self, timestamps: Union[int, List[int], np.ndarray[Any, np.dtype[int]]]
+    ) -> bool:
+        """
+        Determines whether the provided timestamps are within the bounds of the stamps attribute.
+
+        This function checks if the given timestamps, which can be an integer, a
+        list of integers, or a NumPy array of integers, fall within the minimum and
+        maximum bounds of an internally defined range. If any of the provided
+        timestamps are out of bounds, the function returns `False`. Otherwise, it
+        returns `True`.
+
+        :param timestamps: The timestamps to be checked against the predefined
+            bounds. Can be an integer, a list of integers, or a NumPy array of
+            integers. The type and shape of the timestamps are handled dynamically.
+        :return: `True` if all the timestamps are within the predefined bounds,
+            otherwise `False`.
+        """
+        if isinstance(timestamps, list):
+            timestamps = np.array(timestamps, dtype=int)
+
+        if isinstance(timestamps, np.ndarray):
+            if timestamps.min() < self.min() or self.max() < timestamps.max():
+                return False
+            else:
+                return True
+        elif timestamps < self.min() or self.max() < timestamps:
+            return False
+        else:
+            return True
 
     def get_nearest_stamp(
         self, timestamp: int, future: bool = True, include: bool = True
@@ -204,21 +271,26 @@ class Timestamps:
         assert isinstance(timestamp, (int, np.integer))
         try:
             mask = timestamp > self._stamps
-            nearest_past_stamp = self._nearest_stamp(mask)
+            nearest_past_stamp = self._nearest_stamp(mask, future=False)
         except IndexError as e:
             raise IndexError(
                 f"{timestamp=} as no nearest past candidat stamp in Timestamps object"
             )
         return nearest_past_stamp
 
-    def _nearest_stamp(self, mask: bool | np.ndarray[Any, np.dtype[bool]]) -> int:
+    def _nearest_stamp(
+        self, mask: bool | np.ndarray[Any, np.dtype[bool]], future=True
+    ) -> int:
         nearest_index = np.squeeze(np.nonzero(mask))
 
         # Only pick the first
         if nearest_index.size > 1:
-            nearest_index = nearest_index[0]
+            if future:
+                nearest_index = nearest_index[0]
+            else:
+                nearest_index = nearest_index[-1]
 
-        if nearest_index.size > 0 and self._stamps.size > 0:
+        if nearest_index.size == 1 and self._stamps.size > 0:
             return int(np.squeeze(self._stamps[nearest_index]))
         else:
             raise IndexError

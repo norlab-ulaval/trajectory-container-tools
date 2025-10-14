@@ -2,6 +2,7 @@
 from typing import Optional
 
 from trajectory_container_tools.temporal import Timestamps
+from trajectory_container_tools.temporal.timestamps import TimestampOutOfBoundError
 
 
 def get_timestamps_slice(
@@ -10,6 +11,7 @@ def get_timestamps_slice(
     stop: Optional[int] = None,
     startpoint: bool = True,
     endpoint: bool = False,
+    resolve_out_of_bounds: bool = True,
 ) -> slice:
     """
     Extracts a slice of timestamps based on given start, stop, and boundary inclusions.
@@ -24,36 +26,50 @@ def get_timestamps_slice(
     :param stop: Optional stopping timestamp up to which to slice.
     :param startpoint: Indicating whether to include the start boundary.
     :param endpoint: Indicating whether to include the stop boundary.
+    :param resolve_out_of_bounds: (Default True) Disable out of bound check and resolve to the nearest
+        timestamps bound. (False) Raise TimestampOutOfBoundError on bound violation.
     :return: A slice object representing the calculated index range.
+    :raises TimestampOutOfBoundError: if start or stop is outside timestamps and their corresponing
+     startpoint/endpoint parameter is set to False and resolve_out_of_bounds is set to False.
     """
+
+    if not resolve_out_of_bounds and not startpoint:
+        if not timestamps.is_timestamps_in_bounds(start):
+            raise TimestampOutOfBoundError(start)
+
+    if not resolve_out_of_bounds and not endpoint:
+        if not timestamps.is_timestamps_in_bounds(stop):
+            raise TimestampOutOfBoundError(stop)
+
     try:
-        nearest_stamp = timestamps.get_nearest_stamp(start, future=True, include=True)
-        nearest_idx = timestamps.get_indexes(nearest_stamp) + int(not startpoint)
+        nearest_start_stamp = timestamps.get_nearest_stamp(
+            start, future=True, include=startpoint
+        )
+        slice_start_idx = timestamps.get_indexes(nearest_start_stamp)
     except IndexError as e:
-        nearest_idx = len(timestamps) - 1
+        slice_start_idx = len(timestamps) - 1
 
     if stop is None:
-        endpoint_idx = nearest_idx + int(startpoint)
+        slice_endpoint_idx = slice_start_idx + 1
     else:
         try:
-            next_nearest_stamp = timestamps.get_nearest_stamp(
-                stop, future=True, include=True
+            nearest_stop_stamp = timestamps.get_nearest_stamp(
+                stop, future=False, include=endpoint
             )
 
-            next_nearest_idx = timestamps.get_indexes(next_nearest_stamp)
+            slice_endpoint_idx = timestamps.get_indexes(nearest_stop_stamp)
 
-            if not nearest_idx < next_nearest_idx:
-                next_nearest_idx += 1
+            slice_endpoint_idx = slice_endpoint_idx + 1
 
-            endpoint_idx = next_nearest_idx + int(endpoint)
-
-            if not endpoint_idx <= len(timestamps):
-                endpoint_idx = len(timestamps)
+            if slice_start_idx >= slice_endpoint_idx:
+                slice_endpoint_idx = slice_start_idx + 1
 
         except IndexError as e:
-            endpoint_idx = None
+            slice_endpoint_idx = None
 
-    if endpoint_idx is not None:
-        assert nearest_idx < endpoint_idx, f"{nearest_idx} !< {endpoint_idx}"
-    timestamps_slice = slice(nearest_idx, endpoint_idx)
+    if slice_endpoint_idx is not None:
+        assert (
+            slice_start_idx < slice_endpoint_idx
+        ), f"{slice_start_idx} !< {slice_endpoint_idx}"
+    timestamps_slice = slice(slice_start_idx, slice_endpoint_idx)
     return timestamps_slice

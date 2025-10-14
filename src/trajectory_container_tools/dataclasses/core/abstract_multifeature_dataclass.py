@@ -1,12 +1,10 @@
 # coding=utf-8
 import datetime
-import time
-from collections import namedtuple
 from copy import deepcopy
 
 from deprecated import deprecated
 from dataclasses import dataclass, field, fields
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Union
 
 import numpy as np
 
@@ -26,6 +24,7 @@ from trajectory_container_tools.dataclasses.core.abstract_no_trajectory_dataclas
 )
 from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.utils import extract_class_name_from_instance
+from trajectory_container_tools.utils.ros2_utils.ros2_timestamps import TrajectoryTimestampsMetadata
 
 
 @dataclass
@@ -278,7 +277,6 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
         :param endpoint: A boolean indicating whether to include the stopping point in the slice.
         :return: A data slice corresponding to the timestamps within the specified range.
         """
-        # ToDo: update doc (ref task TCT-71)
         mf_dataclass_at_t = deepcopy(self)
 
         for each_topic in self.topic_key_list:
@@ -294,12 +292,8 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
                     trj_container_list_object = []
                     for idx, each in enumerate(each_attribute):
                         each: Union[RosStampedDataclass, NestedRosStampedDataclass] = (
-                            each.get_timestamps(
-                                start=start,
-                                stop=stop,
-                                startpoint=startpoint,
-                                endpoint=endpoint,
-                            )
+                                each.get_timestamps(start=start, stop=stop, startpoint=startpoint,
+                                                    endpoint=endpoint)
                         )
                         trj_container_list_object.append(each)
                     each_attribute.__setattr__(
@@ -309,12 +303,9 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
                     # Note: set attribute as is
                     pass
             else:
-                each_attribute = each_attribute.get_timestamps(
-                    start=start,
-                    stop=stop,
-                    startpoint=startpoint,
-                    endpoint=endpoint,
-                )
+                each_attribute = each_attribute.get_timestamps(start=start, stop=stop,
+                                                               startpoint=startpoint,
+                                                               endpoint=endpoint)
 
             mf_dataclass_at_t.__setattr__(each_topic, each_attribute)
 
@@ -354,7 +345,7 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
         return np.unique(np.concatenate(all_features_stamps))
 
     @property
-    def trajectory_timestamps_limits(self) -> Tuple[int, int]:
+    def trajectory_timestamps_limits(self) -> TrajectoryTimestampsMetadata:
         """
         Retrieve the first and last timestamps from all features timestamps.
         Note: Those does not include the `bag_timestamps` ones.
@@ -362,7 +353,7 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
         Usage:
 
         >>> print(container.trajectory_timestamps_limits)
-        TrajectoryTimestampsLimits(first=1711038330346603696, last=1711038330436485488)
+        TrajectoryTimestampsMetadata(first=1711038330346603696, last=1711038330436485488)
         >>> print(container.trajectory_timestamps_limits.first)
         1711038330346603696
         >>> print(container.trajectory_timestamps_limits.last)
@@ -370,9 +361,10 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
 
         :return: A tuple containing the first and the last timestamps from all features timestamps.
         """
-        limits = namedtuple("TrajectoryTimestampsLimits", ("first", "last"))
 
-        return limits(self.trajectory_timestamps[0], self.trajectory_timestamps[-1])
+        return TrajectoryTimestampsMetadata(
+            start_time=self.trajectory_timestamps[0], end_time=self.trajectory_timestamps[-1]
+        )
 
 
 def _get_attribute_timestamps(
@@ -393,10 +385,7 @@ def _get_attribute_timestamps(
         startpoint = True
 
     endpoint = False
-    each_attribute = each_attribute.get_timestamps(
-        start=each_start_timestamp,
-        stop=chunck_on_timestamp,
-        startpoint=startpoint,
-        endpoint=endpoint,
-    )
+    each_attribute = each_attribute.get_timestamps(start=each_start_timestamp,
+                                                   stop=chunck_on_timestamp, startpoint=startpoint,
+                                                   endpoint=endpoint)
     return each_attribute

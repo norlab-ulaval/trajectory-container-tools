@@ -1,6 +1,6 @@
 # coding=utf-8
 import warnings
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, NamedTuple
 import os
 from pathlib import Path
 import numpy as np
@@ -10,32 +10,45 @@ from rosbags.typesys.store import Typestore
 
 import trajectory_container_tools as tct
 import trajectory_container_tools.temporal.timestamps
+from trajectory_container_tools.utils.ros2_utils.ros2_timestamps import (
+    TrajectoryTimestampsMetadata,
+)
 
 
 def rosbag_log_file_name(
     bag_path_abs: Path, file_postfix: Optional[Union[str, int]] = None
 ) -> str:
+    """Generates a log file name for a given ROS bag path with an optional file postfix.
+
+    :param bag_path_abs: The absolute path of the ROS bag file.
+    :param file_postfix: An optional postfix value (string or integer) to include in the
+        generated log file name.
+    :return: A string representing the generated log file name.
+    """
     if file_postfix is not None:
         return f"{os.path.basename(bag_path_abs)}-{file_postfix}.log"
     else:
         return f"{os.path.basename(bag_path_abs)}.log"
 
 
-def gather_rosbag_informations(bag_path_abs: Path) -> Tuple[int, int, int, str]:
-    """
-    Fetch timestamp related information from a rosbag
+def gather_rosbag_informations(
+    bag_path_abs: Path,
+) -> Tuple[str, TrajectoryTimestampsMetadata]:
+    """This function reads a rosbag file to extract trajectory timestamps metadata information in
+    addition to detailing all topics, message types, and message counts.
 
-    :param bag_path_abs: The rosbag absolute path
-    :return: Ros bag start time, end time, duration and the rosbag information string
+    :param bag_path_abs: The absolute file path of the ROS bag to read.
+    :return: A formatted string summarizing the bag's information and a
+        TrajectoryTimestampsMetadata object.
     """
-    bag_start_time = None
-    bag_end_time = None
-    bag_duration = None
+
     info_str = ""
     with Reader(bag_path_abs) as reader:
-        bag_start_time = reader.start_time
-        bag_end_time = reader.end_time
-        bag_duration = reader.duration
+        bag_time_metadata = TrajectoryTimestampsMetadata(
+            start_time=reader.start_time,
+            end_time=reader.end_time,
+            duration=reader.duration,
+        )
 
         MSG = "Rosbag information"
         info_str += f"\n===={MSG:=<80}\n"
@@ -44,9 +57,9 @@ def gather_rosbag_informations(bag_path_abs: Path) -> Tuple[int, int, int, str]:
         MSG = "Bag time (nanosecond)"
         info_str += f"\n...{MSG:.<80}\n"
         info_str += (
-            f"    start_time: {bag_start_time}\n"
-            f"      end_time: {bag_end_time}\n"
-            f"      duration: {bag_duration}\n"
+            f"    start_time: {bag_time_metadata.start_time}\n"
+            f"      end_time: {bag_time_metadata.end_time}\n"
+            f"      duration: {bag_time_metadata.duration}\n"
         )
 
         MSG = "Topic and message"
@@ -57,13 +70,24 @@ def gather_rosbag_informations(bag_path_abs: Path) -> Tuple[int, int, int, str]:
 
         info_str += f"\n===={'='*80}\n"
 
-    print(info_str)
-    return bag_start_time, bag_end_time, bag_duration, info_str
+    return info_str, bag_time_metadata
 
 
 def gather_rosbag_trajectory_window_informations(
     bag_path_abs: Path, features_config: dict, start: Optional[int], stop: Optional[int]
 ) -> str:
+    """Analyzes a ROS bag file to extract and summarize trajectory windows and specific topic information.
+
+    This function inspects a ROS bag file, extracts information about messages within a specific time
+    window (if specified), and gathers metadata about selected topics of interest. It formats and
+    returns a detailed summary of the results.
+
+    :param bag_path_abs: The absolute path to the ROS bag file being analyzed.
+    :param features_config: A dictionary mapping topic names to configurations for selected topics.
+    :param start: The start timestamp for the time window in nanoseconds. If None, the bag's start time is used.
+    :param stop: The stop timestamp for the time window in nanoseconds. If None, the bag's end time is used.
+    :return: A formatted string summarizing the trajectory window configuration and selected topic information.
+    """
     with Reader(bag_path_abs) as reader:
 
         # .... Gather topics trajectory window information ........................................
@@ -78,10 +102,10 @@ def gather_rosbag_trajectory_window_informations(
             if connection.topic in features_config:
                 selected_topic_info[str(connection.topic)]["count"] += 1
 
-        selected_topic_info_str = ""
-        selected_topic_info_str += f"{'MSGCOUNT':>8}  {'TOPIC':<25} {'MSGTYPE'} \n"
+        info_str_selected_topic = ""
+        info_str_selected_topic += f"{'MSGCOUNT':>8}  {'TOPIC':<25} {'MSGTYPE'} \n"
         for k, v in selected_topic_info.items():
-            selected_topic_info_str += f"{v['count']:>8}  {k:<25} {v['type']} \n"
+            info_str_selected_topic += f"{v['count']:>8}  {k:<25} {v['type']} \n"
 
         # .... Gather window related information ..................................................
         bag_start_time = reader.start_time
@@ -89,28 +113,27 @@ def gather_rosbag_trajectory_window_informations(
         bag_duration = reader.duration
 
         MSG = f"Crawler trajectory window configuration"
-        _str = f"\n...{MSG:.<80}\n"
-        _str += (
+        info_str_main = f"\n...{MSG:.<80}\n"
+        info_str_main += (
             f"\nCrawl bag (nanosecond):\n        start: {start or bag_start_time} ns\n      "
             f"   stop: {stop or bag_end_time} ns\n"
         )
         if stop is not None and start is not None:
-            _str += f"       window: {stop - start} ns\n"
+            info_str_main += f"       window: {stop - start} ns\n"
 
         if start is not None:
-            _str += f"\nCrawl bag (second):\n        start: {trajectory_container_tools.temporal.timestamps.to_seconds(start)} s\n"
+            info_str_main += f"\nCrawl bag (second):\n        start: {trajectory_container_tools.temporal.timestamps.to_seconds(start)} s\n"
 
         if stop is not None:
-            _str += f"         stop: {trajectory_container_tools.temporal.timestamps.to_seconds(stop)} s\n"
+            info_str_main += f"         stop: {trajectory_container_tools.temporal.timestamps.to_seconds(stop)} s\n"
         if stop is not None and start is not None:
-            _str += f"       window: {trajectory_container_tools.temporal.timestamps.to_seconds(stop - start)} s\n"
+            info_str_main += f"       window: {trajectory_container_tools.temporal.timestamps.to_seconds(stop - start)} s\n"
 
         MSG = "Selected topics"
-        _str += f"\n...{MSG:.<80}\n\n"
-        _str += selected_topic_info_str + "\n"
+        info_str_main += f"\n...{MSG:.<80}\n\n"
+        info_str_main += info_str_selected_topic + "\n"
 
-        print(_str)
-    return _str
+    return info_str_main
 
 
 def compute_window_start_and_stop(
@@ -152,12 +175,12 @@ def compute_window_start_and_stop(
 
 
 def compute_bag_target_window_nb(
-    bag_duration_: int, fast_forward_ns: Optional[Union[int, float]]
+    bag_duration: int, fast_forward_ns: Optional[Union[int, float]]
 ) -> int:
     """Compute the number of iterations to span the bag target window based on the provided bag
     duration and fast-forward duration.
 
-    :param bag_duration_: The total duration of the bag in nanoseconds.
+    :param bag_duration: The total duration of the bag in nanoseconds.
     :param fast_forward_ns: The duration to fast-forward in nanoseconds. If None, the fast-forward step is considered as the full bag duration.
     :return: The number of iterations required to cover the target window.
     """
@@ -167,7 +190,7 @@ def compute_bag_target_window_nb(
     else:
         # Sanitize input e.g., 1e9 -> float
         fast_forward_ns = int(fast_forward_ns)
-        num_iterations = bag_duration_ // fast_forward_ns
+        num_iterations = bag_duration // fast_forward_ns
     return num_iterations
 
 

@@ -11,6 +11,8 @@ from .conftest import (
     setup_mock_timestamps_case_more_obs,
 )
 
+import trajectory_container_tools as tct
+
 
 @pytest.mark.parametrize(
     argnames="t_timestamp_case",
@@ -98,25 +100,46 @@ class TestAbstractMultifeatureStampedDataclassAllCasses:
         t_stop_idx = 4
         t_start_stamp = int(t_timestamp_case.t_trajectorie_stamps[t_start_idx])
         t_stop_stamp = int(t_timestamp_case.t_trajectorie_stamps[t_stop_idx])
-        print(
-            mf_container.get_timestamps(
-                start=t_start_stamp,
-                stop=t_stop_stamp,
-                startpoint=t_startpoint,
-                endpoint=t_endpoint,
-            )
-        )
+        t_expected_stop_stamp = int(t_timestamp_case.t_trajectorie_stamps[t_stop_idx + int(t_endpoint)])
+
+        mf_container_window = mf_container.get_timestamps(start=t_start_stamp, stop=t_stop_stamp,
+                                                          startpoint=t_startpoint,
+                                                          endpoint=t_endpoint)
+
+        print(mf_container_window)
+
+        for each in mf_container.topic_key_list:
+            each_field = mf_container_window.get_dynamic_field(each)
+            if isinstance(each_field, tct.AbstractTrajectoryDataclass) and each_field.header.timestamps.stamps.size > 0:
+                assert t_start_stamp <= each_field.header.timestamps.stamps[0]
+                # assert each_field.header.timestamps.stamps[-1] <= t_expected_stop_stamp
+                assert each_field.header.timestamps.stamps[-1] <= t_stop_stamp
 
     def test_get_features_timestamps(self, setup_mock_mf_container, t_timestamp_case):
         mf_container = setup_mock_mf_container(t_timestamp_case)
         print(mf_container.trajectory_timestamps)
-        assert np.array_equal(mf_container.trajectory_timestamps, t_timestamp_case.t_trajectorie_stamps)
+        assert np.array_equal(
+            mf_container.trajectory_timestamps, t_timestamp_case.t_trajectorie_stamps
+        )
 
-    def test_get_features_timestamps_limits(self, setup_mock_mf_container, t_timestamp_case):
+    def test_get_features_timestamps_limits(
+        self, setup_mock_mf_container, t_timestamp_case
+    ):
         mf_container = setup_mock_mf_container(t_timestamp_case)
         print(mf_container.trajectory_timestamps_limits)
-        assert mf_container.trajectory_timestamps_limits.first == t_timestamp_case.t_trajectorie_stamps[0]
-        assert mf_container.trajectory_timestamps_limits.last == t_timestamp_case.t_trajectorie_stamps[-1]
+        assert (
+            mf_container.trajectory_timestamps_limits.start_time
+            == t_timestamp_case.t_trajectorie_stamps[0]
+        )
+        assert (
+            mf_container.trajectory_timestamps_limits.end_time
+            == t_timestamp_case.t_trajectorie_stamps[-1]
+        )
+        assert (
+            mf_container.trajectory_timestamps_limits.duration
+            == t_timestamp_case.t_trajectorie_stamps[-1]
+            - t_timestamp_case.t_trajectorie_stamps[0]
+        )
 
 
 class TestAbstractMultifeatureStampedDataclassIndexingAndSlicing:

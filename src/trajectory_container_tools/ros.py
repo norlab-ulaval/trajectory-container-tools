@@ -8,11 +8,10 @@ This module provides ROS-related functionality including:
 - ROS bag utilities
 - Type store management
 
-Usage:
+Usage example:
 
 >>> import trajectory_container_tools as tct
 >>> tct.ros.check_bag_topics(rosbag_path)
->>> tct.ros.register_non_native_msgs()
 
 """
 
