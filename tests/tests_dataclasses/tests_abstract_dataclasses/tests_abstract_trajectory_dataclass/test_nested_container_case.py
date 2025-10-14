@@ -237,7 +237,7 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         dimension_type, is_list_of_type = mfc.get_dimension_type("child_one")
         assert issubclass(dimension_type, MockTrajectoryChildRosBagCase)
 
-    def test_set_dynamic_field(self, setup_mock_feature_parent_range, t_nested_case):
+    def test_set_dynamic_field_case_direct_access(self, setup_mock_feature_parent_range, t_nested_case):
         mfc = setup_mock_feature_parent_range(t_nested_case)
 
         # Case override nested field
@@ -257,10 +257,24 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
             mfc.set_dynamic_field("new_field", "new-field-value")
             assert mfc.new_field == "new-field-value"
 
+    def test_set_dynamic_field_case_nested_path(self, setup_mock_feature_parent_range, t_nested_case):
+        mfc = setup_mock_feature_parent_range(t_nested_case)
+
+        # Case override nested field
+        assert mfc.child_one.aa is not None
+        mfc.set_dynamic_field("child_one.aa", None)
+        assert mfc.child_one.aa is None
+
+        # Case create new nested field
+        mfc.set_dynamic_field("child_one.new_field", "new-field-value")
+        assert mfc.child_one.new_field == "new-field-value"
+
     def test_get_dynamic_field(
         self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case
     ):
         mfc = setup_mock_feature_parent_range(t_nested_case)
+
+        # .... Case: Direct access ................................................................
         assert np.allclose(
             mfc.child_one.get_dynamic_field("aa"), mock_ROSbag_2_trj_DC_range.a
         )
@@ -269,9 +283,16 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
                 mfc.get_dynamic_field("aa"), mock_ROSbag_2_trj_DC_range.a
             )
 
+        # .... Case: Nested path ..................................................................
+        assert np.allclose(
+            mfc.get_dynamic_field("child_one.aa"), mock_ROSbag_2_trj_DC_range.a
+        )
+
+    @pytest.mark.deprecated("Method fetch_nested_attribute is marked as deprecated (ref task TCT-65)")
     def test_fetch_nested_attribute(
         self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case
     ):
+        # ToDo: TCT-65 feat: unify dynamic_field getter setter with fetch_nested_attribute method
         mfc = setup_mock_feature_parent_range(t_nested_case)
         assert np.allclose(
             mfc.fetch_nested_attribute("child_one.aa"), mock_ROSbag_2_trj_DC_range.a
@@ -293,7 +314,6 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
         mfc = setup_mock_feature_parent_range(t_nested_case)
         assert mfc.trajectory_len == mock_ROSbag_2_trj_DC.a.shape[mfc._time_axis]
 
-    # @pytest.mark.skip(reason="todo")
     def test_ravel_dimensions_in_place(
         self,
         setup_mock_feature_parent_range,

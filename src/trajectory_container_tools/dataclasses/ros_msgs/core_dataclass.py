@@ -46,6 +46,7 @@ class RosStampedDataclass(BaseTrajectoryDataclass):
         stop: Optional[int] = None,
         startpoint: bool = True,
         endpoint: bool = False,
+        resolve_out_of_bounds=True,
     ):
         """
         Retrieve a trajectory interval within a specified timestamps range.
@@ -54,15 +55,25 @@ class RosStampedDataclass(BaseTrajectoryDataclass):
         defined by the start, stop, and optional parameters controlling the
         inclusion of the range startpoint and endpoint.
 
+        :param resolve_out_of_bounds:
         :param start: The starting timestamp value of the slice.
         :param stop: The optional stopping timestamp value of the slice. If not specified,
             the slice will retrive a trajectory of length 1.
         :param startpoint: A boolean indicating whether to include the starting point in the slice.
         :param endpoint: A boolean indicating whether to include the stopping point in the slice.
+        :param resolve_out_of_bounds: (Default True) Disable out of bound check and resolve to the
+            nearest header.timestamps bound. (False) Raise TimestampOutOfBoundError on bound violation.
         :return: A data slice corresponding to the timestamps within the specified range.
+        :raises TimestampOutOfBoundError: if start or stop is outside header.timestamps and their corresponing
+            startpoint/endpoint parameter is set to False and resolve_out_of_bounds is set to False.
         """
         timestamps_slice = get_timestamps_slice(
-            self.header.timestamps, start, stop, startpoint, endpoint
+            self.header.timestamps,
+            start,
+            stop,
+            startpoint,
+            endpoint,
+            resolve_out_of_bounds,
         )
         return self[timestamps_slice]
 
@@ -93,6 +104,7 @@ class NestedRosStampedDataclass(NestedBaseTrajectoryDataclass):
         stop: Optional[int] = None,
         startpoint: bool = True,
         endpoint: bool = False,
+        resolve_out_of_bounds=True,
     ):
         """
         Retrieve a trajectory interval within a specified timestamps range.
@@ -101,15 +113,25 @@ class NestedRosStampedDataclass(NestedBaseTrajectoryDataclass):
         defined by the start, stop, and optional parameters controlling the
         inclusion of the range startpoint and endpoint.
 
+        :param resolve_out_of_bounds:
         :param start: The starting timestamp value of the slice.
         :param stop: The optional stopping timestamp value of the slice. If not specified,
             the slice will retrive a trajectory of length 1.
         :param startpoint: A boolean indicating whether to include the starting point in the slice.
         :param endpoint: A boolean indicating whether to include the stopping point in the slice.
+        :param resolve_out_of_bounds: (Default True) Disable out of bound check and resolve to the
+            nearest header.timestamps bound. (False) Raise TimestampOutOfBoundError on bound violation.
         :return: A data slice corresponding to the timestamps within the specified range.
+        :raises TimestampOutOfBoundError: if start or stop is outside header.timestamps and their corresponing
+            startpoint/endpoint parameter is set to False and resolve_out_of_bounds is set to False.
         """
         timestamps_slice = get_timestamps_slice(
-            self.header.timestamps, start, stop, startpoint, endpoint
+            self.header.timestamps,
+            start,
+            stop,
+            startpoint,
+            endpoint,
+            resolve_out_of_bounds,
         )
         return self[timestamps_slice]
 

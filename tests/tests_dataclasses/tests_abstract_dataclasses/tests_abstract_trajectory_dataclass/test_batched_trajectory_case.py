@@ -92,9 +92,11 @@ class TestAbstractTrajectoryDataclassBatchedTrajectoryCase:
         assert mfc.new_field == "new-field-value"
 
     def test_get_dynamic_field(self, setup_mock_feature_child, mock_batched_trj_DC):
+        # Note: should work even if the trj data container has a flat structure
         mfc = setup_mock_feature_child
         assert np.allclose(mfc.get_dynamic_field("aa"), mock_batched_trj_DC.a)
 
+    @pytest.mark.deprecated("Method fetch_nested_attribute is marked as deprecated (ref task TCT-65)")
     def test_fetch_nested_attribute(
         self, setup_mock_feature_child, mock_batched_trj_DC
     ):

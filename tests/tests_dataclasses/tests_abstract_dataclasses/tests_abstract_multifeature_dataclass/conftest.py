@@ -29,6 +29,7 @@ class MockMultifeatureStampedDataclass(AbstractMultifeatureStampedDataclass):
 class MockTopicsTimestamps:
     t_obs_timestamps: Union[np.ndarray, list]
     t_act_timestamps: Union[np.ndarray, list]
+    case: str
 
     def __post_init__(self):
         self.t_obs_timestamps = (
@@ -38,12 +39,21 @@ class MockTopicsTimestamps:
             np.array(self.t_act_timestamps, dtype=int) * 100000000 + 1000000000000000000
         )
 
+    @property
+    def t_trajectorie_stamps(self) -> np.ndarray:
+        all_stamps = np.concatenate((self.t_obs_timestamps, self.t_act_timestamps))
+        return np.unique(all_stamps)
+
+    def __len__(self):
+        return self.t_trajectorie_stamps.size
+
 
 # ==== Mock timestamps cases ======================================================================
 
 
 def setup_mock_timestamps_case_alternate() -> MockTopicsTimestamps:
     return MockTopicsTimestamps(
+        case="alternate",
         t_obs_timestamps=[
             1,
             3,
@@ -65,6 +75,7 @@ def setup_mock_timestamps_case_alternate() -> MockTopicsTimestamps:
 
 def setup_mock_timestamps_case_more_obs() -> MockTopicsTimestamps:
     return MockTopicsTimestamps(
+        case="more_obs",
         t_obs_timestamps=[
             1,
             2,
@@ -85,10 +96,10 @@ def setup_mock_timestamps_case_more_obs() -> MockTopicsTimestamps:
 
 def setup_mock_timestamps_case_more_act() -> MockTopicsTimestamps:
     return MockTopicsTimestamps(
+        case="more_act",
         t_obs_timestamps=[
             1,
             3,
-            7,
         ],
         t_act_timestamps=[
             2,
@@ -101,11 +112,14 @@ def setup_mock_timestamps_case_more_act() -> MockTopicsTimestamps:
 
 def setup_mock_timestamps_case_act_and_obs_shared_stamps() -> MockTopicsTimestamps:
     return MockTopicsTimestamps(
+        case="act_and_obs_shared_stamps",
         t_obs_timestamps=[
             1,
             2,
             3,
             4,
+            5,
+            6,
         ],
         t_act_timestamps=[
             3,
@@ -119,10 +133,13 @@ def setup_mock_timestamps_case_last_stamp_on_obs() -> MockTopicsTimestamps:
     Should raise IndexError on `print(mf_container[1])`
     """
     return MockTopicsTimestamps(
+        case="last_stamp_on_obs",
         t_obs_timestamps=[
             1,
             2,
             4,
+            5,
+            6,
         ],
         t_act_timestamps=[
             3,
@@ -132,6 +149,7 @@ def setup_mock_timestamps_case_last_stamp_on_obs() -> MockTopicsTimestamps:
 
 def setup_mock_timestamps_case_mixing() -> MockTopicsTimestamps:
     return MockTopicsTimestamps(
+        case="mixing",
         t_obs_timestamps=[
             1,
             3,
@@ -184,7 +202,17 @@ def setup_mock_mf_container():
             dataset_info="Mock",
             topic_mock_observation=topic_mock_obs,
             topic_mock_action=topic_mock_act,
-            bag_timestamps=None,
+            bag_timestamps=Timestamps(
+                np.unique(
+                    np.concatenate(
+                        (
+                            timestamp_case.t_obs_timestamps,
+                            timestamp_case.t_act_timestamps,
+                            timestamp_case.t_obs_timestamps[1:3] + 300,
+                        )
+                    )
+                )
+            ),
             chunk_on="topic_mock_action",
         )
         return deepcopy(mf_container)

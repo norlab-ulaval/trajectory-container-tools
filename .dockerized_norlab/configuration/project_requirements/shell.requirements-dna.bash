@@ -11,10 +11,3 @@
 
 # ....Update pip to latest.........................................................................
 python3 -m pip install --upgrade pip
-
-# ....NMO-802......................................................................................
-# (CRITICAL) inprogress: NMO-802 fix: matplotlib double install conflict
-# (Priority) ToDo: on task NMO-802 end >> delete next bloc ↓↓
-apt-get remove --assume-yes python3-matplotlib python3-tk
-python3 -m pip install matplotlib tk
-# .................................................................................................

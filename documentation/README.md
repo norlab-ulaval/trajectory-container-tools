@@ -142,6 +142,14 @@ Detailed guide for customizing trajectory data processing at instantiation:
 - Integration with extractors (ROS bags, DataFrames)
 - Best practices and use cases
 
+### ⏱️ [Timestamp Utilities Guide](timestamp_utilities.md)
+Comprehensive guide for timestamp handling and utilities:
+- Timestamps class methods: `min()`, `max()`, `is_timestamps_in_bounds()`
+- Enhanced error handling with `TimestampMissingError` and `TimestampOutOfBoundError`
+- Multifeature timestamp methods: `get_timestamps()`, `trajectory_timestamps`, `trajectory_timestamps_limits`
+- Nearest timestamp search for data synchronization
+- Practical examples for multi-sensor data handling
+
 
 ---
 
@@ -245,6 +253,7 @@ Create trajectory containers directly from data arrays:
     - ↳ [Post-Processing Callbacks Guide](./post_processing_callbacks.md#post-processing-callbacks-in-tct)
     - ↳ [ROS Bag Usage](./rosbag_usage.md#ros-bag-to-tct--usage-guide)
     - ↳ [Pandas DataFrame Usage](./dataframe_usage.md#dataframe-to-tct-usage-guide)
+    - ↳ [Timestamp Utilities Guide](./timestamp_utilities.md#timestamp-utilities-guide)
 - Interactive Jupyter notebook examples:
     - [Direct Instanciation Usage Examples](../notebooks/direct_instanciation_usage_example.ipynb) - Direct trajectory
       container instantiation
