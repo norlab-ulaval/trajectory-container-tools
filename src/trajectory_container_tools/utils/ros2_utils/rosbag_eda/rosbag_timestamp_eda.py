@@ -20,7 +20,9 @@ from trajectory_container_tools.temporal.timestamps import to_seconds
 from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
     register_non_native_msgs,
 )
-from trajectory_container_tools.dataclasses.core.abstract_multifeature_dataclass import AbstractMultifeatureStampedDataclass
+from trajectory_container_tools.dataclasses.core.abstract_multifeature_dataclass import (
+    AbstractMultifeatureStampedDataclass,
+)
 from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.general_utils import (
     compute_bag_target_window_nb,
     compute_window_start_and_stop,
@@ -39,16 +41,16 @@ def run_rosbag_timestamp_eda(
     bag_path: Union[str, Path],
     eda_dir_path: Union[str, Path],
     features_config: dict,
+    chunk_on: str,
     fast_forward_ns: Optional[Union[int, float]] = 0.1e9,
     window_ns: Optional[Union[int, float]] = 0.5e9,
-    track_action: str = "/teleop",
     plot_ylim: Optional[float] = None,
     experiment_dir: Optional[str] = None,
     show_plot=True,
     figsize: Tuple[int, int] = (28, 10),
     save_dpi: int = 100,
     typestore: Optional[Typestore] = None,
-) -> AbstractMultifeatureStampedDataclass :
+) -> AbstractMultifeatureStampedDataclass:
     """
     Executes timestamp-based Exploratory Data Analysis (EDA) on a ROSbag file by analyzing
     specific time window chunks, generating logs, and plotting timestamp data.
@@ -56,11 +58,11 @@ def run_rosbag_timestamp_eda(
     :param bag_path: Path to the ROSbag file to be analyzed.
     :param eda_dir_path: Directory where EDA artifacts and logs will be saved.
     :param features_config: Configuration dictionary containing feature extraction settings.
+    :param chunk_on: Topic in the ROSbag to monitor for chunk split e.g., '/teleop'.
     :param fast_forward_ns: Time in nanoseconds to fast-forward for each data chunk.
         Defaults to 0.1e9 nanoseconds (1/10 of a second).
     :param window_ns: Duration of the time window in nanoseconds for analyzing data chunks.
         Defaults to 0.5e9 nanoseconds (half a second).
-    :param track_action: Action topic in the ROSbag to monitor for chunk split. Defaults to "/teleop".
     :param plot_ylim: Optional vertical limits for the plots. Defaults to None.
     :param experiment_dir: Directory to group all outputs for the analysis. If None, the
         bag name will be used. Defaults to None.
@@ -102,7 +104,7 @@ def run_rosbag_timestamp_eda(
         rosbag_path=bag_path_abs,
         dataset_info=None,
         features_config=features_config,
-        chunk_on=track_action,
+        chunk_on=chunk_on,
         start=bag_timestamps_meta.start_time,
         stop=bag_timestamps_meta.end_time,
         typestore=typestore,
@@ -180,7 +182,7 @@ def run_rosbag_timestamp_eda(
             ),
             bag_path_abs,
             experiment_dir_path,
-            chunk_on=track_action,
+            chunk_on=chunk_on,
             append_to_title=f"trajectory window size: {to_seconds(window_stop - window_start)} (s)",
             comment=None,
             plot_ylim=plot_ylim,
@@ -189,11 +191,6 @@ def run_rosbag_timestamp_eda(
             figsize=figsize,
             save_dpi=save_dpi,
         )
-        # try:
-        # except ValueError as e:
-        #     if str(e) == "[TCT error] stamps array is empty!":
-        #         # TS_FAST_FORWARD * each_idx > than bag time ended.
-        #         pass
 
     return mf_container
 
@@ -223,9 +220,9 @@ if __name__ == "__main__":
             "/sensors/imu/raw": trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass.SensorMsgsImu,
             "/sensors/imu": tct_dataclasses.VescMsgsVescImuStamped,
         },
-        fast_forward_ns=0.1e9,  # 1/10 of a second forward
-        window_ns=0.5e9,  # half a second window
-        track_action="/teleop",
-        show_plot=True,
+        chunk_on="/teleop",
+        fast_forward_ns=0.1e9,
+        window_ns=0.5e9,
         plot_ylim=1.2e8,
+        show_plot=True,
     )
