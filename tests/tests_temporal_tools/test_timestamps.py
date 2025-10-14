@@ -4,6 +4,8 @@ import pytest
 
 from trajectory_container_tools.temporal.timestamps import (
     TimestampCausalOrderingError,
+    TimestampMissingError,
+    TimestampOutOfBoundError,
     Timestamps,
 )
 from trajectory_container_tools.temporal import to_seconds_nanoseconds
@@ -81,6 +83,34 @@ class TestTimestampsCore:
                 5,
                 9,
             ]
+
+    def test_is_timestamps_in_bounds(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+
+        # Case pass
+        assert ts.is_timestamps_in_bounds(int(mock_ts_array[0])) == True
+        assert ts.is_timestamps_in_bounds(mock_ts_array[0]) == True
+        assert ts.is_timestamps_in_bounds(mock_ts_array[0:6]) == True
+        assert ts.is_timestamps_in_bounds(mock_ts_array[0:6].tolist()) == True
+        assert ts.is_timestamps_in_bounds(mock_ts_array) == True
+
+        # Case not in bound
+        mock_ts_array[5] = 1711038330132760208
+        mock_ts_array[9] = 1711038330177285488
+
+        assert ts.is_timestamps_in_bounds(int(mock_ts_array[5])) == False
+        assert ts.is_timestamps_in_bounds(mock_ts_array[5]) == False
+        assert ts.is_timestamps_in_bounds(mock_ts_array[0:6]) == False
+        assert ts.is_timestamps_in_bounds(mock_ts_array[0:6].tolist()) == False
+        assert ts.is_timestamps_in_bounds(mock_ts_array) == False
+
+    def test_min_and_max_methods(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+
+        assert ts.min() == mock_ts_array[0]
+        assert ts.max() == mock_ts_array[-1]
 
     def test_seconds_nanoseconds(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
@@ -179,12 +209,26 @@ class TestTimestampsGetIndexesMethod:
         assert isinstance(t_output[0], int)
         assert t_output == [0, 1, 2]
 
-    def test_get_indexes_case_input_not_in_storage(self, setup_mock_timestamps):
+    def test_get_indexes_case_stamp_not_in_storage(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)
         # print(ts)
-        t_timestamp_not_in = 1711038330290158992
-        assert ts.get_indexes(t_timestamp_not_in) is None
+        t_timestamp_not_in = mock_ts_array[5] + 300
+        t_timestamp_out_of_bound = mock_ts_array[-1] + 300
+
+        # .... Case: is not in stamps .............................................................
+        with pytest.raises(TimestampMissingError) as exc_info:
+            ts.get_indexes(t_timestamp_not_in)
+
+        # print(f"{exc_info=}")
+        assert "is not in stamps" in exc_info.value.args[0]
+
+        # .... Case: out of bound .................................................................
+        with pytest.raises(TimestampOutOfBoundError) as exc_info:
+            ts.get_indexes(t_timestamp_out_of_bound)
+
+        # print(f"{exc_info=}")
+        assert "is out of stamps bounds" in exc_info.value.args[0]
 
 
 class TestTimestampsGetNearestMethodsPastAndFutur:
@@ -237,7 +281,7 @@ class TestTimestampsGetNearestMethodsPastAndFutur:
     def test_get_nearest_past_stamp_case_input_stamp_exist(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)
-        assert ts.get_nearest_past_stamp(int(mock_ts_array[1])) == mock_ts_array[0]
+        assert ts.get_nearest_past_stamp(int(mock_ts_array[9])) == mock_ts_array[8]
 
     def test_get_nearest_past_stamp_case_input_stamp_not_exist(
         self, setup_mock_timestamps

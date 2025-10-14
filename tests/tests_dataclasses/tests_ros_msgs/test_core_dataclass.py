@@ -31,60 +31,73 @@ class MockSubRosDataclass(RosDataclass):
 class TestRosStampedDataclass:
 
     @pytest.fixture(scope="function")
-    def setup_mock_dataclass(self, setup_mock_timestamps):
-        t_mock_attribute = np.arange(setup_mock_timestamps.size)
+    def setup_mock_dataclass(self, setup_real_timestamps):
+        t_mock_attribute = np.arange(setup_real_timestamps.size)
 
         t_container = MockSubRosStampedDataclass(
             feature_name="mock",
             header=Header(
                 frame_id="mock_frame_id",
-                timestamps=setup_mock_timestamps,
+                timestamps=setup_real_timestamps,
             ),
             mock_attribute=t_mock_attribute,
         )
         return t_container, t_mock_attribute
 
-    def test_instanciation(self, setup_mock_dataclass, setup_mock_timestamps):
+    def test_instanciation(self, setup_mock_dataclass, setup_real_timestamps):
         t_container, t_mock_attribute = setup_mock_dataclass
 
         assert t_container.feature_name == "mock"
         assert np.array_equal(
-            t_container.header.timestamps.stamps, setup_mock_timestamps
+            t_container.header.timestamps.stamps, setup_real_timestamps
         )
         assert np.array_equal(t_container.mock_attribute, t_mock_attribute)
         # print(t_container)
 
+    @pytest.mark.parametrize(
+        argnames="t_startpoint",
+        argvalues=[True, False],
+        ids=["startpoint=True", "startpoint=False"],
+    )
     def test_get_timestamp_case_single_stamp(
-        self, setup_mock_dataclass, setup_mock_timestamps
+        self, setup_mock_dataclass, setup_real_timestamps, t_startpoint
     ):
         t_container, t_mock_attribute = setup_mock_dataclass
 
         t_start_idx = 1
-        t_start = int(setup_mock_timestamps[t_start_idx])
+        t_start = int(setup_real_timestamps[t_start_idx])
 
-        t_container_interval = t_container.get_timestamps(start=t_start)
-
-        assert t_container_interval.header.timestamps.stamps == t_start
-        assert t_container_interval.mock_attribute == t_mock_attribute[t_start_idx]
+        t_container_interval = t_container.get_timestamps(
+            start=t_start, startpoint=t_startpoint
+        )
         print(t_container_interval)
 
+        assert t_container_interval.header.timestamps.stamps.size == 1
+        assert t_container_interval.header.timestamps.stamps[0] == int(
+            setup_real_timestamps[t_start_idx + int(not t_startpoint)]
+        )
+        assert (
+            t_container_interval.mock_attribute[0]
+            == t_mock_attribute[t_start_idx + int(not t_startpoint)]
+        )
+
     def test_get_timestamp_case_interval(
-        self, setup_mock_dataclass, setup_mock_timestamps
+        self, setup_mock_dataclass, setup_real_timestamps
     ):
         t_container, t_mock_attribute = setup_mock_dataclass
 
         t_start_idx = 1
         t_stop_idx = 4
         t_container_interval = t_container.get_timestamps(
-            start=(int(setup_mock_timestamps[t_start_idx])),
-            stop=(int(setup_mock_timestamps[t_stop_idx])),
+            start=(int(setup_real_timestamps[t_start_idx])),
+            stop=(int(setup_real_timestamps[t_stop_idx])),
         )
 
         assert t_container_interval.header.timestamps.stamps[0] == int(
-            setup_mock_timestamps[t_start_idx]
+            setup_real_timestamps[t_start_idx]
         )
         assert t_container_interval.header.timestamps.stamps[-1] == int(
-            setup_mock_timestamps[t_stop_idx - 1]
+            setup_real_timestamps[t_stop_idx - 1]
         )
         assert np.array_equal(
             t_container_interval.mock_attribute,
@@ -103,15 +116,15 @@ class TestRosStampedDataclass:
         ],
     )
     def test_get_timestamp_case_endpoint(
-        self, setup_mock_dataclass, setup_mock_timestamps, t_startpoint, t_endpoint
+        self, setup_mock_dataclass, setup_real_timestamps, t_startpoint, t_endpoint
     ):
         t_container, t_mock_attribute = setup_mock_dataclass
 
         t_start_idx = 0
         t_stop_idx = 4
         t_container_interval = t_container.get_timestamps(
-            start=int(setup_mock_timestamps[t_start_idx]),
-            stop=int(setup_mock_timestamps[t_stop_idx]),
+            start=int(setup_real_timestamps[t_start_idx]),
+            stop=int(setup_real_timestamps[t_stop_idx]),
             startpoint=t_startpoint,
             endpoint=t_endpoint,
         )
@@ -120,14 +133,20 @@ class TestRosStampedDataclass:
 
         assert np.array_equal(
             t_container_interval.header.timestamps.stamps,
-            setup_mock_timestamps[
-                slice(t_start_idx + int(not t_startpoint), t_stop_idx + int(t_endpoint))
+            setup_real_timestamps[
+                slice(
+                    t_start_idx + int(not t_startpoint),
+                    t_stop_idx + 1 - int(not t_endpoint),
+                )
             ],
         )
         assert np.array_equal(
             t_container_interval.mock_attribute,
             t_mock_attribute[
-                slice(t_start_idx + int(not t_startpoint), t_stop_idx + int(t_endpoint))
+                slice(
+                    t_start_idx + int(not t_startpoint),
+                    t_stop_idx + 1 - int(not t_endpoint),
+                )
             ],
         )
 
