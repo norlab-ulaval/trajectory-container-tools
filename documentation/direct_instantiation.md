@@ -389,15 +389,29 @@ nearest_past = timestamps.get_nearest_past_stamp(query_time)
 ### Timestamp Queries and Validation
 
 ```python
-# Check if timestamp exists
+# Check timestamp bounds
+min_stamp = timestamps.min()
+max_stamp = timestamps.max()
+print(f"Timestamp range: {min_stamp} to {max_stamp}")
+
+# Check if timestamps are within bounds
 query_stamp = 1695601812751577171
+if timestamps.is_timestamps_in_bounds(query_stamp):
+    print(f"Timestamp {query_stamp} is within bounds")
+
+# Check if timestamp exists
 if query_stamp in timestamps:
     print(f"Timestamp {query_stamp} exists in the dataset")
 
 # Get indices for specific timestamps
 query_stamps = [1695601812731601521, 1695601812771552821]
-indices = timestamps.get_indexes(query_stamps)
-print(f"Indices for query timestamps: {indices}")
+try:
+    indices = timestamps.get_indexes(query_stamps)
+    print(f"Indices for query timestamps: {indices}")
+except tct.TimestampMissingError as e:
+    print(f"Timestamp exists but not in stamps: {e}")
+except tct.TimestampOutOfBoundError as e:
+    print(f"Timestamp out of bounds: {e}")
 
 # Validate timestamp ordering (causal consistency check)
 try:
@@ -443,13 +457,17 @@ print(f"Synchronized indices: {synchronized_indices}")
 
 ### Key Timestamp Features
 
+- **Boundary Methods**: Get min/max timestamps and check if timestamps are within bounds
+- **Enhanced Error Handling**: Specific exceptions for missing vs out-of-bound timestamps
 - **Indexing & Slicing**: Full numpy-like indexing support
 - **Nearest Neighbor Search**: Find closest timestamps (past/future) for data synchronization
 - **Membership Testing**: Check if specific timestamps exist using `in` operator
-- **Index Retrieval**: Get array indices for timestamp values
+- **Index Retrieval**: Get array indices for timestamp values with robust error handling
 - **Causal Ordering Validation**: Ensure timestamps are monotonically increasing
 - **Time Conversions**: Convert between nanoseconds, seconds, and (seconds, nanoseconds) pairs
 - **Delta Computation**: Calculate time differences between consecutive timestamps
+
+For more advanced timestamp operations including multifeature timestamp aggregation, see the [Timestamp Utilities Guide](timestamp_utilities.md).
 
 ## Usage Recommendations
 
@@ -467,9 +485,10 @@ documentation files in this directory.
 ## Documentation
 - [Landing page](../README.md#_trajectory-container-tools_)
 - [Overview and Core concept](README.md#trajectory-container-tools-documentation)
-    - ↳ [Post-Processing Callbacks Guide](./post_processing_callbacks.md#post-processing-callbacks-in-tct) 
+  - ↳ [Post-Processing Callbacks Guide](./post_processing_callbacks.md#post-processing-callbacks-in-tct)
   - ↳ [DataFrame To TCT Usage Guide](dataframe_usage.md) - Convert pandas DataFrames to trajectory containers
   - ↳ [ROS To TCT Bag Usage Guide](rosbag_usage.md) - Learn to extract trajectory data from ROS bags
+  - ↳ [Timestamp Utilities Guide](timestamp_utilities.md) - Advanced timestamp operations
 - Interactive Jupyter notebook examples:
     - [Direct Instanciation Usage Examples](../notebooks/direct_instanciation_usage_example.ipynb) - Direct trajectory
       container instantiation

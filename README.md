@@ -87,11 +87,14 @@ TCT provides:
       indices and timestamps
 - **Multi-Feature Containers**:
     - Aggregate multiple trajectory features (e.g., odometry + commands + IMU) in a single container
+    - Support for both stamped and non-stamped trajectory dataclasses aggregation
     - Chunk-based iteration over timestamp windows for synchronized multi-feature data access
-    - Support for both `AbstractMultifeatureDataclass` and `AbstractMultifeatureStampedDataclass`
+    - Aggregate timestamps across features with `trajectory_timestamps` and `trajectory_timestamps_limits`
+    - Extract data within timestamp ranges using `get_timestamps()`
 - **Enhanced Timestamp Utilities**:
-    - Timestamp indexing and slicing support
+    - Timestamp boundary checking
     - Find nearest timestamps (past/future) for data synchronization
+    - Robust error handling with `TimestampMissingError` and `TimestampOutOfBoundError`
     - Temporal ordering validation with detailed error reporting
     - Convert between nanoseconds and seconds representation
 - **Data Converters**: Extract trajectory data from pandas DataFrames and ROS2 bags
@@ -524,6 +527,7 @@ research and development.
     - ↳ [Post-Processing Callbacks](documentation/post_processing_callbacks.md)
     - ↳ [ROS Bag Usage](documentation/rosbag_usage.md)
     - ↳ [Pandas DataFrame Usage](documentation/dataframe_usage.md)
+    - ↳ [Timestamp Utilities](documentation/timestamp_utilities.md)
 - Interactive Jupyter notebook examples:
     - **[Direct Instanciation Usage Examples](notebooks/direct_instanciation_usage_example.ipynb)** - Direct trajectory
       container instantiation

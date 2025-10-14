@@ -281,6 +281,8 @@ first_three_chunks = multifeature_data[0:3]
 - Extracting features from aligned time windows across different data sources
 - Implementing sliding window algorithms over multi-sensor trajectories
 
+**Note:** For advanced timestamp operations including `get_timestamps()`, `trajectory_timestamps`, and `trajectory_timestamps_limits`, see the [Timestamp Utilities Guide](timestamp_utilities.md).
+
 ## Custom Message Types
 
 ### Registering Custom Messages
@@ -416,9 +418,10 @@ if msg_type == "geometry_msgs/msg/PoseStamped":
 ## Documentation
 - [Landing page](../README.md#_trajectory-container-tools_)
 - [Overview and Core concept](README.md#trajectory-container-tools-documentation)
-  -  ↳ [Post-Processing Callbacks Guide](./post_processing_callbacks.md#post-processing-callbacks-in-tct) 
-  - ↳ **[DataFrame To TCT Usage Guide](dataframe_usage.md)** - Convert pandas DataFrames to trajectory containers
-  - ↳ **[TCT Direct Instantiation Guide](direct_instantiation.md)** - Create trajectory containers directly
+  - ↳ [Post-Processing Callbacks Guide](./post_processing_callbacks.md#post-processing-callbacks-in-tct)
+  - ↳ [DataFrame To TCT Usage Guide](dataframe_usage.md) - Convert pandas DataFrames to trajectory containers
+  - ↳ [TCT Direct Instantiation Guide](direct_instantiation.md) - Create trajectory containers directly
+  - ↳ [Timestamp Utilities Guide](timestamp_utilities.md) - Advanced timestamp operations
 - Interactive Jupyter notebook examples:
     - [Direct Instanciation Usage Examples](../notebooks/direct_instanciation_usage_example.ipynb) - Direct trajectory
       container instantiation
