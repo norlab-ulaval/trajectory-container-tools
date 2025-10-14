@@ -100,7 +100,6 @@ class TestAbstractMultifeatureStampedDataclassAllCasses:
         t_stop_idx = 4
         t_start_stamp = int(t_timestamp_case.t_trajectorie_stamps[t_start_idx])
         t_stop_stamp = int(t_timestamp_case.t_trajectorie_stamps[t_stop_idx])
-        t_expected_stop_stamp = int(t_timestamp_case.t_trajectorie_stamps[t_stop_idx + int(t_endpoint)])
 
         mf_container_window = mf_container.get_timestamps(start=t_start_stamp, stop=t_stop_stamp,
                                                           startpoint=t_startpoint,
@@ -112,8 +111,10 @@ class TestAbstractMultifeatureStampedDataclassAllCasses:
             each_field = mf_container_window.get_dynamic_field(each)
             if isinstance(each_field, tct.AbstractTrajectoryDataclass) and each_field.header.timestamps.stamps.size > 0:
                 assert t_start_stamp <= each_field.header.timestamps.stamps[0]
-                # assert each_field.header.timestamps.stamps[-1] <= t_expected_stop_stamp
                 assert each_field.header.timestamps.stamps[-1] <= t_stop_stamp
+
+        assert t_start_stamp <= mf_container_window.bag_timestamps.stamps[0]
+        assert mf_container_window.bag_timestamps.stamps[-1] <= t_stop_stamp
 
     def test_get_features_timestamps(self, setup_mock_mf_container, t_timestamp_case):
         mf_container = setup_mock_mf_container(t_timestamp_case)

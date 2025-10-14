@@ -202,7 +202,17 @@ def setup_mock_mf_container():
             dataset_info="Mock",
             topic_mock_observation=topic_mock_obs,
             topic_mock_action=topic_mock_act,
-            bag_timestamps=None,
+            bag_timestamps=Timestamps(
+                np.unique(
+                    np.concatenate(
+                        (
+                            timestamp_case.t_obs_timestamps,
+                            timestamp_case.t_act_timestamps,
+                            timestamp_case.t_obs_timestamps[1:3] + 300,
+                        )
+                    )
+                )
+            ),
             chunk_on="topic_mock_action",
         )
         return deepcopy(mf_container)

@@ -24,7 +24,10 @@ from trajectory_container_tools.dataclasses.core.abstract_no_trajectory_dataclas
 )
 from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.utils import extract_class_name_from_instance
-from trajectory_container_tools.utils.ros2_utils.ros2_timestamps import TrajectoryTimestampsMetadata
+from trajectory_container_tools.utils.ros2_utils.ros2_timestamps import (
+    TrajectoryTimestampsMetadata,
+)
+from ..ros_msgs.core_dataclass_utils import get_timestamps_slice
 
 
 @dataclass
@@ -210,6 +213,12 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
         else:
             chunck_on_timestamp = chunk_on_attribute.header.timestamps[chunk_idx].stamps
 
+        if self.bag_timestamps is not None:
+            bag_timestamps_subset = _get_attribute_timestamps(
+                chunck_on_timestamp, chunk_idx, chunk_on_attribute, self.bag_timestamps
+            )
+            mf_dataclass_at_t.__setattr__("bag_timestamps", bag_timestamps_subset)
+
         each_attribute: Union[
             RosStampedDataclass, NestedRosStampedDataclass, RosDataclass
         ]
@@ -279,6 +288,18 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
         """
         mf_dataclass_at_t = deepcopy(self)
 
+        if self.bag_timestamps is not None:
+            timestamps_slice = get_timestamps_slice(
+                self.bag_timestamps,
+                start=start,
+                stop=stop,
+                startpoint=startpoint,
+                endpoint=endpoint,
+                resolve_out_of_bounds=True,
+            )
+            bag_timestamps_subset = mf_dataclass_at_t.bag_timestamps[timestamps_slice]
+            mf_dataclass_at_t.__setattr__("bag_timestamps", bag_timestamps_subset)
+
         for each_topic in self.topic_key_list:
             each_attribute: Union[
                 RosStampedDataclass, NestedRosStampedDataclass, RosDataclass
@@ -292,8 +313,13 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
                     trj_container_list_object = []
                     for idx, each in enumerate(each_attribute):
                         each: Union[RosStampedDataclass, NestedRosStampedDataclass] = (
-                                each.get_timestamps(start=start, stop=stop, startpoint=startpoint,
-                                                    endpoint=endpoint)
+                            each.get_timestamps(
+                                start=start,
+                                stop=stop,
+                                startpoint=startpoint,
+                                endpoint=endpoint,
+                                resolve_out_of_bounds=True
+                            )
                         )
                         trj_container_list_object.append(each)
                     each_attribute.__setattr__(
@@ -303,9 +329,9 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
                     # Note: set attribute as is
                     pass
             else:
-                each_attribute = each_attribute.get_timestamps(start=start, stop=stop,
-                                                               startpoint=startpoint,
-                                                               endpoint=endpoint)
+                each_attribute = each_attribute.get_timestamps(
+                    start=start, stop=stop, startpoint=startpoint, endpoint=endpoint, resolve_out_of_bounds=True
+                )
 
             mf_dataclass_at_t.__setattr__(each_topic, each_attribute)
 
@@ -363,7 +389,8 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
         """
 
         return TrajectoryTimestampsMetadata(
-            start_time=self.trajectory_timestamps[0], end_time=self.trajectory_timestamps[-1]
+            start_time=self.trajectory_timestamps[0],
+            end_time=self.trajectory_timestamps[-1],
         )
 
 
@@ -371,13 +398,17 @@ def _get_attribute_timestamps(
     chunck_on_timestamp: int,
     chunk_idx: Union[int, slice],
     chunk_on_topic: RosStampedDataclass,
-    each_attribute: RosStampedDataclass | NestedRosStampedDataclass,
-) -> RosStampedDataclass | NestedRosStampedDataclass | RosDataclass:
+    each_attribute: RosStampedDataclass | NestedRosStampedDataclass | Timestamps,
+) -> RosStampedDataclass | NestedRosStampedDataclass | RosDataclass | Timestamps:
     if isinstance(chunk_idx, slice):
         chunk_idx = chunk_idx.start
 
     if chunk_idx == 0:
-        each_start_timestamp = each_attribute.header.timestamps[0].stamps
+        if not isinstance(each_attribute, Timestamps):
+            each_start_timestamp = each_attribute.header.timestamps[0].stamps
+        else:
+            each_start_timestamp = each_attribute[0].stamps
+
         startpoint = True
     else:
         # Fetch the previous `chunck_on_timestamp` value
@@ -385,7 +416,17 @@ def _get_attribute_timestamps(
         startpoint = True
 
     endpoint = False
-    each_attribute = each_attribute.get_timestamps(start=each_start_timestamp,
-                                                   stop=chunck_on_timestamp, startpoint=startpoint,
-                                                   endpoint=endpoint)
+    if not isinstance(each_attribute, Timestamps):
+        each_attribute = each_attribute.get_timestamps(
+            start=each_start_timestamp,
+            stop=chunck_on_timestamp,
+            startpoint=startpoint,
+            endpoint=endpoint,
+            resolve_out_of_bounds=True,
+        )
+    else:
+        timestamps_slice = get_timestamps_slice(each_attribute, start=each_start_timestamp,
+                                                stop=chunck_on_timestamp, startpoint=startpoint,
+                                                endpoint=endpoint, resolve_out_of_bounds=True, )
+        each_attribute = each_attribute[timestamps_slice]
     return each_attribute
