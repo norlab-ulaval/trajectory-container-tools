@@ -44,9 +44,7 @@ rosbag extractor, pandas dataframe extractor and various utilities.**
 
 [//]: # (NorLab teamcity)
 
-[//]: # (TODO: Un-comment the next line if your repository has run configuration enable on the norlab-teamcity-server)
-
-[//]: # (<a href="http://132.203.26.125:8111"><img alt="Static Badge" src="https://img.shields.io/badge/JetBrains%20TeamCity-CI-green?style=plastic&logo=teamcity"></a>)
+<a href="http://132.203.26.125:8111"><img alt="Static Badge" src="https://img.shields.io/badge/JetBrains%20TeamCity-CI-green?style=plastic&logo=teamcity"></a>
 
 [//]: # (Dockerhub image badge)
 
@@ -133,69 +131,50 @@ interface for handling trajectory data across different formats and sources.
 
 ## How Does It Work?
 
-### Three-step process: 1. **Data Source** → 2. **Instanciate Trajectory Container** → 3. **Use it**
+Begin by importing the _Trajectory Container Tools_ namespace 
+```python
+import trajectory_container_tools as tct
+```
+
+Then, it's a three-step process: 1. **Data Source** → 2. **Instanciate Trajectory Container** → 3. **Use it**
 
 Common use cases:
 
-- From direct instantiation
-- From ROS bag
-- From pandas DataFrame
+- **From direct instantiation** i.e., manualy instanciating trajectory dataclasses.
+- **From ROS bag** using rosbag to trajectory dataclasses extractor.
+- **From pandas DataFrame** using dataframe to trajectory dataclasses extractor.
 
-#### From direct instantiation
+### From direct instantiation
+
+#### Use one of the many predifined trajectory dataclass from the `tct.dataclasses` module 
 
 ```python
-import numpy as np
 import trajectory_container_tools as tct
-from trajectory_container_tools.dataclasses import StatePose2D
+import numpy as np
 
-trajectory = StatePose2D(
-        feature_name="odom pose",
+# Example using a 2D pose primitive trajectory dataclass
+trajectory = tct.dataclasses.Pose2DSA(
+        feature_name="2D pose example",
         x=np.arange(100, dtype=float),
         y=np.arange(100, dtype=float),
-        yaw=np.linspace(start=0, stop=360, num=100, dtype=np.float16),
-        timesteps_indices=np.arange(100, dtype=int),
+        theta=np.linspace(start=0, stop=360, num=100, dtype=np.float16),
         )
 
 print(trajectory)
-
 ```
 
 ```text
-StatePose2D(
-   feature_name: "odom pose"
+Pose2DSA(
+   feature_name: "2D pose example"
    trajectory_len: 100
    transposed: False
    x: (ndarray) shape (100,) range 0.0 ←→ 99.0
    y: (ndarray) shape (100,) range 0.0 ←→ 99.0
-   yaw: (ndarray) shape (100,) range 0.0 ←→ 360.0
+   theta: (ndarray) shape (100,) range 0.0 ←→ 360.0
 )
 ```
 
-##### Trajectory containers are trajectory wide iterable object which support indexing and slicing
-
-```python
-# Trajectory timesteps interval t=10 to t=15
-print(trajectory[10:15])
-```
-
-```text
-StatePose2D(
-   feature_name: "odom pose"
-   trajectory_len: 5
-   transposed: False
-   x: (ndarray) shape (5,) range 10.0 ←→ 14.0
-   y: (ndarray) shape (5,) range 10.0 ←→ 14.0
-   yaw: (ndarray) shape (5,) range 36.375 ←→ 50.90625
-)       
-```
-
-```python
-# Access last yaw value
-print(trajectory[-1].yaw)
-# 360
-```
-
-##### Define your own custom data trajectory container
+#### Define your own custom data trajectory container
 
 ```python
 import numpy as np
@@ -205,10 +184,34 @@ class CustomStatePose2D(tct.BaseTrajectoryDataclass):
     x: np.ndarray
     y: np.ndarray
     yaw: np.ndarray
-
 ```
 
-##### Post-Processing with Callbacks
+
+#### Trajectory containers are trajectory wide iterable object which support indexing and slicing
+
+```python
+# Example accessing interval t=10 to t=15
+print(trajectory[10:15])
+```
+
+```text
+Pose2DSA(
+   feature_name: "2D pose example"
+   trajectory_len: 5
+   transposed: False
+   x: (ndarray) shape (5,) range 10.0 ←→ 14.0
+   y: (ndarray) shape (5,) range 10.0 ←→ 14.0
+   theta: (ndarray) shape (5,) range 36.375 ←→ 50.90625
+)    
+```
+
+```python
+# Example accessing the last theta value
+print(trajectory[-1].theta)
+# 360
+```
+
+#### Post-Processing with Callbacks
 
 TCT provides three callback methods for custom data post-processing during instantiation:
 
@@ -250,16 +253,19 @@ class CustomTrajectoryWithCallbacks(tct.BaseTrajectoryDataclass):
 
 # Instantiate with automatic callback execution
 trajectory = CustomTrajectoryWithCallbacks(
-    feature_name="example",
+    feature_name="Callback example",
     x=np.arange(10, dtype=float),
     y=np.arange(10, dtype=float),
     velocity=np.random.rand(10),
-    timesteps_indices=np.arange(10)
 )
 
 # Access dynamically created fields
 print(f"X cumsum: {trajectory.x_cumsum}")
 print(f"Total distance: {trajectory.distance.sum():.2f}")
+```
+```text
+X cumsum: [ 0.  1.  3.  6. 10. 15. 21. 28. 36. 45.]
+Total distance: 12.73
 ```
 
 **Callback Execution Order:**
@@ -269,7 +275,7 @@ print(f"Total distance: {trajectory.distance.sum():.2f}")
 
 For more details, see the [Post-Processing Callbacks documentation](documentation/post_processing_callbacks.md).
 
-#### From ROS bag
+### From ROS bag
 
 ```python
 import trajectory_container_tools as tct
@@ -307,7 +313,7 @@ Fetch rosbag typestore for ros2 humble
 
 Multifeature(
    dataset_info: Warthog Mont-Morency 1 Dec 2025
-   aggregated_date: 2025-10-10 23:52:10.623676
+   aggregated_date: 2025-10-15 11:33:06.643908
    chunks_total: 783
    bag_timestamps:       
        Timestamps(
@@ -393,11 +399,48 @@ Multifeature(
             )
       )
 )
-
-
 ```
 
-#### From pandas DataFrame
+
+### Chunk-based Iteration with AbstractMultifeatureStampedDataclass
+
+When extracting data from ROS bags, you can iterate over synchronized timestamp chunks across multiple features:
+
+```python
+import trajectory_container_tools as tct
+
+# Extract features from ROS bag (returns AbstractMultifeatureStampedDataclass)
+multifeature_data = tct.extractor.from_rosbag(
+    rosbag_path,
+    features_config={
+        "/odom": tct.dataclasses.NavMsgsOdometry,
+        "/cmd": tct.dataclasses.AckermannMsgsAckermannDriveStamped,
+    },
+    chunk_on="/cmd",
+)
+
+# Iterate over timestamp chunks
+for chunk_idx, chunk in enumerate(multifeature_data):
+    print(f"Chunk {chunk_idx}:")
+    print(f"  Odometry data: {chunk.topic_odom}")
+    print(f"  Command data: {chunk.topic_cmd}")
+    
+# Access specific chunk by index
+first_chunk = multifeature_data[0]
+last_chunk = multifeature_data[-1]
+
+# Get total number of chunks
+total_chunks = multifeature_data.chunks_total
+print(f"Total chunks: {total_chunks}")
+```
+
+This enables processing synchronized multi-sensor data in manageable time windows, particularly useful for:
+- (Reinforcement Learnind) Processing ros data while preserving causal relationship between observation and action
+- Synchronizing data across multiple sensors/topics
+- Time-windowed analysis and feature extraction
+- Processing large ROS bags incrementally
+
+### From pandas DataFrame
 
 ```python
 import trajectory_container_tools as tct
@@ -442,44 +485,6 @@ Multifeature(
       )
 )
 ```
-
-#### Chunk-based Iteration with AbstractMultifeatureStampedDataclass
-
-When extracting data from ROS bags, you can iterate over synchronized timestamp chunks across multiple features:
-
-```python
-import trajectory_container_tools as tct
-
-# Extract features from ROS bag (returns AbstractMultifeatureStampedDataclass)
-multifeature_data = tct.extractor.from_rosbag(
-    rosbag_path,
-    features_config={
-        "/odom": tct.dataclasses.NavMsgsOdometry,
-        "/cmd": tct.dataclasses.AckermannMsgsAckermannDriveStamped,
-    },
-    chunk_on="/cmd",
-)
-
-# Iterate over timestamp chunks
-for chunk_idx, chunk in enumerate(multifeature_data):
-    print(f"Chunk {chunk_idx}:")
-    print(f"  Odometry data: {chunk.topic_odom}")
-    print(f"  Command data: {chunk.topic_cmd}")
-    
-# Access specific chunk by index
-first_chunk = multifeature_data[0]
-last_chunk = multifeature_data[-1]
-
-# Get total number of chunks
-total_chunks = multifeature_data.chunks_total
-print(f"Total chunks: {total_chunks}")
-```
-
-This enables processing synchronized multi-sensor data in manageable time windows, particularly useful for:
-- (Reinforcement Learnind) Processing ros data while preserving causal relationship between observation and action
-- Synchronizing data across multiple sensors/topics
-- Time-windowed analysis and feature extraction
-- Processing large ROS bags incrementally
 
 ## Getting started
 
