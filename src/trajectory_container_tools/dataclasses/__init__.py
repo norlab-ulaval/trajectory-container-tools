@@ -4,15 +4,15 @@ Trajectory dataclasses for different data sources and formats.
 
 Available dataclasses:
 - ROS2 message types (NavMsgsOdometry, SensorMsgsImu, etc.)
-- Simulation environments (F110Gym, MathGymnasium, etc.)
 - Generic containers (BaseTrajectoryDataclass, etc.)
+- Primitive containers (Point2D, Vector2D, Pose2D, etc.)
+- Simulation environments (F110Gym, MathGymnasium, etc.)
 
-Usage:
+Usage example:
 
->>> import trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass
 >>> import trajectory_container_tools as tct
 >>> odom_class = tct.dataclasses.NavMsgsOdometry
->>> imu_class = trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass.SensorMsgsImu
+>>> imu_class = tct.dataclasses.ros_msgs.stamped_dataclass.SensorMsgsImu
 
 """
 
@@ -77,7 +77,16 @@ from .panda_dataframe_feature_dataclass import (
 )
 
 # Primitive types
-from .primitive_dataclass import Point2D, Vector2D, Pose2D, Velocity2D
+from .primitive_dataclass import (
+    Point2D,
+    Vector2D,
+    Pose2D,
+    Velocity2D,
+    Pose2DSA,
+    Point2DSA,
+    Vector2DSA,
+    Velocity2DSA,
+)
 
 __all__ = [
     # Abstract classes
@@ -125,4 +134,8 @@ __all__ = [
     "Vector2D",
     "Pose2D",
     "Velocity2D",
+    "Point2DSA",
+    "Vector2DSA",
+    "Pose2DSA",
+    "Velocity2DSA",
 ]
