@@ -129,6 +129,54 @@ interface for handling trajectory data across different formats and sources.
 - Timestamp validation
 - Dimension and shape validation
 
+## Getting started
+
+### For user
+
+#### Optiona 1: pip install from repository
+```bash
+# Minimal install
+pip install git+https://github.com/norlab-ulaval/trajectory-container-tools.git
+
+# Full install with ros support 
+pip install "git+https://github.com/norlab-ulaval/trajectory-container-tools.git#egg=trajectory-container-tools[ros]"
+```
+
+#### Optiona 2: install from PyPI (when available) 
+```bash
+# Minimal install
+pip install trajectory-container-tools
+
+# Full install with ros support 
+pip install trajectory-container-tools[ros]
+```
+
+### For developer, playing with the interactive example Jupyter notebook or using the `tests_data` 
+
+#### Option 1: Clone and Install with pip
+
+```bash
+# Clone the repository
+git clone https://github.com/norlab-ulaval/trajectory-container-tools.git
+cd trajectory-container-tools
+
+# Install in development mode
+pip install -e .[ros,dev]
+```
+
+#### Option 2: Using DNA (Dockerized-NorLab Application)
+
+```bash
+# Build and run the container
+cd trajectory-container-tools
+dna build develop
+dna up
+```
+
+The DNA approach provides a containerized environment with all dependencies pre-installed including Jupyter server, 
+ideal for reproducible research and development.
+
+
 ## How Does It Work?
 
 Begin by importing the _Trajectory Container Tools_ namespace 
@@ -486,52 +534,6 @@ Multifeature(
 )
 ```
 
-## Getting started
-
-### For user
-
-#### Optiona 1: pip install from repository
-```bash
-# Minimal install
-pip install git+https://github.com/norlab-ulaval/trajectory-container-tools.git
-
-# Full install with ros and development support 
-pip install "git+https://github.com/norlab-ulaval/trajectory-container-tools.git#egg=trajectory-container-tools[ros,dev]"
-```
-
-#### Optiona 2: install from PyPI (when available) 
-```bash
-# Minimal install
-pip install trajectory-container-tools
-
-# Full install with ros and development support 
-pip install trajectory-container-tools[ros,dev]
-```
-
-### For developer, playing with the interactive example Jupyter notebook or using the `tests_data` 
-
-#### Option 1: Clone and Install with pip
-
-```bash
-# Clone the repository
-git clone https://github.com/norlab-ulaval/trajectory-container-tools.git
-cd trajectory-container-tools
-
-# Install in development mode
-pip install -e .[ros,dev]
-```
-
-#### Option 2: Using DNA (Dockerized-NorLab Application)
-
-```bash
-# Build and run the container
-cd trajectory-container-tools
-dna build develop
-dna up
-```
-
-The DNA approach provides a containerized environment with all dependencies pre-installed, ideal for reproducible
-research and development.
 
 ## Documentation
 
