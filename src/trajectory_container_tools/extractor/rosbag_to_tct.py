@@ -6,12 +6,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import numpy as np
 
-from rosbags.rosbag2 import Reader
-from rosbags.typesys.store import Typestore
-
-from trajectory_container_tools.dataclasses.core.abstract_multifeature_dataclass import (
-    AbstractMultifeatureStampedDataclass,
-)
+from trajectory_container_tools.dataclasses.core.abstract_multifeature_stamped_dataclass import AbstractMultifeatureStampedDataclass
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
 )
@@ -26,6 +21,7 @@ from trajectory_container_tools.utils.factory import (
     parse_feature_spec,
 )
 from trajectory_container_tools.utils.general import (
+    RosImportError,
     camelcase_to_snake_case,
     extract_class_name_from_type,
     setup_progressbar,
@@ -54,6 +50,12 @@ from trajectory_container_tools.typing import (
     MultifeatureTrajectoryDataclass,
     ShadowDataContainer,
 )
+
+try:
+    from rosbags.rosbag2 import Reader
+    from rosbags.typesys.store import Typestore
+except (ImportError, ModuleNotFoundError):
+    raise RosImportError
 
 
 def check_bag_topics(rosbag_path: Union[str, Path]) -> Path:

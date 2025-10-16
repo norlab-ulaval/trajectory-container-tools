@@ -27,6 +27,7 @@ from trajectory_container_tools.dataclasses.core import (
     BaseNoTrajectoryDataclass,
 )
 
+
 # ROS2 dataclasses
 from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
     Tf2MsgsTFMessage,
@@ -91,9 +92,9 @@ from .primitive_dataclass import (
 __all__ = [
     # Abstract classes
     "AbstractTrajectoryDataclass",
+    "AbstractNoTrajectoryDataclass",
     "AbstractMultifeatureDataclass",
     "AbstractMultifeatureStampedDataclass",
-    "AbstractNoTrajectoryDataclass",
     # Base classes
     "BaseTrajectoryDataclass",
     "NestedBaseTrajectoryDataclass",

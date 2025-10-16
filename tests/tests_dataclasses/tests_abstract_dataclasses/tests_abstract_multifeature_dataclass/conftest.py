@@ -7,9 +7,7 @@ import numpy as np
 import pytest
 
 from trajectory_container_tools.dataclasses import Header, RosStampedDataclass
-from trajectory_container_tools.dataclasses.core.abstract_multifeature_dataclass import (
-    AbstractMultifeatureStampedDataclass,
-)
+from trajectory_container_tools.dataclasses.core import AbstractMultifeatureStampedDataclass
 from trajectory_container_tools.temporal import Timestamps
 
 

@@ -17,6 +17,29 @@ import numpy as np
 from tqdm import tqdm
 
 
+# :::: General exceptions :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+class RosImportError(Exception):
+    """Exception raised when ROS functionality is attempted to be used without the
+    required dependencies installed.
+    """
+
+    def __init__(self):
+        self.install_instructions = (
+            "To enable ros support, install TCT using\n"
+            "    pip install trajectory-container-tools[ros]\n"
+            "if available or\n"
+            f'    pip install "git+https://github.com/norlab-ulaval/trajectory-container-tools.git#egg=trajectory-container-tools[ros]"\n'
+            "and make sure a ros2 distribution path is in PYTHONPATH i.e., source ros."
+
+        )
+        self.messages = (
+            f"ROS functionality requires additional dependencies. {self.install_instructions}"
+        )
+        super().__init__(self.messages)
+
+
 # :::: Numpy utilities ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 def check_is_finite(x: np.ndarray) -> None:
     assert np.all(
@@ -175,7 +198,7 @@ def show_directory_content(top_dir: Union[AnyStr, Path]):
     :param top_dir: The path to the top-level directory whose contents are to be inspected.
     :return: None
     """
-    print("."*80)
+    print("." * 80)
     print(f"{top_dir}:")
     resolved_top_path = dn_validate_path(top_dir)
     top_level_entries = os.listdir(resolved_top_path)
@@ -184,10 +207,11 @@ def show_directory_content(top_dir: Union[AnyStr, Path]):
             if each_top != ".DS_Store":
                 print(f"    {each_top}:")
             each_top_resolved_path = os.path.join(resolved_top_path, each_top)
-            if os.path.isdir(each_top_resolved_path) and len(os.listdir(each_top_resolved_path)) > 0:
-                for each in sorted(
-                    os.listdir(each_top_resolved_path)
-                ):
+            if (
+                os.path.isdir(each_top_resolved_path)
+                and len(os.listdir(each_top_resolved_path)) > 0
+            ):
+                for each in sorted(os.listdir(each_top_resolved_path)):
                     if each != ".DS_Store":
                         each_resolved_path = os.path.join(each_top_resolved_path, each)
                         each_size = get_directory_size_mb(each_resolved_path)
