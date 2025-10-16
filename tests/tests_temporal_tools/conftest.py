@@ -1,7 +1,13 @@
 # coding=utf-8
 import numpy as np
 import pytest
-from rclpy.time import Time as ROSTime
+
+from trajectory_container_tools.utils.general import RosImportError
+
+try:
+    from rclpy.time import Time as ROSTime
+except (ImportError, ModuleNotFoundError):
+    raise RosImportError
 
 from trajectory_container_tools.temporal import Timestamps
 

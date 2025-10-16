@@ -1,17 +1,18 @@
 # coding=utf-8
 from typing import Optional
 
-from rosbags.typesys import get_types_from_msg
-from rosbags.typesys.store import Typestore
+from trajectory_container_tools.utils.ros2_utils.ros2_general import (
+    get_rosbag_typestore_auto_distro,
+)
 
-from trajectory_container_tools.utils.ros2_utils.ros2_general import get_rosbag_typestore_auto_distro
+from trajectory_container_tools.utils.general import RosImportError
 
-# from ackermann_msgs.msg import AckermannDriveStamped, AckermannDrive
-# from vesc_msgs.msg import VescStateStamped
+try:
+    from rosbags.typesys import get_types_from_msg
+    from rosbags.typesys.store import Typestore
+except (ImportError, ModuleNotFoundError):
+    raise RosImportError
 
-# from std_msgs.msg import Float64
-# from geometry_msgs.msg import PoseStamped, PoseArray, PoseWithCovarianceStamped, PointStamped
-# from sensor_msgs.msg import Joy
 
 # Execute for more info: $ ros2 interface show ackermann_msgs/msg/AckermannDrive
 ACKERMAN_MSG = """
@@ -46,7 +47,7 @@ VescImu imu
 
 
 def register_non_native_msgs(typestore: Optional[Typestore] = None) -> Typestore:
-    """ Registers non-native message types with the provided or default typestore.
+    """Registers non-native message types with the provided or default typestore.
 
     This function checks and registers specific non-native ROS message types into
     a given `typestore`. If no `typestore` is provided, it initializes one using
@@ -74,15 +75,11 @@ def register_non_native_msgs(typestore: Optional[Typestore] = None) -> Typestore
         )
 
     if not typestore.types.get("vesc_msgs/msg/VescImu"):
-        typestore.register(
-            get_types_from_msg(VESC_MSG, "vesc_msgs/msg/VescImu")
-        )
+        typestore.register(get_types_from_msg(VESC_MSG, "vesc_msgs/msg/VescImu"))
 
     if not typestore.types.get("vesc_msgs/msg/VescImuStamped"):
         typestore.register(
-            get_types_from_msg(
-                VESC_STAMPED_MSG, "vesc_msgs/msg/VescImuStamped"
-            )
+            get_types_from_msg(VESC_STAMPED_MSG, "vesc_msgs/msg/VescImuStamped")
         )
 
     return typestore

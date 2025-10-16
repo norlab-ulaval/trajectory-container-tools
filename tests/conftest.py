@@ -5,15 +5,6 @@ from typing import Dict, Union
 import numpy as np
 import pytest
 
-from .rosbag_test_utils import (
-    RosBagConfig,
-    get_rosbag_vaul_f110_grand_salon_path,
-    get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short,
-    get_rosbag_vaul_f1tenth_nx_orin_path_offending_timestamps,
-)
-from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
-    Tf2MsgsTFMessage,
-)
 from trajectory_container_tools.dataclasses import (
     AckermannMsgsAckermannDriveStamped,
     NavMsgsOdometry,
@@ -22,6 +13,22 @@ from trajectory_container_tools.dataclasses import (
     VescMsgsVescImuStamped,
 )
 from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
+from trajectory_container_tools.utils.general import RosImportError
+
+has_ros_dependencies = True
+try:
+    from tests.rosbag_test_utils import (
+        RosBagConfig,
+        get_rosbag_vaul_f110_grand_salon_path,
+        get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short,
+        get_rosbag_vaul_f1tenth_nx_orin_path_offending_timestamps,
+    )
+    from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
+        Tf2MsgsTFMessage,
+    )
+except RosImportError:
+    has_ros_dependencies = False
+
 
 TRJ_LEN = 40
 
@@ -188,67 +195,67 @@ def mock_trajectory_dict_unordered(
 
 
 # ==== rosbag related =============================================================================
+if has_ros_dependencies:
+
+    @pytest.fixture(scope="function")
+    def setup_rosbag_three_topics_filtered():
+        bag_path, bag_name = get_rosbag_vaul_f110_grand_salon_path(offending=False)
+
+        ros_bag_config = RosBagConfig(
+            bag_name=bag_name,
+            ts_fast_forward=None,
+            ts_window=None,
+            bag_path=bag_path,
+            feature_config={
+                "/odom": NavMsgsOdometry,
+                "/teleop": AckermannMsgsAckermannDriveStamped,
+                "/sensors/imu/raw": SensorMsgsImu,
+            },
+        )
+        return ros_bag_config
 
 
-@pytest.fixture(scope="function")
-def setup_rosbag_three_topics_filtered():
-    bag_path, bag_name = get_rosbag_vaul_f110_grand_salon_path(offending=False)
+    @pytest.fixture(scope="function")
+    def setup_rosbag_six_topics_filtered():
+        bag_path, bag_name, selected_topic = (
+            get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short()
+        )
 
-    ros_bag_config = RosBagConfig(
-        bag_name=bag_name,
-        ts_fast_forward=None,
-        ts_window=None,
-        bag_path=bag_path,
-        feature_config={
-            "/odom": NavMsgsOdometry,
-            "/teleop": AckermannMsgsAckermannDriveStamped,
-            "/sensors/imu/raw": SensorMsgsImu,
-        },
-    )
-    return ros_bag_config
-
-
-@pytest.fixture(scope="function")
-def setup_rosbag_six_topics_filtered():
-    bag_path, bag_name, selected_topic = (
-        get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short()
-    )
-
-    ros_bag_config = RosBagConfig(
-        bag_name=bag_name,
-        ts_fast_forward=5e9,
-        ts_window=1e10,
-        bag_path=bag_path,
-        feature_config={
-            "/odom": NavMsgsOdometry,
-            "/tf": Tf2MsgsTFMessage,
-            "/scan": Scan,
-            "/teleop": AckermannMsgsAckermannDriveStamped,
-            "/sensors/imu/raw": SensorMsgsImu,
-            "/sensors/imu": VescMsgsVescImuStamped,
-        },
-    )
-    return ros_bag_config
+        ros_bag_config = RosBagConfig(
+            bag_name=bag_name,
+            ts_fast_forward=5e9,
+            ts_window=1e10,
+            bag_path=bag_path,
+            feature_config={
+                "/odom": NavMsgsOdometry,
+                "/tf": Tf2MsgsTFMessage,
+                "/scan": Scan,
+                "/teleop": AckermannMsgsAckermannDriveStamped,
+                "/sensors/imu/raw": SensorMsgsImu,
+                "/sensors/imu": VescMsgsVescImuStamped,
+            },
+        )
+        return ros_bag_config
 
 
-@pytest.fixture(scope="function")
-def setup_rosbag_six_topics_offending_timestamps():
-    bag_path, bag_name, selected_topic = (
-        get_rosbag_vaul_f1tenth_nx_orin_path_offending_timestamps()
-    )
+    @pytest.fixture(scope="function")
+    def setup_rosbag_six_topics_offending_timestamps():
+        bag_path, bag_name, selected_topic = (
+            get_rosbag_vaul_f1tenth_nx_orin_path_offending_timestamps()
+        )
 
-    ros_bag_config = RosBagConfig(
-        bag_name=bag_name,
-        ts_fast_forward=None,
-        ts_window=None,
-        bag_path=bag_path,
-        feature_config={
-            "/pf/pose/odom": NavMsgsOdometry,
-            "/tf": Tf2MsgsTFMessage,
-            "/scan": Scan,
-            "/ackermann_cmd": AckermannMsgsAckermannDriveStamped,
-            "/teleop": AckermannMsgsAckermannDriveStamped,
-            "/sensors/imu/raw": SensorMsgsImu,
-        },
-    )
-    return ros_bag_config
+        ros_bag_config = RosBagConfig(
+            bag_name=bag_name,
+            ts_fast_forward=None,
+            ts_window=None,
+            bag_path=bag_path,
+            feature_config={
+                "/pf/pose/odom": NavMsgsOdometry,
+                "/tf": Tf2MsgsTFMessage,
+                "/scan": Scan,
+                "/ackermann_cmd": AckermannMsgsAckermannDriveStamped,
+                "/teleop": AckermannMsgsAckermannDriveStamped,
+                "/sensors/imu/raw": SensorMsgsImu,
+            },
+        )
+        return ros_bag_config

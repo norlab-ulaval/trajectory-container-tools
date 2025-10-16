@@ -492,12 +492,20 @@ Multifeature(
 
 #### Optiona 1: pip install from repository
 ```bash
+# Minimal install
 pip install git+https://github.com/norlab-ulaval/trajectory-container-tools.git
+
+# Full install with ros and development support 
+pip install "git+https://github.com/norlab-ulaval/trajectory-container-tools.git#egg=trajectory-container-tools[ros,dev]"
 ```
 
 #### Optiona 2: install from PyPI (when available) 
 ```bash
+# Minimal install
 pip install trajectory-container-tools
+
+# Full install with ros and development support 
+pip install trajectory-container-tools[ros,dev]
 ```
 
 ### For developer, playing with the interactive example Jupyter notebook or using the `tests_data` 
@@ -510,7 +518,7 @@ git clone https://github.com/norlab-ulaval/trajectory-container-tools.git
 cd trajectory-container-tools
 
 # Install in development mode
-pip install -e .
+pip install -e .[ros,dev]
 ```
 
 #### Option 2: Using DNA (Dockerized-NorLab Application)

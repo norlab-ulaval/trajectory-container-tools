@@ -1,9 +1,7 @@
 # coding=utf-8
 import pytest
 
-from trajectory_container_tools.dataclasses.core.abstract_multifeature_dataclass import (
-    AbstractMultifeatureStampedDataclass,
-)
+from trajectory_container_tools.dataclasses.core import AbstractMultifeatureStampedDataclass
 from trajectory_container_tools.extractor import from_rosbag
 
 
