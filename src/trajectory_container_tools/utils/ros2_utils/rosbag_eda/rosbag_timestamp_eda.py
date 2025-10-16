@@ -11,7 +11,6 @@ Usage:
 from typing import Optional, Tuple, Union
 import os
 from pathlib import Path
-from rosbags.typesys.store import Typestore
 
 import trajectory_container_tools as tct
 import trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass
@@ -20,9 +19,7 @@ from trajectory_container_tools.temporal.timestamps import to_seconds
 from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
     register_non_native_msgs,
 )
-from trajectory_container_tools.dataclasses.core.abstract_multifeature_dataclass import (
-    AbstractMultifeatureStampedDataclass,
-)
+from trajectory_container_tools.dataclasses.core import AbstractMultifeatureStampedDataclass
 from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.general_utils import (
     compute_bag_target_window_nb,
     compute_window_start_and_stop,
@@ -35,6 +32,12 @@ from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.plot impor
     plot_bag_timestamp_delta,
 )
 import trajectory_container_tools.dataclasses as tct_dataclasses
+from trajectory_container_tools.utils.general import RosImportError
+
+try:
+    from rosbags.typesys.store import Typestore
+except (ImportError, ModuleNotFoundError):
+    raise RosImportError
 
 
 def run_rosbag_timestamp_eda(

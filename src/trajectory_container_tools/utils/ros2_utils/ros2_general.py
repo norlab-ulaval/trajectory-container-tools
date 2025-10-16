@@ -1,8 +1,13 @@
 # coding=utf-8
 import os
 
-from rosbags.typesys.store import Typestore
-from rosbags.typesys import Stores, get_typestore
+from trajectory_container_tools.utils.general import RosImportError
+
+try:
+    from rosbags.typesys.store import Typestore
+    from rosbags.typesys import Stores, get_typestore
+except (ImportError, ModuleNotFoundError):
+    raise RosImportError
 
 
 def get_ros2_distro() -> str:

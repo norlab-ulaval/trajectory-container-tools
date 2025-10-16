@@ -8,7 +8,7 @@ dynamic = ["version"]
 
 description = "Trajectory Container Tools for Robotic Deep Reinforcement Learning"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     { name = "RedLeader Research", email = "research@redleader.com" }
 ]
@@ -17,19 +17,24 @@ classifiers = [
     "Development Status :: 3 - Beta",
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
     "numpy",
     "matplotlib",
     "pandas",
     "tqdm",
-    "rosbags", # For ROS bag functionality
     "deprecated",
 ]
 
 [project.optional-dependencies]
+ros = [
+    "rosbags",
+]
 dev = [
     "pytest",
     "pytest-mock",

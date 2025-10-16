@@ -1,12 +1,18 @@
 # coding=utf-8
+
+import pytest
 import os
 import shutil
 from pathlib import Path
 
-import pytest
-from rosbags.rosbag2 import Reader
+import trajectory_container_tools.dataclasses.core.abstract_multifeature_stamped_dataclass
+from trajectory_container_tools.utils.general import RosImportError
 
-import trajectory_container_tools as tct
+try:
+    from rosbags.rosbag2 import Reader
+except (ImportError, ModuleNotFoundError):
+    raise RosImportError
+
 import trajectory_container_tools.dataclasses.core.abstract_multifeature_dataclass
 from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.general_utils import (
     compute_bag_target_window_nb,
@@ -34,11 +40,16 @@ def test_run_rosbag_timestamp_eda_default_exp_dir(
     setup_teardown_artifact_dir, setup_rosbag_six_topics_filtered
 ):
     eda_dir_path = setup_teardown_artifact_dir
-    run_rosbag_timestamp_eda(bag_path=setup_rosbag_six_topics_filtered.bag_path,
-                             eda_dir_path=eda_dir_path,
-                             features_config=setup_rosbag_six_topics_filtered.feature_config,
-                             chunk_on='/teleop', fast_forward_ns=None, window_ns=500000000,
-                             experiment_dir=None, show_plot=False)
+    run_rosbag_timestamp_eda(
+        bag_path=setup_rosbag_six_topics_filtered.bag_path,
+        eda_dir_path=eda_dir_path,
+        features_config=setup_rosbag_six_topics_filtered.feature_config,
+        chunk_on="/teleop",
+        fast_forward_ns=None,
+        window_ns=500000000,
+        experiment_dir=None,
+        show_plot=False,
+    )
 
     mock_exp_dir_path = os.path.join(
         eda_dir_path, setup_rosbag_six_topics_filtered.bag_name
@@ -51,11 +62,16 @@ def test_run_rosbag_timestamp_eda_override_exp_dir(
     setup_teardown_artifact_dir, setup_rosbag_six_topics_filtered
 ):
     eda_dir_path = setup_teardown_artifact_dir
-    run_rosbag_timestamp_eda(bag_path=setup_rosbag_six_topics_filtered.bag_path,
-                             eda_dir_path=eda_dir_path,
-                             features_config=setup_rosbag_six_topics_filtered.feature_config,
-                             chunk_on='/teleop', fast_forward_ns=None, window_ns=500000000,
-                             experiment_dir="mock_experiement_dir", show_plot=False)
+    run_rosbag_timestamp_eda(
+        bag_path=setup_rosbag_six_topics_filtered.bag_path,
+        eda_dir_path=eda_dir_path,
+        features_config=setup_rosbag_six_topics_filtered.feature_config,
+        chunk_on="/teleop",
+        fast_forward_ns=None,
+        window_ns=500000000,
+        experiment_dir="mock_experiement_dir",
+        show_plot=False,
+    )
 
     mock_exp_dir_path = os.path.join(eda_dir_path, "mock_experiement_dir")
     assert os.path.exists(mock_exp_dir_path)
@@ -66,12 +82,18 @@ def test_run_rosbag_timestamp_eda_full_bag(
     setup_teardown_artifact_dir, setup_rosbag_six_topics_filtered
 ):
     eda_dir_path = setup_teardown_artifact_dir
-    tc = run_rosbag_timestamp_eda(bag_path=setup_rosbag_six_topics_filtered.bag_path,
-                                  eda_dir_path=eda_dir_path,
-                                  features_config=setup_rosbag_six_topics_filtered.feature_config,
-                                  chunk_on='/teleop', fast_forward_ns=None, window_ns=None, show_plot=False)
+    tc = run_rosbag_timestamp_eda(
+        bag_path=setup_rosbag_six_topics_filtered.bag_path,
+        eda_dir_path=eda_dir_path,
+        features_config=setup_rosbag_six_topics_filtered.feature_config,
+        chunk_on="/teleop",
+        fast_forward_ns=None,
+        window_ns=None,
+        show_plot=False,
+    )
     print(tc)
-    assert isinstance(tc, tct.AbstractMultifeatureStampedDataclass)
+    assert isinstance(tc,
+                      trajectory_container_tools.dataclasses.core.abstract_multifeature_stamped_dataclass.AbstractMultifeatureStampedDataclass)
 
     assert tc.topic_odom.trajectory_len == 864
     assert tc.topic_tf.transforms[0].trajectory_len == 864
@@ -89,15 +111,18 @@ def test_run_rosbag_timestamp_eda_window(
         eda_dir_path, setup_rosbag_six_topics_filtered.bag_name
     )
     mock_plot_dir_path = os.path.join(mock_exp_dir_path, "plots")
-    tc = run_rosbag_timestamp_eda(bag_path=setup_rosbag_six_topics_filtered.bag_path,
-                                  eda_dir_path=eda_dir_path,
-                                  features_config=setup_rosbag_six_topics_filtered.feature_config,
-                                  chunk_on='/teleop',
-                                  fast_forward_ns=setup_rosbag_six_topics_filtered.ts_fast_forward,
-                                  window_ns=setup_rosbag_six_topics_filtered.ts_window,
-                                  show_plot=False)
+    tc = run_rosbag_timestamp_eda(
+        bag_path=setup_rosbag_six_topics_filtered.bag_path,
+        eda_dir_path=eda_dir_path,
+        features_config=setup_rosbag_six_topics_filtered.feature_config,
+        chunk_on="/teleop",
+        fast_forward_ns=setup_rosbag_six_topics_filtered.ts_fast_forward,
+        window_ns=setup_rosbag_six_topics_filtered.ts_window,
+        show_plot=False,
+    )
     print(tc)
-    assert isinstance(tc, tct.AbstractMultifeatureStampedDataclass)
+    assert isinstance(tc,
+                      trajectory_container_tools.dataclasses.core.abstract_multifeature_stamped_dataclass.AbstractMultifeatureStampedDataclass)
 
     assert os.path.exists(mock_plot_dir_path)
 

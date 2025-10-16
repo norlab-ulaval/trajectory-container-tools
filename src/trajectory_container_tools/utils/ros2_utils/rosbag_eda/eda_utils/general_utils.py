@@ -5,14 +5,18 @@ import os
 from pathlib import Path
 import numpy as np
 
-from rosbags.rosbag2 import Reader
-from rosbags.typesys.store import Typestore
-
 import trajectory_container_tools as tct
 import trajectory_container_tools.temporal.timestamps
-from trajectory_container_tools.utils.ros2_utils.ros2_timestamps import (
+from trajectory_container_tools.temporal.trajectory_timestamps_metadata import (
     TrajectoryTimestampsMetadata,
 )
+from trajectory_container_tools.utils.general import RosImportError
+0
+try:
+    from rosbags.rosbag2 import Reader
+    from rosbags.typesys.store import Typestore
+except (ImportError, ModuleNotFoundError):
+    raise RosImportError
 
 
 def rosbag_log_file_name(

@@ -31,10 +31,10 @@ Quick Start:
 >>> tct.extractor.check_bag_topics(rosbag_path)
 
 """
+import warnings
 
 # Version info
 from .version import __version__
-
 
 # Core abstract classes
 from .dataclasses.core.abstract_trajectory_dataclass import (
@@ -45,6 +45,8 @@ from .dataclasses.core.abstract_no_trajectory_dataclass import (
 )
 from .dataclasses.core.abstract_multifeature_dataclass import (
     AbstractMultifeatureDataclass,
+)
+from .dataclasses.core.abstract_multifeature_stamped_dataclass import (
     AbstractMultifeatureStampedDataclass,
 )
 from .dataclasses.core.base_trajectory_dataclass import (
@@ -54,18 +56,18 @@ from .dataclasses.core.base_trajectory_dataclass import (
 )
 
 from .utils.containers_sanity_checks import containers_timestep_alignment_sanity_check
+from .utils.general import RosImportError
 
 # Common exceptions
 from .temporal import TimestampCausalOrderingError
 
 # Submodule imports for namespace organization (moved to end to avoid circular imports)
 from . import dataclasses as dataclasses
-from . import extractor
-from . import ros
 from . import factory
 from . import temporal
 from . import typing
 from . import utils
+
 
 __all__ = [
     # Version
@@ -80,8 +82,6 @@ __all__ = [
     "BaseNoTrajectoryDataclass",
     # Namespaces
     "dataclasses",
-    "extractor",
-    "ros",
     "factory",
     "temporal",
     "typing",
@@ -91,3 +91,21 @@ __all__ = [
     # Common exceptions
     "TimestampCausalOrderingError",
 ]
+
+try:
+    from . import extractor
+    from . import ros
+
+    __all__ += [
+        "extractor",
+        "ros",
+    ]
+
+except RosImportError as e:
+    warnings.warn(
+        (
+            f"Be advised 'trajectory_container_tools' was installed without ros2 support "
+            f"enabled. {e.messages}"
+        ),
+        stacklevel=2,
+    )

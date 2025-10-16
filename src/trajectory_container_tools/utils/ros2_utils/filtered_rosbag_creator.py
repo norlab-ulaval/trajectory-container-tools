@@ -1,9 +1,8 @@
 import os
 from pathlib import Path
 
-from rosbags.rosbag2 import Reader, Writer
-from typing import List, Optional, Union
 
+from typing import List, Optional, Union
 from tqdm import tqdm
 
 from trajectory_container_tools.extractor.rosbag_to_tct import check_bag_topics
@@ -14,8 +13,16 @@ from trajectory_container_tools.utils.general import (
 from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
     register_non_native_msgs,
 )
-from trajectory_container_tools.utils.ros2_utils.ros2_general import get_rosbag_typestore_auto_distro
+from trajectory_container_tools.utils.ros2_utils.ros2_general import (
+    get_rosbag_typestore_auto_distro,
+)
 
+from trajectory_container_tools.utils.general import RosImportError
+
+try:
+    from rosbags.rosbag2 import Reader, Writer
+except (ImportError, ModuleNotFoundError):
+    raise RosImportError
 
 def create_filtered_rosbag(
     input_rosbag_path: Union[str, Path],
@@ -104,7 +111,9 @@ if __name__ == "__main__":
 
     share_data_path = os.path.join("data", "shared_data")
     external_data_path = os.path.join("data", "external_data")
-    test_data_path = os.path.join("data", "repository_data", "tests_data", "rosbag_test_data")
+    test_data_path = os.path.join(
+        "data", "repository_data", "tests_data", "rosbag_test_data"
+    )
 
     show_directory_content(dn_validate_path(share_data_path))
     show_directory_content(dn_validate_path(external_data_path))
