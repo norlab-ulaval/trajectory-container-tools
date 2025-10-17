@@ -84,6 +84,18 @@ class TestRosNamespaceModule:
         assert hasattr(tct.ros, "rosbag_topic_time_to_ros_time")
         assert callable(tct.ros.rosbag_topic_time_to_ros_time)
 
+    def test_gather_rosbag_informations_function_exists(self, setup_namespace):
+        """Test that gather_rosbag_informations function is available in ros namespace."""
+        tct = setup_namespace
+        assert hasattr(tct.ros, "gather_rosbag_informations")
+        assert callable(tct.ros.gather_rosbag_informations)
+
+    def test_gather_rosbag_trajectory_window_informations_function_exists(self, setup_namespace):
+        """Test that gather_rosbag_trajectory_window_informations function is available in ros namespace."""
+        tct = setup_namespace
+        assert hasattr(tct.ros, "gather_rosbag_trajectory_window_informations")
+        assert callable(tct.ros.gather_rosbag_trajectory_window_informations)
+
     def test_ros_all_attribute(self, setup_namespace):
         """Test that ros module has proper __all__ attribute."""
         tct = setup_namespace
