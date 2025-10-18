@@ -9,7 +9,7 @@ from trajectory_container_tools import (
     AbstractMultifeatureDataclass,
 )
 from trajectory_container_tools.dataclasses import RosStampedDataclass
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import StdMsgsHeader
 from trajectory_container_tools.temporal.timestamps import Timestamps
 
 
@@ -27,12 +27,12 @@ class TestAbstractMultifeatureDataclass:
     ) -> Tuple[RosStampedDataclass, RosStampedDataclass]:
         topic_mock_1 = RosStampedDataclass(
             feature_name="Mock topic 1",
-            header=Header(frame_id="topic_1", timestamps=np.arange(20) * 1e9),
+            header=StdMsgsHeader(frame_id="topic_1", timestamps=np.arange(20) * 1e9),
         )
 
         topic_mock_2 = RosStampedDataclass(
             feature_name="Mock topic 2",
-            header=Header(frame_id="topic_2", timestamps=np.arange(20) * 1e9),
+            header=StdMsgsHeader(frame_id="topic_2", timestamps=np.arange(20) * 1e9),
         )
         return topic_mock_1, topic_mock_2
 

@@ -5,14 +5,16 @@ import numpy as np
 
 from .core_dataclass import RosStampedDataclass
 from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import (
-    PoseWithCovariance,
-    TwistWithCovariance,
+    GeometryMsgsPose,
+    GeometryMsgsPoseWithCovariance,
+    GeometryMsgsTwist,
+    GeometryMsgsTwistWithCovariance,
     VescMsgsVescImu,
     AckermannMsgsAckermannDrive,
 )
-from .primitive_dataclass import Quaternion, Vector3
+from .primitive_dataclass import GeometryMsgsQuaternion, GeometryMsgsVector3
 
-
+# .... Nav msgs ...................................................................................
 @dataclass()
 class NavMsgsOdometry(RosStampedDataclass):
     """Data container for navigation messages odometry (nested data container version).
@@ -26,15 +28,15 @@ class NavMsgsOdometry(RosStampedDataclass):
     the navigation-related data are critical.
 
     :ivar pose: Contains the pose along with its associated covariance information.
-    :type pose: trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass.PoseWithCovariance
+    :type pose: trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass.GeometryMsgsPoseWithCovariance
     :ivar twist: Contains the twist along with its associated covariance information.
-    :type twist: trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass.TwistWithCovariance
+    :type twist: trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass.GeometryMsgsTwistWithCovariance
     """
 
-    pose: PoseWithCovariance
-    twist: TwistWithCovariance
+    pose: GeometryMsgsPoseWithCovariance
+    twist: GeometryMsgsTwistWithCovariance
 
-
+# .... Ackermann msgs .............................................................................
 @dataclass()
 class AckermannMsgsAckermannDriveStamped(RosStampedDataclass):
     """
@@ -53,8 +55,64 @@ class AckermannMsgsAckermannDriveStamped(RosStampedDataclass):
     drive: AckermannMsgsAckermannDrive
 
 
+# .... Vesc msgs ..................................................................................
 @dataclass()
-class Scan(RosStampedDataclass):
+class VescMsgsVescImuStamped(RosStampedDataclass):
+    """
+    Represents stamped IMU data related to VESC (Vedder Electronic Speed Controller).
+
+    Compatible ros2 message interface: vesc_msgs/msg/VescImuStamped
+
+    This class encapsulates data for a VESC IMU message with timestamping,
+    extending the RosStampedDataclass structure. It is compatible
+    with the `vesc_msgs/msg/VescImuStamped` ROS2 message interface.
+    The primary purpose of this class is to provide a structured data
+    representation of IMU measurements retrieved from a VESC-based system.
+
+    :ivar imu: Instance of the VescMsgsVescImu class, representing IMU data.
+    :type imu: trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass.VescMsgsVescImu
+    """
+
+    imu: VescMsgsVescImu
+
+# .... Sensor msgs ................................................................................
+@dataclass()
+class SensorMsgsImu(RosStampedDataclass):
+    """Represents IMU (Inertial Measurement Unit) sensor data with orientation,
+    angular velocity, and
+    linear acceleration, including their covariance values.
+
+    Compatible ros2 message interface: sensor_msgs/msg/Imu
+
+    This dataclass is used to store data typically obtained from an IMU sensor. It contains
+    information about the orientation, angular velocity, and linear acceleration of a body, along
+    with their respective covariance matrices to represent variability or uncertainty in
+    measurements.
+
+    :ivar orientation: The orientation of the sensor expressed as a quaternion.
+    :type orientation: GeometryMsgsQuaternion
+    :ivar orientationCovariance: The covariance matrix of the orientation measurement.
+    :type orientationCovariance: np.ndarray
+    :ivar angularVelocity: The angular velocity of the sensor.
+    :type angularVelocity: GeometryMsgsVector3
+    :ivar angularVelocityCovariance: The covariance matrix of the angular velocity measurement.
+    :type angularVelocityCovariance: np.ndarray
+    :ivar linearAcceleration: The linear acceleration of the sensor.
+    :type linearAcceleration: GeometryMsgsVector3
+    :ivar linearAccelerationCovariance: The covariance matrix of the linear acceleration
+    measurement.
+    :type linearAccelerationCovariance: np.ndarray
+    """
+
+    orientation: GeometryMsgsQuaternion
+    orientationCovariance: np.ndarray
+    angularVelocity: GeometryMsgsVector3
+    angularVelocityCovariance: np.ndarray
+    linearAcceleration: GeometryMsgsVector3
+    linearAccelerationCovariance: np.ndarray
+
+@dataclass()
+class SensorMsgsLaserScan(RosStampedDataclass):
     """Represents a LaserScan message containing range and intensity data.
 
     Compatible ros2 message interface: sensor_msgs/msg/LaserScan
@@ -89,58 +147,71 @@ class Scan(RosStampedDataclass):
     ranges: np.ndarray  # multi-dimensional ndarray [m]
     intensities: np.ndarray  # multi-dimensional ndarray [device-specific units]
 
+# .... Geometry msgs ..............................................................................
+@dataclass()
+class GeometryMsgsPoseStamped(RosStampedDataclass):
+    """
+    Represents a stamped Pose message in ROS.
+
+    Compatible ros2 message interface: geometry_msgs/msg/PoseStamped
+
+    This class is used for storing a pose with an associated timestamp and frame of reference. It
+    extends the `RosStampedDataclass` to integrate stamped ROS message functionality.
+    Primarily, it stores a `GeometryMsgsPose` object which contains detailed pose data.
+
+    :ivar pose: The pose data associated with this stamped message.
+    :type pose: GeometryMsgsPose
+    """
+    pose: GeometryMsgsPose
 
 @dataclass()
-class VescMsgsVescImuStamped(RosStampedDataclass):
+class GeometryMsgsPoseWithCovarianceStamped(RosStampedDataclass):
     """
-    Represents stamped IMU data related to VESC (Vedder Electronic Speed Controller).
+    Represents a ROS message for a Pose with covariance and timestamp.
 
-    Compatible ros2 message interface: vesc_msgs/msg/VescImuStamped
+    Compatible ros2 message interface: geometry_msgs/msg/PoseWithCovarianceStamped
 
-    This class encapsulates data for a VESC IMU message with timestamping,
-    extending the RosStampedDataclass structure. It is compatible
-    with the `vesc_msgs/msg/VescImuStamped` ROS2 message interface.
-    The primary purpose of this class is to provide a structured data
-    representation of IMU measurements retrieved from a VESC-based system.
+    This class encapsulates a geometric Pose with an associated timestamp and frame identification
+    as used in ROS (Robot Operating System) messages. It extends the functionality of the
+    `RosStampedDataclass` to include positional and orientational data with covariance, which is
+    usually employed in navigation, robotics, and related fields to represent 6-DOF (Degrees of
+    Freedom) poses with quantified uncertainty.
 
-    :ivar imu: Instance of the VescMsgsVescImu class, representing IMU data.
-    :type imu: trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass.VescMsgsVescImu
+    :ivar pose: The pose with associated covariance information.
+    :type pose: GeometryMsgsPoseWithCovariance
     """
-
-    imu: VescMsgsVescImu
-
+    pose: GeometryMsgsPoseWithCovariance
 
 @dataclass()
-class SensorMsgsImu(RosStampedDataclass):
-    """Represents IMU (Inertial Measurement Unit) sensor data with orientation,
-    angular velocity, and
-    linear acceleration, including their covariance values.
-
-    Compatible ros2 message interface: sensor_msgs/msg/Imu
-
-    This dataclass is used to store data typically obtained from an IMU sensor. It contains
-    information about the orientation, angular velocity, and linear acceleration of a body, along
-    with their respective covariance matrices to represent variability or uncertainty in
-    measurements.
-
-    :ivar orientation: The orientation of the sensor expressed as a quaternion.
-    :type orientation: Quaternion
-    :ivar orientationCovariance: The covariance matrix of the orientation measurement.
-    :type orientationCovariance: np.ndarray
-    :ivar angularVelocity: The angular velocity of the sensor.
-    :type angularVelocity: Vector3
-    :ivar angularVelocityCovariance: The covariance matrix of the angular velocity measurement.
-    :type angularVelocityCovariance: np.ndarray
-    :ivar linearAcceleration: The linear acceleration of the sensor.
-    :type linearAcceleration: Vector3
-    :ivar linearAccelerationCovariance: The covariance matrix of the linear acceleration
-    measurement.
-    :type linearAccelerationCovariance: np.ndarray
+class GeometryMsgsTwistStamped(RosStampedDataclass):
     """
+    Represents a ROS Stamped Dataclass including a Twist message.
 
-    orientation: Quaternion
-    orientationCovariance: np.ndarray
-    angularVelocity: Vector3
-    angularVelocityCovariance: np.ndarray
-    linearAcceleration: Vector3
-    linearAccelerationCovariance: np.ndarray
+    Compatible ros2 message interface: geometry_msgs/msg/TwistStamped
+
+    This class encapsulates a ROS stamped message containing a geometry_msgs type
+    Twist message. It provides a structured and standardized way of handling
+    timestamped velocity data in ROS systems.
+
+    :ivar twist: The Twist message containing linear and angular velocity data.
+    :type twist: GeometryMsgsTwist
+    """
+    twist: GeometryMsgsTwist
+
+@dataclass()
+class GeometryMsgsTwistWithCovarianceStamped(RosStampedDataclass):
+    """
+    Represents a ROS-compatible TwistWithCovarianceStamped message.
+
+    Compatible ros2 message interface: geometry_msgs/msg/TwistWithCovarianceStamped
+
+    This dataclass is used to encapsulate the representation of a twist with
+    covariance paired with a standard ROS header. It provides an interface
+    for associating a velocity and angular twist in a covariance matrix with a
+    timestamp and frame information.
+
+    :ivar twist: The twist message containing linear/angular velocity with
+                 covariance information.
+    :type twist: GeometryMsgsTwistWithCovariance
+    """
+    twist: GeometryMsgsTwistWithCovariance

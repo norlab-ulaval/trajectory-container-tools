@@ -90,7 +90,7 @@ class BaseNoTrajectoryDataclass(AbstractNoTrajectoryDataclass):
     This class inherits from ``AbstractNoTrajectoryDataclass`` and serves as
     a foundation for non-trajectory-based data classes. It is designed to hold
     and manage data that does not involve trajectory-specific information at top-level but might
-    in nested ones e.g., `Tf2MsgsTFMessage.transforms` a list of `TransformStamped` trj container
+    in nested ones e.g., `Tf2MsgsTFMessage.transforms` a list of `GeometryMsgsTransformStamped` trj container
 
     :ivar feature_name: Name of the feature associated with the trajectory.
     :type feature_name: str

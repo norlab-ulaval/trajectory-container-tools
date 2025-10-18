@@ -11,7 +11,7 @@ from trajectory_container_tools.extractor.rosbag_to_tct import (
     from_rosbag,
     )
 from trajectory_container_tools.dataclasses import AckermannMsgsAckermannDriveStamped, \
-    NavMsgsOdometry, RosStampedDataclass, Scan, SensorMsgsImu
+    NavMsgsOdometry, RosStampedDataclass, SensorMsgsLaserScan, SensorMsgsImu
 
 
 def profiler_run():
@@ -73,10 +73,10 @@ def profiler_run():
     # .... Aggregate Multiple Features From Rosbag ................................................
     # Basic configuration - extract odometry
     features_config_1 = {
-        "/odom": NavMsgsOdometry,
-        "/teleop": AckermannMsgsAckermannDriveStamped,
+        "/odom":            NavMsgsOdometry,
+        "/teleop":          AckermannMsgsAckermannDriveStamped,
         "/sensors/imu/raw": SensorMsgsImu,
-        "/scan": Scan,
+        "/scan":            SensorMsgsLaserScan,
     }
     # "/robot_description",
 

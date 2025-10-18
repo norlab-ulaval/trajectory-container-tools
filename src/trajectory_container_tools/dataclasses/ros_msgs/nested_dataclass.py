@@ -4,12 +4,13 @@ from dataclasses import dataclass
 import numpy as np
 
 from .core_dataclass import NestedRosStampedDataclass, NestedBaseTrajectoryDataclass
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Point, \
-    Quaternion, Transform, Vector3
+from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import GeometryMsgsPoint, \
+    GeometryMsgsQuaternion, GeometryMsgsTransform, GeometryMsgsVector3
 
 
+# .... Geometry msgs ..............................................................................
 @dataclass()
-class Pose(NestedBaseTrajectoryDataclass):
+class GeometryMsgsPose(NestedBaseTrajectoryDataclass):
     """
     Represents a pose with position and orientation.
 
@@ -21,17 +22,17 @@ class Pose(NestedBaseTrajectoryDataclass):
     (point) and the spatial orientation (rotation) of an object are required.
 
     :ivar position: Spatial position of the object.
-    :type position: Point
+    :type position: GeometryMsgsPoint
     :ivar orientation: Orientation of the object defined as a quaternion.
-    :type orientation: Quaternion
+    :type orientation: GeometryMsgsQuaternion
     """
 
-    position: Point
-    orientation: Quaternion
+    position: GeometryMsgsPoint
+    orientation: GeometryMsgsQuaternion
 
 
 @dataclass()
-class PoseWithCovariance(NestedBaseTrajectoryDataclass):
+class GeometryMsgsPoseWithCovariance(NestedBaseTrajectoryDataclass):
     """Represents a pose with its covariance data.
 
     Compatible ros2 message interface: geometry_msgs/msg/PoseWithCovariance
@@ -43,18 +44,18 @@ class PoseWithCovariance(NestedBaseTrajectoryDataclass):
     where pose estimation is required.
 
     :ivar pose: The pose represented as a position and orientation.
-    :type pose: Pose
+    :type pose: GeometryMsgsPose
     :ivar covariance: The covariance matrix associated with the pose,
         representing the uncertainty in the pose observations.
     :type covariance: numpy.ndarray
     """
 
-    pose: Pose
+    pose: GeometryMsgsPose
     covariance: np.ndarray
 
 
 @dataclass()
-class Twist(NestedBaseTrajectoryDataclass):
+class GeometryMsgsTwist(NestedBaseTrajectoryDataclass):
     """
     Represents a 6DOF twist with linear and angular components.
 
@@ -65,17 +66,17 @@ class Twist(NestedBaseTrajectoryDataclass):
     robotic systems for describing motion or spatial velocity.
 
     :ivar linear: The linear velocity vector.
-    :type linear: Vector3
+    :type linear: GeometryMsgsVector3
     :ivar angular: The angular velocity vector.
-    :type angular: Vector3
+    :type angular: GeometryMsgsVector3
     """
 
-    linear: Vector3
-    angular: Vector3
+    linear: GeometryMsgsVector3
+    angular: GeometryMsgsVector3
 
 
 @dataclass()
-class TwistWithCovariance(NestedBaseTrajectoryDataclass):
+class GeometryMsgsTwistWithCovariance(NestedBaseTrajectoryDataclass):
     """Represents a twist with an associated covariance matrix.
 
     Compatible ros2 message interface: geometry_msgs/msg/TwistWithCovariance
@@ -86,15 +87,38 @@ class TwistWithCovariance(NestedBaseTrajectoryDataclass):
     related applications.
 
     :ivar twist: The twist, including linear and angular components.
-    :type twist: Twist
+    :type twist: GeometryMsgsTwist
     :ivar covariance: The covariance matrix associated with the twist.
     :type covariance: np.ndarray
     """
 
-    twist: Twist
+    twist: GeometryMsgsTwist
     covariance: np.ndarray
 
 
+@dataclass()
+class GeometryMsgsTransformStamped(NestedRosStampedDataclass):
+    """
+    Represents a ROS2-compatible TransformStamped message structure.
+
+    Compatible ros2 message interface: geometry_msgs/msg/TransformStamped
+
+    This class models a `TransformStamped` message from the `geometry_msgs` ROS2
+    package, designed to handle transformations between coordinate frames. It
+    includes a child frame identifier and a transformation object that specifies
+    the translation and rotation.
+
+    :ivar childFrameId: The name of the child coordinate frame.
+    :type childFrameId: str
+    :ivar transform: The transformation object defining translation and rotation
+        between frames.
+    :type transform: GeometryMsgsTransform
+    """
+    childFrameId: str
+    transform: GeometryMsgsTransform
+
+
+# .... Ackermann msgs .............................................................................
 @dataclass()
 class AckermannMsgsAckermannDrive(NestedBaseTrajectoryDataclass):
     """
@@ -122,6 +146,7 @@ class AckermannMsgsAckermannDrive(NestedBaseTrajectoryDataclass):
     jerk: np.ndarray  # desired jerk (m/s^3)
 
 
+# .... Vesc msgs ..................................................................................
 @dataclass()
 class VescMsgsVescImu(NestedBaseTrajectoryDataclass):
     """
@@ -134,26 +159,19 @@ class VescMsgsVescImu(NestedBaseTrajectoryDataclass):
     message interface.
 
     :ivar ypr: The yaw, pitch, and roll data as a 3D vector.
-    :type ypr: Vector3
+    :type ypr: GeometryMsgsVector3
     :ivar angularVelocity: The angular velocity readings as a 3D vector.
-    :type angularVelocity: Vector3
+    :type angularVelocity: GeometryMsgsVector3
     :ivar linearAcceleration: The linear acceleration readings as a 3D vector.
-    :type linearAcceleration: Vector3
+    :type linearAcceleration: GeometryMsgsVector3
     :ivar compass: The compass data represented as a 3D vector.
-    :type compass: Vector3
+    :type compass: GeometryMsgsVector3
     :ivar orientation: The orientation represented as a quaternion.
-    :type orientation: Quaternion
+    :type orientation: GeometryMsgsQuaternion
     """
 
-    ypr: Vector3
-    angularVelocity: Vector3
-    linearAcceleration: Vector3
-    compass: Vector3
-    orientation: Quaternion
-
-# ==== Nested and stamped =========================================================================
-@dataclass()
-class TransformStamped(NestedRosStampedDataclass):
-    # Compatible ros2 message interface: geometry_msgs/msg/TransformStamped
-    childFrameId: str
-    transform: Transform
+    ypr: GeometryMsgsVector3
+    angularVelocity: GeometryMsgsVector3
+    linearAcceleration: GeometryMsgsVector3
+    compass: GeometryMsgsVector3
+    orientation: GeometryMsgsQuaternion

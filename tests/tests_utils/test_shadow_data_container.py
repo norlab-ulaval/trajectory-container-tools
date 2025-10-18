@@ -4,55 +4,55 @@ from dataclasses import dataclass
 import numpy as np
 
 from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import (
-    Point,
-    Quaternion,
+    GeometryMsgsPoint,
+    GeometryMsgsQuaternion,
 )
 from trajectory_container_tools.utils.shadow_data_container import (
     instanciate_shadow_data_container,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import Pose
+from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import GeometryMsgsPose
 from trajectory_container_tools.dataclasses import RosDataclass
 
 
 @dataclass()
 class MockListOfNestedDataclass(RosDataclass):
-    list_of_point: list[Point]
+    list_of_point: list[GeometryMsgsPoint]
 
 
 class TestInstanciateShadowDataContainer:
     def test_case_leaf_container(self):
-        sdc = instanciate_shadow_data_container(Point)
+        sdc = instanciate_shadow_data_container(GeometryMsgsPoint)
 
         assert isinstance(sdc, dict)
         assert sdc == {
-            "type": Point,
-            "x": {"data": [], "type": np.ndarray},
-            "y": {"data": [], "type": np.ndarray},
-            "z": {"data": [], "type": np.ndarray},
+            "type": GeometryMsgsPoint,
+            "x":    {"data": [], "type": np.ndarray},
+            "y":    {"data": [], "type": np.ndarray},
+            "z":    {"data": [], "type": np.ndarray},
         }
 
         # print(sdc)
 
     def test_case_parent_container(self):
-        sdc = instanciate_shadow_data_container(Pose)
+        sdc = instanciate_shadow_data_container(GeometryMsgsPose)
 
         assert isinstance(sdc, dict)
         assert sdc == {
-            "type": Pose,
+            "type":        GeometryMsgsPose,
             # 'feature_name':   None,
             # 'timesteps_indices': None,
-            "position": {
-                "type": Point,
-                "x": {"data": [], "type": np.ndarray},
-                "y": {"data": [], "type": np.ndarray},
-                "z": {"data": [], "type": np.ndarray},
+            "position":    {
+                "type": GeometryMsgsPoint,
+                "x":    {"data": [], "type": np.ndarray},
+                "y":    {"data": [], "type": np.ndarray},
+                "z":    {"data": [], "type": np.ndarray},
             },
             "orientation": {
-                "type": Quaternion,
-                "x": {"data": [], "type": np.ndarray},
-                "y": {"data": [], "type": np.ndarray},
-                "z": {"data": [], "type": np.ndarray},
-                "w": {"data": [], "type": np.ndarray},
+                "type": GeometryMsgsQuaternion,
+                "x":    {"data": [], "type": np.ndarray},
+                "y":    {"data": [], "type": np.ndarray},
+                "z":    {"data": [], "type": np.ndarray},
+                "w":    {"data": [], "type": np.ndarray},
             },
         }
 
@@ -68,10 +68,10 @@ class TestInstanciateShadowDataContainer:
             "type": MockListOfNestedDataclass,
             "list_of_point": [
                 {
-                    "type": Point,
-                    "x": {"data": [], "type": np.ndarray},
-                    "y": {"data": [], "type": np.ndarray},
-                    "z": {"data": [], "type": np.ndarray},
+                    "type": GeometryMsgsPoint,
+                    "x":    {"data": [], "type": np.ndarray},
+                    "y":    {"data": [], "type": np.ndarray},
+                    "z":    {"data": [], "type": np.ndarray},
                 },
             ],
         }

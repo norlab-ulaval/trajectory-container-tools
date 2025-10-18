@@ -6,7 +6,7 @@ from typing import Tuple, Union
 import numpy as np
 import pytest
 
-from trajectory_container_tools.dataclasses import Header, RosStampedDataclass
+from trajectory_container_tools.dataclasses import StdMsgsHeader, RosStampedDataclass
 from trajectory_container_tools.dataclasses.core import AbstractMultifeatureStampedDataclass
 from trajectory_container_tools.temporal import Timestamps
 
@@ -180,7 +180,7 @@ def setup_mock_mf_container():
     def setup_fct(timestamp_case) -> MockMultifeatureStampedDataclass:
         topic_mock_obs = MockRosStampedDataclass(
             feature_name="Mock observation topic",
-            header=Header(
+            header=StdMsgsHeader(
                 frame_id="topic_obs",
                 timestamps=Timestamps(timestamp_case.t_obs_timestamps),
             ),
@@ -189,7 +189,7 @@ def setup_mock_mf_container():
 
         topic_mock_act = MockRosStampedDataclass(
             feature_name="Mock action topic",
-            header=Header(
+            header=StdMsgsHeader(
                 frame_id="topic_act",
                 timestamps=Timestamps(timestamp_case.t_act_timestamps),
             ),

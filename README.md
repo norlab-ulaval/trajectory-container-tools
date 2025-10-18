@@ -375,7 +375,7 @@ Multifeature(
          trajectory_len: 864
          transposed: False
          header:      
-            Header(
+            StdMsgsHeader(
                frame_id: (str) odom
                timestamps:      
                   Timestamps(
@@ -384,17 +384,17 @@ Multifeature(
                   )
             )
          pose:      
-            PoseWithCovariance(
+            GeometryMsgsPoseWithCovariance(
                pose:      
-                  Pose(
+                  GeometryMsgsPose(
                      position:      
-                        Point(
+                        GeometryMsgsPoint(
                            x: (ndarray) shape (864,) range -1.7077189281656129 ←→ 2.135440133972323
                            y: (ndarray) shape (864,) range -1.8602605361391937 ←→ 1.84745732132406
                            z: (ndarray) shape (864,) range 0.0 ←→ 0.0
                         )
                      orientation:      
-                        Quaternion(
+                        GeometryMsgsQuaternion(
                            x: (ndarray) shape (864,) range 0.0 ←→ 0.0
                            y: (ndarray) shape (864,) range 0.0 ←→ 0.0
                            z: (ndarray) shape (864,) range -0.9999998984079552 ←→ 0.7856382323820762
@@ -404,17 +404,17 @@ Multifeature(
                covariance: (ndarray) shape (864, 36) range 0.0 ←→ 0.4
             )
          twist:      
-            TwistWithCovariance(
+            GeometryMsgsTwistWithCovariance(
                twist:      
-                  Twist(
+                  GeometryMsgsTwist(
                      linear:      
-                        Vector3(
+                        GeometryMsgsVector3(
                            x: (ndarray) shape (864,) range 0.0 ←→ 1.578
                            y: (ndarray) shape (864,) range 0.0 ←→ 0.0
                            z: (ndarray) shape (864,) range 0.0 ←→ 0.0
                         )
                      angular:      
-                        Vector3(
+                        GeometryMsgsVector3(
                            x: (ndarray) shape (864,) range 0.0 ←→ 0.0
                            y: (ndarray) shape (864,) range 0.0 ←→ 0.0
                            z: (ndarray) shape (864,) range -2.0234378278138845 ←→ 1.4445453875396634
@@ -429,7 +429,7 @@ Multifeature(
          trajectory_len: 783
          transposed: False
          header:      
-            Header(
+            StdMsgsHeader(
                frame_id: (str) 
                timestamps:      
                   Timestamps(

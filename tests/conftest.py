@@ -8,11 +8,11 @@ import pytest
 from trajectory_container_tools.dataclasses import (
     AckermannMsgsAckermannDriveStamped,
     NavMsgsOdometry,
-    Scan,
+    SensorMsgsLaserScan,
     SensorMsgsImu,
     VescMsgsVescImuStamped,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import StdMsgsHeader
 from trajectory_container_tools.utils.general import RosImportError
 
 has_ros_dependencies = True
@@ -95,7 +95,7 @@ class MockROSbagDataContainer:
     b: np.ndarray
     c: np.ndarray
     batch: bool
-    header: Header = Header(
+    header: StdMsgsHeader = StdMsgsHeader(
         frame_id="map",
         timestamps=np.arange(
             TS_START, TS_STOP, (TS_STOP - TS_START) / TRJ_LEN, dtype=int
@@ -148,7 +148,7 @@ def mock_ROSbag_2_trj_DC_uneven_time_index() -> MockROSbagDataContainer:
         a=np.ones((TRJ_LEN,)),
         b=np.ones((TRJ_LEN,)),
         c=np.ones((TRJ_LEN - 1, 36)),
-        header=Header(frame_id="map", timestamps=(np.arange(10)) * 10 + 1000),
+        header=StdMsgsHeader(frame_id="map", timestamps=(np.arange(10)) * 10 + 1000),
         batch=False,
     )
 
@@ -166,7 +166,7 @@ def mock_trajectory_dict_ordered(
         )
 
     ordered_trajectory_dict["feature_name"] = "/mock_ROSbag_2_trj_DC_range"
-    ordered_trajectory_dict["header"] = Header(
+    ordered_trajectory_dict["header"] = StdMsgsHeader(
         frame_id=mock_ROSbag_2_trj_DC_range.header.frame_id,
         timestamps=np.array(timestamps_),
     )
@@ -227,12 +227,12 @@ if has_ros_dependencies:
             ts_window=1e10,
             bag_path=bag_path,
             feature_config={
-                "/odom": NavMsgsOdometry,
-                "/tf": Tf2MsgsTFMessage,
-                "/scan": Scan,
-                "/teleop": AckermannMsgsAckermannDriveStamped,
+                "/odom":            NavMsgsOdometry,
+                "/tf":              Tf2MsgsTFMessage,
+                "/scan":            SensorMsgsLaserScan,
+                "/teleop":          AckermannMsgsAckermannDriveStamped,
                 "/sensors/imu/raw": SensorMsgsImu,
-                "/sensors/imu": VescMsgsVescImuStamped,
+                "/sensors/imu":     VescMsgsVescImuStamped,
             },
         )
         return ros_bag_config
@@ -250,11 +250,11 @@ if has_ros_dependencies:
             ts_window=None,
             bag_path=bag_path,
             feature_config={
-                "/pf/pose/odom": NavMsgsOdometry,
-                "/tf": Tf2MsgsTFMessage,
-                "/scan": Scan,
-                "/ackermann_cmd": AckermannMsgsAckermannDriveStamped,
-                "/teleop": AckermannMsgsAckermannDriveStamped,
+                "/pf/pose/odom":    NavMsgsOdometry,
+                "/tf":              Tf2MsgsTFMessage,
+                "/scan":            SensorMsgsLaserScan,
+                "/ackermann_cmd":   AckermannMsgsAckermannDriveStamped,
+                "/teleop":          AckermannMsgsAckermannDriveStamped,
                 "/sensors/imu/raw": SensorMsgsImu,
             },
         )

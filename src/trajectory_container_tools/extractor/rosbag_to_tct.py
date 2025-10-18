@@ -10,7 +10,7 @@ from trajectory_container_tools.dataclasses.core.abstract_multifeature_stamped_d
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import StdMsgsHeader
 from trajectory_container_tools.dataclasses import (
     NavMsgsOdometry,
     NestedRosStampedDataclass,
@@ -341,7 +341,7 @@ def _collect_properties_from_rosbag(
                         )
                     )
 
-            elif issubclass(shadow_data_container[each_property_name]["type"], Header):
+            elif issubclass(shadow_data_container[each_property_name]["type"], StdMsgsHeader):
                 # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling non-trj data
                 if not shadow_data_container["header"]["frame_id"]["data"]:
                     shadow_data_container["header"]["frame_id"][

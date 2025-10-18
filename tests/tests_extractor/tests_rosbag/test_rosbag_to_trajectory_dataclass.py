@@ -9,7 +9,7 @@ from trajectory_container_tools.extractor.rosbag_to_tct import (
     from_rosbag,
     extract_rosbag_feature,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import StdMsgsHeader
 
 from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
     Tf2MsgsTFMessage,
@@ -19,7 +19,7 @@ from trajectory_container_tools.dataclasses import (
     AckermannMsgsAckermannDriveStamped,
     NavMsgsOdometry,
     RosStampedDataclass,
-    Scan,
+    SensorMsgsLaserScan,
     SensorMsgsImu,
     VescMsgsVescImuStamped,
 )
@@ -68,7 +68,7 @@ class TestExtractROSBagFeature:
         mock_value = np.arange(10)
         bad_argument = AckermannMsgsAckermannDriveStamped(
             feature_name=fn,
-            header=Header(frame_id="", timestamps=mock_value),
+            header=StdMsgsHeader(frame_id="", timestamps=mock_value),
             drive=AckermannMsgsAckermannDrive(
                 steeringAngle=mock_value,
                 steeringAngleVelocity=mock_value,
@@ -216,7 +216,7 @@ class TestExtractROSBagMultifeature:
         
           - '/odom': NavMsgsOdometry,
           - '/tf': Tf2MsgsTFMessage,
-          - '/scan': Scan,
+          - '/scan': SensorMsgsLaserScan,
           - '/teleop': AckermannMsgsAckermannDriveStamped,
           - '/sensors/imu/raw': SensorMsgsImu,
           - '/sensors/imu': VescMsgsVescImuStamped,
@@ -228,7 +228,7 @@ class TestExtractROSBagMultifeature:
                                    features_config={
                                            "/odom":            NavMsgsOdometry,
                                            "/tf":              Tf2MsgsTFMessage,
-                                           "/scan":            Scan,
+                                           "/scan":            SensorMsgsLaserScan,
                                            "/teleop":          AckermannMsgsAckermannDriveStamped,
                                            "/sensors/imu/raw": SensorMsgsImu,
                                            "/sensors/imu":     VescMsgsVescImuStamped,

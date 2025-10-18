@@ -5,7 +5,7 @@ import pytest
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     BaseDataframeFeatureDataclass,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import StdMsgsHeader
 from trajectory_container_tools.dataclasses import RosStampedDataclass
 from trajectory_container_tools.utils.factory import (
     TrjDataClassFeatureSpecification,
@@ -114,7 +114,7 @@ class TestTrajectoryDataclassFactoryROSbagCase:
         assert not isinstance(mock_cls, atd.AbstractTrajectoryDataclass)
         mock_cls_instance = mock_cls(
             feature_name="mock_data",
-            header=Header(frame_id="topic_999", timestamps=mock_value),
+            header=StdMsgsHeader(frame_id="topic_999", timestamps=mock_value),
             pose_xx=mock_value,
             pose_yy=mock_value,
             pose_zz=mock_value,

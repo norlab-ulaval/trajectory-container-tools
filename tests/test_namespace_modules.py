@@ -296,7 +296,7 @@ class TestDataclassesNamespace:
             "AckermannMsgsAckermannDriveStamped",
             "Tf2MsgsTFMessage",
             "VescMsgsVescImuStamped",
-            "Scan",
+            "SensorMsgsLaserScan",
         ]
 
         for dataclass_name in ros2_dataclasses:

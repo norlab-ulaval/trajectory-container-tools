@@ -9,7 +9,7 @@ from ..core.base_trajectory_dataclass import (
     BaseTrajectoryDataclass,
     NestedBaseTrajectoryDataclass,
 )
-from ..ros_msgs.primitive_dataclass import Header
+from ..ros_msgs.primitive_dataclass import StdMsgsHeader
 
 
 @dataclass()
@@ -27,7 +27,7 @@ class RosStampedDataclass(BaseTrajectoryDataclass):
 
     :ivar header: The ROS message header, which includes timestamp and frame of
         reference information.
-    :type header: Header
+    :type header: StdMsgsHeader
     :ivar feature_name: Name of the feature associated with the trajectory.
     :type feature_name: str
     :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
@@ -38,7 +38,7 @@ class RosStampedDataclass(BaseTrajectoryDataclass):
     :type batch: bool
     """
 
-    header: Header
+    header: StdMsgsHeader
 
     def get_timestamps(
         self,
@@ -87,7 +87,7 @@ class NestedRosStampedDataclass(NestedBaseTrajectoryDataclass):
 
     :ivar header: The ROS message header, which includes timestamp and frame of
         reference information.
-    :type header: Header
+    :type header: StdMsgsHeader
     :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
         to a subset of a larger trajectory (Automaticaly generated if set to None).
     :type timesteps_indices: numpy ndarray
@@ -96,7 +96,7 @@ class NestedRosStampedDataclass(NestedBaseTrajectoryDataclass):
     :type batch: bool
     """
 
-    header: Header
+    header: StdMsgsHeader
 
     def get_timestamps(
         self,

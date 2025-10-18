@@ -218,7 +218,7 @@ if __name__ == "__main__":
         features_config={
             "/odom": tct_dataclasses.NavMsgsOdometry,
             "/tf": tct_dataclasses.Tf2MsgsTFMessage,
-            "/scan": tct_dataclasses.Scan,
+            "/scan": tct_dataclasses.SensorMsgsLaserScan,
             "/teleop": tct_dataclasses.AckermannMsgsAckermannDriveStamped,
             "/sensors/imu/raw": trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass.SensorMsgsImu,
             "/sensors/imu": tct_dataclasses.VescMsgsVescImuStamped,

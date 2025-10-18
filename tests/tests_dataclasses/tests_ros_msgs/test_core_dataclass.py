@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 
 from trajectory_container_tools.dataclasses import (
-    Header,
+    StdMsgsHeader,
     NestedRosStampedDataclass,
     RosDataclass,
     RosStampedDataclass,
@@ -36,7 +36,7 @@ class TestRosStampedDataclass:
 
         t_container = MockSubRosStampedDataclass(
             feature_name="mock",
-            header=Header(
+            header=StdMsgsHeader(
                 frame_id="mock_frame_id",
                 timestamps=setup_real_timestamps,
             ),
@@ -155,7 +155,7 @@ class TestNestedRosStampedDataclass:
     def test_instanciation(self):
 
         t_container = MockSubNestedRosStampedDataclass(
-            header=Header(
+            header=StdMsgsHeader(
                 frame_id="mock_frame_id",
                 timestamps=np.arange(10),
             ),
@@ -170,7 +170,7 @@ class TestNestedRosStampedDataclass:
             # The 'feature_name' parameter should not exist
             t_container = MockSubNestedRosStampedDataclass(
                 feature_name="mock",
-                header=Header(
+                header=StdMsgsHeader(
                     frame_id="mock_frame_id",
                     timestamps=np.arange(10),
                 ),

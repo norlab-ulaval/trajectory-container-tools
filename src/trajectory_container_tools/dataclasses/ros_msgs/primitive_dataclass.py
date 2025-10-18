@@ -11,7 +11,7 @@ from trajectory_container_tools.temporal.timestamps import Timestamps
 
 
 @dataclass()
-class Header(NestedBaseTrajectoryDataclass):
+class StdMsgsHeader(NestedBaseTrajectoryDataclass):
     """Represents a ros header containing frame information and time-related data.
 
     Compatible ros2 message interface: std_msgs/msg/Header
@@ -41,7 +41,7 @@ class Header(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class Point(NestedBaseTrajectoryDataclass):
+class GeometryMsgsPoint(NestedBaseTrajectoryDataclass):
     # Compatible ros2 message interface: geometry_msgs/msg/Point
     x: np.ndarray
     y: np.ndarray
@@ -49,7 +49,7 @@ class Point(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class Vector3(NestedBaseTrajectoryDataclass):
+class GeometryMsgsVector3(NestedBaseTrajectoryDataclass):
     # Compatible ros2 message interface: geometry_msgs/msg/Vector3
     x: np.ndarray
     y: np.ndarray
@@ -57,21 +57,21 @@ class Vector3(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class Vector3Stamped(NestedBaseTrajectoryDataclass):
+class GeometryMsgsVector3Stamped(NestedBaseTrajectoryDataclass):
     # Compatible ros2 message interface: geometry_msgs/msg/Vector3Stamped
-    header: Header
-    vector: Vector3
+    header: StdMsgsHeader
+    vector: GeometryMsgsVector3
 
 
 @dataclass()
-class PointStamped(NestedBaseTrajectoryDataclass):
+class GeometryMsgsPointStamped(NestedBaseTrajectoryDataclass):
     # Compatible ros2 message interface: geometry_msgs/msg/PointStamped
-    header: Header
-    point: Point
+    header: StdMsgsHeader
+    point: GeometryMsgsPoint
 
 
 @dataclass()
-class Quaternion(NestedBaseTrajectoryDataclass):
+class GeometryMsgsQuaternion(NestedBaseTrajectoryDataclass):
     # Compatible ros2 message interface: geometry_msgs/msg/Quaternion
     x: np.ndarray
     y: np.ndarray
@@ -80,7 +80,7 @@ class Quaternion(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class Transform(NestedBaseTrajectoryDataclass):
+class GeometryMsgsTransform(NestedBaseTrajectoryDataclass):
     # Compatible ros2 message interface: geometry_msgs/msg/Transform
-    translation: Vector3
-    rotation: Quaternion
+    translation: GeometryMsgsVector3
+    rotation: GeometryMsgsQuaternion
