@@ -460,15 +460,9 @@ def to_seconds_nanoseconds(
     :raises TypeError: If the input is not an integer or a numpy array of integers.
     """
     _check_precondition_nanoseconds_are_integers(nanoseconds)
-
     NANOSECONDS_CONVERSION_CONSTANT = 10**9
-
-    second = copy(nanoseconds)
-
-    return (
-        second // NANOSECONDS_CONVERSION_CONSTANT,
-        nanoseconds % NANOSECONDS_CONVERSION_CONSTANT,
-    )
+    sec, ns = divmod(nanoseconds, NANOSECONDS_CONVERSION_CONSTANT)
+    return sec, ns
 
 
 def to_seconds(
