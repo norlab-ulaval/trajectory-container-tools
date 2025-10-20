@@ -109,7 +109,7 @@ class TestAbstractMultifeatureStampedDataclassAllCasses:
 
         for each in mf_container.topic_key_list:
             each_field = mf_container_window.get_dynamic_field(each)
-            if isinstance(each_field, tct.AbstractTrajectoryDataclass) and each_field.header.timestamps.stamps.size > 0:
+            if isinstance(each_field, tct.AbstractTrajectoryFeature) and each_field.header.timestamps.stamps.size > 0:
                 assert t_start_stamp <= each_field.header.timestamps.stamps[0]
                 assert each_field.header.timestamps.stamps[-1] <= t_stop_stamp
 

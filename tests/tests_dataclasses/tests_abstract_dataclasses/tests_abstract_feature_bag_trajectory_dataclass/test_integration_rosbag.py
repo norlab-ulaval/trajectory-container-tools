@@ -1,7 +1,7 @@
 # coding=utf-8
 import pytest
 
-from trajectory_container_tools.dataclasses.core import AbstractMultifeatureStampedDataclass
+from trajectory_container_tools.dataclasses.core import AbstractTrajectoryStampedFeaturesBag
 from trajectory_container_tools.extractor import from_rosbag
 
 
@@ -30,7 +30,7 @@ class TestIntegrationMultifeatureTrajectoryDataclass:
         # Minimum logic to validate run success
         print(mf_container)
 
-        assert isinstance(mf_container, AbstractMultifeatureStampedDataclass)
+        assert isinstance(mf_container, AbstractTrajectoryStampedFeaturesBag)
 
     def test_integration_chunk_getitem_three_topics(
         self, setup_rosbag_three_topics_filtered

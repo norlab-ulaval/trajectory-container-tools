@@ -5,15 +5,15 @@ from typing import Optional
 
 from .core_dataclass_utils import get_timestamps_slice
 from ..core.base_trajectory_dataclass import (
-    BaseNoTrajectoryDataclass,
-    BaseTrajectoryDataclass,
-    NestedBaseTrajectoryDataclass,
+    BaseTrajectoryArray,
+    BaseTrajectoryFeature,
+    NestedBaseTrajectory,
 )
 from ..ros_msgs.primitive_dataclass import StdMsgsHeader
 
 
 @dataclass()
-class RosStampedDataclass(BaseTrajectoryDataclass):
+class RosStampedFeature(BaseTrajectoryFeature):
     """
     Represents a ROS-stamped dataclass containing trajectory information.
 
@@ -22,7 +22,7 @@ class RosStampedDataclass(BaseTrajectoryDataclass):
     This dataclass is used to store trajectory data alongside its ROS message
     header. The header contains information such as timestamp and frame of
     reference, which are critical for synchronizing data within ROS-based
-    systems. This class inherits from `BaseTrajectoryDataclass` to provide
+    systems. This class inherits from `BaseTrajectoryFeature` to provide
     trajectory-specific attributes and behaviors.
 
     :ivar header: The ROS message header, which includes timestamp and frame of
@@ -79,7 +79,7 @@ class RosStampedDataclass(BaseTrajectoryDataclass):
 
 
 @dataclass()
-class NestedRosStampedDataclass(NestedBaseTrajectoryDataclass):
+class NestedRosStampedFeature(NestedBaseTrajectory):
     """
     Represents a ROS-stamped dataclass containing trajectory information (nested version).
 
@@ -137,12 +137,12 @@ class NestedRosStampedDataclass(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class RosDataclass(BaseNoTrajectoryDataclass):
+class RosFeaturesArray(BaseTrajectoryArray):
     """
     Represents a ROS dataclass containing trajectory information.
 
     This dataclass is used to store trajectory data. This class inherits from
-    `BaseTrajectoryDataclass` to provide trajectory-specific attributes and behaviors.
+    `BaseTrajectoryFeature` to provide trajectory-specific attributes and behaviors.
 
     :ivar feature_name: Name of the feature associated with the trajectory.
     :type feature_name: str

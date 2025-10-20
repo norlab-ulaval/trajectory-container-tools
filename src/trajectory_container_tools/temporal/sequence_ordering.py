@@ -4,24 +4,24 @@ from typing import Any, Union
 import numpy as np
 
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
-    NestedBaseTrajectoryDataclass,
+    NestedBaseTrajectory,
 )
-from trajectory_container_tools.dataclasses import RosStampedDataclass
+from trajectory_container_tools.dataclasses import RosStampedFeature
 from trajectory_container_tools.utils.shadow_data_container import (
     fetch_timestamps_from_shadow_data_container,
 )
 
 
 def fix_sequence_ordering_base_on_timestamps(
-    shadow_data_container: dict, data_container_type_: type[RosStampedDataclass]
+    shadow_data_container: dict, data_container_type_: type[RosStampedFeature]
 ) -> dict:
     """Fix trajectory data sequence ordering with respect to timestamps values
 
     Note that the 'shadow_data_container' object is an intermediate step before instanciating a
-    'AbstractTrajectoryDataclass' object
+    'AbstractTrajectoryFeature' object
 
     :param shadow_data_container: a dictionary of trajectory data
-    :param data_container_type_: the type of AbstractTrajectoryDataclass subclass
+    :param data_container_type_: the type of AbstractTrajectoryFeature subclass
     :return: the fixed shadow_data_container
     """
     ts_ = fetch_timestamps_from_shadow_data_container(shadow_data_container)
@@ -36,7 +36,7 @@ def fix_sequence_ordering_base_on_timestamps(
 
 def _fix_container_array_timestamps(
     data_container_type_: Union[
-        type[RosStampedDataclass], type[NestedBaseTrajectoryDataclass], type[Any]
+        type[RosStampedFeature], type[NestedBaseTrajectory], type[Any]
     ],
     sorted_ts_idx: np.ndarray,
     shadow_data_container: dict,
@@ -52,7 +52,7 @@ def _fix_container_array_timestamps(
 
         if isinstance(each_property, np.ndarray):
             shadow_data_container[each_property_name] = each_property[sorted_ts_idx]
-        elif isinstance(each_property, NestedBaseTrajectoryDataclass):
+        elif isinstance(each_property, NestedBaseTrajectory):
             dimension_type, is_list_of_type = each_property.get_dimension_type(each_property_name)
             if is_list_of_type:
                 raise NotImplementedError(

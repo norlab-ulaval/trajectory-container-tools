@@ -5,7 +5,7 @@ from typing import Tuple, Union
 import numpy as np
 
 from trajectory_container_tools.typing import TrajectoryDataclass
-from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryFeature
 
 
 @dataclass()
@@ -31,9 +31,10 @@ class TrjDataClassFeatureSpecification:
 
 def create_dataclass(
         specification: TrjDataClassFeatureSpecification,
-        trj_dataclass_subclass: type[TrajectoryDataclass] = BaseTrajectoryDataclass,
+        trj_dataclass_subclass: type[TrajectoryDataclass] = BaseTrajectoryFeature,
         ) -> Union[type, type[TrajectoryDataclass]]:
-    """A factory function for dynnamicaly creates new `AbstractTrajectoryDataclass` subclass
+    """
+    A factory function for dynnamicaly creates new `AbstractTrajectoryFeature` subclass
     from a TrjDataClassFeatureSpecification dataclass object.
 
     Usage example:
@@ -43,14 +44,14 @@ def create_dataclass(
     >>>             dimension_names=('xx', 'yy', 'yawww')
     >>>         )
     >>> the_new_cls = create_dataclass(specification=spec_)
-    >>> assert issubclass(the_new_cls, BaseTrajectoryDataclass)
+    >>> assert issubclass(the_new_cls, BaseTrajectoryFeature)
     True
-    >>> assert isinstance(the_new_cls, BaseTrajectoryDataclass)
+    >>> assert isinstance(the_new_cls, BaseTrajectoryFeature)
     False
 
     :param specification: A TrjDataClassFeatureSpecification object,
-    :param trj_dataclass_subclass: a subclass of 'AbstractTrajectoryDataclass'
-    :return: A new subclass of AbstractTrajectoryDataclass
+    :param trj_dataclass_subclass: a subclass of 'AbstractTrajectoryFeature'
+    :return: A new subclass of AbstractTrajectoryFeature
     """
     try:
         new_feature_dataclass_type: str = specification.new_feature_dataclass_type

@@ -4,12 +4,12 @@ from typing import Optional
 
 import numpy as np
 
-from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryFeature
 from ..utils.general import check_is_finite
 
 
 @dataclass()
-class AxBaseDataclass(BaseTrajectoryDataclass):
+class AxBaseDataclass(BaseTrajectoryFeature):
     obs: np.ndarray
     noise: Optional[np.ndarray] = field(default=None, init=False)
     obs_noise: Optional[np.ndarray] = field(default=None, init=False)
@@ -51,7 +51,7 @@ class TimeAxDataclass(AxBaseDataclass):
 
 
 @dataclass()
-class MathEnvTrajectoryDataclass(BaseTrajectoryDataclass):
+class MathEnvTrajectoryDataclass(BaseTrajectoryFeature):
     """
     Math gymnasium environment trajectory dataclass
     """

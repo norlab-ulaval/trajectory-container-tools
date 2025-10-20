@@ -7,7 +7,7 @@ from typing import Dict, Tuple, Union
 from dataclasses import make_dataclass
 
 from trajectory_container_tools.typing import MultifeatureTrajectoryDataclass
-from trajectory_container_tools import AbstractMultifeatureDataclass
+from trajectory_container_tools import AbstractTrajectoryFeaturesBag
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     BaseDataframeFeatureDataclass,
 )
@@ -123,7 +123,7 @@ def from_dataframe(
         features.append(feature)
 
     multifeature = make_dataclass(
-        "multifeature", bases=(AbstractMultifeatureDataclass,), fields=features_type
+        "multifeature", bases=(AbstractTrajectoryFeaturesBag,), fields=features_type
     )
     return multifeature(dataset_info, *features)
 

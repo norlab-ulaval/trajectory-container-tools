@@ -19,7 +19,7 @@ from trajectory_container_tools.temporal.timestamps import to_seconds
 from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
     register_non_native_msgs,
 )
-from trajectory_container_tools.dataclasses.core import AbstractMultifeatureStampedDataclass
+from trajectory_container_tools.dataclasses.core import AbstractTrajectoryStampedFeaturesBag
 from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.general_utils import (
     compute_bag_target_window_nb,
     compute_window_start_and_stop,
@@ -53,7 +53,7 @@ def run_rosbag_timestamp_eda(
     figsize: Tuple[int, int] = (28, 10),
     save_dpi: int = 100,
     typestore: Optional[Typestore] = None,
-) -> AbstractMultifeatureStampedDataclass:
+) -> AbstractTrajectoryStampedFeaturesBag:
     """
     Executes timestamp-based Exploratory Data Analysis (EDA) on a ROSbag file by analyzing
     specific time window chunks, generating logs, and plotting timestamp data.
@@ -136,7 +136,7 @@ def run_rosbag_timestamp_eda(
         window_info_final = f"\n===={MSG:=<80}\n"
 
         for each_topic_name in mf_container.topic_key_list:
-            each_topic: tct.dataclasses.RosStampedDataclass = (
+            each_topic: tct.dataclasses.RosStampedFeature = (
                 mf_container.get_dynamic_field(each_topic_name)
             )
             window_info_final += f"\nTopic log: {each_topic.feature_name}\n"

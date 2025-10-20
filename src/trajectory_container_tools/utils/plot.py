@@ -3,12 +3,12 @@
 from matplotlib import pyplot as plt
 
 from .general import extract_class_name_from_instance
-from .. import AbstractMultifeatureDataclass
-from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryDataclass
+from .. import AbstractTrajectoryFeaturesBag
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryFeature
 
 
 def plot_trajectory_2d(
-    trajectory_data: BaseTrajectoryDataclass,
+    trajectory_data: BaseTrajectoryFeature,
     x_axis_topic: str = "topic_odom.pose.pose.position.x",
     y_axis_topic: str = "topic_odom.pose.pose.position.y",
 ):
@@ -81,7 +81,7 @@ def plot_trajectory_2d(
     ax.set_xlabel("X Position (m)", fontsize=12)
     ax.set_ylabel("Y Position (m)", fontsize=12)
 
-    if isinstance(trajectory_data, AbstractMultifeatureDataclass):
+    if isinstance(trajectory_data, AbstractTrajectoryFeaturesBag):
         ax.set_title(f"{trajectory_data.dataset_info}", fontsize=14)
     else:
         ax.set_title(extract_class_name_from_instance(trajectory_data), fontsize=14)

@@ -6,24 +6,24 @@ import pytest
 import numpy as np
 
 from trajectory_container_tools import (
-    AbstractNoTrajectoryDataclass,
-    AbstractTrajectoryDataclass,
+    AbstractTrajectoryArray,
+    AbstractTrajectoryFeature,
 )
 
 
 @dataclass()
-class MockNoNestedListAbstractTrajectoryDataclass(AbstractNoTrajectoryDataclass):
+class MockNoNestedListAbstractTrajectoryArray(AbstractTrajectoryArray):
     mock_no_trj_attribute: np.ndarray
 
 
 @dataclass()
-class MockAbstractTrajectoryDataclass(AbstractTrajectoryDataclass):
+class MockAbstractTrajectoryFeature(AbstractTrajectoryFeature):
     mock_attribute: np.ndarray
 
 
 @dataclass()
-class MockNestedListAbstractTrajectoryDataclass(AbstractNoTrajectoryDataclass):
-    mock_list_attribute: list[MockAbstractTrajectoryDataclass]
+class MockNestedListAbstractTrajectoryArray(AbstractTrajectoryArray):
+    mock_list_attribute: list[MockAbstractTrajectoryFeature]
 
     @property
     def registred_trajectory_object_list(self) -> Optional[str]:
@@ -31,21 +31,21 @@ class MockNestedListAbstractTrajectoryDataclass(AbstractNoTrajectoryDataclass):
 
 
 @pytest.fixture
-def setup_mock_no_nested_list_subclass() -> MockNoNestedListAbstractTrajectoryDataclass:
-    return MockNoNestedListAbstractTrajectoryDataclass(
+def setup_mock_no_nested_list_subclass() -> MockNoNestedListAbstractTrajectoryArray:
+    return MockNoNestedListAbstractTrajectoryArray(
         feature_name="mock", mock_no_trj_attribute=np.ones(10)
     )
 
 
 @pytest.fixture
-def setup_mock_nested_list_subclass() -> MockNestedListAbstractTrajectoryDataclass:
-    return MockNestedListAbstractTrajectoryDataclass(
+def setup_mock_nested_list_subclass() -> MockNestedListAbstractTrajectoryArray:
+    return MockNestedListAbstractTrajectoryArray(
         feature_name="mock",
         mock_list_attribute=[
-            MockAbstractTrajectoryDataclass(
+            MockAbstractTrajectoryFeature(
                 feature_name="mock nested attrib 1", mock_attribute=np.arange(10)
             ),
-            MockAbstractTrajectoryDataclass(
+            MockAbstractTrajectoryFeature(
                 feature_name="mock nested attrib 2", mock_attribute=np.arange(15)
             ),
         ],

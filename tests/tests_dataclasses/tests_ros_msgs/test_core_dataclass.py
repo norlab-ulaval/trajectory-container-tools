@@ -7,24 +7,24 @@ import numpy as np
 
 from trajectory_container_tools.dataclasses import (
     StdMsgsHeader,
-    NestedRosStampedDataclass,
-    RosDataclass,
-    RosStampedDataclass,
+    NestedRosStampedFeature,
+    RosFeaturesArray,
+    RosStampedFeature,
 )
 
 
 @dataclass()
-class MockSubRosStampedDataclass(RosStampedDataclass):
+class MockSubRosStampedFeature(RosStampedFeature):
     mock_attribute: np.ndarray
 
 
 @dataclass()
-class MockSubNestedRosStampedDataclass(NestedRosStampedDataclass):
+class MockSubNestedRosStampedFeatureDataclass(NestedRosStampedFeature):
     mock_attribute: np.ndarray
 
 
 @dataclass()
-class MockSubRosDataclass(RosDataclass):
+class MockSubRosFeaturesArray(RosFeaturesArray):
     mock_attribute: np.ndarray
 
 
@@ -34,7 +34,7 @@ class TestRosStampedDataclass:
     def setup_mock_dataclass(self, setup_real_timestamps):
         t_mock_attribute = np.arange(setup_real_timestamps.size)
 
-        t_container = MockSubRosStampedDataclass(
+        t_container = MockSubRosStampedFeature(
             feature_name="mock",
             header=StdMsgsHeader(
                 frame_id="mock_frame_id",
@@ -154,35 +154,26 @@ class TestRosStampedDataclass:
 class TestNestedRosStampedDataclass:
     def test_instanciation(self):
 
-        t_container = MockSubNestedRosStampedDataclass(
+        t_container = MockSubNestedRosStampedFeatureDataclass(
             header=StdMsgsHeader(
-                frame_id="mock_frame_id",
-                timestamps=np.arange(10),
+                frame_id="mock_frame_id", timestamps=np.arange(10),
             ),
             mock_attribute=np.ones(10),
         )
+
         assert t_container.feature_name is None
-        assert t_container._nested == True
+        assert t_container.is_nested() == False
+        assert t_container.header.is_nested() == True
+        assert t_container.header.feature_name is None
         assert np.array_equal(t_container.header.timestamps.stamps, np.arange(10))
         assert np.array_equal(t_container.mock_attribute, np.ones(10))
-
-        with pytest.raises(TypeError) as exc_info:
-            # The 'feature_name' parameter should not exist
-            t_container = MockSubNestedRosStampedDataclass(
-                feature_name="mock",
-                header=StdMsgsHeader(
-                    frame_id="mock_frame_id",
-                    timestamps=np.arange(10),
-                ),
-                mock_attribute=np.ones(10),
-            )
 
 
 class TestRosDataclass:
 
     def test_instanciation(self):
 
-        t_container = MockSubRosDataclass(
+        t_container = MockSubRosFeaturesArray(
             feature_name="mock", mock_attribute=np.ones(10)
         )
 

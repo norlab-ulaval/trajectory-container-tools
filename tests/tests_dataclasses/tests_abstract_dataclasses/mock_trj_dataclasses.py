@@ -3,11 +3,11 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import AbstractTrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_feature_dataclass import AbstractTrajectoryFeature
 
 
 @dataclass
-class MockTrajectoryChildDFcase(AbstractTrajectoryDataclass):
+class MockTrajectoryChildDFcase(AbstractTrajectoryFeature):
     aa: np.ndarray
     bb: np.ndarray
     cc: np.ndarray
@@ -41,7 +41,7 @@ class MockTrajectoryChildDFcase(AbstractTrajectoryDataclass):
 
 
 @dataclass
-class MockTrajectoryChildRosBagCase(AbstractTrajectoryDataclass):
+class MockTrajectoryChildRosBagCase(AbstractTrajectoryFeature):
     aa: np.ndarray
     bb: np.ndarray
     cc: np.ndarray
@@ -75,7 +75,7 @@ class MockTrajectoryChildRosBagCase(AbstractTrajectoryDataclass):
 
 
 @dataclass
-class MockTrajectoryComposedParent(AbstractTrajectoryDataclass):
+class MockTrajectoryComposedParent(AbstractTrajectoryFeature):
     child_one: MockTrajectoryChildRosBagCase
     child_two: MockTrajectoryChildRosBagCase
     aa: np.ndarray
@@ -97,7 +97,7 @@ class MockTrajectoryComposedParent(AbstractTrajectoryDataclass):
 
 
 @dataclass
-class MockTrajectoryComposedParentNestedOnly(AbstractTrajectoryDataclass):
+class MockTrajectoryComposedParentNestedOnly(AbstractTrajectoryFeature):
     child_one: MockTrajectoryChildRosBagCase
     child_two: MockTrajectoryChildRosBagCase
 

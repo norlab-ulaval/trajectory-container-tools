@@ -2,7 +2,7 @@
 import os
 from typing import Union
 
-from trajectory_container_tools import AbstractMultifeatureDataclass
+from trajectory_container_tools import AbstractTrajectoryFeaturesBag
 from trajectory_container_tools.utils.optimization import detect_docker_cpu_limits
 from trajectory_container_tools.extractor.rosbag_to_tct import (
     check_bag_topics,
@@ -11,7 +11,7 @@ from trajectory_container_tools.extractor.rosbag_to_tct import (
     from_rosbag,
     )
 from trajectory_container_tools.dataclasses import AckermannMsgsAckermannDriveStamped, \
-    NavMsgsOdometry, RosStampedDataclass, SensorMsgsLaserScan, SensorMsgsImu
+    NavMsgsOdometry, RosStampedFeature, SensorMsgsLaserScan, SensorMsgsImu
 
 
 def profiler_run():
@@ -52,7 +52,7 @@ def profiler_run():
         f"\n[TCT] === Profiling run ===================================================="
     )
     container: Union[
-        NavMsgsOdometry, RosStampedDataclass, AbstractMultifeatureDataclass
+        NavMsgsOdometry, RosStampedFeature, AbstractTrajectoryFeaturesBag
     ]
 
     # .... Extract Single Feature From Rosbag .....................................................

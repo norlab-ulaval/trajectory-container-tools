@@ -65,10 +65,10 @@ def plot_bag_timestamp_delta(
         # ... Topics plots ........................................................................
         for each_topic_name in [*tct_container.topic_key_list, "bag_timestamps"]:
             each_topic: Union[
-                tct.dataclasses.RosDataclass, tct.dataclasses.RosStampedDataclass
+                tct.dataclasses.RosFeaturesArray, tct.dataclasses.RosStampedFeature
             ] = tct_container.get_dynamic_field(each_topic_name)
 
-            if isinstance(each_topic, tct.dataclasses.RosStampedDataclass):
+            if isinstance(each_topic, tct.dataclasses.RosStampedFeature):
 
                 topic_ts_stamps = each_topic.header.timestamps.stamps[1:]
                 topic_ts_delta = each_topic.header.timestamps.delta_stamps[1:]

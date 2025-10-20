@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .core_dataclass import RosStampedDataclass
+from .core_dataclass import RosStampedFeature
 from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import (
     GeometryMsgsPose,
     GeometryMsgsPoseWithCovariance,
@@ -16,7 +16,7 @@ from .primitive_dataclass import GeometryMsgsQuaternion, GeometryMsgsVector3
 
 # .... Nav msgs ...................................................................................
 @dataclass()
-class NavMsgsOdometry(RosStampedDataclass):
+class NavMsgsOdometry(RosStampedFeature):
     """Data container for navigation messages odometry (nested data container version).
 
     Compatible ros2 message interface: nav_msgs/msg/Odometry
@@ -38,7 +38,7 @@ class NavMsgsOdometry(RosStampedDataclass):
 
 # .... Ackermann msgs .............................................................................
 @dataclass()
-class AckermannMsgsAckermannDriveStamped(RosStampedDataclass):
+class AckermannMsgsAckermannDriveStamped(RosStampedFeature):
     """
     Represents a stamped message for an Ackermann drive message.
 
@@ -57,14 +57,14 @@ class AckermannMsgsAckermannDriveStamped(RosStampedDataclass):
 
 # .... Vesc msgs ..................................................................................
 @dataclass()
-class VescMsgsVescImuStamped(RosStampedDataclass):
+class VescMsgsVescImuStamped(RosStampedFeature):
     """
     Represents stamped IMU data related to VESC (Vedder Electronic Speed Controller).
 
     Compatible ros2 message interface: vesc_msgs/msg/VescImuStamped
 
     This class encapsulates data for a VESC IMU message with timestamping,
-    extending the RosStampedDataclass structure. It is compatible
+    extending the RosStampedFeature structure. It is compatible
     with the `vesc_msgs/msg/VescImuStamped` ROS2 message interface.
     The primary purpose of this class is to provide a structured data
     representation of IMU measurements retrieved from a VESC-based system.
@@ -77,7 +77,7 @@ class VescMsgsVescImuStamped(RosStampedDataclass):
 
 # .... Sensor msgs ................................................................................
 @dataclass()
-class SensorMsgsImu(RosStampedDataclass):
+class SensorMsgsImu(RosStampedFeature):
     """Represents IMU (Inertial Measurement Unit) sensor data with orientation,
     angular velocity, and
     linear acceleration, including their covariance values.
@@ -112,7 +112,7 @@ class SensorMsgsImu(RosStampedDataclass):
     linearAccelerationCovariance: np.ndarray
 
 @dataclass()
-class SensorMsgsLaserScan(RosStampedDataclass):
+class SensorMsgsLaserScan(RosStampedFeature):
     """Represents a LaserScan message containing range and intensity data.
 
     Compatible ros2 message interface: sensor_msgs/msg/LaserScan
@@ -149,14 +149,14 @@ class SensorMsgsLaserScan(RosStampedDataclass):
 
 # .... Geometry msgs ..............................................................................
 @dataclass()
-class GeometryMsgsPoseStamped(RosStampedDataclass):
+class GeometryMsgsPoseStamped(RosStampedFeature):
     """
     Represents a stamped Pose message in ROS.
 
     Compatible ros2 message interface: geometry_msgs/msg/PoseStamped
 
     This class is used for storing a pose with an associated timestamp and frame of reference. It
-    extends the `RosStampedDataclass` to integrate stamped ROS message functionality.
+    extends the `RosStampedFeature` to integrate stamped ROS message functionality.
     Primarily, it stores a `GeometryMsgsPose` object which contains detailed pose data.
 
     :ivar pose: The pose data associated with this stamped message.
@@ -165,7 +165,7 @@ class GeometryMsgsPoseStamped(RosStampedDataclass):
     pose: GeometryMsgsPose
 
 @dataclass()
-class GeometryMsgsPoseWithCovarianceStamped(RosStampedDataclass):
+class GeometryMsgsPoseWithCovarianceStamped(RosStampedFeature):
     """
     Represents a ROS message for a Pose with covariance and timestamp.
 
@@ -173,7 +173,7 @@ class GeometryMsgsPoseWithCovarianceStamped(RosStampedDataclass):
 
     This class encapsulates a geometric Pose with an associated timestamp and frame identification
     as used in ROS (Robot Operating System) messages. It extends the functionality of the
-    `RosStampedDataclass` to include positional and orientational data with covariance, which is
+    `RosStampedFeature` to include positional and orientational data with covariance, which is
     usually employed in navigation, robotics, and related fields to represent 6-DOF (Degrees of
     Freedom) poses with quantified uncertainty.
 
@@ -183,7 +183,7 @@ class GeometryMsgsPoseWithCovarianceStamped(RosStampedDataclass):
     pose: GeometryMsgsPoseWithCovariance
 
 @dataclass()
-class GeometryMsgsTwistStamped(RosStampedDataclass):
+class GeometryMsgsTwistStamped(RosStampedFeature):
     """
     Represents a ROS Stamped Dataclass including a Twist message.
 
@@ -199,7 +199,7 @@ class GeometryMsgsTwistStamped(RosStampedDataclass):
     twist: GeometryMsgsTwist
 
 @dataclass()
-class GeometryMsgsTwistWithCovarianceStamped(RosStampedDataclass):
+class GeometryMsgsTwistWithCovarianceStamped(RosStampedFeature):
     """
     Represents a ROS-compatible TwistWithCovarianceStamped message.
 

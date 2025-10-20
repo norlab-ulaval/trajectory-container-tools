@@ -1,12 +1,12 @@
 # coding=utf-8
 from dataclasses import dataclass, field
 
-from .nested_dataclass import GeometryMsgsTransformStamped
-from .core_dataclass import RosDataclass
+from .nested_dataclass import GeometryMsgsTransformStampedFeature
+from .core_dataclass import RosFeaturesArray
 
 
 @dataclass()
-class Tf2MsgsTFMessage(RosDataclass):
+class Tf2MsgsTFMessage(RosFeaturesArray):
     """Represents a message used in coordinate transformation tasks in ROS.
 
     Compatible ros2 message interface: tf2_msgs/msg/TFMessage
@@ -16,10 +16,10 @@ class Tf2MsgsTFMessage(RosDataclass):
     to store messages that relate to frame IDs and their associated transformations.
 
     :ivar transforms: Stamped Transformation data
-    :type transforms: trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass.GeometryMsgsTransformStamped
+    :type transforms: trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass.GeometryMsgsTransformStampedFeature
     """
 
-    transforms: list[GeometryMsgsTransformStamped]
+    transforms: list[GeometryMsgsTransformStampedFeature]
 
     @property
     def registred_trajectory_object_list(self) -> str:

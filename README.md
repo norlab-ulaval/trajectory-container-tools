@@ -228,10 +228,11 @@ Pose2DSA(
 import numpy as np
 import trajectory_container_tools as tct
 
-class CustomStatePose2D(tct.BaseTrajectoryDataclass):
-    x: np.ndarray
-    y: np.ndarray
-    yaw: np.ndarray
+
+class CustomStatePose2D(tct.BaseTrajectoryFeature):
+  x: np.ndarray
+  y: np.ndarray
+  yaw: np.ndarray
 ```
 
 
@@ -268,44 +269,46 @@ import numpy as np
 from dataclasses import dataclass
 import trajectory_container_tools as tct
 
+
 @dataclass
-class CustomTrajectoryWithCallbacks(tct.BaseTrajectoryDataclass):
-    x: np.ndarray
-    y: np.ndarray
-    velocity: np.ndarray
-    
-    def on_begin_post_init_callback(self):
-        """Executed at the beginning of __post_init__, before feature processing.
-        Use for initialization logic that affects all fields."""
-        # Example: Ensure data is in correct format
-        if self.x.dtype != np.float64:
-            self.set_dynamic_field('x', self.x.astype(np.float64))
-    
-    def post_init_feature_callback(self, feature_name: str):
-        """Executed once per feature (excluding internal/non-trajectory fields).
-        Use for feature-specific post-processing."""
-        # Example: Create cumulative sum features
-        feature = self.get_dynamic_field(feature_name)
-        if isinstance(feature, np.ndarray) and feature_name in ['x', 'y']:
-            cumsum = np.cumsum(feature)
-            self.set_dynamic_field(f"{feature_name}_cumsum", cumsum)
-    
-    def on_exit_post_init_callback(self):
-        """Executed at the end of __post_init__, after all processing.
-        Use for final validation or computed properties."""
-        # Example: Compute total distance traveled
-        dx = np.diff(self.x, prepend=0)
-        dy = np.diff(self.y, prepend=0)
-        distance = np.sqrt(dx**2 + dy**2)
-        self.set_dynamic_field('distance', distance)
+class CustomTrajectoryWithCallbacks(tct.BaseTrajectoryFeature):
+  x: np.ndarray
+  y: np.ndarray
+  velocity: np.ndarray
+  
+  def on_begin_post_init_callback(self):
+    """Executed at the beginning of __post_init__, before feature processing.
+    Use for initialization logic that affects all fields."""
+    # Example: Ensure data is in correct format
+    if self.x.dtype != np.float64:
+      self.set_dynamic_field('x', self.x.astype(np.float64))
+  
+  def post_init_feature_callback(self, feature_name: str):
+    """Executed once per feature (excluding internal/non-trajectory fields).
+    Use for feature-specific post-processing."""
+    # Example: Create cumulative sum features
+    feature = self.get_dynamic_field(feature_name)
+    if isinstance(feature, np.ndarray) and feature_name in ['x', 'y']:
+      cumsum = np.cumsum(feature)
+      self.set_dynamic_field(f"{feature_name}_cumsum", cumsum)
+  
+  def on_exit_post_init_callback(self):
+    """Executed at the end of __post_init__, after all processing.
+    Use for final validation or computed properties."""
+    # Example: Compute total distance traveled
+    dx = np.diff(self.x, prepend=0)
+    dy = np.diff(self.y, prepend=0)
+    distance = np.sqrt(dx ** 2 + dy ** 2)
+    self.set_dynamic_field('distance', distance)
+
 
 # Instantiate with automatic callback execution
 trajectory = CustomTrajectoryWithCallbacks(
-    feature_name="Callback example",
-    x=np.arange(10, dtype=float),
-    y=np.arange(10, dtype=float),
-    velocity=np.random.rand(10),
-)
+        feature_name="Callback example",
+        x=np.arange(10, dtype=float),
+        y=np.arange(10, dtype=float),
+        velocity=np.random.rand(10),
+        )
 
 # Access dynamically created fields
 print(f"X cumsum: {trajectory.x_cumsum}")
@@ -450,14 +453,14 @@ Multifeature(
 ```
 
 
-### Chunk-based Iteration with AbstractMultifeatureStampedDataclass
+### Chunk-based Iteration with AbstractTrajectoryStampedFeaturesBag
 
 When extracting data from ROS bags, you can iterate over synchronized timestamp chunks across multiple features:
 
 ```python
 import trajectory_container_tools as tct
 
-# Extract features from ROS bag (returns AbstractMultifeatureStampedDataclass)
+# Extract features from ROS bag (returns AbstractTrajectoryStampedFeaturesBag)
 multifeature_data = tct.extractor.from_rosbag(
     rosbag_path,
     features_config={

@@ -37,22 +37,22 @@ import warnings
 from .version import __version__
 
 # Core abstract classes
-from .dataclasses.core.abstract_trajectory_dataclass import (
-    AbstractTrajectoryDataclass,
+from .dataclasses.core.abstract_trajectory_feature_dataclass import (
+    AbstractTrajectoryFeature,
 )
-from .dataclasses.core.abstract_no_trajectory_dataclass import (
-    AbstractNoTrajectoryDataclass,
+from .dataclasses.core.abstract_array_trajectory_dataclass import (
+    AbstractTrajectoryArray,
 )
-from .dataclasses.core.abstract_multifeature_dataclass import (
-    AbstractMultifeatureDataclass,
+from .dataclasses.core.abstract_trajectory_features_bag_dataclass import (
+    AbstractTrajectoryFeaturesBag,
 )
-from .dataclasses.core.abstract_multifeature_stamped_dataclass import (
-    AbstractMultifeatureStampedDataclass,
+from .dataclasses.core.abstract_trajectory_stamped_features_bag_dataclass import (
+    AbstractTrajectoryStampedFeaturesBag,
 )
 from .dataclasses.core.base_trajectory_dataclass import (
-    BaseTrajectoryDataclass,
-    NestedBaseTrajectoryDataclass,
-    BaseNoTrajectoryDataclass,
+    BaseTrajectoryFeature,
+    NestedBaseTrajectory,
+    BaseTrajectoryArray,
 )
 
 from .utils.containers_sanity_checks import containers_timestep_alignment_sanity_check
@@ -73,13 +73,13 @@ __all__ = [
     # Version
     "__version__",
     # Core classes
-    "AbstractTrajectoryDataclass",
-    "AbstractMultifeatureDataclass",
-    "AbstractMultifeatureStampedDataclass",
-    "AbstractNoTrajectoryDataclass",
-    "BaseTrajectoryDataclass",
-    "NestedBaseTrajectoryDataclass",
-    "BaseNoTrajectoryDataclass",
+        "AbstractTrajectoryFeature",
+        "AbstractTrajectoryFeaturesBag",
+        "AbstractTrajectoryStampedFeaturesBag",
+        "AbstractTrajectoryArray",
+        "BaseTrajectoryFeature",
+        "NestedBaseTrajectory",
+        "BaseTrajectoryArray",
     # Namespaces
     "dataclasses",
     "factory",

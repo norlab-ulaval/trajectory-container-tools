@@ -18,7 +18,7 @@ from trajectory_container_tools.dataclasses import (
     AckermannMsgsAckermannDrive,
     AckermannMsgsAckermannDriveStamped,
     NavMsgsOdometry,
-    RosStampedDataclass,
+    RosStampedFeature,
     SensorMsgsLaserScan,
     SensorMsgsImu,
     VescMsgsVescImuStamped,
@@ -46,7 +46,7 @@ class TestExtractROSBagFeature:
     def test_populate_nested_trajectory_dataclass(
         self, setup_rosbag_three_topics_filtered
     ):
-        container: Union[NavMsgsOdometry, RosStampedDataclass]
+        container: Union[NavMsgsOdometry, RosStampedFeature]
         container = extract_rosbag_feature(
             rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
             feature_name="/odom",
@@ -173,7 +173,7 @@ class TestExtractROSBagMultifeature:
 
         print(mf_container)
 
-        assert isinstance(mf_container.topic_sensors_imu_raw, RosStampedDataclass)
+        assert isinstance(mf_container.topic_sensors_imu_raw, RosStampedFeature)
         assert not isinstance(mf_container.topic_sensors_imu_raw, SensorMsgsImu)
         assert (
                 mf_container.topic_sensors_imu_raw.feature_name == "/sensors/imu/raw"
@@ -207,7 +207,7 @@ class TestExtractROSBagMultifeature:
         )
         assert isinstance(mf_container.topic_sensors_imu_raw, SensorMsgsImu)
 
-        assert isinstance(mf_container.topic_odom, RosStampedDataclass)
+        assert isinstance(mf_container.topic_odom, RosStampedFeature)
         assert mf_container.topic_odom.feature_name == "/odom"
 
     def test_with_known_type_six_topics(self, setup_rosbag_six_topics_filtered):

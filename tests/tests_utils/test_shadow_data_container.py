@@ -11,11 +11,11 @@ from trajectory_container_tools.utils.shadow_data_container import (
     instanciate_shadow_data_container,
 )
 from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import GeometryMsgsPose
-from trajectory_container_tools.dataclasses import RosDataclass
+from trajectory_container_tools.dataclasses import RosFeaturesArray
 
 
 @dataclass()
-class MockListOfNestedDataclass(RosDataclass):
+class MockListOfNestedFeaturesArray(RosFeaturesArray):
     list_of_point: list[GeometryMsgsPoint]
 
 
@@ -59,13 +59,13 @@ class TestInstanciateShadowDataContainer:
         # print(sdc)
 
     def test_case_list_of_type(self):
-        sdc = instanciate_shadow_data_container(MockListOfNestedDataclass)
+        sdc = instanciate_shadow_data_container(MockListOfNestedFeaturesArray)
 
         print(sdc)
 
         assert isinstance(sdc, dict)
         assert sdc == {
-            "type": MockListOfNestedDataclass,
+            "type":          MockListOfNestedFeaturesArray,
             "list_of_point": [
                 {
                     "type": GeometryMsgsPoint,

@@ -3,12 +3,12 @@ from typing import Optional, Tuple
 
 import numpy as np
 
-from trajectory_container_tools.typing import AbstractTrajectoryDataclass
+from trajectory_container_tools.typing import AbstractTrajectoryFeature
 
 
 def containers_timestep_alignment_sanity_check(
-    container_a: AbstractTrajectoryDataclass,
-    container_b: AbstractTrajectoryDataclass,
+    container_a: AbstractTrajectoryFeature,
+    container_b: AbstractTrajectoryFeature,
     check_attribute: Optional[Tuple[str, ...]] = (
         "pose_x",
         "pose_y",
@@ -32,8 +32,8 @@ def containers_timestep_alignment_sanity_check(
     :return: True if the timesteps_indices for the specified attributes are aligned between the two
     containers, False otherwise.
     """
-    assert isinstance(container_a, AbstractTrajectoryDataclass)
-    assert isinstance(container_b, AbstractTrajectoryDataclass)
+    assert isinstance(container_a, AbstractTrajectoryFeature)
+    assert isinstance(container_b, AbstractTrajectoryFeature)
     try:
         assert container_a.trajectory_len == container_b.trajectory_len
         for each_attr in check_attribute:

@@ -1,7 +1,7 @@
 # coding=utf-8
 import abc
-from dataclasses import dataclass, fields
-from typing import Any, List, Tuple
+from dataclasses import dataclass, field, fields
+from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 from deprecated import deprecated
@@ -11,9 +11,11 @@ from trajectory_container_tools.utils.general import (
     check_typing_union_and_extract_first_union_type,
 )
 
+# from trajectory_container_tools.typing import TrajectoryDataclass
+
 
 @dataclass()
-class AbstractTrajectoryDataclassCommon(abc.ABC):
+class AbstractTrajectoryCommon(abc.ABC):
     """
     Provides an abstract base dataclass for dynamically interacting with and managing object
     attributes, including dynamic fields creation and nested attribute retrieval.
@@ -25,9 +27,82 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
 
     """
 
+    _parent: Optional["AbstractTrajectoryCommon"] = field(
+        default=None, init=False
+    )
+
+    def set_parent_container_reference_tracking(self):
+        # (CRITICAL) ToDo: unit-test (ref task TCT-87)
+        for each_name in self.get_dimension_names():
+            data_property = self.__getattribute__(each_name)
+
+            if isinstance(data_property, AbstractTrajectoryCommon):
+                data_property._parent = self
+        return None
+
+    def get_parent_container(self) -> Union["AbstractTrajectoryCommon", None]:
+        # (CRITICAL) ToDo: unit-test (ref task TCT-87)
+        return self._parent
+
+    def get_root_container(self) -> "AbstractTrajectoryCommon":
+        # (CRITICAL) ToDo: unit-test (ref task TCT-87)
+        if self._parent is None:
+            return self
+
+        # Recursively search up the parent chain
+        return self._parent.get_root_container()
+
+    def is_nested(self) -> bool:
+        # (CRITICAL) ToDo: unit-test (ref task TCT-87)
+        return self._parent is not None
+
     @abc.abstractmethod
     def __post_init__(self):
-        pass
+        """
+        Defines an abstract method to be implemented by subclasses ensuring post-initialization logic
+        is enforced for dataclass-like constructs.
+
+        This method serves as a placeholder for a post-construction initialization hook that should
+        be provided when subclassing. It is marked as abstract to mandate its implementation.
+
+        Expect the following at minimum:
+
+        >>> def __post_init__(self):
+        >>>     # .... Pre-condition ..............................................................
+        >>>     if not self.get_dimension_names():
+        >>>         raise TypeError(
+        >>>             f"[TCT error] {self.__class__.__name__} is an abstract baseclass, "
+        >>>             f"it must be subclassed in order to be instanciated."
+        >>>         )
+        >>>
+        >>>     # .... Callback logic .............................................................
+        >>>     self.on_begin_post_init_callback()
+        >>>
+        >>>     for each_name in self.get_dimension_names():
+        >>>         self.post_init_feature_callback(feature_name=each_name)
+        >>>
+        >>>     self.on_exit_post_init_callback()
+        >>>
+        >>>     return None
+
+        :raises NotImplementedError: If the subclass does not implement this method.
+        """
+        # .... Pre-condition ......................................................................
+        if not self.get_dimension_names():
+            raise TypeError(
+                f"[TCT error] {self.__class__.__name__} is an abstract baseclass, "
+                f"it must be subclassed in order to be instanciated."
+            )
+
+        # .... Callback logic .....................................................................
+        self.on_begin_post_init_callback()
+
+        for each_name in self.get_dimension_names():
+            self.post_init_feature_callback(feature_name=each_name)
+
+        self.on_exit_post_init_callback()
+
+        return None
 
     @classmethod
     def _dataclass_internal_field(cls) -> List[str]:
@@ -43,7 +118,7 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
 
         :return: A list containing the names of internal fields used in the data class.
         """
-        return []
+        return ["_parent"]
 
     @classmethod
     def non_trajectory_field(cls) -> List[str]:
@@ -92,7 +167,7 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
         return nested_attribute
 
     def set_dynamic_field(self, feature_name: str, value: Any) -> None:
-        """ Sets a dynamically resolved nested field or attribute within an object.
+        """Sets a dynamically resolved nested field or attribute within an object.
 
         This function dynamically locates and assigns the specified value to a
         nested attribute within an object. The attribute path is determined

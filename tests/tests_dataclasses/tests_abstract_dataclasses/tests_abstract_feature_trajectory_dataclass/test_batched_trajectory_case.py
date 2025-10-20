@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from ..mock_trj_dataclasses import MockTrajectoryChildDFcase
-from trajectory_container_tools import AbstractTrajectoryDataclass
+from trajectory_container_tools import AbstractTrajectoryFeature
 from trajectory_container_tools.dataclasses import StatePose2D
 
 
@@ -32,7 +32,7 @@ class TestAbstractTrajectoryDataclassBatchedTrajectoryCase:
 
     def test_FeatureDataclass_baseclass_not_instantiable(self):
         with pytest.raises(TypeError):
-            shouldfail = AbstractTrajectoryDataclass(feature_name="try_to_do_it")
+            shouldfail = AbstractTrajectoryFeature(feature_name="try_to_do_it")
 
     def test_class_feature_post_init_base(
         self, setup_mock_feature_child, mock_batched_trj_DC

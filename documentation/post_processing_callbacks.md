@@ -2,7 +2,7 @@
 
 ## Overview
 
-Trajectory Container Tools (TCT) provides a powerful post-processing callback system that allows you to execute custom logic during trajectory dataclass instantiation. This system is built into the `AbstractTrajectoryDataclassCommon` base class and is automatically available to all trajectory containers.
+Trajectory Container Tools (TCT) provides a powerful post-processing callback system that allows you to execute custom logic during trajectory dataclass instantiation. This system is built into the `AbstractTrajectoryCommon` base class and is automatically available to all trajectory containers.
 
 ## The Three Callback Methods
 
@@ -27,11 +27,12 @@ from dataclasses import dataclass
 import numpy as np
 import trajectory_container_tools as tct
 
+
 @dataclass
-class TrajectoryWithPreprocessing(tct.BaseTrajectoryDataclass):
+class TrajectoryWithPreprocessing(tct.BaseTrajectoryFeature):
     x: np.ndarray
     y: np.ndarray
-    
+
     def on_begin_post_init_callback(self):
         """Normalize coordinates at the start."""
         # Center the trajectory around origin
@@ -39,7 +40,7 @@ class TrajectoryWithPreprocessing(tct.BaseTrajectoryDataclass):
         y_mean = np.mean(self.y)
         self.set_dynamic_field('x', self.x - x_mean)
         self.set_dynamic_field('y', self.y - y_mean)
-        
+
         # Store the offset for later use
         self.set_dynamic_field('offset_x', x_mean)
         self.set_dynamic_field('offset_y', y_mean)
@@ -67,22 +68,23 @@ from dataclasses import dataclass
 import numpy as np
 import trajectory_container_tools as tct
 
+
 @dataclass
-class TrajectoryWithDerivedFeatures(tct.BaseTrajectoryDataclass):
+class TrajectoryWithDerivedFeatures(tct.BaseTrajectoryFeature):
     x: np.ndarray
     y: np.ndarray
     velocity: np.ndarray
-    
+
     def post_init_feature_callback(self, feature_name: str):
         """Create derivative and cumulative features."""
         feature = self.get_dynamic_field(feature_name)
-        
+
         if isinstance(feature, np.ndarray):
             # Create rate of change for each feature
             if feature_name in ['x', 'y', 'velocity']:
                 rate = np.diff(feature, prepend=feature[0])
                 self.set_dynamic_field(f"{feature_name}_rate", rate)
-            
+
             # Create cumulative sum for position features
             if feature_name in ['x', 'y']:
                 cumsum = np.cumsum(feature)
@@ -108,27 +110,28 @@ from dataclasses import dataclass
 import numpy as np
 import trajectory_container_tools as tct
 
+
 @dataclass
-class TrajectoryWithStatistics(tct.BaseTrajectoryDataclass):
+class TrajectoryWithStatistics(tct.BaseTrajectoryFeature):
     x: np.ndarray
     y: np.ndarray
     velocity: np.ndarray
-    
+
     def on_exit_post_init_callback(self):
         """Compute trajectory statistics and validate data."""
         # Compute total distance
         dx = np.diff(self.x, prepend=self.x[0])
         dy = np.diff(self.y, prepend=self.y[0])
-        distances = np.sqrt(dx**2 + dy**2)
+        distances = np.sqrt(dx ** 2 + dy ** 2)
         self.set_dynamic_field('distance_per_step', distances)
         self.set_dynamic_field('total_distance', np.sum(distances))
-        
+
         # Compute trajectory bounds
         self.set_dynamic_field('x_min', np.min(self.x))
         self.set_dynamic_field('x_max', np.max(self.x))
         self.set_dynamic_field('y_min', np.min(self.y))
         self.set_dynamic_field('y_max', np.max(self.y))
-        
+
         # Validate trajectory length
         assert len(self.x) > 0, "Trajectory must have at least one point"
         assert len(self.velocity) == len(self.x), "Velocity and position arrays must have same length"
@@ -196,84 +199,86 @@ from dataclasses import dataclass
 import numpy as np
 import trajectory_container_tools as tct
 
+
 @dataclass
-class AdvancedTrajectory(tct.BaseTrajectoryDataclass):
+class AdvancedTrajectory(tct.BaseTrajectoryFeature):
     x: np.ndarray
     y: np.ndarray
     velocity: np.ndarray
     steering: np.ndarray
-    
+
     def on_begin_post_init_callback(self):
         """Initialize processing and validate input."""
         # Ensure all arrays have consistent length
         lengths = [len(self.x), len(self.y), len(self.velocity), len(self.steering)]
         assert len(set(lengths)) == 1, f"Inconsistent array lengths: {lengths}"
-        
+
         # Store trajectory metadata
         self.set_dynamic_field('trajectory_length', len(self.x))
-        
+
         # Initialize a processing flag
         self.set_dynamic_field('_callbacks_executed', True)
-    
+
     def post_init_feature_callback(self, feature_name: str):
         """Create statistical features for each trajectory dimension."""
         feature = self.get_dynamic_field(feature_name)
-        
+
         if isinstance(feature, np.ndarray) and len(feature) > 0:
             # Compute statistics
             stats = {
-                f"{feature_name}_mean": np.mean(feature),
-                f"{feature_name}_std": np.std(feature),
-                f"{feature_name}_min": np.min(feature),
-                f"{feature_name}_max": np.max(feature),
-            }
-            
+                    f"{feature_name}_mean": np.mean(feature),
+                    f"{feature_name}_std":  np.std(feature),
+                    f"{feature_name}_min":  np.min(feature),
+                    f"{feature_name}_max":  np.max(feature),
+                    }
+
             # Only create rate of change for physical quantities
             if feature_name in ['x', 'y', 'velocity', 'steering']:
                 rate = np.diff(feature, prepend=feature[0])
                 stats[f"{feature_name}_rate"] = rate
-            
+
             # Set all computed statistics
             for stat_name, stat_value in stats.items():
                 self.set_dynamic_field(stat_name, stat_value)
-    
+
     def on_exit_post_init_callback(self):
         """Compute derived trajectory properties."""
         # Compute path curvature
         dx = np.diff(self.x, prepend=self.x[0])
         dy = np.diff(self.y, prepend=self.y[0])
-        
+
         # Distance traveled per step
-        step_distances = np.sqrt(dx**2 + dy**2)
+        step_distances = np.sqrt(dx ** 2 + dy ** 2)
         self.set_dynamic_field('step_distances', step_distances)
         self.set_dynamic_field('total_distance', np.sum(step_distances))
-        
+
         # Heading angle (direction of travel)
         heading = np.arctan2(dy, dx)
         self.set_dynamic_field('heading', heading)
-        
+
         # Curvature (change in heading per unit distance)
         dheading = np.diff(heading, prepend=heading[0])
         curvature = dheading / (step_distances + 1e-6)  # Avoid division by zero
         self.set_dynamic_field('curvature', curvature)
-        
+
         # Create trajectory quality metrics
         smoothness = np.std(curvature)
         self.set_dynamic_field('trajectory_smoothness', smoothness)
-        
+
         # Final validation
         assert np.all(np.isfinite(self.x)), "x contains non-finite values"
         assert np.all(np.isfinite(self.y)), "y contains non-finite values"
 
+
 # Usage
 trajectory = AdvancedTrajectory(
-    feature_name="advanced_example",
-    x=np.linspace(0, 10, 100),
-    y=np.sin(np.linspace(0, 2*np.pi, 100)),
-    velocity=np.ones(100) * 2.0,
-    steering=np.linspace(-0.5, 0.5, 100),
-    timesteps_indices=np.arange(100)
-)
+        feature_name="advanced_example",
+        x=np.linspace(0, 10, 100),
+        y=np.sin(np.linspace(0, 2 * np.pi, 100)),
+        velocity=np.ones(100) * 2.0,
+        steering=np.linspace(-0.5, 0.5, 100),
+        timesteps_indices=np.arange(100)
+        )
 
 # Access computed properties
 print(f"Total distance: {trajectory.total_distance:.2f}")
@@ -392,9 +397,10 @@ trajectory = tct.extractor.from_rosbag(
 ```
 
 ### From DataFrames
+
 ```python
 @dataclass
-class BatchTrajectory(tct.BaseTrajectoryDataclass):
+class BatchTrajectory(tct.BaseTrajectoryFeature):
     x: np.ndarray
     y: np.ndarray
 
@@ -412,8 +418,8 @@ class BatchTrajectory(tct.BaseTrajectoryDataclass):
 
 # Use with dataframe extractor
 trajectory = tct.extractor.from_dataframe(
-    dataframe, features_config={"/trajectory": BatchTrajectory},
-)
+        dataframe, features_config={"/trajectory": BatchTrajectory},
+        )
 
 ```
 
@@ -479,8 +485,8 @@ def on_exit_post_init_callback(self):
 ## API Reference
 
 For the complete API documentation of the callback methods, see the source code:
-- `AbstractTrajectoryDataclassCommon.on_begin_post_init_callback()`
-- `AbstractTrajectoryDataclassCommon.post_init_feature_callback(feature_name)`
-- `AbstractTrajectoryDataclassCommon.on_exit_post_init_callback()`
+- `AbstractTrajectoryCommon.on_begin_post_init_callback()`
+- `AbstractTrajectoryCommon.post_init_feature_callback(feature_name)`
+- `AbstractTrajectoryCommon.on_exit_post_init_callback()`
 
 Located in: `src/trajectory_container_tools/dataclasses/core/abstract_trajectory_dataclass_common.py`

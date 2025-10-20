@@ -5,13 +5,13 @@ from typing import Union
 import numpy as np
 
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
-    NestedBaseTrajectoryDataclass,
+    NestedBaseTrajectory,
 )
 from trajectory_container_tools.temporal.timestamps import Timestamps
 
 
 @dataclass()
-class StdMsgsHeader(NestedBaseTrajectoryDataclass):
+class StdMsgsHeader(NestedBaseTrajectory):
     """Represents a ros header containing frame information and time-related data.
 
     Compatible ros2 message interface: std_msgs/msg/Header
@@ -41,7 +41,7 @@ class StdMsgsHeader(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class GeometryMsgsPoint(NestedBaseTrajectoryDataclass):
+class GeometryMsgsPoint(NestedBaseTrajectory):
     """
     Represents a 3D point defined by x, y, and z coordinates.
 
@@ -63,7 +63,7 @@ class GeometryMsgsPoint(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class GeometryMsgsVector3(NestedBaseTrajectoryDataclass):
+class GeometryMsgsVector3(NestedBaseTrajectory):
     """
     Represents a 3D vector defined by three numpy arrays.
 
@@ -87,7 +87,7 @@ class GeometryMsgsVector3(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class GeometryMsgsVector3Stamped(NestedBaseTrajectoryDataclass):
+class GeometryMsgsVector3Stamped(NestedBaseTrajectory):
     """
     Represents a ROS2 compatible message interface for a stamped 3D vector.
 
@@ -108,7 +108,7 @@ class GeometryMsgsVector3Stamped(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class GeometryMsgsPointStamped(NestedBaseTrajectoryDataclass):
+class GeometryMsgsPointStamped(NestedBaseTrajectory):
     """
     Represents a ROS2 compatible message interface for a stamped 3D point.
 
@@ -132,7 +132,7 @@ class GeometryMsgsPointStamped(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class GeometryMsgsQuaternion(NestedBaseTrajectoryDataclass):
+class GeometryMsgsQuaternion(NestedBaseTrajectory):
     """
     Represents a Quaternion in 3D space.
 
@@ -158,7 +158,7 @@ class GeometryMsgsQuaternion(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class GeometryMsgsTransform(NestedBaseTrajectoryDataclass):
+class GeometryMsgsTransform(NestedBaseTrajectory):
     """
     Represents a 3D transform consisting of translation and rotation.
 

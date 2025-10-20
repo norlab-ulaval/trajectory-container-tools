@@ -47,7 +47,7 @@ The ROS bag converter extracts trajectory data from ROS 2 bag files and converts
 ```python
 from pathlib import Path
 import trajectory_container_tools as tct
-from trajectory_container_tools.dataclasses import NavMsgsOdometry, RosStampedDataclass
+from trajectory_container_tools.dataclasses import NavMsgsOdometry, RosStampedFeature
 # Note: There are a lot more dataclasses available
 ```
 
@@ -225,9 +225,9 @@ print(f"Partial trajectory length: {partial_data.topic_odometry.trajectory_len}"
 
 ```
 
-### 4. Chunk-Based Iteration with AbstractMultifeatureStampedDataclass
+### 4. Chunk-Based Iteration with AbstractTrajectoryStampedFeaturesBag
 
-When extracting multiple features from a ROS bag, the result is an `AbstractMultifeatureStampedDataclass` that supports chunk-based iteration over synchronized timestamp windows:
+When extracting multiple features from a ROS bag, the result is an `AbstractTrajectoryStampedFeaturesBag` that supports chunk-based iteration over synchronized timestamp windows:
 
 ```python
 import trajectory_container_tools as tct
@@ -328,11 +328,11 @@ tc_with_custom_type = tct.extractor.from_rosbag(
 from dataclasses import dataclass
 import numpy as np
 import trajectory_container_tools as tct
-from trajectory_container_tools.dataclasses import RosStampedDataclass
+from trajectory_container_tools.dataclasses import RosStampedFeature
 
 
 @dataclass
-class CustomRobotState(RosStampedDataclass):
+class CustomRobotState(RosStampedFeature):
     """Custom dataclass for complex robot state messages"""
     x: np.ndarray
     y: np.ndarray
@@ -351,11 +351,11 @@ class CustomRobotState(RosStampedDataclass):
 
 # Use custom dataclass
 tc_with_custom_type = tct.extractor.from_rosbag(
-    rosbag_path=rosbag_path,
-    dataset_info="Trajectory with custom dataclass",
-    features_config={"/robot_state": CustomRobotState},
-    chunk_on="/robot_state"
-)
+        rosbag_path=rosbag_path,
+        dataset_info="Trajectory with custom dataclass",
+        features_config={"/robot_state": CustomRobotState},
+        chunk_on="/robot_state"
+        )
 
 ```
 

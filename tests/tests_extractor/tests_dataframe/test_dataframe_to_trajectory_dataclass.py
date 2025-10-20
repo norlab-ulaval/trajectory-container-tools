@@ -11,7 +11,7 @@ from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass im
     StatePose2D,
 )
 from trajectory_container_tools.extractor import dataframe_to_tct as dtd
-from trajectory_container_tools.dataclasses.core import abstract_trajectory_dataclass as atd
+from trajectory_container_tools.dataclasses.core import abstract_trajectory_feature_dataclass as atd
 
 
 @pytest.fixture(scope="function")
@@ -141,7 +141,7 @@ class TestExtractDataframeMultifeature:
         assert feats.idd_vel.feature_name == "idd_vel"
         assert feats.idd_vel.get_dimension_names() == ("x", "y", "yaw")
 
-        assert isinstance(feats.icp, atd.AbstractTrajectoryDataclass)
+        assert isinstance(feats.icp, atd.AbstractTrajectoryFeature)
         assert feats.icp.feature_name == "icp"
         assert feats.icp.get_dimension_names() == (
             "x",

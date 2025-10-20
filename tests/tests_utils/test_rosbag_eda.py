@@ -5,7 +5,12 @@ import os
 import shutil
 from pathlib import Path
 
-import trajectory_container_tools.dataclasses.core.abstract_multifeature_stamped_dataclass
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_stamped_features_bag_dataclass import (
+    AbstractTrajectoryStampedFeaturesBag,
+)
+from trajectory_container_tools.dataclasses.core import (
+    abstract_trajectory_features_bag_dataclass,
+)
 from trajectory_container_tools.utils.general import RosImportError
 
 try:
@@ -13,7 +18,6 @@ try:
 except (ImportError, ModuleNotFoundError):
     raise RosImportError
 
-import trajectory_container_tools.dataclasses.core.abstract_multifeature_dataclass
 from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.general_utils import (
     compute_bag_target_window_nb,
 )
@@ -92,8 +96,7 @@ def test_run_rosbag_timestamp_eda_full_bag(
         show_plot=False,
     )
     print(tc)
-    assert isinstance(tc,
-                      trajectory_container_tools.dataclasses.core.abstract_multifeature_stamped_dataclass.AbstractMultifeatureStampedDataclass)
+    assert isinstance(tc, AbstractTrajectoryStampedFeaturesBag)
 
     assert tc.topic_odom.trajectory_len == 864
     assert tc.topic_tf.transforms[0].trajectory_len == 864
@@ -121,8 +124,7 @@ def test_run_rosbag_timestamp_eda_window(
         show_plot=False,
     )
     print(tc)
-    assert isinstance(tc,
-                      trajectory_container_tools.dataclasses.core.abstract_multifeature_stamped_dataclass.AbstractMultifeatureStampedDataclass)
+    assert isinstance(tc, AbstractTrajectoryStampedFeaturesBag)
 
     assert os.path.exists(mock_plot_dir_path)
 

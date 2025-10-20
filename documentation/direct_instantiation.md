@@ -17,7 +17,7 @@ TCT provides a flexible system for managing trajectory-related data through spec
 
 ### Simple Trajectory Container Structure
 
-The most straightforward way to create a trajectory is by extending `BaseTrajectoryDataclass`:
+The most straightforward way to create a trajectory is by extending `BaseTrajectoryFeature`:
 
 ```python
 from dataclasses import dataclass
@@ -26,7 +26,7 @@ import trajectory_container_tools as tct
 
 
 @dataclass()
-class Simple2DTrajectory(tct.BaseTrajectoryDataclass):
+class Simple2DTrajectory(tct.BaseTrajectoryFeature):
     x: np.ndarray
     y: np.ndarray
     timestamps: np.ndarray
@@ -68,19 +68,22 @@ Simple2DTrajectory(
 
 ### Nested Trajectory Container Structure
 
-For more complex data organization, use `NestedBaseTrajectoryDataclass` for custom implementation or use dataclasses from `primitive_dataclass` module:
+For more complex data organization, use `NestedBaseTrajectory` for custom implementation or use dataclasses from `primitive_dataclass` module:
 
 ```python
-from trajectory_container_tools.dataclasses import BaseTrajectoryDataclass, NestedBaseTrajectoryDataclass, Vector2D
+from trajectory_container_tools.dataclasses import BaseTrajectoryFeature, NestedBaseTrajectory,
+
+Vector2D
+
 
 @dataclass()
-class CustomPoseContainer(NestedBaseTrajectoryDataclass):
+class CustomPoseContainer(NestedBaseTrajectory):
     x: np.ndarray
     y: np.ndarray
 
 
 @dataclass()
-class ComplexTrajectory(BaseTrajectoryDataclass):
+class ComplexTrajectory(BaseTrajectoryFeature):
     timestamps: np.ndarray
     position: CustomPoseContainer
     velocity: Vector2D
@@ -204,7 +207,7 @@ Point 4: x=0.397, y=0.918
 TCT supports batch trajectories for processing multiple trajectories simultaneously:
 
 ```python
-from trajectory_container_tools.dataclasses import BaseTrajectoryDataclass
+from trajectory_container_tools.dataclasses import BaseTrajectoryFeature
 
 # Create batch trajectories (3 trajectories, 20 timesteps each)
 batch_size, time_steps = 3, 20
@@ -213,8 +216,9 @@ batch_y = np.random.randn(batch_size, time_steps)
 batch_frame = np.random.randn(batch_size, time_steps, 10)
 batch_timestamps = np.tile(np.arange(time_steps) * 0.1, (batch_size, 1))
 
+
 @dataclass()
-class Simple2DCoordinateTrajectory(BaseTrajectoryDataclass):
+class Simple2DCoordinateTrajectory(BaseTrajectoryFeature):
     x: np.ndarray
     frame: np.ndarray
     y: np.ndarray
@@ -222,13 +226,13 @@ class Simple2DCoordinateTrajectory(BaseTrajectoryDataclass):
 
 
 batch_trajectory = Simple2DCoordinateTrajectory(
-    feature_name="batch 2d coordinate",
-    x=batch_x,
-    y=batch_y,
-    frame=batch_frame,
-    timestamps=batch_timestamps,
-    batch=True
-)
+        feature_name="batch 2d coordinate",
+        x=batch_x,
+        y=batch_y,
+        frame=batch_frame,
+        timestamps=batch_timestamps,
+        batch=True
+        )
 
 print(f"Batch trajectory shape: {batch_trajectory.x.shape}")
 print(f"Number of trajectories: {batch_trajectory.x.shape[0]}")
@@ -319,9 +323,9 @@ Expected error caught: ValueError
 
 ### Base Classes
 
-- `AbstractTrajectoryDataclass`: Abstract base providing core functionality
-- `BaseTrajectoryDataclass`: Standard flat trajectory container
-- `NestedBaseTrajectoryDataclass`: Support for nested data structures
+- `AbstractTrajectoryFeature`: Abstract base providing core functionality
+- `BaseTrajectoryFeature`: Standard flat trajectory container
+- `NestedBaseTrajectory`: Support for nested data structures
 
 ### Factory Functions
 
@@ -471,7 +475,7 @@ For more advanced timestamp operations including multifeature timestamp aggregat
 
 ## Usage Recommendations
 
-1. **Start Simple**: Begin with `BaseTrajectoryDataclass` for basic use cases
+1. **Start Simple**: Begin with `BaseTrajectoryFeature` for basic use cases
 2. **Use Factories**: Leverage factory functions for dynamic, configurable trajectory types
 3. **Validate Early**: Take advantage of built-in validation to catch data inconsistencies
 4. **Batch When Appropriate**: Use batch processing for multiple trajectory analysis

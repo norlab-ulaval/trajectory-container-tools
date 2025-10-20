@@ -3,7 +3,7 @@ import pytest
 
 from trajectory_container_tools.dataclasses import StdMsgsHeader, Tf2MsgsTFMessage
 from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import (
-    GeometryMsgsTransformStamped,
+    GeometryMsgsTransformStampedFeature,
 )
 from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import (
     GeometryMsgsQuaternion,
@@ -17,7 +17,7 @@ def test_Tf2MsgsTFMessage_init(mock_ROSbag_2_trj_DC):
     dc_ = Tf2MsgsTFMessage(
         feature_name="/tf",
         transforms=[
-            GeometryMsgsTransformStamped(
+            GeometryMsgsTransformStampedFeature(
                 header=StdMsgsHeader(
                     frame_id=md.header.frame_id, timestamps=md.header.timestamps
                 ),
@@ -27,7 +27,7 @@ def test_Tf2MsgsTFMessage_init(mock_ROSbag_2_trj_DC):
                     rotation=GeometryMsgsQuaternion(x=md.a, y=md.a, z=md.a, w=md.a),
                 ),
             ),
-            GeometryMsgsTransformStamped(
+            GeometryMsgsTransformStampedFeature(
                 header=StdMsgsHeader(
                     frame_id=md.header.frame_id, timestamps=md.header.timestamps
                 ),

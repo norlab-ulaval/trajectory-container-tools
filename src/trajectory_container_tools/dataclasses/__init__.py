@@ -4,7 +4,7 @@ Trajectory dataclasses for different data sources and formats.
 
 Available dataclasses:
 - ROS2 message types (NavMsgsOdometry, SensorMsgsImu, etc.)
-- Generic containers (BaseTrajectoryDataclass, etc.)
+- Generic containers (BaseTrajectoryFeature, etc.)
 - Primitive containers (Point2D, Vector2D, Pose2D, etc.)
 - Simulation environments (F110Gym, MathGymnasium, etc.)
 
@@ -19,23 +19,23 @@ __all__ = []
 
 # .... Abstract base classes and base classes .....................................................
 from trajectory_container_tools.dataclasses.core import (
-    AbstractTrajectoryDataclass,
-    AbstractMultifeatureDataclass,
-    AbstractMultifeatureStampedDataclass,
-    AbstractNoTrajectoryDataclass,
-    BaseTrajectoryDataclass,
-    NestedBaseTrajectoryDataclass,
-    BaseNoTrajectoryDataclass,
+    AbstractTrajectoryFeature,
+    AbstractTrajectoryFeaturesBag,
+    AbstractTrajectoryStampedFeaturesBag,
+    AbstractTrajectoryArray,
+    BaseTrajectoryFeature,
+    NestedBaseTrajectory,
+    BaseTrajectoryArray,
 )
 
 __all__ += [
-    "AbstractTrajectoryDataclass",
-    "AbstractMultifeatureDataclass",
-    "AbstractMultifeatureStampedDataclass",
-    "AbstractNoTrajectoryDataclass",
-    "BaseTrajectoryDataclass",
-    "NestedBaseTrajectoryDataclass",
-    "BaseNoTrajectoryDataclass",
+    "AbstractTrajectoryFeature",
+    "AbstractTrajectoryFeaturesBag",
+    "AbstractTrajectoryStampedFeaturesBag",
+    "AbstractTrajectoryArray",
+    "BaseTrajectoryFeature",
+    "NestedBaseTrajectory",
+    "BaseTrajectoryArray",
 ]
 
 # .... ROS2 dataclasses ...........................................................................
@@ -60,12 +60,12 @@ from .ros_msgs.nested_dataclass import (
     GeometryMsgsTwistWithCovariance,
     AckermannMsgsAckermannDrive,
     VescMsgsVescImu,
-    GeometryMsgsTransformStamped,
+    GeometryMsgsTransformStampedFeature,
 )
 from .ros_msgs.core_dataclass import (
-    NestedRosStampedDataclass,
-    RosDataclass,
-    RosStampedDataclass,
+    NestedRosStampedFeature,
+    RosFeaturesArray,
+    RosStampedFeature,
 )
 
 from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import (
@@ -95,10 +95,10 @@ __all__ += [
     "GeometryMsgsTwistWithCovariance",
     "AckermannMsgsAckermannDrive",
     "VescMsgsVescImu",
-    "GeometryMsgsTransformStamped",
-    "NestedRosStampedDataclass",
-    "RosDataclass",
-    "RosStampedDataclass",
+    "GeometryMsgsTransformStampedFeature",
+    "NestedRosStampedFeature",
+    "RosFeaturesArray",
+    "RosStampedFeature",
     "StdMsgsHeader",
     "GeometryMsgsPoint",
     "GeometryMsgsVector3",

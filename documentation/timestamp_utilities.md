@@ -148,7 +148,7 @@ except TimestampCausalOrderingError as e:
 
 ## Multifeature Timestamp Methods
 
-For `AbstractMultifeatureStampedDataclass` containers (e.g., extracted from ROS bags with multiple topics), TCT provides methods to work with timestamps across all features.
+For `AbstractTrajectoryStampedFeaturesBag` containers (e.g., extracted from ROS bags with multiple topics), TCT provides methods to work with timestamps across all features.
 
 ### The `get_timestamps()` method
 

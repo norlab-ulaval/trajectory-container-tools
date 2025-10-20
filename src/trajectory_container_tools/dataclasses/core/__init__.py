@@ -1,12 +1,12 @@
 # coding=utf-8
-from .abstract_trajectory_dataclass import AbstractTrajectoryDataclass
-from .abstract_no_trajectory_dataclass import AbstractNoTrajectoryDataclass
-from .abstract_multifeature_dataclass import AbstractMultifeatureDataclass
-from .abstract_multifeature_stamped_dataclass import (
-    AbstractMultifeatureStampedDataclass,
+from .abstract_trajectory_feature_dataclass import AbstractTrajectoryFeature
+from .abstract_array_trajectory_dataclass import AbstractTrajectoryArray
+from .abstract_trajectory_features_bag_dataclass import AbstractTrajectoryFeaturesBag
+from .abstract_trajectory_stamped_features_bag_dataclass import (
+    AbstractTrajectoryStampedFeaturesBag,
 )
 from .base_trajectory_dataclass import (
-    BaseTrajectoryDataclass,
-    BaseNoTrajectoryDataclass,
-    NestedBaseTrajectoryDataclass,
+    BaseTrajectoryFeature,
+    BaseTrajectoryArray,
+    NestedBaseTrajectory,
 )

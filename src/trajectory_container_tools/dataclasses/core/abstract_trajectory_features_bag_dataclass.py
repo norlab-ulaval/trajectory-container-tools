@@ -8,23 +8,23 @@ from typing import Any, List, Optional
 import numpy as np
 
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass_common import (
-    AbstractTrajectoryDataclassCommon,
+    AbstractTrajectoryCommon,
 )
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
-    AbstractTrajectoryDataclass,
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_feature_dataclass import (
+    AbstractTrajectoryFeature,
 )
-from trajectory_container_tools.dataclasses.core.abstract_no_trajectory_dataclass import (
-    AbstractNoTrajectoryDataclass,
+from trajectory_container_tools.dataclasses.core.abstract_array_trajectory_dataclass import (
+    AbstractTrajectoryArray,
 )
 from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.utils import extract_class_name_from_instance
 
 
 @dataclass
-class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
+class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
     """
-    Abstract base class representing a multifeature dataclass with dataset information,
-    timestamp handling, and dynamic runtime properties.
+    Abstract base class representing a composition of many features from the same trajectory with
+    dataset information, timestamp handling, and dynamic runtime properties.
 
     This class is designed to provide a structure for managing multifeature datasets,
     including a record of when the data was last aggregated and optional timestamps for
@@ -104,7 +104,7 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
                         f"shape {v.shape} {range_str}\n"
                     )
             elif isinstance(
-                v, (AbstractTrajectoryDataclass, AbstractNoTrajectoryDataclass)
+                v, (AbstractTrajectoryFeature, AbstractTrajectoryArray)
             ):
                 indent_v = []
                 for each_line in str(v).splitlines():
@@ -127,7 +127,7 @@ class AbstractMultifeatureDataclass(AbstractTrajectoryDataclassCommon):
         reason="Directly print the MultifeatureTrajectoryDataclass object instead."
     )
     def summary(self) -> None:
-        # inprogress: TCT-68 feat: deprecate AbstractMultifeatureDataclass summary property
+        # inprogress: TCT-68 feat: deprecate AbstractTrajectoryFeaturesBag summary property
         print(self)
         return None
 

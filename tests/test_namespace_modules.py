@@ -265,13 +265,13 @@ class TestMainNamespaceAPI:
         """Test that core abstract classes are available in main namespace."""
         tct = setup_namespace
         core_classes = [
-            "AbstractTrajectoryDataclass",
-            "AbstractMultifeatureDataclass",
-            "AbstractMultifeatureStampedDataclass",
-            "AbstractNoTrajectoryDataclass",
-            "BaseTrajectoryDataclass",
-            "NestedBaseTrajectoryDataclass",
-            "BaseNoTrajectoryDataclass",
+            "AbstractTrajectoryFeature",
+            "AbstractTrajectoryFeaturesBag",
+            "AbstractTrajectoryStampedFeaturesBag",
+            "AbstractTrajectoryArray",
+            "BaseTrajectoryFeature",
+            "NestedBaseTrajectory",
+            "BaseTrajectoryArray",
         ]
 
         for class_name in core_classes:
@@ -308,10 +308,10 @@ class TestDataclassesNamespace:
         """Test that abstract classes are available in dataclasses namespace."""
         tct = setup_namespace
         abstract_classes = [
-            "AbstractTrajectoryDataclass",
-            "AbstractMultifeatureDataclass",
-            "AbstractMultifeatureStampedDataclass",
-            "AbstractNoTrajectoryDataclass",
+            "AbstractTrajectoryFeature",
+            "AbstractTrajectoryFeaturesBag",
+            "AbstractTrajectoryStampedFeaturesBag",
+            "AbstractTrajectoryArray",
         ]
 
         for class_name in abstract_classes:
@@ -323,9 +323,9 @@ class TestDataclassesNamespace:
         """Test that abstract classes are available in dataclasses namespace."""
         tct = setup_namespace
         abstract_classes = [
-            "BaseTrajectoryDataclass",
-            "NestedBaseTrajectoryDataclass",
-            "BaseNoTrajectoryDataclass",
+            "BaseTrajectoryFeature",
+            "NestedBaseTrajectory",
+            "BaseTrajectoryArray",
         ]
 
         for class_name in abstract_classes:

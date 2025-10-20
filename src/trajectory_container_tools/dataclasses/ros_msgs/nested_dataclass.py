@@ -3,14 +3,14 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .core_dataclass import NestedRosStampedDataclass, NestedBaseTrajectoryDataclass
+from .core_dataclass import NestedRosStampedFeature, NestedBaseTrajectory
 from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import GeometryMsgsPoint, \
     GeometryMsgsQuaternion, GeometryMsgsTransform, GeometryMsgsVector3
 
 
 # .... Geometry msgs ..............................................................................
 @dataclass()
-class GeometryMsgsPose(NestedBaseTrajectoryDataclass):
+class GeometryMsgsPose(NestedBaseTrajectory):
     """
     Represents a pose with position and orientation.
 
@@ -32,7 +32,7 @@ class GeometryMsgsPose(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class GeometryMsgsPoseWithCovariance(NestedBaseTrajectoryDataclass):
+class GeometryMsgsPoseWithCovariance(NestedBaseTrajectory):
     """Represents a pose with its covariance data.
 
     Compatible ros2 message interface: geometry_msgs/msg/PoseWithCovariance
@@ -55,7 +55,7 @@ class GeometryMsgsPoseWithCovariance(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class GeometryMsgsTwist(NestedBaseTrajectoryDataclass):
+class GeometryMsgsTwist(NestedBaseTrajectory):
     """
     Represents a 6DOF twist with linear and angular components.
 
@@ -76,7 +76,7 @@ class GeometryMsgsTwist(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class GeometryMsgsTwistWithCovariance(NestedBaseTrajectoryDataclass):
+class GeometryMsgsTwistWithCovariance(NestedBaseTrajectory):
     """Represents a twist with an associated covariance matrix.
 
     Compatible ros2 message interface: geometry_msgs/msg/TwistWithCovariance
@@ -97,7 +97,7 @@ class GeometryMsgsTwistWithCovariance(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class GeometryMsgsTransformStamped(NestedRosStampedDataclass):
+class GeometryMsgsTransformStampedFeature(NestedRosStampedFeature):
     """
     Represents a ROS2-compatible TransformStamped message structure.
 
@@ -120,7 +120,7 @@ class GeometryMsgsTransformStamped(NestedRosStampedDataclass):
 
 # .... Ackermann msgs .............................................................................
 @dataclass()
-class AckermannMsgsAckermannDrive(NestedBaseTrajectoryDataclass):
+class AckermannMsgsAckermannDrive(NestedBaseTrajectory):
     """
     Represents the desired Ackermann drive trajectory parameters with specified
     steering angle, velocity, speed, acceleration, and jerk.
@@ -148,7 +148,7 @@ class AckermannMsgsAckermannDrive(NestedBaseTrajectoryDataclass):
 
 # .... Vesc msgs ..................................................................................
 @dataclass()
-class VescMsgsVescImu(NestedBaseTrajectoryDataclass):
+class VescMsgsVescImu(NestedBaseTrajectory):
     """
     Represents IMU data related to VESC (Vedder Electronic Speed Controller).
 

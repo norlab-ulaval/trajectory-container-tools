@@ -5,18 +5,18 @@ from typing import Dict, List, NewType, TypeAlias, Union
 import numpy as np
 
 from trajectory_container_tools.temporal import Timestamps
-from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import NestedBaseTrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import NestedBaseTrajectory
 
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
-    AbstractTrajectoryDataclass,
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_feature_dataclass import (
+    AbstractTrajectoryFeature,
 )
-from trajectory_container_tools import AbstractMultifeatureDataclass
-from trajectory_container_tools.dataclasses import RosDataclass, RosStampedDataclass
+from trajectory_container_tools import AbstractTrajectoryFeaturesBag
+from trajectory_container_tools.dataclasses import RosFeaturesArray, RosStampedFeature
 
-TrajectoryDataclass = NewType("TrajectoryDataclass", AbstractTrajectoryDataclass)
+TrajectoryDataclass = NewType("TrajectoryDataclass", AbstractTrajectoryFeature)
 
 MultifeatureTrajectoryDataclass = NewType(
-    "MultifeatureTrajectoryDataclass", AbstractMultifeatureDataclass
+    "MultifeatureTrajectoryDataclass", AbstractTrajectoryFeaturesBag
 )
 
 ShadowDataContainer: TypeAlias = Dict[
@@ -27,11 +27,11 @@ ShadowDataContainer: TypeAlias = Dict[
         np.ndarray,
         Dict,
         Union[
-            type[RosDataclass],
-            type[RosStampedDataclass],
-            type[NestedBaseTrajectoryDataclass],
+            type[RosFeaturesArray],
+            type[RosStampedFeature],
+            type[NestedBaseTrajectory],
             type[Timestamps],
         ],
-        Union[RosDataclass, RosStampedDataclass, NestedBaseTrajectoryDataclass, Timestamps],
+        Union[RosFeaturesArray, RosStampedFeature, NestedBaseTrajectory, Timestamps],
     ],
 ]

@@ -3,8 +3,8 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
-    AbstractTrajectoryDataclass,
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_feature_dataclass import (
+    AbstractTrajectoryFeature,
 )
 
 
@@ -15,7 +15,7 @@ from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass i
 
 
 @dataclass()
-class BaseDataframeFeatureDataclass(AbstractTrajectoryDataclass):
+class BaseDataframeFeatureDataclass(AbstractTrajectoryFeature):
     """
     Represents a dataclass for handling trajectory data fetched from a Panda dataframe.
 

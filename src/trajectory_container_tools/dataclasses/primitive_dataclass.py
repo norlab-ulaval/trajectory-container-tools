@@ -4,18 +4,18 @@ from dataclasses import dataclass
 import numpy as np
 
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
-    BaseTrajectoryDataclass,
-    NestedBaseTrajectoryDataclass,
+    BaseTrajectoryFeature,
+    NestedBaseTrajectory,
 )
 
 
 @dataclass()
-class Point2D(NestedBaseTrajectoryDataclass):
+class Point2D(NestedBaseTrajectory):
     """
     Represents a 2D Point with coordinates x and y.
 
     This class is used to encapsulate x and y coordinates of a point in
-    a 2D space. It inherits functionality from NestedBaseTrajectoryDataclass.
+    a 2D space. It inherits functionality from NestedBaseTrajectory.
 
     :ivar x: Represents the x-coordinate of the 2D point.
     :type x: np.ndarray
@@ -28,13 +28,13 @@ class Point2D(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class Point2DSA(BaseTrajectoryDataclass):
+class Point2DSA(BaseTrajectoryFeature):
     """
     Represents a 2D Point with coordinates x and y.
     Note: This is a standalone version of Point2D for non nested use cases.
 
     This class is used to encapsulate x and y coordinates of a point in
-    a 2D space. It inherits functionality from NestedBaseTrajectoryDataclass.
+    a 2D space. It inherits functionality from NestedBaseTrajectory.
 
     :ivar x: Represents the x-coordinate of the 2D point.
     :type x: np.ndarray
@@ -47,7 +47,7 @@ class Point2DSA(BaseTrajectoryDataclass):
 
 
 @dataclass()
-class Vector2D(NestedBaseTrajectoryDataclass):
+class Vector2D(NestedBaseTrajectory):
     """
     Represents a two-dimensional vector with x and y components.
 
@@ -67,7 +67,7 @@ class Vector2D(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class Vector2DSA(BaseTrajectoryDataclass):
+class Vector2DSA(BaseTrajectoryFeature):
     """
     Represents a two-dimensional vector with x and y components.
     Note: This is a standalone version of Vector2D for non nested use cases.
@@ -88,7 +88,7 @@ class Vector2DSA(BaseTrajectoryDataclass):
 
 
 @dataclass()
-class Pose2D(NestedBaseTrajectoryDataclass):
+class Pose2D(NestedBaseTrajectory):
     """
     Represents a 2D pose with x, y coordinates and orientation angle.
 
@@ -111,7 +111,7 @@ class Pose2D(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class Pose2DSA(BaseTrajectoryDataclass):
+class Pose2DSA(BaseTrajectoryFeature):
     """
     Represents a 2D pose with x, y coordinates and orientation angle.
     Note: This is a standalone version of Pose2D for non nested use cases.
@@ -135,7 +135,7 @@ class Pose2DSA(BaseTrajectoryDataclass):
 
 
 @dataclass()
-class Velocity2D(NestedBaseTrajectoryDataclass):
+class Velocity2D(NestedBaseTrajectory):
     """
     Represents a 2D velocity with components along x, y axes, and an angular component.
 
@@ -156,7 +156,7 @@ class Velocity2D(NestedBaseTrajectoryDataclass):
 
 
 @dataclass()
-class Velocity2DSA(BaseTrajectoryDataclass):
+class Velocity2DSA(BaseTrajectoryFeature):
     """
     Represents a 2D velocity with components along x, y axes, and an angular component.
     Note: This is a standalone version of Velocity2D for non nested use cases.
