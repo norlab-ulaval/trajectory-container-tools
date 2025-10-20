@@ -11,7 +11,7 @@ from trajectory_container_tools.utils.general import (
     check_typing_union_and_extract_first_union_type,
 )
 
-# from trajectory_container_tools.typing import TrajectoryDataclass
+# from trajectory_container_tools.typing import TrajectoryFeature
 
 
 @dataclass()

@@ -19,7 +19,7 @@ class MockTrajectoryFeaturesBag(AbstractTrajectoryFeaturesBag):
     topic_mock_2: RosStampedFeature
 
 
-class TestAbstractMultifeatureDataclass:
+class TestAbstractTrajectoryFeaturesBag:
 
     @pytest.fixture(scope="function")
     def setup_mock_topic_container(

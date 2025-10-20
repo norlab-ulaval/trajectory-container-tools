@@ -17,7 +17,7 @@ class RosStampedFeature(BaseTrajectoryFeature):
     """
     Represents a ROS-stamped dataclass containing trajectory information.
 
-    Compatible ros2 message interface: std_msgs/msg/Header
+    Compatible ros2 message interface: any interface containing std_msgs/msg/Header
 
     This dataclass is used to store trajectory data alongside its ROS message
     header. The header contains information such as timestamp and frame of
@@ -83,7 +83,7 @@ class NestedRosStampedFeature(NestedBaseTrajectory):
     """
     Represents a ROS-stamped dataclass containing trajectory information (nested version).
 
-    Compatible ros2 message interface: std_msgs/msg/Header
+    Compatible ros2 message interface: any interface containing std_msgs/msg/Header
 
     :ivar header: The ROS message header, which includes timestamp and frame of
         reference information.

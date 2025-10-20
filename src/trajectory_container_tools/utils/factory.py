@@ -4,7 +4,7 @@ from typing import Tuple, Union
 
 import numpy as np
 
-from trajectory_container_tools.typing import TrajectoryDataclass
+from trajectory_container_tools.typing import TrajectoryFeature
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryFeature
 
 
@@ -31,8 +31,8 @@ class TrjDataClassFeatureSpecification:
 
 def create_dataclass(
         specification: TrjDataClassFeatureSpecification,
-        trj_dataclass_subclass: type[TrajectoryDataclass] = BaseTrajectoryFeature,
-        ) -> Union[type, type[TrajectoryDataclass]]:
+        trj_dataclass_subclass: type[TrajectoryFeature] = BaseTrajectoryFeature,
+        ) -> Union[type, type[TrajectoryFeature]]:
     """
     A factory function for dynnamicaly creates new `AbstractTrajectoryFeature` subclass
     from a TrjDataClassFeatureSpecification dataclass object.
@@ -83,19 +83,19 @@ def create_dataclass(
 
 
 def parse_feature_spec(feature_dataclass_spec: tuple[str, ...],
-                       target_subclass: type[TrajectoryDataclass],
-                       feature_name: str) -> type[TrajectoryDataclass]:
-    """ Parses the feature specification tuple to generate a new TrajectoryDataclass type based on
+                       target_subclass: type[TrajectoryFeature],
+                       feature_name: str) -> type[TrajectoryFeature]:
+    """ Parses the feature specification tuple to generate a new TrajectoryFeature type based on
     the provided specification and target subclass.
 
     :param feature_dataclass_spec: A tuple that includes the new feature dataclass type name as
      the first element, followed by names of the dimensions or fields to be extracted (e.g.,
      ('<NewFeatureDataclassTypeName>', '<topic_property_name_1>', '<topic_property_name_2>', ...)).
-    :param target_subclass: The target subclass of TrajectoryDataclass to which the new
+    :param target_subclass: The target subclass of TrajectoryFeature to which the new
      dataclass will belong.
     :param feature_name: The name of the feature being processed. Used for error logging and
      validation.
-    :return: A new type of TrajectoryDataclass generated based on the provided specification and
+    :return: A new type of TrajectoryFeature generated based on the provided specification and
      target subclass.
     """
     if len(feature_dataclass_spec) == 1:

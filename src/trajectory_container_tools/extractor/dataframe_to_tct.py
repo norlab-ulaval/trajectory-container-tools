@@ -6,7 +6,7 @@ import pandas as pd
 from typing import Dict, Tuple, Union
 from dataclasses import make_dataclass
 
-from trajectory_container_tools.typing import MultifeatureTrajectoryDataclass
+from trajectory_container_tools.typing import TrajectoryFeaturesBag
 from trajectory_container_tools import AbstractTrajectoryFeaturesBag
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     BaseDataframeFeatureDataclass,
@@ -67,7 +67,7 @@ def from_dataframe(
         str, Union[type[BaseDataframeFeatureDataclass], Tuple[str, ...]]
     ],
     header_mix_label_and_timesteps: bool = True,
-) -> MultifeatureTrajectoryDataclass:
+) -> TrajectoryFeaturesBag:
     """Extract multiple features from a dataset (formated in a dataframe) based on a
     configuration dictionary.
 
@@ -77,8 +77,8 @@ def from_dataframe(
 
 
     The `features_config` specify the feature name to lookout in the `rosbag` header and
-    agregate them in a `Multifeature` dataclass. Feature dimensions such as 'x', 'y' 'z' are
-    specified either by using existing `BaseDataframeFeatureDataclass` subclass such as
+    agregate them in a `TrajectoryFeaturesBag` dataclass. Feature dimensions such as 'x', 'y' 'z'
+    are specified either by using existing `BaseDataframeFeatureDataclass` subclass such as
         `StatePose2D`, `CmdStandard`, `CmdSkidSteer`, `Velocity`, `VelocitySkidSteer`
     or by using tuple of strings such as ('<new feature dataclass type name>', '<dimension
         names 1>', '<dimension names 2>', ...).
@@ -97,7 +97,7 @@ def from_dataframe(
     :param header_mix_label_and_timesteps: A flag indicating whether the dataset's column names
         append timestep details to the feature name (e.g., `<feature_name>_<timestep>`).
         Default is True.
-    :return: An instance of MultifeatureTrajectoryDataclass containing the extracted data by
+    :return: An instance of TrajectoryFeaturesBag containing the extracted data by
      feature.
     """
 
@@ -122,10 +122,10 @@ def from_dataframe(
         features_type.append((feature_name, type(feature)))
         features.append(feature)
 
-    multifeature = make_dataclass(
-        "multifeature", bases=(AbstractTrajectoryFeaturesBag,), fields=features_type
+    trajectory_features_bag = make_dataclass(
+        "TrajectoryFeaturesBag", bases=(AbstractTrajectoryFeaturesBag,), fields=features_type
     )
-    return multifeature(dataset_info, *features)
+    return trajectory_features_bag(dataset_info, *features)
 
 
 def extract_dataframe_feature(

@@ -236,15 +236,15 @@ class TestTypingNamespaceModule:
         assert hasattr(tct, "typing")
         assert tct.typing is not None
 
-    def test_trajectory_dataclass_type_exists(self, setup_namespace):
-        """Test that TrajectoryDataclass type is available in typing namespace."""
+    def test_trajectory_feature_dataclass_type_exists(self, setup_namespace):
+        """Test that TrajectoryFeature type is available in typing namespace."""
         tct = setup_namespace
-        assert hasattr(tct.typing, "TrajectoryDataclass")
+        assert hasattr(tct.typing, "TrajectoryFeature")
 
-    def test_multifeature_trajectory_dataclass_type_exists(self, setup_namespace):
-        """Test that MultifeatureTrajectoryDataclass type is available in typing namespace."""
+    def test_trajectory_feature_bag_dataclass_type_exists(self, setup_namespace):
+        """Test that TrajectoryFeaturesBag type is available in typing namespace."""
         tct = setup_namespace
-        assert hasattr(tct.typing, "MultifeatureTrajectoryDataclass")
+        assert hasattr(tct.typing, "TrajectoryFeaturesBag")
 
     def test_shadow_data_container_type_exists(self, setup_namespace):
         """Test that ShadowDataContainer type is available in typing namespace."""

@@ -362,7 +362,7 @@ Fetch rosbag typestore for ros2 humble
 [TCT] Post-process rosbag data and configure AckermannMsgsAckermannDriveStamped container
        ↳ 100%|██████████| 3/3
 
-Multifeature(
+TrajectoryFeaturesBag(
    dataset_info: Warthog Mont-Morency 1 Dec 2025
    aggregated_date: 2025-10-15 11:33:06.643908
    chunks_total: 783
@@ -461,7 +461,7 @@ When extracting data from ROS bags, you can iterate over synchronized timestamp 
 import trajectory_container_tools as tct
 
 # Extract features from ROS bag (returns AbstractTrajectoryStampedFeaturesBag)
-multifeature_data = tct.extractor.from_rosbag(
+trajectory_features_bag = tct.extractor.from_rosbag(
     rosbag_path,
     features_config={
         "/odom": tct.dataclasses.NavMsgsOdometry,
@@ -471,17 +471,17 @@ multifeature_data = tct.extractor.from_rosbag(
 )
 
 # Iterate over timestamp chunks
-for chunk_idx, chunk in enumerate(multifeature_data):
+for chunk_idx, chunk in enumerate(trajectory_features_bag):
     print(f"Chunk {chunk_idx}:")
     print(f"  Odometry data: {chunk.topic_odom}")
     print(f"  Command data: {chunk.topic_cmd}")
     
 # Access specific chunk by index
-first_chunk = multifeature_data[0]
-last_chunk = multifeature_data[-1]
+first_chunk = trajectory_features_bag[0]
+last_chunk = trajectory_features_bag[-1]
 
 # Get total number of chunks
-total_chunks = multifeature_data.chunks_total
+total_chunks = trajectory_features_bag.chunks_total
 print(f"Total chunks: {total_chunks}")
 ```
 
@@ -511,7 +511,7 @@ print(trajectory_from_dataframe)
 ```
 
 ```text
-Multifeature(
+TrajectoryFeaturesBag(
    dataset_info: Marmote Mont-Morency 1 Dec 2025
    aggregated_date: 2025-10-10 23:58:10.859334
    icp_vel:      

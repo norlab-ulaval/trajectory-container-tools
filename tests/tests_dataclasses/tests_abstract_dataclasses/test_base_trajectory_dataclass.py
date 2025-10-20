@@ -11,14 +11,14 @@ from trajectory_container_tools import (
 import numpy as np
 
 
-def test_BaseTrajectoryDataclass():
+def test_BaseTrajectoryFeature():
 
     @dataclass()
-    class MockBaseTrajectoryDataclass(BaseTrajectoryFeature):
+    class MockBaseTrajectoryFeature(BaseTrajectoryFeature):
         timestamps: np.ndarray
         mock_attribute: np.ndarray
 
-    t_container = MockBaseTrajectoryDataclass(
+    t_container = MockBaseTrajectoryFeature(
         feature_name="mock", timestamps=np.arange(10), mock_attribute=np.ones(10)
     )
 
@@ -28,7 +28,7 @@ def test_BaseTrajectoryDataclass():
     assert np.array_equal(t_container.mock_attribute, np.ones(10))
 
 
-def test_NestedBaseTrajectoryDataclass():
+def test_NestedBaseTrajectory():
 
     @dataclass()
     class MockNestedBaseTrajectory(NestedBaseTrajectory):
@@ -57,13 +57,13 @@ def test_NestedBaseTrajectoryDataclass():
     assert np.array_equal(t_container.mock_attribute, np.ones(10))
 
 
-def test_BaseHeterogonousLenTrajectoryDataclass():
+def test_BaseTrajectoryArray():
 
     @dataclass()
-    class MockSubBaseNoTrajectoryDataclass(BaseTrajectoryArray):
+    class MockBaseTrajectoryArray(BaseTrajectoryArray):
         mock_attribute: np.ndarray
 
-    t_container = MockSubBaseNoTrajectoryDataclass(
+    t_container = MockBaseTrajectoryArray(
         feature_name="mock", mock_attribute=np.ones(10)
     )
 

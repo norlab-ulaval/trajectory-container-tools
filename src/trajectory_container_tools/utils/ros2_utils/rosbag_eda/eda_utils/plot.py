@@ -14,7 +14,7 @@ from .plot_management import plot_manager
 
 def plot_bag_timestamp_delta(
     bag_start_time: int,
-    tct_container: tct.typing.MultifeatureTrajectoryDataclass,
+    tct_container: tct.typing.TrajectoryFeaturesBag,
     bag_path_abs: pathlib.Path,
     experiment_dir_path: pathlib.Path,
     chunk_on: Optional[str] = "/teleop",

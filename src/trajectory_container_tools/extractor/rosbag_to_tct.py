@@ -47,7 +47,7 @@ from trajectory_container_tools.temporal.timestamps import (
     Timestamps,
 )
 from trajectory_container_tools.typing import (
-    MultifeatureTrajectoryDataclass,
+    TrajectoryFeaturesBag,
     ShadowDataContainer,
 )
 
@@ -106,7 +106,7 @@ def from_rosbag(
     Notes:
 
     The `features_config` parameter specify the feature name and type (i.e. topic name and type)
-    to lookout in the rosbag topic list and agregate them in a *multifeature* dataclass.
+    to lookout in the rosbag topic list and agregate them in a `TrajectoryFeaturesBag` dataclass.
 
     Feature dimensions such as 'pose.position.x' or 'twist.linear.y' are specified either by
     using existing `RosStampedFeature` subclass such as `NavMsgsOdometry`,
@@ -176,12 +176,12 @@ def from_rosbag(
             if connection.topic in features_config:
                 bag_timestamps.append(timestamp)
 
-    rosbag_multifeature = make_dataclass(
-        "multifeature",
+    trajectory_features_bag = make_dataclass(
+        "TrajectoryFeaturesBag",
         bases=(AbstractTrajectoryStampedFeaturesBag,),
         fields=features_type,
     )
-    return rosbag_multifeature(
+    return trajectory_features_bag(
         dataset_info,
         *features,
         bag_timestamps=Timestamps(np.array(bag_timestamps)),

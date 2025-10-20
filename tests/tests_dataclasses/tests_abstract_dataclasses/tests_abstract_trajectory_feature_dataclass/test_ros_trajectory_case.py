@@ -14,7 +14,7 @@ from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass im
 )
 
 
-class TestAbstractTrajectoryDataclassROSbagCase:
+class TestAbstractTrajectoryFeatureCaseRosbag:
     @pytest.fixture
     def setup_mock_feature_child(
         self, mock_ROSbag_2_trj_DC

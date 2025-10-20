@@ -5,7 +5,7 @@ from trajectory_container_tools.dataclasses.core import AbstractTrajectoryStampe
 from trajectory_container_tools.extractor import from_rosbag
 
 
-class TestIntegrationMultifeatureTrajectoryDataclass:
+class TestIntegrationAbstractTrajectoryStampedFeaturesBag:
     """
     This class contains test methods to validate the interaction between the ROS trajectory
     dataclasses and ROS bag files. The focus is on verifying correct data handling, feature

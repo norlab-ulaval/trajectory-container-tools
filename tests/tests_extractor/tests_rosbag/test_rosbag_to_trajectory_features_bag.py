@@ -28,7 +28,7 @@ from trajectory_container_tools.temporal.timestamps import (
 )
 
 
-class TestExtractROSBagFeature:
+class TestExtractROSBagCaseSingleFeatureExtraction:
     def test_extract_single_feature_from_rosbag(
         self, setup_rosbag_three_topics_filtered
     ):
@@ -123,7 +123,7 @@ class TestExtractROSBagFeature:
         assert error_msg in exc_info.value.args[0]
 
 
-class TestExtractROSBagMultifeature:
+class TestExtractROSBagCaseMultipleFeatureExtraction:
     @pytest.fixture
     def setup_feature_config_custom_type(self):
         feature_config: dict = {

@@ -32,7 +32,7 @@ def setup_panda_dataframe() -> pd.DataFrame:
     return dataframe_
 
 
-class TestExtractDataframeFeature:
+class TestExtractDataframeCaseSingleFeatureExtraction:
     def test_StatePose_working(self, setup_panda_dataframe):
         fn = "body_vel_disturption"
         check_property = "x"
@@ -108,7 +108,7 @@ class TestExtractDataframeFeature:
             )
 
 
-class TestExtractDataframeMultifeature:
+class TestExtractDataframeCaseMultipleFeatureExtraction:
     @pytest.fixture(scope="function")
     def setup_configuration_dict_OK(self):
         feature_config = {

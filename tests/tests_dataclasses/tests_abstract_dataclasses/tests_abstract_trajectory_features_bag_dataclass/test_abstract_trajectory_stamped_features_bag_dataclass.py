@@ -33,7 +33,7 @@ import trajectory_container_tools as tct
         "Mock timestamps case mixing",
     ],
 )
-class TestAbstractMultifeatureStampedDataclassAllCasses:
+class TestAbstractTrajectoryStampedFeaturesBagAllCasses:
 
     def test_total_chunks(
         self,
@@ -143,7 +143,7 @@ class TestAbstractMultifeatureStampedDataclassAllCasses:
         )
 
 
-class TestAbstractMultifeatureStampedDataclassIndexingAndSlicing:
+class TestAbstractTrajectoryStampedFeaturesBagIndexingAndSlicing:
 
     def test_indexing_case_alternate(self, setup_mock_mf_container):
         mf_container = setup_mock_mf_container(setup_mock_timestamps_case_alternate())

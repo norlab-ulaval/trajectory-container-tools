@@ -13,10 +13,10 @@ from trajectory_container_tools.dataclasses.core.abstract_trajectory_feature_dat
 from trajectory_container_tools import AbstractTrajectoryFeaturesBag
 from trajectory_container_tools.dataclasses import RosFeaturesArray, RosStampedFeature
 
-TrajectoryDataclass = NewType("TrajectoryDataclass", AbstractTrajectoryFeature)
+TrajectoryFeature = NewType("TrajectoryFeature", AbstractTrajectoryFeature)
 
-MultifeatureTrajectoryDataclass = NewType(
-    "MultifeatureTrajectoryDataclass", AbstractTrajectoryFeaturesBag
+TrajectoryFeaturesBag = NewType(
+    "TrajectoryFeaturesBag", AbstractTrajectoryFeaturesBag
 )
 
 ShadowDataContainer: TypeAlias = Dict[

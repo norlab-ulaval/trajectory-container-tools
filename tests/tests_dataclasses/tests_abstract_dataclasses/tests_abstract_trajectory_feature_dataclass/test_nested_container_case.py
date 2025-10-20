@@ -17,7 +17,7 @@ from ..mock_trj_dataclasses import (
     ],
     ids=["t_nested_case=nested-and-ndarray", "t_nested_case=nested-only"],
 )
-class TestAbstractTrajectoryDataclassNestedROSbagCase:
+class TestAbstractTrajectoryFeatureCaseNested:
     @pytest.fixture(scope="function")
     def setup_mock_feature_child(
         self, mock_ROSbag_2_trj_DC

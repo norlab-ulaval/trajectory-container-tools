@@ -7,7 +7,7 @@ from trajectory_container_tools import AbstractTrajectoryFeature
 from trajectory_container_tools.dataclasses import StatePose2D
 
 
-class TestAbstractTrajectoryDataclassBatchedTrajectoryCase:
+class TestAbstractTrajectoryFeatureCaseBatched:
     @pytest.fixture
     def setup_mock_feature_child(self, mock_batched_trj_DC):
         return MockTrajectoryChildDFcase(

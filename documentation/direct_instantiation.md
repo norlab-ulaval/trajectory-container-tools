@@ -471,7 +471,7 @@ print(f"Synchronized indices: {synchronized_indices}")
 - **Time Conversions**: Convert between nanoseconds, seconds, and (seconds, nanoseconds) pairs
 - **Delta Computation**: Calculate time differences between consecutive timestamps
 
-For more advanced timestamp operations including multifeature timestamp aggregation, see the [Timestamp Utilities Guide](timestamp_utilities.md).
+For more advanced timestamp operations including trajectory features bag timestamp aggregation, see the [Timestamp Utilities Guide](timestamp_utilities.md).
 
 ## Usage Recommendations
 

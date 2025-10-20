@@ -20,5 +20,5 @@ class MockTrajectory(AbstractTrajectoryCommon):
         pass
 
 
-class TestAbstractTrajectoryDataclassCommon:
+class TestAbstractTrajectoryCommon:
     pass

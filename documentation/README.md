@@ -54,7 +54,7 @@ graph TB
         
         subgraph MFC["🗂️&nbsp;MULTIFEATURE&nbsp;CONTAINERS"]
             AMC[AbstractTrajectoryFeaturesBag<br/><br/>Contains multiple<br/>trajectory features<br/>in one container]
-            AMSC[AbstractTrajectoryStampedFeaturesBag<br/><br/>Multifeature container with<br/>chunk-based iteration<br/>over timestamps]
+            AMSC[AbstractTrajectoryStampedFeaturesBag<br/><br/>TrajectoryFeaturesBag container with<br/>chunk-based iteration<br/>over timestamps]
         end
         
         subgraph TC["📦&nbsp;TRAJECTORY&nbsp;CONTAINERS"]
@@ -146,7 +146,7 @@ Detailed guide for customizing trajectory data processing at instantiation:
 Comprehensive guide for timestamp handling and utilities:
 - Timestamps class methods: `min()`, `max()`, `is_timestamps_in_bounds()`
 - Enhanced error handling with `TimestampMissingError` and `TimestampOutOfBoundError`
-- Multifeature timestamp methods: `get_timestamps()`, `trajectory_timestamps`, `trajectory_timestamps_limits`
+- TrajectoryFeaturesBag timestamp methods: `get_timestamps()`, `trajectory_timestamps`, `trajectory_timestamps_limits`
 - Nearest timestamp search for data synchronization
 - Practical examples for multi-sensor data handling
 
@@ -172,7 +172,7 @@ TCT provides specialized containers for aggregating multiple trajectory features
   - Provides unified access to all features through named attributes
   - Maintains metadata across all features
 
-- **`AbstractTrajectoryStampedFeaturesBag`**: Extended multifeature container with chunk-based iteration
+- **`AbstractTrajectoryStampedFeaturesBag`**: Extended trajectory features bag container with chunk-based iteration
   - Inherits all features from `AbstractTrajectoryFeaturesBag`
   - Enables iteration over synchronized timestamp chunks across all features
   - Useful for processing large datasets incrementally

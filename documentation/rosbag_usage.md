@@ -233,7 +233,7 @@ When extracting multiple features from a ROS bag, the result is an `AbstractTraj
 import trajectory_container_tools as tct
 
 # Extract multiple features from ROS bag
-multifeature_data = tct.extractor.from_rosbag(
+trajectory_features_bag = tct.extractor.from_rosbag(
     rosbag_path=rosbag_path,
     dataset_info="Multi-sensor robot experiment",
     features_config={
@@ -245,11 +245,11 @@ multifeature_data = tct.extractor.from_rosbag(
 )
 
 # Get number of chunks
-print(f"Total chunks: {multifeature_data.chunks_total}")
-print(f"Container length: {len(multifeature_data)}")
+print(f"Total chunks: {trajectory_features_bag.chunks_total}")
+print(f"Container length: {len(trajectory_features_bag)}")
 
 # Iterate over chunks
-for chunk_idx, chunk in enumerate(multifeature_data):
+for chunk_idx, chunk in enumerate(trajectory_features_bag):
     print(f"\nProcessing chunk {chunk_idx}:")
     print(f"  Odometry trajectory length: {chunk.topic_odom.trajectory_len}")
     print(f"  IMU trajectory length: {chunk.topic_imu.trajectory_len}")
@@ -261,12 +261,12 @@ for chunk_idx, chunk in enumerate(multifeature_data):
     print(f"  Average speed in chunk: {avg_speed:.2f} m/s")
 
 # Access specific chunks by index
-first_chunk = multifeature_data[0]
-last_chunk = multifeature_data[-1]
-middle_chunk = multifeature_data[len(multifeature_data) // 2]
+first_chunk = trajectory_features_bag[0]
+last_chunk = trajectory_features_bag[-1]
+middle_chunk = trajectory_features_bag[len(trajectory_features_bag) // 2]
 
 # Slice chunks
-first_three_chunks = multifeature_data[0:3]
+first_three_chunks = trajectory_features_bag[0:3]
 ```
 
 **Benefits of chunk-based iteration:**

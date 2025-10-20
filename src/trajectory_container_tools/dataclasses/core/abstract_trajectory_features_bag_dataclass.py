@@ -26,10 +26,10 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
     Abstract base class representing a composition of many features from the same trajectory with
     dataset information, timestamp handling, and dynamic runtime properties.
 
-    This class is designed to provide a structure for managing multifeature datasets,
-    including a record of when the data was last aggregated and optional timestamps for
-    bags. It also includes helper methods for user-friendly representations and topic
-    key management.
+    This class is designed to provide a structure for managing trajectory datasets composed of
+    multiple features, including a record of when the data was last aggregated and optional
+    timestamps for bags. It also includes helper methods for user-friendly representations
+    and topic key management.
 
     :ivar dataset_info: Information about the dataset.
     :type dataset_info: str
@@ -82,7 +82,7 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
         out_sp = " " * 0
         in_sp = " " * 3
         nested_sp = " " * 3
-        repr_str = f"\n{out_sp}Multifeature(\n"
+        repr_str = f"\n{out_sp}TrajectoryFeaturesBag(\n"
         for k, v in self.__dict__.items():
             if k in self._dataclass_internal_field():
                 pass
@@ -124,7 +124,7 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
 
     @property
     @deprecated(
-        reason="Directly print the MultifeatureTrajectoryDataclass object instead."
+        reason="Directly print the TrajectoryFeaturesBag object instead."
     )
     def summary(self) -> None:
         # inprogress: TCT-68 feat: deprecate AbstractTrajectoryFeaturesBag summary property

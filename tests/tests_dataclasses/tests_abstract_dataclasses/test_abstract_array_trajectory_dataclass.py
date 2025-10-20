@@ -52,7 +52,7 @@ def setup_mock_nested_list_subclass() -> MockNestedListAbstractTrajectoryArray:
     )
 
 
-class TestAbstractNoTrajectoryDataclassCaseNoNestedListSubclass:
+class TestCaseNoNestedListSubclass:
 
     def test_instanciation(self, setup_mock_no_nested_list_subclass):
         t_container = setup_mock_no_nested_list_subclass
@@ -87,7 +87,7 @@ class TestAbstractNoTrajectoryDataclassCaseNoNestedListSubclass:
         assert len([*t_container]) == 0
 
 
-class TestAbstractNoTrajectoryDataclassCaseNestedListSubclass:
+class TestCaseNestedListSubclass:
 
     def test_instanciation(self, setup_mock_nested_list_subclass):
 
