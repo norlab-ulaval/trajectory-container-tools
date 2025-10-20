@@ -120,3 +120,17 @@ class TestAbstractTrajectoryFeaturesBag:
         assert "topic_mock_1" in topic_key_list
         assert "topic_mock_2" in topic_key_list
 
+    def test_nested_member_parent_tracking(self, setup_mock_topic_container):
+        topic_mock_1, topic_mock_2 = setup_mock_topic_container
+        mf_container = MockTrajectoryFeaturesBag(
+            dataset_info="Mock",
+            topic_mock_1=topic_mock_1,
+            topic_mock_2=topic_mock_2,
+            bag_timestamps=None,
+        )
+
+        assert mf_container._parent is None
+        for each_key in mf_container.topic_key_list:
+            each_attribute = mf_container.get_dynamic_field(each_key)
+            t_parent = each_attribute.header._parent
+            assert id(t_parent) == id(each_attribute)

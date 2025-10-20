@@ -52,7 +52,7 @@ def setup_mock_nested_list_subclass() -> MockNestedListAbstractTrajectoryArray:
     )
 
 
-class TestCaseNoNestedListSubclass:
+class TestCaseNoArray:
 
     def test_instanciation(self, setup_mock_no_nested_list_subclass):
         t_container = setup_mock_no_nested_list_subclass
@@ -87,7 +87,7 @@ class TestCaseNoNestedListSubclass:
         assert len([*t_container]) == 0
 
 
-class TestCaseNestedListSubclass:
+class TestCaseArrayOfTrajectoryFeatureDataclasses:
 
     def test_instanciation(self, setup_mock_nested_list_subclass):
 
@@ -133,3 +133,10 @@ class TestCaseNestedListSubclass:
 
         for each in t_container:
             print(each)
+
+    def test_nested_member_parent_tracking(self, setup_mock_nested_list_subclass):
+        t_container = setup_mock_nested_list_subclass
+
+        assert t_container._parent is None
+        assert id(t_container.mock_list_attribute[0]._parent) == id(t_container)
+        assert id(t_container.mock_list_attribute[1]._parent) == id(t_container)

@@ -46,12 +46,12 @@ class Timestamps:
     provides methods for further processing.
     """
 
-    _stamps: np.ndarray[Any, np.dtype[int]]
-    _delta_stamps: np.ndarray[Any, np.dtype[int]]
+    _stamps: np.ndarray[int, np.dtype[int]]
+    _delta_stamps: np.ndarray[int, np.dtype[int]]
     _trajectory_len: int
     _iter_index: int = 0
 
-    def __init__(self, stamps: np.ndarray[Any, np.dtype[int]]):
+    def __init__(self, stamps: np.ndarray[int, np.dtype[int]]):
         """
         Represents a class initializer for managing and validating a sequence of timestamps.
 
@@ -74,11 +74,11 @@ class Timestamps:
         self._delta_stamps = compute_delta_timestamp(self._stamps)
 
     @property
-    def stamps(self) -> np.ndarray[Any, np.dtype[int]]:
+    def stamps(self) -> np.ndarray[int, np.dtype[int]]:
         return self._stamps
 
     @property
-    def delta_stamps(self) -> np.ndarray[Any, np.dtype[int]]:
+    def delta_stamps(self) -> np.ndarray[int, np.dtype[int]]:
         return self._delta_stamps
 
     @property
@@ -113,7 +113,7 @@ class Timestamps:
 
     def __contains__(
         self,
-        timestamp: Union[int, np.integer, List[int], np.ndarray[Any, np.dtype[int]]],
+        timestamp: Union[int, np.integer, List[int], np.ndarray[int, np.dtype[int]]],
     ) -> bool:
         """
         Check whether a timestamp or collection of timestamps exists within the stored stamps.
@@ -138,7 +138,7 @@ class Timestamps:
             return mask[mask == True].size == len(timestamp)
 
     def get_indexes(
-        self, timestamps: Union[int, List[int], np.ndarray[Any, np.dtype[int]]]
+        self, timestamps: Union[int, List[int], np.ndarray[int, np.dtype[int]]]
     ) -> Union[int, List[int]]:
         """
         Determines the indexes of given timestamps in the internal storage.
@@ -185,7 +185,7 @@ class Timestamps:
         return self.stamps.max()
 
     def is_timestamps_in_bounds(
-        self, timestamps: Union[int, List[int], np.ndarray[Any, np.dtype[int]]]
+        self, timestamps: Union[int, List[int], np.ndarray[int, np.dtype[int]]]
     ) -> bool:
         """
         Determines whether the provided timestamps are within the bounds of the stamps attribute.
@@ -442,10 +442,10 @@ def validate_timestamps_ordering(
 
 
 def to_seconds_nanoseconds(
-    nanoseconds: Union[int, np.ndarray[Any, np.dtype[int]]],
+    nanoseconds: Union[int, np.ndarray[int, np.dtype[int]]],
 ) -> Tuple[
-    Union[int, np.ndarray[Any, np.dtype[int]]],
-    Union[int, np.ndarray[Any, np.dtype[int]]],
+    Union[int, np.ndarray[int, np.dtype[int]]],
+    Union[int, np.ndarray[int, np.dtype[int]]],
 ]:
     """Get timestamp(s) as separate seconds and nanoseconds components.
 
@@ -466,8 +466,8 @@ def to_seconds_nanoseconds(
 
 
 def to_seconds(
-    nanoseconds: Union[int, np.ndarray[Any, np.dtype[int]]],
-) -> Union[float, np.ndarray[Any, np.dtype[int]]]:
+    nanoseconds: Union[int, np.ndarray[int, np.dtype[int]]],
+) -> Union[float, np.ndarray[int, np.dtype[int]]]:
     """Convert timestamp(s) in nanosecond to seconds.
 
     :returns: Timestamp converted in second

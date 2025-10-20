@@ -102,15 +102,18 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
         return None
 
     def __post_init__(self):
+        # .... Pre-condition ......................................................................
         if not self.get_dimension_names():
             raise TypeError(
                 f"[TCT error] AbstractTrajectoryFeature is an abstract baseclass, "
                 f"it must be subclassed in order to be instanciated."
             )
 
-        self.on_begin_post_init_callback()
-
+        # .... Base class initialization logic ....................................................
         self.set_parent_container_reference_tracking()
+
+        # .... Callback and attribute customization logic .........................................
+        self.on_begin_post_init_callback()
 
         for each_name in self.get_dimension_names():
             if each_name in self.non_trajectory_field():
@@ -237,7 +240,8 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
         else:
             return self._time_axis
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> "AbstractTrajectoryFeature":
+
         feature_dataclass_at_t = deepcopy(self)
 
         feature_dataclass_at_t.__setattr__(
@@ -276,11 +280,11 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
 
         return feature_dataclass_at_t
 
-    def __iter__(self):
+    def __iter__(self) -> "AbstractTrajectoryFeature":
         self._iter_index = 0
         return self
 
-    def __next__(self):
+    def __next__(self) -> "AbstractTrajectoryFeature":
         if self._iter_index < self.trajectory_len:
             item = self[self._iter_index]
             self._iter_index += 1
@@ -289,7 +293,7 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
             raise StopIteration
 
     @property
-    def T(self):
+    def T(self) -> "AbstractTrajectoryFeature":
         """Flips the axes of the ndarray properties."""
         for each_name in self.get_dimension_names():
             if each_name in self.non_trajectory_field():

@@ -67,7 +67,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
         super().__post_init__()
 
     @classmethod
-    def _dataclass_internal_field(cls) -> List[str]:
+    def _dataclass_internal_field(cls) -> list[str]:
         return super()._dataclass_internal_field() + ["_iter_index"]
 
     @property
@@ -84,7 +84,10 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
         repr_str += f"{m_space}chunks_total: {self.chunks_total}\n"
         return repr_str
 
-    def __getitem__(self, chunk_idx: Union[int, slice]):
+    def __getitem__(
+        self, chunk_idx: Union[int, slice]
+    ) -> "AbstractTrajectoryStampedFeaturesBag":
+
         mf_dataclass_at_t = deepcopy(self)
 
         chunk_on_attribute = self.get_dynamic_field(self.chunk_on)
@@ -135,11 +138,11 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
 
         return mf_dataclass_at_t
 
-    def __iter__(self):
+    def __iter__(self) -> "AbstractTrajectoryStampedFeaturesBag":
         self._iter_index = 0
         return self
 
-    def __next__(self):
+    def __next__(self) -> "AbstractTrajectoryStampedFeaturesBag":
         if self._iter_index < self.chunks_total:
             item = self[self._iter_index]
             self._iter_index += 1
@@ -153,7 +156,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
         stop: Optional[int] = None,
         startpoint: bool = True,
         endpoint: bool = False,
-    ):
+    ) -> "AbstractTrajectoryStampedFeaturesBag":
         """
         Retrieve a trajectory interval within a specified timestamps range.
 
@@ -224,7 +227,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
         return mf_dataclass_at_t
 
     @property
-    def trajectory_timestamps(self):
+    def trajectory_timestamps(self) -> np.ndarray[int, np.dtype[int]]:
         """
         Returns all timestamps for all features. The returned numpy array is sorted and contains unique timestamps.
         Note: Those does not include the `bag_timestamps` ones.

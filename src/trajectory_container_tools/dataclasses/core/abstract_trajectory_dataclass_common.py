@@ -11,8 +11,6 @@ from trajectory_container_tools.utils.general import (
     check_typing_union_and_extract_first_union_type,
 )
 
-# from trajectory_container_tools.typing import TrajectoryFeature
-
 
 @dataclass()
 class AbstractTrajectoryCommon(abc.ABC):
@@ -27,25 +25,51 @@ class AbstractTrajectoryCommon(abc.ABC):
 
     """
 
-    _parent: Optional["AbstractTrajectoryCommon"] = field(
-        default=None, init=False
-    )
+    _parent: Optional["AbstractTrajectoryCommon"] = field(default=None, init=False)
 
     def set_parent_container_reference_tracking(self):
-        # (CRITICAL) ToDo: unit-test (ref task TCT-87)
-        for each_name in self.get_dimension_names():
-            data_property = self.__getattribute__(each_name)
+        """
+        Updates nested trajectory container parent container reference tracking.
 
-            if isinstance(data_property, AbstractTrajectoryCommon):
-                data_property._parent = self
+        This method iterates through all the attribute names and updates the parent
+        reference for any data property that is an instance of `AbstractTrajectoryCommon`.
+
+        :return: None
+        """
+        for each_name in self.get_dimension_names():
+            attribute = self.__getattribute__(each_name)
+            if isinstance(attribute, list) and isinstance(attribute[0], AbstractTrajectoryCommon):
+                for idx in range(len(attribute)):
+                    attribute[idx]._parent = self
+            else:
+                if isinstance(attribute, AbstractTrajectoryCommon):
+                    attribute._parent = self
         return None
 
     def get_parent_container(self) -> Union["AbstractTrajectoryCommon", None]:
-        # (CRITICAL) ToDo: unit-test (ref task TCT-87)
+        """
+        Retrieve the parent container associated with the object.
+
+        This method returns the parent container object of the current instance,
+        if such a reference exists. If no parent container is set for the object,
+        this method will return None.
+
+        :return: The parent container of the current object, or None if not set.
+        """
         return self._parent
 
     def get_root_container(self) -> "AbstractTrajectoryCommon":
-        # (CRITICAL) ToDo: unit-test (ref task TCT-87)
+        """
+        Recursively retrieves the root container in a hierarchy.
+
+        This method checks if the current object has a parent. If it does, it continues
+        to traverse up the hierarchy by calling the same method on the parent object,
+        until it reaches the top-most container (the root). If the current object
+        does not have a parent, it considers itself the root and returns the current
+        object.
+
+        :return: The top-most container in the hierarchy.
+        """
         if self._parent is None:
             return self
 
@@ -53,7 +77,15 @@ class AbstractTrajectoryCommon(abc.ABC):
         return self._parent.get_root_container()
 
     def is_nested(self) -> bool:
-        # (CRITICAL) ToDo: unit-test (ref task TCT-87)
+        """
+        Determines if the current object is nested within another object.
+
+        A nested object is identified by the presence of a parent object.
+        This method checks whether the current instance has a parent and
+        returns a boolean indicating the nesting status.
+
+        :return: Boolean value indicating if the object is nested.
+        """
         return self._parent is not None
 
     @abc.abstractmethod
@@ -75,7 +107,10 @@ class AbstractTrajectoryCommon(abc.ABC):
         >>>             f"it must be subclassed in order to be instanciated."
         >>>         )
         >>>
-        >>>     # .... Callback logic .............................................................
+        >>>     # .... Base class initialization logic ............................................
+        >>>     self.set_parent_container_reference_tracking()
+        >>>
+        >>>     # .... Callback and attribute customization logic .................................
         >>>     self.on_begin_post_init_callback()
         >>>
         >>>     for each_name in self.get_dimension_names():
@@ -87,22 +122,7 @@ class AbstractTrajectoryCommon(abc.ABC):
 
         :raises NotImplementedError: If the subclass does not implement this method.
         """
-        # .... Pre-condition ......................................................................
-        if not self.get_dimension_names():
-            raise TypeError(
-                f"[TCT error] {self.__class__.__name__} is an abstract baseclass, "
-                f"it must be subclassed in order to be instanciated."
-            )
-
-        # .... Callback logic .....................................................................
-        self.on_begin_post_init_callback()
-
-        for each_name in self.get_dimension_names():
-            self.post_init_feature_callback(feature_name=each_name)
-
-        self.on_exit_post_init_callback()
-
-        return None
+        pass
 
     @classmethod
     def _dataclass_internal_field(cls) -> List[str]:

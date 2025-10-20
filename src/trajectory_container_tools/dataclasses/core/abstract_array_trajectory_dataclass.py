@@ -50,7 +50,7 @@ class AbstractTrajectoryArray(AbstractTrajectoryCommon):
                 f"it must be subclassed in order to be instanciated."
             )
 
-        # .... Base class post init logic .........................................................
+        # .... Base class initialization logic ....................................................
         registred_list = self.registred_trajectory_object_list
         if registred_list is not None:
             registred_list = self.get_dynamic_field(registred_list)
@@ -59,7 +59,9 @@ class AbstractTrajectoryArray(AbstractTrajectoryCommon):
                 for each in registred_list:
                     assert isinstance(each, AbstractTrajectoryFeature)
 
-        # .... Callback logic .....................................................................
+        self.set_parent_container_reference_tracking()
+
+        # .... Callback and attribute customization logic .........................................
         self.on_begin_post_init_callback()
 
         for each_name in self.get_dimension_names():
@@ -142,7 +144,7 @@ class AbstractTrajectoryArray(AbstractTrajectoryCommon):
         else:
             return None
 
-    def __iter__(self):
+    def __iter__(self) -> "AbstractTrajectoryArray":
         self._iter_index = 0
         return self
 

@@ -53,10 +53,10 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
                 f"it must be subclassed in order to be instanciated."
             )
 
-        # .... Base class post init logic .........................................................
+        # .... Base class initialization logic ....................................................
         self._aggregated_date = datetime.datetime.now()
 
-        # .... Callback logic .....................................................................
+        # .... Callback and attribute customization logic .........................................
         self.on_begin_post_init_callback()
 
         for each_name in self.get_dimension_names():
@@ -117,7 +117,7 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
         return repr_str
 
     @property
-    def topic_key_list(self):
+    def topic_key_list(self) -> list[str]:
         return [
             topic.name for topic in fields(self) if str(topic.name).startswith("topic_")
         ]
@@ -130,5 +130,3 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
         # inprogress: TCT-68 feat: deprecate AbstractTrajectoryFeaturesBag summary property
         print(self)
         return None
-
-
