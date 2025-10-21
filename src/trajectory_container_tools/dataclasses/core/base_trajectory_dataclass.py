@@ -4,11 +4,12 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 import numpy as np
+from deprecated import deprecated
 
 from .abstract_trajectory_feature_dataclass import (
     AbstractTrajectoryFeature,
 )
-from .abstract_array_trajectory_dataclass import (
+from .abstract_trajectory_array_dataclass import (
     AbstractTrajectoryArray,
 )
 
@@ -26,7 +27,6 @@ class BaseTrajectoryFeature(AbstractTrajectoryFeature):
     **Usage example**:
 
     Note: this example would represent a flat data representation as oposed to a nested one
-    (see ``NestedBaseTrajectory`` usage example).
 
     >>> @dataclass()
     >>> class MockContainer(BaseTrajectoryFeature):
@@ -48,6 +48,11 @@ class BaseTrajectoryFeature(AbstractTrajectoryFeature):
     pass
 
 
+@deprecated(
+    reason="NestedBaseTrajectory dataclass is deprecated now that all TrajectoryFeature dataclass "
+           "support parent container reference tracking. Use `is_nested()` method to test if a "
+           "trajectory dataclass is nested or not."
+)
 @dataclass()
 class NestedBaseTrajectory(BaseTrajectoryFeature):
     """
@@ -86,7 +91,7 @@ class NestedBaseTrajectory(BaseTrajectoryFeature):
 
 
 @dataclass()
-class BaseTrajectoryArray(
+class BaseTrajectoryFeatureArray(
     AbstractTrajectoryArray
 ):
     """

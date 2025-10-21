@@ -1,11 +1,9 @@
 # coding=utf-8
 import pytest
 
-from trajectory_container_tools.dataclasses import StdMsgsHeader, Tf2MsgsTFMessage
-from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import (
-    GeometryMsgsTransformStampedFeature,
-)
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import (
+from trajectory_container_tools.dataclasses import GeometryMsgsTransformStampedFeature, \
+    StdMsgsHeader, Tf2MsgsTFMessage
+from trajectory_container_tools.dataclasses.ros_msgs.geometry_msgs_dataclass import (
     GeometryMsgsQuaternion,
     GeometryMsgsTransform,
     GeometryMsgsVector3,

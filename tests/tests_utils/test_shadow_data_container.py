@@ -3,19 +3,18 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import (
+from trajectory_container_tools.dataclasses.ros_msgs.geometry_msgs_dataclass import (
     GeometryMsgsPoint,
     GeometryMsgsQuaternion,
 )
 from trajectory_container_tools.utils.shadow_data_container import (
     instanciate_shadow_data_container,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import GeometryMsgsPose
-from trajectory_container_tools.dataclasses import RosFeaturesArray
+from trajectory_container_tools.dataclasses import GeometryMsgsPose, RosFeatureArray
 
 
 @dataclass()
-class MockListOfNestedFeaturesArray(RosFeaturesArray):
+class MockListOfNestedFeatureArray(RosFeatureArray):
     list_of_point: list[GeometryMsgsPoint]
 
 
@@ -26,6 +25,7 @@ class TestInstanciateShadowDataContainer:
         assert isinstance(sdc, dict)
         assert sdc == {
             "type": GeometryMsgsPoint,
+            "nested_lvl":        0,
             "x":    {"data": [], "type": np.ndarray},
             "y":    {"data": [], "type": np.ndarray},
             "z":    {"data": [], "type": np.ndarray},
@@ -39,16 +39,17 @@ class TestInstanciateShadowDataContainer:
         assert isinstance(sdc, dict)
         assert sdc == {
             "type":        GeometryMsgsPose,
-            # 'feature_name':   None,
-            # 'timesteps_indices': None,
+            "nested_lvl":        0,
             "position":    {
                 "type": GeometryMsgsPoint,
+                "nested_lvl": 1,
                 "x":    {"data": [], "type": np.ndarray},
                 "y":    {"data": [], "type": np.ndarray},
                 "z":    {"data": [], "type": np.ndarray},
             },
             "orientation": {
                 "type": GeometryMsgsQuaternion,
+                "nested_lvl": 1,
                 "x":    {"data": [], "type": np.ndarray},
                 "y":    {"data": [], "type": np.ndarray},
                 "z":    {"data": [], "type": np.ndarray},
@@ -59,16 +60,18 @@ class TestInstanciateShadowDataContainer:
         # print(sdc)
 
     def test_case_list_of_type(self):
-        sdc = instanciate_shadow_data_container(MockListOfNestedFeaturesArray)
+        sdc = instanciate_shadow_data_container(MockListOfNestedFeatureArray)
 
         print(sdc)
 
         assert isinstance(sdc, dict)
         assert sdc == {
-            "type":          MockListOfNestedFeaturesArray,
+            "type":          MockListOfNestedFeatureArray,
+            "nested_lvl": 0,
             "list_of_point": [
                 {
                     "type": GeometryMsgsPoint,
+                    "nested_lvl": 1,
                     "x":    {"data": [], "type": np.ndarray},
                     "y":    {"data": [], "type": np.ndarray},
                     "z":    {"data": [], "type": np.ndarray},

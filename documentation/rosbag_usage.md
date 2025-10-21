@@ -1,4 +1,4 @@
-from trajectory_container_tools.dataclasses import NavMsgsOdometry
+from trajectory_container_tools.dataclasses import NavMsgsOdometryfrom trajectory_container_tools.dataclasses import NavMsgsOdometry
 
 # ROS Bag To TCT  Usage Guide
 
@@ -115,6 +115,7 @@ features_config = {
 ### Example 1: Multi-Topic Robot Data
 
 ```python
+import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 from pathlib import Path
 import trajectory_container_tools as tct
 
@@ -122,39 +123,39 @@ rosbag_path = Path("experiments/robot_nav_2024_01_15.db3").parent
 
 # Configure multiple ROS topics
 features_config = {
-    # Navigation data
-    "/odometry": tct.dataclasses.NavMsgsOdometry,
-    "/ground_truth_pose": (
-        "GroundTruth",
-        "pose_pose_position_x",
-        "pose_pose_position_y",
-        "pose_pose_orientation_z",
-    ),
-    # Control data
-    "/velocity_commands": ("VelCmd", "linear_x", "linear_y", "angular_z"),
-    # Sensor data
-    "/imu_readings": (
-        "IMUData",
-        "linear_acceleration_x",
-        "linear_acceleration_y",
-        "angular_velocity_z",
-    ),
-    "/lidar_features": (
-        "LidarFeatures",
-        "ranges[0]",
-        "ranges[90]",
-        "ranges[180]",
-        "ranges[270]",
-    ),
-}
+        # Navigation data
+        "/odometry": trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
+        "/ground_truth_pose": (
+                "GroundTruth",
+                "pose_pose_position_x",
+                "pose_pose_position_y",
+                "pose_pose_orientation_z",
+                ),
+        # Control data
+        "/velocity_commands": ("VelCmd", "linear_x", "linear_y", "angular_z"),
+        # Sensor data
+        "/imu_readings": (
+                "IMUData",
+                "linear_acceleration_x",
+                "linear_acceleration_y",
+                "angular_velocity_z",
+                ),
+        "/lidar_features": (
+                "LidarFeatures",
+                "ranges[0]",
+                "ranges[90]",
+                "ranges[180]",
+                "ranges[270]",
+                ),
+        }
 
 # Extract trajectory data
 robot_data = tct.extractor.from_rosbag(
-    rosbag_path=rosbag_path,
-    dataset_info="Outdoor navigation experiment - 2024-01-15",
-    features_config=features_config,
-    chunk_on="/velocity_commands",
-)
+        rosbag_path=rosbag_path,
+        dataset_info="Outdoor navigation experiment - 2024-01-15",
+        features_config=features_config,
+        chunk_on="/velocity_commands",
+        )
 
 # Access extracted data
 print(f"Odometry data shape: {robot_data.topic_odometry.x.shape}")
@@ -167,11 +168,11 @@ import matplotlib.pyplot as plt
 plt.figure(figsize=(10, 6))
 plt.plot(robot_data.topic_odometry.x, robot_data.odometry.y, "b-", label="Odometry")
 plt.plot(
-    robot_data.topic_ground_truth_pose.x,
-    robot_data.topic_ground_truth_pose.y,
-    "r--",
-    label="Ground Truth",
-)
+        robot_data.topic_ground_truth_pose.x,
+        robot_data.topic_ground_truth_pose.y,
+        "r--",
+        label="Ground Truth",
+        )
 plt.xlabel("X Position (m)")
 plt.ylabel("Y Position (m)")
 plt.legend()
@@ -209,17 +210,20 @@ angular_vel = tc_odom.topic_odom.twist.angular
 ### Example 3: Time-Sliced Extraction
 
 ```python
+import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 import trajectory_container_tools as tct
 
 # Extract only a portion of the rosbag
 partial_data = tct.extractor.from_rosbag(
-    rosbag_path=rosbag_path,
-    dataset_info="Partial trajectory - middle section",
-    features_config={"/odometry": tct.dataclasses.NavMsgsOdometry},
-    chunk_on="/odometry",
-    start=1000,
-    stop=5000,
-)
+        rosbag_path=rosbag_path,
+        dataset_info="Partial trajectory - middle section",
+        features_config={
+                "/odometry": trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry
+                },
+        chunk_on="/odometry",
+        start=1000,
+        stop=5000,
+        )
 
 print(f"Partial trajectory length: {partial_data.topic_odometry.trajectory_len}")
 
@@ -230,19 +234,21 @@ print(f"Partial trajectory length: {partial_data.topic_odometry.trajectory_len}"
 When extracting multiple features from a ROS bag, the result is an `AbstractTrajectoryStampedFeaturesBag` that supports chunk-based iteration over synchronized timestamp windows:
 
 ```python
+import trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass
+import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 import trajectory_container_tools as tct
 
 # Extract multiple features from ROS bag
 trajectory_features_bag = tct.extractor.from_rosbag(
-    rosbag_path=rosbag_path,
-    dataset_info="Multi-sensor robot experiment",
-    features_config={
-        '/odom': tct.dataclasses.NavMsgsOdometry,
-        '/imu': tct.dataclasses.SensorMsgsImu,
-        '/cmd': tct.dataclasses.AckermannMsgsAckermannDriveStamped,
-    },
-    chunk_on="/cmd",
-)
+        rosbag_path=rosbag_path,
+        dataset_info="Multi-sensor robot experiment",
+        features_config={
+                '/odom': trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
+                '/imu':  tct.dataclasses.SensorMsgsImu,
+                '/cmd':  trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass.AckermannMsgsAckermannDriveStamped,
+                },
+        chunk_on="/cmd",
+        )
 
 # Get number of chunks
 print(f"Total chunks: {trajectory_features_bag.chunks_total}")
@@ -254,7 +260,7 @@ for chunk_idx, chunk in enumerate(trajectory_features_bag):
     print(f"  Odometry trajectory length: {chunk.topic_odom.trajectory_len}")
     print(f"  IMU trajectory length: {chunk.topic_imu.trajectory_len}")
     print(f"  Command trajectory length: {chunk.topic_cmd.trajectory_len}")
-    
+
     # Process synchronized data within this chunk
     # Example: Calculate average speed from odometry in this chunk
     avg_speed = chunk.topic_odom.twist.twist.linear.x.mean()
@@ -288,6 +294,7 @@ first_three_chunks = trajectory_features_bag[0:3]
 ### Registering Custom Messages
 
 ```python
+import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 import trajectory_container_tools as tct
 from rosbags.typesys import get_types_from_msg
 
@@ -304,21 +311,21 @@ uint32 timestamp
 typestore = tct.ros.get_rosbag_typestore_auto_distro()
 
 typestore.register(
-    get_types_from_msg(custom_msg_def, "custom_msgs/msg/TrajectoryPoint")
-)
+        get_types_from_msg(custom_msg_def, "custom_msgs/msg/TrajectoryPoint")
+        )
 
 typestore = tct.ros.register_non_native_msgs(typestore)
 
 tc_with_custom_type = tct.extractor.from_rosbag(
-    rosbag_path=rosbag_path,
-    dataset_info="Trajectory with custom type",
-    features_config={
-        "trajectory_points": ("TrajectoryPoint", "x", "y", "theta", "velocity"),
-        "/odometry": tct.dataclasses.NavMsgsOdometry,
-    },
-    chunk_on="/odometry",
-    typestore=typestore,
-)
+        rosbag_path=rosbag_path,
+        dataset_info="Trajectory with custom type",
+        features_config={
+                "trajectory_points": ("TrajectoryPoint", "x", "y", "theta", "velocity"),
+                "/odometry":         trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
+                },
+        chunk_on="/odometry",
+        typestore=typestore,
+        )
 
 ```
 
@@ -373,6 +380,7 @@ Error: Topic '/odom' not found in rosbag
 **Solutions:**
 
 ```python
+import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 import trajectory_container_tools as tct
 
 # Check available topics
@@ -384,9 +392,9 @@ common_odom_topics = ['/odom', '/odometry', '/robot/odom', '/base_link/odom']
 # Try different topic names
 for topic in common_odom_topics:
     try:
-        container = tct.extractor.extract_rosbag_feature(rosbag_path, 
-                                                         topic, 
-                                                         tct.dataclasses.NavMsgsOdometry)
+        container = tct.extractor.extract_rosbag_feature(rosbag_path,
+                                                         topic,
+                                                         trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry)
         print(f"Success with topic: {topic}")
         break
     except:

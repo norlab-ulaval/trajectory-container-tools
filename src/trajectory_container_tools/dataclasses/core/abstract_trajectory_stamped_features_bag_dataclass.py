@@ -6,15 +6,12 @@ from typing import Any, List, Optional, Union
 import numpy as np
 
 from .abstract_trajectory_features_bag_dataclass import AbstractTrajectoryFeaturesBag
-from .abstract_array_trajectory_dataclass import AbstractTrajectoryArray
-from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import (
-    NestedRosStampedFeature,
-)
-from trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass import (
+from .abstract_trajectory_array_dataclass import AbstractTrajectoryArray
+from trajectory_container_tools.dataclasses.ros_msgs.sensor_msgs_dataclass import (
     RosStampedFeature,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
-    RosFeaturesArray,
+from trajectory_container_tools.dataclasses.ros_msgs.tf_dataclass import (
+    RosFeatureArray,
 )
 from trajectory_container_tools.dataclasses.ros_msgs.core_dataclass_utils import (
     get_timestamps_slice,
@@ -105,7 +102,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
             mf_dataclass_at_t.__setattr__("bag_timestamps", bag_timestamps_subset)
 
         each_attribute: Union[
-            RosStampedFeature, NestedRosStampedFeature, RosFeaturesArray
+            RosStampedFeature, RosFeatureArray
         ]
         for each_topic in self.topic_key_list:
             each_attribute = self.get_dynamic_field(each_topic)
@@ -187,7 +184,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
 
         for each_topic in self.topic_key_list:
             each_attribute: Union[
-                RosStampedFeature, NestedRosStampedFeature, RosFeaturesArray
+                RosStampedFeature, RosFeatureArray
             ] = self.get_dynamic_field(each_topic)
 
             if isinstance(each_attribute, AbstractTrajectoryArray):
@@ -197,7 +194,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
                 if registred_trj_object_list_name is not None:
                     trj_container_list_object = []
                     for idx, each in enumerate(each_attribute):
-                        each: Union[RosStampedFeature, NestedRosStampedFeature] = (
+                        each: RosStampedFeature = (
                             each.get_timestamps(
                                 start=start,
                                 stop=stop,
@@ -243,7 +240,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
 
         for each_topic in self.topic_key_list:
             each_attribute: Union[
-                RosStampedFeature, NestedRosStampedFeature, RosFeaturesArray
+                RosStampedFeature, RosFeatureArray
             ] = self.get_dynamic_field(each_topic)
 
             if isinstance(each_attribute, AbstractTrajectoryArray):
@@ -252,7 +249,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
                 )
                 if registred_trj_object_list_name is not None:
                     for idx, each in enumerate(each_attribute):
-                        each: Union[RosStampedFeature, NestedRosStampedFeature]
+                        each: RosStampedFeature
                         all_features_stamps.append(each.header.timestamps.stamps)
             else:
                 all_features_stamps.append(each_attribute.header.timestamps.stamps)
@@ -287,8 +284,8 @@ def _get_attribute_timestamps(
     chunck_on_timestamp: int,
     chunk_idx: Union[int, slice],
     chunk_on_topic: RosStampedFeature,
-    each_attribute: RosStampedFeature | NestedRosStampedFeature | Timestamps,
-) -> RosStampedFeature | NestedRosStampedFeature | RosFeaturesArray | Timestamps:
+    each_attribute: RosStampedFeature |  Timestamps,
+) -> RosStampedFeature | RosFeatureArray | Timestamps:
     if isinstance(chunk_idx, slice):
         chunk_idx = chunk_idx.start
 

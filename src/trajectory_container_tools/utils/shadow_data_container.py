@@ -6,29 +6,29 @@ from tqdm import tqdm
 
 from .general import extract_class_name_from_type, setup_progressbar
 from trajectory_container_tools.typing import ShadowDataContainer
-from ..dataclasses import RosFeaturesArray, RosStampedFeature
+from ..dataclasses import RosFeature, RosFeatureArray, RosStampedFeature
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
-    BaseTrajectoryArray,
-    NestedBaseTrajectory,
+    BaseTrajectoryFeatureArray,
+    BaseTrajectoryFeature,
 )
 from trajectory_container_tools.temporal import Timestamps
 
 
 def instanciate_shadow_data_container(
     data_container_type: Union[
-        type[RosFeaturesArray],
+        type[RosFeature],
         type[RosStampedFeature],
-        type[NestedBaseTrajectory],
+        type[RosFeatureArray],
     ],
+    nested_lvl: int = 0,
 ) -> ShadowDataContainer:
     """
     Instantiates a shadow data container for storing data corresponding to the given
     data container type. This function recursively initializes each property of the
     provided data container type and its sub-properties.
 
-    :param data_container_type: The data container type for which the shadow
-        data container is to be instantiated. It should be either `RosStampedFeature`
-        or `NestedBaseTrajectory` or their derived types.
+    :param data_container_type: The data container type for which the shadow data container is to be instantiated.
+    :param nested_lvl: The nested container depth.
     :return: A shadow data container.
     """
     shadow_data_container: ShadowDataContainer
@@ -38,6 +38,7 @@ def instanciate_shadow_data_container(
     }
 
     shadow_data_container["type"] = data_container_type
+    shadow_data_container["nested_lvl"] = nested_lvl
 
     for each_property_name in data_container_type.get_dimension_names():
 
@@ -47,12 +48,15 @@ def instanciate_shadow_data_container(
 
         if is_list_of_type:
             shadow_data_container[each_property_name] = [
-                instanciate_shadow_data_container(dimension_type),
+                instanciate_shadow_data_container(dimension_type, nested_lvl + 1),
             ]
 
-        elif issubclass(dimension_type, (RosFeaturesArray, NestedBaseTrajectory)):
+        elif issubclass(
+            dimension_type,
+            (RosFeature, RosFeatureArray, RosStampedFeature, BaseTrajectoryFeature),
+        ):
             shadow_data_container[each_property_name] = (
-                instanciate_shadow_data_container(dimension_type)
+                instanciate_shadow_data_container(dimension_type, nested_lvl + 1)
             )
         elif issubclass(dimension_type, (np.ndarray, Timestamps)):
             # Note: Using a list to temporary aggregate data and then convert to numpy array when
@@ -72,9 +76,9 @@ def instanciate_shadow_data_container(
 def post_process_shadown_data_container(
     shadow_data_container: ShadowDataContainer,
     data_container_type: Union[
-        type[RosFeaturesArray],
+        type[RosFeature],
+        type[RosFeatureArray],
         type[RosStampedFeature],
-        type[NestedBaseTrajectory],
     ],
     feature_name: Optional[str],
     progressbar_enabled=True,
@@ -88,8 +92,7 @@ def post_process_shadown_data_container(
     and array-like data.
 
     :param shadow_data_container: The data container shadowing data_container_type.
-    :param data_container_type: The expected type of data container. It must
-        be a class type that is either RosStampedFeature or NestedBaseTrajectory.
+    :param data_container_type: The expected type of data container.
     :param feature_name: The name of the specific feature process by non-nested data container.
     :param progressbar_enabled:
     :return: The processed ShadowDataContainer with the updated structure and values.
@@ -98,7 +101,13 @@ def post_process_shadown_data_container(
 
     for each in data_container_type._dataclass_internal_field():
         if each == "feature_name":
-            if not issubclass(data_container_type, NestedBaseTrajectory):
+            if (
+                issubclass(
+                    data_container_type,
+                    (BaseTrajectoryFeature, BaseTrajectoryFeatureArray),
+                )
+                and shadow_data_container["nested_lvl"] == 0
+            ):
                 shadow_data_container["feature_name"] = feature_name
             else:
                 # Nested trj container should not populate 'feature_name'
@@ -109,6 +118,7 @@ def post_process_shadown_data_container(
                 del shadow_data_container[each]
 
     del shadow_data_container["type"]
+    del shadow_data_container["nested_lvl"]
 
     progressbar: Optional[tqdm] = None
     if progressbar_enabled:
@@ -131,13 +141,15 @@ def post_process_shadown_data_container(
                 )
                 if "type" in ppsdc:
                     del ppsdc["type"]
+                if "nested_lvl" in ppsdc:
+                    del ppsdc["nested_lvl"]
                 shadow_data_container[k][idx] = target_type(**ppsdc)
-        elif not issubclass(data_container_type, BaseTrajectoryArray) and (
+        elif not issubclass(data_container_type, BaseTrajectoryFeatureArray) and (
             k in data_container_type.non_trajectory_field()
             or k in data_container_type._dataclass_internal_field()
         ):
             pass
-        elif k == "type":
+        elif k == "type" or k == "nested_lvl":
             pass
         elif isinstance(v, dict) and v.get("type") is not None:
             target_type = v.get("type")
@@ -146,7 +158,10 @@ def post_process_shadown_data_container(
                 shadow_data_container[k] = np.array(v["data"])
             elif issubclass(target_type, Timestamps):
                 shadow_data_container[k] = Timestamps(v["data"])
-            elif issubclass(target_type, NestedBaseTrajectory):
+            elif (
+                issubclass(target_type, (RosFeature, RosStampedFeature, BaseTrajectoryFeature))
+                and v.get("nested_lvl") > 0
+            ):
                 ppsdc = post_process_shadown_data_container(
                     v,
                     data_container_type=target_type,
@@ -155,6 +170,8 @@ def post_process_shadown_data_container(
                 )
                 if "type" in ppsdc:
                     del ppsdc["type"]
+                if "nested_lvl" in ppsdc:
+                    del ppsdc["nested_lvl"]
                 shadow_data_container[k] = target_type(**ppsdc)
             else:
                 shadow_data_container[k] = v["data"]

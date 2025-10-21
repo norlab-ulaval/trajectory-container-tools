@@ -10,8 +10,8 @@ Available dataclasses:
 
 Usage example:
 
->>> import trajectory_container_tools as tct
->>> odom_class = tct.dataclasses.NavMsgsOdometry
+>>>import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass import trajectory_container_tools as tct
+>>> odom_class = trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry
 >>> imu_class = tct.dataclasses.ros_msgs.stamped_dataclass.SensorMsgsImu
 
 """
@@ -24,8 +24,7 @@ from trajectory_container_tools.dataclasses.core import (
     AbstractTrajectoryStampedFeaturesBag,
     AbstractTrajectoryArray,
     BaseTrajectoryFeature,
-    NestedBaseTrajectory,
-    BaseTrajectoryArray,
+    BaseTrajectoryFeatureArray,
 )
 
 __all__ += [
@@ -34,49 +33,40 @@ __all__ += [
     "AbstractTrajectoryStampedFeaturesBag",
     "AbstractTrajectoryArray",
     "BaseTrajectoryFeature",
-    "NestedBaseTrajectory",
-    "BaseTrajectoryArray",
+    "BaseTrajectoryFeatureArray",
 ]
 
 # .... ROS2 dataclasses ...........................................................................
-from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.ros_msgs.tf_dataclass import (
     Tf2MsgsTFMessage,
 )
-from .ros_msgs.stamped_dataclass import (
-    NavMsgsOdometry,
-    AckermannMsgsAckermannDriveStamped,
+from .ros_msgs.sensor_msgs_dataclass import (
     SensorMsgsLaserScan,
-    VescMsgsVescImuStamped,
     SensorMsgsImu,
-    GeometryMsgsPoseStamped,
-    GeometryMsgsPoseWithCovarianceStamped,
-    GeometryMsgsTwistStamped,
-    GeometryMsgsTwistWithCovarianceStamped,
-)
-from .ros_msgs.nested_dataclass import (
-    GeometryMsgsPose,
-    GeometryMsgsPoseWithCovariance,
-    GeometryMsgsTwist,
-    GeometryMsgsTwistWithCovariance,
-    AckermannMsgsAckermannDrive,
-    VescMsgsVescImu,
-    GeometryMsgsTransformStampedFeature,
-)
+    )
+from .ros_msgs.nav_msgs_dataclass import NavMsgsOdometry
+from .ros_msgs.ackermann_msgs_dataclass import (
+    AckermannMsgsAckermannDrive, AckermannMsgsAckermannDriveStamped,
+    )
+from .ros_msgs.vesc_msgs_dataclass import VescMsgsVescImu, VescMsgsVescImuStamped
 from .ros_msgs.core_dataclass import (
-    NestedRosStampedFeature,
-    RosFeaturesArray,
+    RosFeature,
     RosStampedFeature,
+    RosFeatureArray,
 )
 
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import (
-    StdMsgsHeader,
+from trajectory_container_tools.dataclasses.ros_msgs.geometry_msgs_dataclass import (
     GeometryMsgsPoint,
-    GeometryMsgsVector3,
+    GeometryMsgsPose, GeometryMsgsPoseStamped, GeometryMsgsPoseWithCovariance,
+    GeometryMsgsPoseWithCovarianceStamped, GeometryMsgsTransformStampedFeature,
+    GeometryMsgsTwist, GeometryMsgsTwistStamped, GeometryMsgsTwistWithCovariance,
+    GeometryMsgsTwistWithCovarianceStamped, GeometryMsgsVector3,
     GeometryMsgsVector3Stamped,
     GeometryMsgsPointStamped,
     GeometryMsgsQuaternion,
     GeometryMsgsTransform,
 )
+from .ros_msgs.std_msgs_dataclass import StdMsgsHeader
 
 __all__ += [
     "Tf2MsgsTFMessage",
@@ -96,8 +86,8 @@ __all__ += [
     "AckermannMsgsAckermannDrive",
     "VescMsgsVescImu",
     "GeometryMsgsTransformStampedFeature",
-    "NestedRosStampedFeature",
-    "RosFeaturesArray",
+    "RosFeatureArray",
+    "RosFeature",
     "RosStampedFeature",
     "StdMsgsHeader",
     "GeometryMsgsPoint",

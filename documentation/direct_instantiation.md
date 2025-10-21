@@ -68,16 +68,16 @@ Simple2DTrajectory(
 
 ### Nested Trajectory Container Structure
 
-For more complex data organization, use `NestedBaseTrajectory` for custom implementation or use dataclasses from `primitive_dataclass` module:
+For more complex data organization, you can nest trajectory dataclasses. Check dataclasses from `tct.dataclasses` module for inspiration:
 
 ```python
-from trajectory_container_tools.dataclasses import BaseTrajectoryFeature, NestedBaseTrajectory,
+from trajectory_container_tools.dataclasses import BaseTrajectoryFeature
 
 Vector2D
 
 
 @dataclass()
-class CustomPoseContainer(NestedBaseTrajectory):
+class CustomPoseContainer(BaseTrajectoryFeature):
     x: np.ndarray
     y: np.ndarray
 
@@ -323,9 +323,8 @@ Expected error caught: ValueError
 
 ### Base Classes
 
-- `AbstractTrajectoryFeature`: Abstract base providing core functionality
-- `BaseTrajectoryFeature`: Standard flat trajectory container
-- `NestedBaseTrajectory`: Support for nested data structures
+- `BaseTrajectoryFeature`: Base class providing trajectory single feature core functionality
+- `BaseTrajectoryFeatureArray`: Base class providing core functionality for trajectory features array of `AbstractTrajectoryFeature` 
 
 ### Factory Functions
 

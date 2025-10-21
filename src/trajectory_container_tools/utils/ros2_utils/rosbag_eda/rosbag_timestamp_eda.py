@@ -13,7 +13,10 @@ import os
 from pathlib import Path
 
 import trajectory_container_tools as tct
-import trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass
+import trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass
+import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
+import trajectory_container_tools.dataclasses.ros_msgs.sensor_msgs_dataclass
+import trajectory_container_tools.dataclasses.ros_msgs.vesc_msgs_dataclass
 from trajectory_container_tools.utils.general import dn_validate_path
 from trajectory_container_tools.temporal.timestamps import to_seconds
 from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
@@ -216,12 +219,12 @@ if __name__ == "__main__":
         bag_path_,
         eda_dir_path=dn_validate_path("artifact/rosbag_eda"),
         features_config={
-            "/odom": tct_dataclasses.NavMsgsOdometry,
-            "/tf": tct_dataclasses.Tf2MsgsTFMessage,
-            "/scan": tct_dataclasses.SensorMsgsLaserScan,
-            "/teleop": tct_dataclasses.AckermannMsgsAckermannDriveStamped,
+            "/odom":            trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
+            "/tf":              tct_dataclasses.Tf2MsgsTFMessage,
+            "/scan":            tct_dataclasses.SensorMsgsLaserScan,
+            "/teleop":          trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass.AckermannMsgsAckermannDriveStamped,
             "/sensors/imu/raw": trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass.SensorMsgsImu,
-            "/sensors/imu": tct_dataclasses.VescMsgsVescImuStamped,
+            "/sensors/imu":     trajectory_container_tools.dataclasses.ros_msgs.vesc_msgs_dataclass.VescMsgsVescImuStamped,
         },
         chunk_on="/teleop",
         fast_forward_ns=0.1e9,

@@ -270,8 +270,7 @@ class TestMainNamespaceAPI:
             "AbstractTrajectoryStampedFeaturesBag",
             "AbstractTrajectoryArray",
             "BaseTrajectoryFeature",
-            "NestedBaseTrajectory",
-            "BaseTrajectoryArray",
+            "BaseTrajectoryFeatureArray",
         ]
 
         for class_name in core_classes:
@@ -324,8 +323,7 @@ class TestDataclassesNamespace:
         tct = setup_namespace
         abstract_classes = [
             "BaseTrajectoryFeature",
-            "NestedBaseTrajectory",
-            "BaseTrajectoryArray",
+            "BaseTrajectoryFeatureArray",
         ]
 
         for class_name in abstract_classes:

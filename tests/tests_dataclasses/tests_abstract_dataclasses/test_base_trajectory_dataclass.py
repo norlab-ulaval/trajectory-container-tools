@@ -4,10 +4,10 @@ from dataclasses import dataclass
 import pytest
 
 from trajectory_container_tools import (
-    BaseTrajectoryArray,
+    BaseTrajectoryFeatureArray,
     BaseTrajectoryFeature,
-    NestedBaseTrajectory,
 )
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import NestedBaseTrajectory
 import numpy as np
 
 
@@ -28,6 +28,7 @@ def test_BaseTrajectoryFeature():
     assert np.array_equal(t_container.mock_attribute, np.ones(10))
 
 
+@pytest.mark.deprecated("Dataclass NestedBaseTrajectory is marked as deprecated (ref task TCT-87)")
 def test_NestedBaseTrajectory():
 
     @dataclass()
@@ -60,10 +61,10 @@ def test_NestedBaseTrajectory():
 def test_BaseTrajectoryArray():
 
     @dataclass()
-    class MockBaseTrajectoryArray(BaseTrajectoryArray):
+    class MockBaseTrajectoryFeatureArray(BaseTrajectoryFeatureArray):
         mock_attribute: np.ndarray
 
-    t_container = MockBaseTrajectoryArray(
+    t_container = MockBaseTrajectoryFeatureArray(
         feature_name="mock", mock_attribute=np.ones(10)
     )
 

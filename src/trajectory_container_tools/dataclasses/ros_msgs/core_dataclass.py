@@ -3,14 +3,39 @@ import abc
 from dataclasses import dataclass
 from typing import Optional
 
+from deprecated import deprecated
+
 from .core_dataclass_utils import get_timestamps_slice
 from ..core.base_trajectory_dataclass import (
-    BaseTrajectoryArray,
+    BaseTrajectoryFeatureArray,
     BaseTrajectoryFeature,
     NestedBaseTrajectory,
 )
-from ..ros_msgs.primitive_dataclass import StdMsgsHeader
+from .std_msgs_dataclass import StdMsgsHeader
 
+
+@dataclass()
+class RosFeature(BaseTrajectoryFeature):
+    """
+    Represents a ROS (Robot Operating System) feature that extends the base trajectory
+    feature functionality.
+
+    This class is primarily designed to serve as a data container or behavior extension
+    for managing traits related to trajectories in a ROS environment or similar use cases.
+    It inherits from `BaseTrajectoryFeature`, which provides common features for trajectory
+    representations.
+
+    :ivar feature_name: Name of the feature associated with the trajectory.
+    :type feature_name: str
+    :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
+        to a subset of a larger trajectory (Automaticaly generated if set to None).
+    :type timesteps_indices: numpy ndarray
+    :ivar batch: Boolean indicating if the data is batched (True) or pertaining to a
+        single trajectory (False).
+    :type batch: bool
+    """
+
+    pass
 
 @dataclass()
 class RosStampedFeature(BaseTrajectoryFeature):
@@ -77,7 +102,11 @@ class RosStampedFeature(BaseTrajectoryFeature):
         )
         return self[timestamps_slice]
 
-
+@deprecated(
+    reason="NestedRosStampedFeature dataclass is deprecated now that all TrajectoryFeature dataclass "
+           "support parent container reference tracking. Use `is_nested()` method to test if a "
+           "trajectory dataclass is nested or not."
+)
 @dataclass()
 class NestedRosStampedFeature(NestedBaseTrajectory):
     """
@@ -137,7 +166,7 @@ class NestedRosStampedFeature(NestedBaseTrajectory):
 
 
 @dataclass()
-class RosFeaturesArray(BaseTrajectoryArray):
+class RosFeatureArray(BaseTrajectoryFeatureArray):
     """
     Represents a ROS dataclass containing trajectory information.
 

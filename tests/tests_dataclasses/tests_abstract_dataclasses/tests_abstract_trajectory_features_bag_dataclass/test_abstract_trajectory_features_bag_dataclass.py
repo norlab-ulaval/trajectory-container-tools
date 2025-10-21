@@ -8,8 +8,7 @@ import pytest
 from trajectory_container_tools import (
     AbstractTrajectoryFeaturesBag,
 )
-from trajectory_container_tools.dataclasses import RosStampedFeature
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import StdMsgsHeader
+from trajectory_container_tools.dataclasses import RosStampedFeature, StdMsgsHeader
 from trajectory_container_tools.temporal.timestamps import Timestamps
 
 

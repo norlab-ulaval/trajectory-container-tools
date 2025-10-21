@@ -10,12 +10,12 @@ from trajectory_container_tools.dataclasses.core.abstract_trajectory_stamped_fea
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryFeature,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import StdMsgsHeader
 from trajectory_container_tools.dataclasses import (
     NavMsgsOdometry,
-    NestedRosStampedFeature,
-    RosFeaturesArray,
+    RosFeature,
+    RosFeatureArray,
     RosStampedFeature,
+    StdMsgsHeader,
 )
 from trajectory_container_tools.utils.factory import (
     parse_feature_spec,
@@ -93,7 +93,7 @@ def from_rosbag(
     rosbag_path: Path,
     dataset_info: Optional[str],
     features_config: Dict[
-        str, Union[type[RosFeaturesArray], type[RosStampedFeature], Tuple[str, ...]]
+        str, Union[type[RosFeatureArray], type[RosStampedFeature], Tuple[str, ...]]
     ],
     chunk_on="/teleop",
     start: Optional[int] = None,
@@ -192,11 +192,11 @@ def from_rosbag(
 def extract_rosbag_feature(
     rosbag_path: Path,
     feature_name: str,
-    data_container_type: Union[type[RosFeaturesArray], type[RosStampedFeature]],
+    data_container_type: Union[type[RosFeature], type[RosFeatureArray], type[RosStampedFeature]],
     start: Optional[int] = None,
     stop: Optional[int] = None,
     typestore: Optional[Typestore] = None,
-) -> Union[RosFeaturesArray, RosStampedFeature]:
+) -> Union[RosFeature, RosFeatureArray, RosStampedFeature]:
     """
     Extracts a specific feature from a ROS bag file and returns it in a structured data container.
 
@@ -224,10 +224,10 @@ def extract_rosbag_feature(
     :return: An instance of the `data_container_type` containing the processed feature data.
     """
     try:
-        if not issubclass(data_container_type, (RosFeaturesArray, RosStampedFeature)):
+        if not issubclass(data_container_type, (RosFeature, RosFeatureArray, RosStampedFeature)):
             raise ValueError(
                 f"[TCT error] `{data_container_type}` must be a subclass of "
-                f"`RosStampedFeature` or `RosFeaturesArray`"
+                f"`RosFeature`, `RosStampedFeature` or `RosFeatureArray`"
             )
     except TypeError as e:
         raise AttributeError(
@@ -236,7 +236,7 @@ def extract_rosbag_feature(
         )
     else:
         # ... Create and initialize temporary container ...........................................
-        shadow_data_container = instanciate_shadow_data_container(data_container_type)
+        shadow_data_container = instanciate_shadow_data_container(data_container_type, 0)
 
         # .... Crawl topic msgs ...................................................................
         if not typestore:
@@ -299,9 +299,8 @@ def extract_rosbag_feature(
 
 def _collect_properties_from_rosbag(
     data_container_type: Union[
-        type[RosFeaturesArray],
+        type[RosFeatureArray],
         type[RosStampedFeature],
-        type[NestedRosStampedFeature],
         type[BaseTrajectoryFeature],
     ],
     feature_name: str,
@@ -367,7 +366,7 @@ def _collect_properties_from_rosbag(
 
                 if issubclass(
                     shadow_data_container[each_property_name]["type"],
-                    (RosFeaturesArray, BaseTrajectoryFeature),
+                    (RosFeatureArray, BaseTrajectoryFeature),
                 ):
                     shadow_data_container[each_property_name] = (
                         _collect_properties_from_rosbag(

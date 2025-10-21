@@ -458,24 +458,26 @@ TrajectoryFeaturesBag(
 When extracting data from ROS bags, you can iterate over synchronized timestamp chunks across multiple features:
 
 ```python
+import trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass
+import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 import trajectory_container_tools as tct
 
 # Extract features from ROS bag (returns AbstractTrajectoryStampedFeaturesBag)
 trajectory_features_bag = tct.extractor.from_rosbag(
-    rosbag_path,
-    features_config={
-        "/odom": tct.dataclasses.NavMsgsOdometry,
-        "/cmd": tct.dataclasses.AckermannMsgsAckermannDriveStamped,
-    },
-    chunk_on="/cmd",
-)
+        rosbag_path,
+        features_config={
+                "/odom": trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
+                "/cmd":  trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass.AckermannMsgsAckermannDriveStamped,
+                },
+        chunk_on="/cmd",
+        )
 
 # Iterate over timestamp chunks
 for chunk_idx, chunk in enumerate(trajectory_features_bag):
-    print(f"Chunk {chunk_idx}:")
-    print(f"  Odometry data: {chunk.topic_odom}")
-    print(f"  Command data: {chunk.topic_cmd}")
-    
+  print(f"Chunk {chunk_idx}:")
+  print(f"  Odometry data: {chunk.topic_odom}")
+  print(f"  Command data: {chunk.topic_cmd}")
+
 # Access specific chunk by index
 first_chunk = trajectory_features_bag[0]
 last_chunk = trajectory_features_bag[-1]

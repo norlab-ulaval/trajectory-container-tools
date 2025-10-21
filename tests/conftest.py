@@ -10,9 +10,8 @@ from trajectory_container_tools.dataclasses import (
     NavMsgsOdometry,
     SensorMsgsLaserScan,
     SensorMsgsImu,
-    VescMsgsVescImuStamped,
+    StdMsgsHeader, VescMsgsVescImuStamped,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import StdMsgsHeader
 from trajectory_container_tools.utils.general import RosImportError
 
 has_ros_dependencies = True
@@ -23,7 +22,7 @@ try:
         get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short,
         get_rosbag_vaul_f1tenth_nx_orin_path_offending_timestamps,
     )
-    from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
+    from trajectory_container_tools.dataclasses.ros_msgs.tf_dataclass import (
         Tf2MsgsTFMessage,
     )
 except RosImportError:

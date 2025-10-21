@@ -3,9 +3,6 @@ from typing import Any, Union
 
 import numpy as np
 
-from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
-    NestedBaseTrajectory,
-)
 from trajectory_container_tools.dataclasses import RosStampedFeature
 from trajectory_container_tools.utils.shadow_data_container import (
     fetch_timestamps_from_shadow_data_container,
@@ -36,7 +33,7 @@ def fix_sequence_ordering_base_on_timestamps(
 
 def _fix_container_array_timestamps(
     data_container_type_: Union[
-        type[RosStampedFeature], type[NestedBaseTrajectory], type[Any]
+        type[RosStampedFeature], type[Any]
     ],
     sorted_ts_idx: np.ndarray,
     shadow_data_container: dict,
@@ -50,9 +47,9 @@ def _fix_container_array_timestamps(
         if not dimension_type:
             return shadow_data_container
 
-        if isinstance(each_property, np.ndarray):
+        if isinstance(each_property['type'], np.ndarray):
             shadow_data_container[each_property_name] = each_property[sorted_ts_idx]
-        elif isinstance(each_property, NestedBaseTrajectory):
+        elif isinstance(each_property['type'], RosStampedFeature) and each_property['nested_lvl'] > 0:
             dimension_type, is_list_of_type = each_property.get_dimension_type(each_property_name)
             if is_list_of_type:
                 raise NotImplementedError(

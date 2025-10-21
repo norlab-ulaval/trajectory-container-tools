@@ -5,20 +5,19 @@ import numpy as np
 
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryFeature,
-    NestedBaseTrajectory,
 )
 from .primitive_dataclass import Pose2D, Velocity2D
 
 
 @dataclass()
-class F110observations(NestedBaseTrajectory):
+class F110observations(BaseTrajectoryFeature):
     timestamp: np.ndarray
     pose: Pose2D
     vel: Velocity2D
 
 
 @dataclass()
-class F110actions(NestedBaseTrajectory):
+class F110actions(BaseTrajectoryFeature):
     timestamp: np.ndarray
     steer: np.ndarray
     speed: np.ndarray

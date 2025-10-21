@@ -7,8 +7,7 @@ import numpy as np
 
 from trajectory_container_tools.dataclasses import (
     StdMsgsHeader,
-    NestedRosStampedFeature,
-    RosFeaturesArray,
+    RosFeatureArray,
     RosStampedFeature,
 )
 
@@ -19,12 +18,12 @@ class MockSubRosStampedFeature(RosStampedFeature):
 
 
 @dataclass()
-class MockSubNestedRosStampedFeatureDataclass(NestedRosStampedFeature):
+class MockSubNestedRosStampedFeatureDataclass(RosStampedFeature):
     mock_attribute: np.ndarray
 
 
 @dataclass()
-class MockSubRosFeaturesArray(RosFeaturesArray):
+class MockSubRosFeatureArray(RosFeatureArray):
     mock_attribute: np.ndarray
 
 
@@ -173,7 +172,7 @@ class TestRosDataclass:
 
     def test_instanciation(self):
 
-        t_container = MockSubRosFeaturesArray(
+        t_container = MockSubRosFeatureArray(
             feature_name="mock", mock_attribute=np.ones(10)
         )
 

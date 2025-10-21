@@ -5,17 +5,16 @@ import numpy as np
 
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryFeature,
-    NestedBaseTrajectory,
 )
 
 
 @dataclass()
-class Point2D(NestedBaseTrajectory):
+class Point2D(BaseTrajectoryFeature):
     """
     Represents a 2D Point with coordinates x and y.
 
     This class is used to encapsulate x and y coordinates of a point in
-    a 2D space. It inherits functionality from NestedBaseTrajectory.
+    a 2D space. It inherits functionality from BaseTrajectoryFeature.
 
     :ivar x: Represents the x-coordinate of the 2D point.
     :type x: np.ndarray
@@ -34,7 +33,7 @@ class Point2DSA(BaseTrajectoryFeature):
     Note: This is a standalone version of Point2D for non nested use cases.
 
     This class is used to encapsulate x and y coordinates of a point in
-    a 2D space. It inherits functionality from NestedBaseTrajectory.
+    a 2D space. It inherits functionality from BaseTrajectoryFeature.
 
     :ivar x: Represents the x-coordinate of the 2D point.
     :type x: np.ndarray
@@ -47,7 +46,7 @@ class Point2DSA(BaseTrajectoryFeature):
 
 
 @dataclass()
-class Vector2D(NestedBaseTrajectory):
+class Vector2D(BaseTrajectoryFeature):
     """
     Represents a two-dimensional vector with x and y components.
 
@@ -88,7 +87,7 @@ class Vector2DSA(BaseTrajectoryFeature):
 
 
 @dataclass()
-class Pose2D(NestedBaseTrajectory):
+class Pose2D(BaseTrajectoryFeature):
     """
     Represents a 2D pose with x, y coordinates and orientation angle.
 
@@ -135,7 +134,7 @@ class Pose2DSA(BaseTrajectoryFeature):
 
 
 @dataclass()
-class Velocity2D(NestedBaseTrajectory):
+class Velocity2D(BaseTrajectoryFeature):
     """
     Represents a 2D velocity with components along x, y axes, and an angular component.
 

@@ -1,7 +1,6 @@
 # coding=utf-8
 
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import (
-    StdMsgsHeader,
+from trajectory_container_tools.dataclasses.ros_msgs.geometry_msgs_dataclass import (
     GeometryMsgsPoint,
     GeometryMsgsQuaternion,
     GeometryMsgsVector3,
@@ -9,16 +8,11 @@ from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import 
 from trajectory_container_tools.dataclasses import (
     AckermannMsgsAckermannDrive,
     AckermannMsgsAckermannDriveStamped,
-    NavMsgsOdometry,
+    GeometryMsgsPose, GeometryMsgsPoseWithCovariance, GeometryMsgsTwist,
+    GeometryMsgsTwistWithCovariance, NavMsgsOdometry,
     SensorMsgsLaserScan,
     SensorMsgsImu,
-    VescMsgsVescImuStamped,
-)
-from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import (
-    GeometryMsgsPose,
-    GeometryMsgsPoseWithCovariance,
-    GeometryMsgsTwist,
-    GeometryMsgsTwistWithCovariance, VescMsgsVescImu,
+    StdMsgsHeader, VescMsgsVescImu, VescMsgsVescImuStamped,
 )
 
 

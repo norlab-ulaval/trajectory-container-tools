@@ -13,7 +13,7 @@ from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass_c
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_feature_dataclass import (
     AbstractTrajectoryFeature,
 )
-from trajectory_container_tools.dataclasses.core.abstract_array_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_array_dataclass import (
     AbstractTrajectoryArray,
 )
 from trajectory_container_tools.temporal import Timestamps

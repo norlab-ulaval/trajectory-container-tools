@@ -52,16 +52,16 @@ graph TB
             FF[Factory Functions<br/>Optional]
         end
         
-        subgraph MFC["🗂️&nbsp;MULTIFEATURE&nbsp;CONTAINERS"]
+        subgraph MFC["🗂️&nbsp;TRAJECTORY&nbsp;FEATURES&nbsp;BAG&nbsp;CONTAINERS"]
             AMC[AbstractTrajectoryFeaturesBag<br/><br/>Contains multiple<br/>trajectory features<br/>in one container]
             AMSC[AbstractTrajectoryStampedFeaturesBag<br/><br/>TrajectoryFeaturesBag container with<br/>chunk-based iteration<br/>over timestamps]
         end
         
-        subgraph TC["📦&nbsp;TRAJECTORY&nbsp;CONTAINERS"]
+        subgraph TC["📦&nbsp;TRAJECTORY&nbsp;FEATURE&nbsp;CONTAINERS"]
             ATC[AbstractTrajectoryFeature]
             BTC[BaseTrajectoryFeature]
-            NBTC[NestedBaseTrajectory]
-            SC[🎯 Specialized Dataclasses:<br/>• Primitive<br/>• PandaDataFrame<br/>• ROS2Feature<br/>• F110Gym<br/>• MathGymnasium<br/>]
+            BTCA[BaseTrajectoryFeatureArray]
+            SC[🎯 Specialized Dataclasses:<br/>• Primitive<br/>• ROS2Feature<br/>• PandaDataFrame<br/>• F110Gym<br/>• MathGymnasium<br/>]
         end
     end
     
@@ -77,9 +77,9 @@ graph TB
     FF --> TC
     MFC --> TC 
     
-    ATC --> BTC --> SC
-    BTC --> NBTC --> SC 
     ATC --> SC
+    ATC --> BTC --> SC
+    ATC --> BTCA --> SC 
     
 ```
 
@@ -233,7 +233,7 @@ Create trajectory containers directly from data arrays:
 
 **Available Dataclasses:**
 - `BaseTrajectoryFeature` - Basic trajectory container
-- `NestedBaseTrajectory` - Basic trajectory container intended to be nested in a `BaseTrajectoryFeature` 
+- `BaseTrajectoryFeatureArray` - Basic trajectory container with an array of many heterogenous length `BaseTrajectoryFeature`  
 - Custom dataclasses inheriting from `AbstractTrajectoryFeature`
 
 ---

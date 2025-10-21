@@ -24,7 +24,7 @@ class AbstractTrajectoryArray(AbstractTrajectoryCommon):
 
     @classmethod
     def _dataclass_internal_field(cls) -> List[str]:
-        return super()._dataclass_internal_field() + ["feature_name",]
+        return super()._dataclass_internal_field() + ["feature_name", "_iter_index"]
 
     @property
     def registred_trajectory_object_list(self) -> Optional[str]:
