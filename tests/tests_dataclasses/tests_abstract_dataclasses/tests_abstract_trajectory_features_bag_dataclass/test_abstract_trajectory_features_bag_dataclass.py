@@ -132,5 +132,7 @@ class TestAbstractTrajectoryFeaturesBag:
         assert mf_container._parent is None
         for each_key in mf_container.topic_key_list:
             each_attribute = mf_container.get_dynamic_field(each_key)
+            assert id(each_attribute.get_parent_container()) == id(mf_container)
+
             t_parent = each_attribute.header.get_parent_container()
             assert id(t_parent) == id(each_attribute)

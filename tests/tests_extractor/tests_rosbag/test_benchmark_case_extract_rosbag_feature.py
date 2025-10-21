@@ -75,7 +75,7 @@ def benchmark_extract_single_feature_from_rosbag(
 #                 'Multiprocessing enabled, n_jobs 4, chunk size 20000',
 #                 'Multiprocessing disabled']
 #         )
-def test_extract_rosbag_benchmark(benchmark, setup_rosbag_from_external_data_dir):
+def test_extract_rosbag_feature_benchmark(benchmark, setup_rosbag_from_external_data_dir):
     container: Union[NavMsgsOdometry, RosStampedFeature]
     rosbag_path, rosbag_start, rosbag_stop = setup_rosbag_from_external_data_dir
 

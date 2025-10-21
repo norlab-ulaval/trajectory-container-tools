@@ -54,6 +54,7 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
             )
 
         # .... Base class initialization logic ....................................................
+        self.set_parent_container_reference_tracking()
         self._aggregated_date = datetime.datetime.now()
 
         # .... Callback and attribute customization logic .........................................
