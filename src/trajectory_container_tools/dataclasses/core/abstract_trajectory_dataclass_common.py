@@ -1,5 +1,6 @@
 # coding=utf-8
 import abc
+import weakref
 from dataclasses import dataclass, field, fields
 from typing import Any, List, Optional, Tuple, Union
 
@@ -40,10 +41,10 @@ class AbstractTrajectoryCommon(abc.ABC):
             attribute = self.__getattribute__(each_name)
             if isinstance(attribute, list) and isinstance(attribute[0], AbstractTrajectoryCommon):
                 for idx in range(len(attribute)):
-                    attribute[idx]._parent = self
+                    attribute[idx]._parent = weakref.ref(self)
             else:
                 if isinstance(attribute, AbstractTrajectoryCommon):
-                    attribute._parent = self
+                    attribute._parent = weakref.ref(self)
         return None
 
     def get_parent_container(self) -> Union["AbstractTrajectoryCommon", None]:
@@ -56,7 +57,9 @@ class AbstractTrajectoryCommon(abc.ABC):
 
         :return: The parent container of the current object, or None if not set.
         """
-        return self._parent
+        if not self.is_nested():
+            return None
+        return self._parent()
 
     def get_root_container(self) -> "AbstractTrajectoryCommon":
         """
@@ -70,11 +73,11 @@ class AbstractTrajectoryCommon(abc.ABC):
 
         :return: The top-most container in the hierarchy.
         """
-        if self._parent is None:
+        if not self.is_nested():
             return self
 
         # Recursively search up the parent chain
-        return self._parent.get_root_container()
+        return self.get_parent_container().get_root_container()
 
     def is_nested(self) -> bool:
         """

@@ -137,6 +137,6 @@ class TestCaseArrayOfTrajectoryFeatureDataclasses:
     def test_nested_member_parent_tracking(self, setup_mock_nested_list_subclass):
         t_container = setup_mock_nested_list_subclass
 
-        assert t_container._parent is None
-        assert id(t_container.mock_list_attribute[0]._parent) == id(t_container)
-        assert id(t_container.mock_list_attribute[1]._parent) == id(t_container)
+        assert t_container.get_parent_container() is None
+        assert id(t_container.mock_list_attribute[0].get_parent_container()) == id(t_container)
+        assert id(t_container.mock_list_attribute[1].get_parent_container()) == id(t_container)

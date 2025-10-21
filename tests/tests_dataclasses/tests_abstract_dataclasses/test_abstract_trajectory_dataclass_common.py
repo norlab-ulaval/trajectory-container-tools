@@ -104,10 +104,10 @@ class TestAbstractTrajectoryCommon:
         t_container.set_parent_container_reference_tracking()
         t_container.mock_nested_attr.set_parent_container_reference_tracking()
 
-        assert t_container._parent is None
-        assert t_container.mock_nested_attr._parent is not None
-        assert id(t_container.mock_nested_attr._parent) == id(t_container)
-        assert id(t_container.mock_nested_attr.mock_nested_attr._parent) == id(
+        assert t_container.get_parent_container() is None
+        assert t_container.mock_nested_attr.get_parent_container() is not None
+        assert id(t_container.mock_nested_attr.get_parent_container()) == id(t_container)
+        assert id(t_container.mock_nested_attr.mock_nested_attr.get_parent_container()) == id(
             t_container.mock_nested_attr
         )
 
@@ -118,9 +118,9 @@ class TestAbstractTrajectoryCommon:
 
         t_container_array.set_parent_container_reference_tracking()
 
-        assert t_container_array._parent is None
-        assert id(t_container_array.mock_nested_attr[0]._parent) == id(t_container_array)
-        assert id(t_container_array.mock_nested_attr[1]._parent) == id(t_container_array)
+        assert t_container_array.get_parent_container() is None
+        assert id(t_container_array.mock_nested_attr[0].get_parent_container()) == id(t_container_array)
+        assert id(t_container_array.mock_nested_attr[1].get_parent_container()) == id(t_container_array)
 
     def test_get_parent_container_case_base(self, setup_three_lvl_trajectory_dataclass):
         t_container = setup_three_lvl_trajectory_dataclass
