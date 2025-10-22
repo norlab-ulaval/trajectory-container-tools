@@ -204,6 +204,8 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
                 pass
             elif k == "timesteps_indices" and self.is_nested():
                 pass
+            elif k == "bag_recorded_timestamps" and self.is_nested() and v is None:
+                pass
             elif isinstance(v, (np.ndarray, Timestamps)):
                 if isinstance(v, Timestamps):
                     indent_v = []

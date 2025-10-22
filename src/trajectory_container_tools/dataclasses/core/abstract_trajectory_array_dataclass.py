@@ -33,6 +33,7 @@ class AbstractTrajectoryArray(AbstractTrajectoryCommon):
 
         :return: The attribute name for the NoTrajectoryDataclass lists of trajectory objects.
         """
+        # (NICE TO HAVE) ToDo: implement a mechanism to automaticaly populate 'registred_trajectory_object_list'.
         return None
 
     @classmethod

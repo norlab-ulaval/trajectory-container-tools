@@ -23,17 +23,16 @@ class StdMsgsHeader(BaseTrajectoryFeature):
     converted to the target type at instanciation.
 
     :ivar frame_id: Identifier for the coordinate frame.
+    :type frame_id: str
     :ivar timestamps: Time-related information, either a Timestamps object or a numpy array
                       (converted to Timestamps internally at instanciation).
-    :type timestamps: Timestamps
+    :type timestamps: Timestamps | numpy ndarray
     """
 
     frame_id: str
     timestamps: Union[Timestamps, np.ndarray]
 
     def on_begin_post_init_callback(self) -> None:
-        timestamps: Union[Timestamps, np.ndarray]
-
         if isinstance(self.timestamps, np.ndarray):
             self.timestamps = Timestamps(self.timestamps)
 

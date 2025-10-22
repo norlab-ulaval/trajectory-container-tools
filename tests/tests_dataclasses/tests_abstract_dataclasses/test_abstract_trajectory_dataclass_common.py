@@ -4,6 +4,9 @@ from typing import Union
 
 import pytest
 
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_features_bag_dataclass import (
+    AbstractTrajectoryFeaturesBag,
+)
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass_common import (
     AbstractTrajectoryCommon,
 )
@@ -63,10 +66,16 @@ class MockTrajectory(AbstractTrajectoryCommon):
         self.__setattr__("test_on_exit_post_init_callback", True)
         return None
 
+
 @dataclass
 class MockTrajectoryArray(MockTrajectory):
     mock_nested_attr: list[MockNestedTrajectory]
     mock_attr: np.ndarray
+
+
+@dataclass()
+class MockAbstractTrajectoryFeaturesBag(AbstractTrajectoryFeaturesBag):
+    topic_mock_feature: MockTrajectory
 
 
 @pytest.fixture(scope="function")
@@ -75,11 +84,15 @@ def setup_two_lvl_trajectory_dataclass() -> MockTrajectory:
         mock_nested_attr=MockNestedTrajectory(np.arange(10)), mock_attr=np.arange(10)
     )
 
+
 @pytest.fixture(scope="function")
 def setup_two_lvl_trajectory_array_dataclass() -> MockTrajectory:
     return MockTrajectoryArray(
-        mock_nested_attr=[MockNestedTrajectory(np.arange(10)), MockNestedTrajectory(np.arange(10)+10)],
-        mock_attr=np.arange(10)
+        mock_nested_attr=[
+            MockNestedTrajectory(np.arange(10)),
+            MockNestedTrajectory(np.arange(10) + 10),
+        ],
+        mock_attr=np.arange(10),
     )
 
 
@@ -106,10 +119,12 @@ class TestAbstractTrajectoryCommon:
 
         assert t_container.get_parent_container() is None
         assert t_container.mock_nested_attr.get_parent_container() is not None
-        assert id(t_container.mock_nested_attr.get_parent_container()) == id(t_container)
-        assert id(t_container.mock_nested_attr.mock_nested_attr.get_parent_container()) == id(
-            t_container.mock_nested_attr
+        assert id(t_container.mock_nested_attr.get_parent_container()) == id(
+            t_container
         )
+        assert id(
+            t_container.mock_nested_attr.mock_nested_attr.get_parent_container()
+        ) == id(t_container.mock_nested_attr)
 
     def test_set_parent_container_reference_tracking_case_array(
         self, setup_two_lvl_trajectory_array_dataclass
@@ -119,8 +134,12 @@ class TestAbstractTrajectoryCommon:
         t_container_array.set_parent_container_reference_tracking()
 
         assert t_container_array.get_parent_container() is None
-        assert id(t_container_array.mock_nested_attr[0].get_parent_container()) == id(t_container_array)
-        assert id(t_container_array.mock_nested_attr[1].get_parent_container()) == id(t_container_array)
+        assert id(t_container_array.mock_nested_attr[0].get_parent_container()) == id(
+            t_container_array
+        )
+        assert id(t_container_array.mock_nested_attr[1].get_parent_container()) == id(
+            t_container_array
+        )
 
     def test_get_parent_container_case_base(self, setup_three_lvl_trajectory_dataclass):
         t_container = setup_three_lvl_trajectory_dataclass
@@ -136,7 +155,9 @@ class TestAbstractTrajectoryCommon:
             t_container.mock_nested_attr.mock_nested_attr.get_parent_container()
         ) == id(t_container.mock_nested_attr)
 
-    def test_get_parent_container_case_array(self, setup_two_lvl_trajectory_array_dataclass):
+    def test_get_parent_container_case_array(
+        self, setup_two_lvl_trajectory_array_dataclass
+    ):
         t_container_array = setup_two_lvl_trajectory_array_dataclass
 
         t_container_array.set_parent_container_reference_tracking()
@@ -149,29 +170,57 @@ class TestAbstractTrajectoryCommon:
             t_container_array
         )
 
-    def test_get_root_container_case_base(self, setup_three_lvl_trajectory_dataclass):
+    def test_get_container_root_case_base(self, setup_three_lvl_trajectory_dataclass):
         t_container = setup_three_lvl_trajectory_dataclass
 
         t_container.set_parent_container_reference_tracking()
         t_container.mock_nested_attr.set_parent_container_reference_tracking()
 
-        assert id(t_container.get_root_container()) == id(t_container)
+        assert id(t_container.get_container_root()) == id(t_container)
         assert id(
-            t_container.mock_nested_attr.mock_nested_attr.get_root_container()
+            t_container.mock_nested_attr.mock_nested_attr.get_container_root()
         ) == id(t_container)
 
-    def test_get_root_container_case_array(self, setup_two_lvl_trajectory_array_dataclass):
+    def test_get_container_root_case_feature_bag(
+        self, setup_three_lvl_trajectory_dataclass
+    ):
+
+        t_feature_bag = MockAbstractTrajectoryFeaturesBag(
+            dataset_info="Mock feature bag", topic_mock_feature=setup_three_lvl_trajectory_dataclass
+        )
+
+        t_feature_bag.set_parent_container_reference_tracking()
+        t_feature_bag.topic_mock_feature.set_parent_container_reference_tracking()
+        t_feature_bag.topic_mock_feature.mock_nested_attr.set_parent_container_reference_tracking()
+
+        assert id(t_feature_bag.get_container_root(include_feature_bag=True)) == id(
+            t_feature_bag
+        )
+        assert id(
+            t_feature_bag.topic_mock_feature.mock_nested_attr.get_container_root(
+                include_feature_bag=False
+            )
+        ) == id(t_feature_bag.topic_mock_feature)
+        assert id(
+            t_feature_bag.topic_mock_feature.mock_nested_attr.get_container_root(
+                include_feature_bag=True
+            )
+        ) == id(t_feature_bag)
+
+    def test_get_container_root_case_array(
+        self, setup_two_lvl_trajectory_array_dataclass
+    ):
         t_container_array = setup_two_lvl_trajectory_array_dataclass
 
         t_container_array.set_parent_container_reference_tracking()
 
-        assert id(t_container_array.get_root_container()) == id(t_container_array)
-        assert id(
-            t_container_array.mock_nested_attr[0].get_root_container()
-        ) == id(t_container_array)
-        assert id(
-            t_container_array.mock_nested_attr[1].get_root_container()
-        ) == id(t_container_array)
+        assert id(t_container_array.get_container_root()) == id(t_container_array)
+        assert id(t_container_array.mock_nested_attr[0].get_container_root()) == id(
+            t_container_array
+        )
+        assert id(t_container_array.mock_nested_attr[1].get_container_root()) == id(
+            t_container_array
+        )
 
     def test_is_nested(self, setup_two_lvl_trajectory_dataclass):
         t_container = setup_two_lvl_trajectory_dataclass
@@ -230,7 +279,11 @@ class TestAbstractTrajectoryCommon:
             t_expected,
         )
 
-    def test_get_dimension_type(self, setup_two_lvl_trajectory_dataclass, setup_two_lvl_trajectory_array_dataclass):
+    def test_get_dimension_type(
+        self,
+        setup_two_lvl_trajectory_dataclass,
+        setup_two_lvl_trajectory_array_dataclass,
+    ):
 
         # .... Case nested feature trajectory dataclass ...........................................
         t_container = setup_two_lvl_trajectory_dataclass
@@ -239,14 +292,18 @@ class TestAbstractTrajectoryCommon:
         assert issubclass(dimension_type, np.ndarray)
         assert is_list_of_type == False
 
-        dimension_type, is_list_of_type = t_container.get_dimension_type("mock_nested_attr")
+        dimension_type, is_list_of_type = t_container.get_dimension_type(
+            "mock_nested_attr"
+        )
         assert issubclass(dimension_type, MockNestedTrajectory)
         assert is_list_of_type == False
 
         # .... Case nested array features trajectory dataclass ....................................
         t_container_array = setup_two_lvl_trajectory_array_dataclass
 
-        dimension_type, is_list_of_type = t_container_array.get_dimension_type("mock_attr")
+        dimension_type, is_list_of_type = t_container_array.get_dimension_type(
+            "mock_attr"
+        )
         assert issubclass(dimension_type, np.ndarray)
         assert is_list_of_type == False
 
@@ -258,5 +315,5 @@ class TestAbstractTrajectoryCommon:
 
     def test_get_dimension_names(self, setup_three_lvl_trajectory_dataclass):
         t_container = setup_three_lvl_trajectory_dataclass
-        assert t_container.get_dimension_names() == ('mock_nested_attr', 'mock_attr')
-        assert '_parent' not in t_container.get_dimension_names()
+        assert t_container.get_dimension_names() == ("mock_nested_attr", "mock_attr")
+        assert "_parent" not in t_container.get_dimension_names()

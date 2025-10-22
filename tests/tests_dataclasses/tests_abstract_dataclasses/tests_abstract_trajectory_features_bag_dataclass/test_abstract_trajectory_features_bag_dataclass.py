@@ -26,11 +26,13 @@ class TestAbstractTrajectoryFeaturesBag:
     ) -> Tuple[RosStampedFeature, RosStampedFeature]:
         topic_mock_1 = RosStampedFeature(
             feature_name="Mock topic 1",
+            bag_recorded_timestamps=np.arange(20) * 1e9,
             header=StdMsgsHeader(frame_id="topic_1", timestamps=np.arange(20) * 1e9),
         )
 
         topic_mock_2 = RosStampedFeature(
             feature_name="Mock topic 2",
+            bag_recorded_timestamps=np.arange(20) * 1e9,
             header=StdMsgsHeader(frame_id="topic_2", timestamps=np.arange(20) * 1e9),
         )
         return topic_mock_1, topic_mock_2

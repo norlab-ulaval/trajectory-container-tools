@@ -37,6 +37,7 @@ def instanciate_shadow_data_container(
         each_field: None for each_field in data_container_type.get_dimension_names()
     }
 
+    # Internal logic
     shadow_data_container["type"] = data_container_type
     shadow_data_container["nested_lvl"] = nested_lvl
 
@@ -157,9 +158,14 @@ def post_process_shadown_data_container(
                 assert isinstance(v["data"], list)
                 shadow_data_container[k] = np.array(v["data"])
             elif issubclass(target_type, Timestamps):
-                shadow_data_container[k] = Timestamps(v["data"])
+                if k == "bag_recorded_timestamps" and len(v["data"]) == 0:
+                    shadow_data_container[k] = None
+                else:
+                    shadow_data_container[k] = Timestamps(v["data"])
             elif (
-                issubclass(target_type, (RosFeature, RosStampedFeature, BaseTrajectoryFeature))
+                issubclass(
+                    target_type, (RosFeature, RosStampedFeature, BaseTrajectoryFeature)
+                )
                 and v.get("nested_lvl") > 0
             ):
                 ppsdc = post_process_shadown_data_container(
@@ -184,25 +190,3 @@ def post_process_shadown_data_container(
     if progressbar_enabled:
         progressbar.close()
     return shadow_data_container
-
-
-def fetch_timestamps_from_shadow_data_container(
-    shadow_data_container: dict,
-) -> Timestamps:
-    assert "feature_name" in shadow_data_container, (
-        "[TCT error] missing required key " "'feature_name'!"
-    )
-    if "timestamps" in shadow_data_container or "header" in shadow_data_container:
-        if "timestamps" in shadow_data_container:
-            timestamps_ = shadow_data_container["timestamps"]
-        else:
-            timestamps_ = shadow_data_container["header"].__getattribute__("timestamps")
-    else:
-        raise AssertionError(
-            "[TCT error] missing required key 'timestamps' or 'header'!"
-        )
-
-    assert isinstance(
-        timestamps_, Timestamps
-    ), "[TCT] timestamps where not converted to a Timestamps object!"
-    return timestamps_

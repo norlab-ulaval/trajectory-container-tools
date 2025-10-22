@@ -7,6 +7,7 @@ from trajectory_container_tools.dataclasses.ros_msgs.geometry_msgs_dataclass imp
     GeometryMsgsPoint,
     GeometryMsgsQuaternion,
 )
+from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.utils.shadow_data_container import (
     instanciate_shadow_data_container,
 )
@@ -26,6 +27,7 @@ class TestInstanciateShadowDataContainer:
         assert sdc == {
             "type": GeometryMsgsPoint,
             "nested_lvl":        0,
+            "bag_recorded_timestamps": {"data": [], "type": Timestamps},
             "x":    {"data": [], "type": np.ndarray},
             "y":    {"data": [], "type": np.ndarray},
             "z":    {"data": [], "type": np.ndarray},
@@ -40,9 +42,11 @@ class TestInstanciateShadowDataContainer:
         assert sdc == {
             "type":        GeometryMsgsPose,
             "nested_lvl":        0,
+            "bag_recorded_timestamps": {"data": [], "type": Timestamps},
             "position":    {
                 "type": GeometryMsgsPoint,
                 "nested_lvl": 1,
+                "bag_recorded_timestamps": {"data": [], "type": Timestamps},
                 "x":    {"data": [], "type": np.ndarray},
                 "y":    {"data": [], "type": np.ndarray},
                 "z":    {"data": [], "type": np.ndarray},
@@ -50,6 +54,7 @@ class TestInstanciateShadowDataContainer:
             "orientation": {
                 "type": GeometryMsgsQuaternion,
                 "nested_lvl": 1,
+                "bag_recorded_timestamps": {"data": [], "type": Timestamps},
                 "x":    {"data": [], "type": np.ndarray},
                 "y":    {"data": [], "type": np.ndarray},
                 "z":    {"data": [], "type": np.ndarray},
@@ -68,10 +73,12 @@ class TestInstanciateShadowDataContainer:
         assert sdc == {
             "type":          MockListOfNestedFeatureArray,
             "nested_lvl": 0,
+            "bag_recorded_timestamps": {"data": [], "type": Timestamps},
             "list_of_point": [
                 {
                     "type": GeometryMsgsPoint,
                     "nested_lvl": 1,
+                    "bag_recorded_timestamps": {"data": [], "type": Timestamps},
                     "x":    {"data": [], "type": np.ndarray},
                     "y":    {"data": [], "type": np.ndarray},
                     "z":    {"data": [], "type": np.ndarray},

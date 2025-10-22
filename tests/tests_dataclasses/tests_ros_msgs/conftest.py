@@ -11,6 +11,7 @@ def setup_simple_stamps() -> np.ndarray:
 @pytest.fixture
 def setup_mock_timestamps() -> np.ndarray:
     mock_timestamps = [
+        0,
         1,
         2,
         3,
@@ -20,7 +21,6 @@ def setup_mock_timestamps() -> np.ndarray:
         7,
         8,
         9,
-        10,
     ]
 
     return np.array(mock_timestamps, dtype=int) * 100000000 + 1000000000000000000

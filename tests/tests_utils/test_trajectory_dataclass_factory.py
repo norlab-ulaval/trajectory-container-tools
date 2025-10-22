@@ -113,6 +113,7 @@ class TestTrajectoryDataclassFactoryROSbagCase:
         assert not isinstance(mock_cls, atd.AbstractTrajectoryFeature)
         mock_cls_instance = mock_cls(
             feature_name="mock_data",
+            bag_recorded_timestamps=mock_value,
             header=StdMsgsHeader(frame_id="topic_999", timestamps=mock_value),
             pose_xx=mock_value,
             pose_yy=mock_value,
@@ -120,12 +121,14 @@ class TestTrajectoryDataclassFactoryROSbagCase:
         )
         assert isinstance(mock_cls_instance, atd.AbstractTrajectoryFeature)
         assert mock_cls.get_dimension_names() == (
+            "bag_recorded_timestamps",
             "header",
             "pose_xx",
             "pose_yy",
             "pose_zz",
         )
         assert hasattr(mock_cls_instance, "feature_name")
+        assert hasattr(mock_cls_instance, "bag_recorded_timestamps")
         assert hasattr(mock_cls_instance, "header")
         assert hasattr(mock_cls_instance, "pose_xx")
         assert hasattr(mock_cls_instance, "pose_yy")

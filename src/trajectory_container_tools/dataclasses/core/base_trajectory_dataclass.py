@@ -48,6 +48,25 @@ class BaseTrajectoryFeature(AbstractTrajectoryFeature):
     pass
 
 
+@dataclass()
+class BaseTrajectoryFeatureArray(
+    AbstractTrajectoryArray
+):
+    """
+    Represents a base data structure without trajectory handling.
+
+    This class inherits from ``AbstractTrajectoryArray`` and serves as
+    a foundation for non-trajectory-based data classes. It is designed to hold
+    and manage data that does not involve trajectory-specific information at top-level but might
+    in nested ones e.g., `Tf2MsgsTFMessage.transforms` a list of `GeometryMsgsTransformStampedFeature` trj container
+
+    :ivar feature_name: Name of the feature associated with the trajectory.
+    :type feature_name: str
+    """
+
+    pass
+
+
 @deprecated(
     reason="NestedBaseTrajectory dataclass is deprecated now that all TrajectoryFeature dataclass "
            "support parent container reference tracking. Use `is_nested()` method to test if a "
@@ -85,25 +104,6 @@ class NestedBaseTrajectory(BaseTrajectoryFeature):
     :ivar batch: Boolean indicating if the data is batched (True) or pertaining to a
         single trajectory (False).
     :type batch: bool
-    """
-
-    pass
-
-
-@dataclass()
-class BaseTrajectoryFeatureArray(
-    AbstractTrajectoryArray
-):
-    """
-    Represents a base data structure without trajectory handling.
-
-    This class inherits from ``AbstractTrajectoryArray`` and serves as
-    a foundation for non-trajectory-based data classes. It is designed to hold
-    and manage data that does not involve trajectory-specific information at top-level but might
-    in nested ones e.g., `Tf2MsgsTFMessage.transforms` a list of `GeometryMsgsTransformStampedFeature` trj container
-
-    :ivar feature_name: Name of the feature associated with the trajectory.
-    :type feature_name: str
     """
 
     pass

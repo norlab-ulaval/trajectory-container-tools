@@ -178,6 +178,7 @@ class TestExtractROSBagCaseMultipleFeatureExtraction:
                 mf_container.topic_sensors_imu_raw.feature_name == "/sensors/imu/raw"
         )
         assert mf_container.topic_sensors_imu_raw.get_dimension_names() == (
+            "bag_recorded_timestamps",
             "header",
             "orientation_x",
             "orientation_y",

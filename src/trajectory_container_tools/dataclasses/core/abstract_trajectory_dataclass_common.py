@@ -39,7 +39,9 @@ class AbstractTrajectoryCommon(abc.ABC):
         """
         for each_name in self.get_dimension_names():
             attribute = self.__getattribute__(each_name)
-            if isinstance(attribute, list) and isinstance(attribute[0], AbstractTrajectoryCommon):
+            if isinstance(attribute, list) and isinstance(
+                attribute[0], AbstractTrajectoryCommon
+            ):
                 for idx in range(len(attribute)):
                     attribute[idx]._parent = weakref.ref(self)
             else:
@@ -61,7 +63,9 @@ class AbstractTrajectoryCommon(abc.ABC):
             return None
         return self._parent()
 
-    def get_root_container(self) -> "AbstractTrajectoryCommon":
+    def get_container_root(
+        self, include_feature_bag=False
+    ) -> "AbstractTrajectoryCommon":
         """
         Recursively retrieves the root container in a hierarchy.
 
@@ -71,13 +75,29 @@ class AbstractTrajectoryCommon(abc.ABC):
         does not have a parent, it considers itself the root and returns the current
         object.
 
+        :param include_feature_bag: Include 'TrajectoryFeaturesBag' as root (True), will stop at 'TrajectoryFeaturesBag' root otherwise (Default False).
         :return: The top-most container in the hierarchy.
         """
+        parent_container = self.get_parent_container()
+        if parent_container:
+            from .abstract_trajectory_features_bag_dataclass import (
+                AbstractTrajectoryFeaturesBag,
+            )
+
+            parent_is_feature_bag = isinstance(
+                parent_container, AbstractTrajectoryFeaturesBag
+            )
+
+            if include_feature_bag and parent_is_feature_bag:
+                return parent_container
+            elif not include_feature_bag and parent_is_feature_bag and self.is_nested():
+                return self
+
         if not self.is_nested():
             return self
 
         # Recursively search up the parent chain
-        return self.get_parent_container().get_root_container()
+        return parent_container.get_container_root(include_feature_bag)
 
     def is_nested(self) -> bool:
         """
@@ -238,7 +258,6 @@ class AbstractTrajectoryCommon(abc.ABC):
           structure of the attribute to retrieve.
         :return: The value of the resolved nested attribute.
         """
-        # ToDo: TCT-65 feat: unify dynamic_field getter setter with fetch_nested_attribute method
         nested_attribute = self
         for each in nested_attribute_path.split("."):
             nested_attribute = nested_attribute.get_dynamic_field(each)
