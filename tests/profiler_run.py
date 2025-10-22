@@ -4,9 +4,8 @@ from typing import Union
 
 from trajectory_container_tools import AbstractTrajectoryFeaturesBag
 from trajectory_container_tools.utils.optimization import detect_docker_cpu_limits
-from trajectory_container_tools.extractor.rosbag_to_tct import (
-    check_bag_topics,
-)
+from trajectory_container_tools.utils.ros2_utils.rosbag_introspection import \
+    show_rosbag_summary_info
 from trajectory_container_tools.extractor.rosbag_to_tct import (
     from_rosbag,
     )
@@ -46,7 +45,7 @@ def profiler_run():
     # ..............................................................................................
     detect_docker_cpu_limits()
 
-    rosbag_path = check_bag_topics(rosbag_path)
+    rosbag_path = show_rosbag_summary_info(rosbag_path)
 
     print(
         f"\n[TCT] === Profiling run ===================================================="

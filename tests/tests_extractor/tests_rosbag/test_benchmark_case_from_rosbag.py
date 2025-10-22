@@ -8,9 +8,10 @@ import pytest
 
 from tests.rosbag_test_utils import get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short
 from trajectory_container_tools.extractor import (
-    check_bag_topics,
     from_rosbag,
 )
+from trajectory_container_tools.utils.ros2_utils.rosbag_introspection import \
+    show_rosbag_summary_info
 from trajectory_container_tools.dataclasses import (
     AckermannMsgsAckermannDriveStamped,
     NavMsgsOdometry,
@@ -29,9 +30,9 @@ def setup_rosbag_from_external_data_dir() -> Tuple[Path, Optional[int], Optional
     rosbag_path, bag, selected_topics = get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short()
 
     return (
-        check_bag_topics(rosbag_path),
-        rosbag_start,
-        rosbag_stop,
+            show_rosbag_summary_info(rosbag_path),
+            rosbag_start,
+            rosbag_stop,
     )
 
 

@@ -27,8 +27,7 @@ from trajectory_container_tools.utils.general import (
     camelcase_to_snake_case,
     extract_class_name_from_type,
     setup_progressbar,
-    dn_validate_path,
-)
+    )
 from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
     register_non_native_msgs,
 )
@@ -49,7 +48,6 @@ from trajectory_container_tools.temporal.timestamps import (
     Timestamps,
 )
 from trajectory_container_tools.typing import (
-    TrajectoryFeaturesBag,
     ShadowDataContainer,
 )
 
@@ -58,37 +56,6 @@ try:
     from rosbags.typesys.store import Typestore
 except (ImportError, ModuleNotFoundError):
     raise RosImportError
-
-
-def check_bag_topics(rosbag_path: Union[str, Path]) -> Path:
-    """Display available topics and messages in a specified ROS bag file.
-
-    This function reads a ROS bag file from the specified path and lists all the available
-    topics along with their message types. Additionally, it provides the total number of
-    messages in the ROS bag. If the provided path is unreachable and the function is running in a
-    Dockerized-NorLab docker container, it attempts to resolve the correct path.
-
-    :param rosbag_path: Path to the ROS bag file (absolute or relative).
-    :return: the real ros bag path if the input was a relative path
-    """
-    rosbag_path = dn_validate_path(rosbag_path)
-
-    # .... Introspect ros bag contents ............................................................
-    print(f"ROS bag path: {rosbag_path}\n")
-    assert os.path.exists(rosbag_path)
-
-    with Reader(rosbag_path) as reader:
-        print(f"Total messages: {reader.message_count}")
-        print(
-            f"Rosbag time:\n  start: {reader.start_time} (ns)\n"
-            f"  end: {reader.end_time} (ns)\n"
-            f"  duration: {reader.duration} (ns)\n"
-        )
-        print("Available topics:")
-        for connection in reader.connections:
-            print(f"  {connection.topic}: {connection.msgtype}")
-
-    return Path(rosbag_path)
 
 
 def from_rosbag(

@@ -5,6 +5,8 @@ properly expose their expected functionality and maintain the correct API struct
 """
 import pytest
 
+import trajectory_container_tools.utils.ros2_utils.rosbag_introspection
+
 
 @pytest.fixture(scope="function")
 def setup_namespace():
@@ -40,11 +42,12 @@ class TestRosNamespaceModule:
         assert hasattr(tct.ros, "register_non_native_msgs")
         assert callable(tct.ros.register_non_native_msgs)
 
-    def test_check_bag_topics_function_exists(self, setup_namespace):
-        """Test that check_bag_topics function is available in ros namespace."""
+    def test_show_rosbag_summary_info_function_exists(self, setup_namespace):
+        """Test that show_rosbag_summary_info function is available in ros namespace."""
         tct = setup_namespace
-        assert hasattr(tct.ros, "check_bag_topics")
-        assert callable(tct.ros.check_bag_topics)
+        assert hasattr(tct.ros, "show_rosbag_summary_info")
+        assert callable(
+            trajectory_container_tools.utils.ros2_utils.rosbag_introspection.show_rosbag_summary_info)
 
     def test_get_ros2_distro_function_exists(self, setup_namespace):
         """Test that get_ros2_distro function is available in ros namespace."""
@@ -90,7 +93,9 @@ class TestRosNamespaceModule:
         assert hasattr(tct.ros, "gather_rosbag_informations")
         assert callable(tct.ros.gather_rosbag_informations)
 
-    def test_gather_rosbag_trajectory_window_informations_function_exists(self, setup_namespace):
+    def test_gather_rosbag_trajectory_window_informations_function_exists(
+        self, setup_namespace
+    ):
         """Test that gather_rosbag_trajectory_window_informations function is available in ros namespace."""
         tct = setup_namespace
         assert hasattr(tct.ros, "gather_rosbag_trajectory_window_informations")
@@ -207,11 +212,12 @@ class TestExtractorNamespaceModule:
         assert hasattr(tct.extractor, "extract_dataframe_feature")
         assert callable(tct.extractor.extract_dataframe_feature)
 
-    def test_check_bag_topics_function_exists(self, setup_namespace):
-        """Test that check_bag_topics function is available in extractor namespace."""
+    def test_show_rosbag_summary_info_function_exists(self, setup_namespace):
+        """Test that show_rosbag_summary_info function is available in extractor namespace."""
         tct = setup_namespace
-        assert hasattr(tct.extractor, "check_bag_topics")
-        assert callable(tct.extractor.check_bag_topics)
+        assert hasattr(tct.extractor, "show_rosbag_summary_info")
+        assert callable(
+            trajectory_container_tools.utils.ros2_utils.rosbag_introspection.show_rosbag_summary_info)
 
     def test_unpack_dataframe_and_show_topic_function_exists(self, setup_namespace):
         """Test that unpack_dataframe_and_show_topic function is available in extractor namespace."""
@@ -290,15 +296,94 @@ class TestDataclassesNamespace:
         """Test that ROS2 dataclasses are available in dataclasses namespace."""
         tct = setup_namespace
         ros2_dataclasses = [
-            "NavMsgsOdometry",
-            "SensorMsgsImu",
-            "AckermannMsgsAckermannDriveStamped",
             "Tf2MsgsTFMessage",
-            "VescMsgsVescImuStamped",
+            "NavMsgsOdometry",
+            "AckermannMsgsAckermannDriveStamped",
             "SensorMsgsLaserScan",
+            "VescMsgsVescImuStamped",
+            "SensorMsgsImu",
+            "GeometryMsgsPoseStamped",
+            "GeometryMsgsPoseWithCovarianceStamped",
+            "GeometryMsgsTwistStamped",
+            "GeometryMsgsTwistWithCovarianceStamped",
+            "GeometryMsgsPose",
+            "GeometryMsgsPoseWithCovariance",
+            "GeometryMsgsTwist",
+            "GeometryMsgsTwistWithCovariance",
+            "AckermannMsgsAckermannDrive",
+            "VescMsgsVescImu",
+            "GeometryMsgsTransformStampedFeature",
+            "RosFeatureArray",
+            "RosFeature",
+            "RosStampedFeature",
+            "StdMsgsHeader",
+            "GeometryMsgsPoint",
+            "GeometryMsgsVector3",
+            "GeometryMsgsVector3Stamped",
+            "GeometryMsgsPointStamped",
+            "GeometryMsgsQuaternion",
+            "GeometryMsgsTransform",
         ]
 
         for dataclass_name in ros2_dataclasses:
+            assert hasattr(
+                tct.dataclasses, dataclass_name
+            ), f"Missing dataclass: {dataclass_name}"
+
+    def test_ros_dataframe_dataclasses_available_in_namespace(self, setup_namespace):
+        """Test that ros panda dataframe dataclasses are available in dataclasses namespace."""
+        tct = setup_namespace
+        dataframe_dataclasses = [
+            "BaseDataframeFeatureDataclass",
+            "NestedBaseDataframeFeatureDataclass",
+            "StatePose2D",
+            "CmdStandard",
+            "CmdSkidSteer",
+            "Velocity",
+            "VelocitySkidSteer",
+        ]
+
+        for dataclass_name in dataframe_dataclasses:
+            assert hasattr(
+                tct.dataclasses, dataclass_name
+            ), f"Missing dataclass: {dataclass_name}"
+
+    def test_sim_env_dataclasses_available_in_namespace(self, setup_namespace):
+        """Test that simulation environment dataclasses are available in dataclasses namespace."""
+        tct = setup_namespace
+        sim_env_dataclasses = [
+            "F110MotionDynamicDataclass",
+            "F110MotionDynamicDataclassNested",
+            "F110observations",
+            "F110actions",
+            "MathEnvTrajectoryDataclass",
+            "StateAxDataclass",
+            "TimeAxDataclass",
+            "AxBaseDataclass",
+            "TestTrajectoryDataclass",
+            "TestMotionTrajectoryDataclass",
+        ]
+
+        for dataclass_name in sim_env_dataclasses:
+            assert hasattr(
+                tct.dataclasses, dataclass_name
+            ), f"Missing dataclass: {dataclass_name}"
+
+    def test_primitive_dataclasses_available_in_namespace(self, setup_namespace):
+        """Test that general primitive dataclasses are available in dataclasses namespace."""
+        tct = setup_namespace
+        primitive_dataclasses = [
+            "Point2D",
+            "Vector2D",
+            "Pose2D",
+            "Velocity2D",
+            "Pose2DSA",
+            "Point2DSA",
+            "Vector2DSA",
+            "Velocity2DSA",
+        ]
+
+        for dataclass_name in primitive_dataclasses:
             assert hasattr(
                 tct.dataclasses, dataclass_name
             ), f"Missing dataclass: {dataclass_name}"

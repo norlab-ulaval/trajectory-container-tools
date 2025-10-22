@@ -17,7 +17,7 @@ import trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass
 import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 import trajectory_container_tools.dataclasses.ros_msgs.sensor_msgs_dataclass
 import trajectory_container_tools.dataclasses.ros_msgs.vesc_msgs_dataclass
-from trajectory_container_tools.utils.general import dn_validate_path
+from trajectory_container_tools.utils.general import dn_sanitize_path
 from trajectory_container_tools.temporal.timestamps import to_seconds
 from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
     register_non_native_msgs,
@@ -27,10 +27,10 @@ from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.general_ut
     compute_bag_target_window_nb,
     compute_window_start_and_stop,
     find_max_timestamp_delta_over_all_topics,
-    gather_rosbag_informations,
-    gather_rosbag_trajectory_window_informations,
     rosbag_log_file_name,
 )
+from trajectory_container_tools.utils.ros2_utils.rosbag_introspection import \
+    gather_rosbag_informations, gather_rosbag_trajectory_window_informations
 from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.plot import (
     plot_bag_timestamp_delta,
 )
@@ -80,6 +80,7 @@ def run_rosbag_timestamp_eda(
     :return: None
     """
     # .... Setup path .............................................................................
+    bag_path = dn_sanitize_path(bag_path)
     bag_path_abs = Path(bag_path)
 
     if experiment_dir is None:
@@ -207,7 +208,7 @@ if __name__ == "__main__":
     """
 
     bag_name_ = "rosbag2_2023_09_24-20_30_12-filtered-short"
-    bag_path_ = dn_validate_path(
+    bag_path_ = dn_sanitize_path(
         os.path.join(
             "data/repository_data/tests_data/rosbag_test_data",
             "bags_vaul-f1tenth-nx-orin",
@@ -217,13 +218,13 @@ if __name__ == "__main__":
 
     run_rosbag_timestamp_eda(
         bag_path_,
-        eda_dir_path=dn_validate_path("artifact/rosbag_eda"),
+        eda_dir_path=dn_sanitize_path("artifact/rosbag_eda"),
         features_config={
             "/odom":            trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
             "/tf":              tct_dataclasses.Tf2MsgsTFMessage,
             "/scan":            tct_dataclasses.SensorMsgsLaserScan,
             "/teleop":          trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass.AckermannMsgsAckermannDriveStamped,
-            "/sensors/imu/raw": trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass.SensorMsgsImu,
+            "/sensors/imu/raw": trajectory_container_tools.dataclasses.ros_msgs.sensor_msgs_dataclass.SensorMsgsImu,
             "/sensors/imu":     trajectory_container_tools.dataclasses.ros_msgs.vesc_msgs_dataclass.VescMsgsVescImuStamped,
         },
         chunk_on="/teleop",

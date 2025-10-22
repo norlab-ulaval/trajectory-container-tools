@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Tuple, Union
 
-from trajectory_container_tools.extractor import check_bag_topics
+from trajectory_container_tools.utils.ros2_utils.rosbag_introspection import \
+    show_rosbag_summary_info
 
 
 @dataclass()
@@ -38,7 +39,7 @@ def get_rosbag_vaul_f110_grand_salon_path(
         BAG,
     )
 
-    return check_bag_topics(rosbag_path), BAG
+    return show_rosbag_summary_info(rosbag_path), BAG
 
 
 def get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short() -> Tuple[Path, str, list]:
@@ -63,7 +64,7 @@ def get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short() -> Tuple[Path, str, li
         BAG,
     )
 
-    return check_bag_topics(rosbag_path), BAG, SELECTED_TOPICS
+    return show_rosbag_summary_info(rosbag_path), BAG, SELECTED_TOPICS
 
 def get_rosbag_vaul_f1tenth_nx_orin_path_offending_timestamps() -> Tuple[Path, str, list]:
     """Path to ROS bag in 'tests_data' directory"""
@@ -87,4 +88,4 @@ def get_rosbag_vaul_f1tenth_nx_orin_path_offending_timestamps() -> Tuple[Path, s
         BAG,
     )
 
-    return check_bag_topics(rosbag_path), BAG, SELECTED_TOPICS
+    return show_rosbag_summary_info(rosbag_path), BAG, SELECTED_TOPICS

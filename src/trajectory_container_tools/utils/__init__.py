@@ -14,7 +14,7 @@ from .general import (
     extract_class_name_from_type,
     extract_class_name_from_instance,
     setup_progressbar,
-    dn_validate_path,
+    dn_sanitize_path,
     show_directory_content,
     get_directory_size_mb,
 )
@@ -26,7 +26,7 @@ __all__ = [
     "extract_class_name_from_type",
     "extract_class_name_from_instance",
     "setup_progressbar",
-    "dn_validate_path",
+    "dn_sanitize_path",
     "show_directory_content",
     "get_directory_size_mb",
 ]

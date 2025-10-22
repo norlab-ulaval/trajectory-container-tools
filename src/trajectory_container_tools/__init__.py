@@ -11,10 +11,10 @@ A library for managing trajectory-related data with support for:
 
 Quick Start:
 
->>>import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass import trajectory_container_tools as tct
+>>> import trajectory_container_tools as tct
 >>>
 >>> features_config = {
->>>     '/odom': trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
+>>>     '/odom': tct.dataclasses.NavMsgsOdometry,
 >>>     '/tf': tct.dataclasses.Tf2MsgsTFMessage,
 >>> }
 >>>
@@ -25,10 +25,10 @@ Quick Start:
 >>> data = tct.extractor.from_dataframe(df, features_config)
 >>>
 >>> # Access dataclasses
->>> odom_class = trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry
+>>> odom_class = tct.dataclasses.NavMsgsOdometry
 >>>
 >>> # Utilities
->>> tct.extractor.check_bag_topics(rosbag_path)
+>>> tct.ros.show_rosbag_summary_info(rosbag_path)
 
 """
 import warnings

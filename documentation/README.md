@@ -221,7 +221,7 @@ Extract trajectory data from ROS bag files:
 **Key Functions:**
 - `extractor.from_rosbag()` - Multiple ROS topics
 - `extractor.extract_rosbag_feature()` - Single topic extraction
-- `extractor.check_bag_topics()` - Inspect available topics
+- `extractor.show_rosbag_summary_info()` - Inspect available topics
 
 **Requirements:**
 - ROS2
