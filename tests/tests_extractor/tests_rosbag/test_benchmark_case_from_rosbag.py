@@ -75,9 +75,9 @@ def benchmark_from_rosbag(
 #         )
 @pytest.mark.benchmark(
     group="FROM-ROSBAG",
-    min_time=0.05, # default: 0.000005
-    max_time=4.0, # default: 1.0
-    min_rounds=20, # default: 5
+    min_time=0.5, # default: 0.000005
+    max_time=10.0, # default: 1.0
+    min_rounds=5, # default: 5
     disable_gc=True,
     warmup=True,
 )

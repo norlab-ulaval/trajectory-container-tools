@@ -109,7 +109,7 @@ def from_rosbag(
         for all features.
     """
 
-    features = []
+    features: list[ RosFeature | RosFeatureArray | RosStampedFeature] = []
     features_type = []
 
     if not typestore:
@@ -142,37 +142,13 @@ def from_rosbag(
 
     # .... Bag record timestamps collection step ..................................................
     print(f"[TCT] Collect each topics bag record timestamps")
-    with Reader(rosbag_path) as reader:
-
-        # .... Gather selected topic window msg count .............................................
-        selected_topic_info = {}
-        for connection in reader.connections:
-            if connection.topic in features_config:
-                selected_topic_info.setdefault(
-                    str(connection.topic), {"count": 0, "collected": False, "type": connection.msgtype}
-                )
-
-                for window_connection, timestamp, _ in reader.messages(
-                    (connection,), start=start, stop=stop
-                ):
-                    if selected_topic_info[str(window_connection.topic)]["collected"]:
-                        break
-                    else:
-                        selected_topic_info[str(window_connection.topic)]["count"] = window_connection.msgcount
-                        selected_topic_info[str(window_connection.topic)]["collected"] = True
-
-        selected_topic_total_msg_count = 0
-        for each in selected_topic_info:
-            selected_topic_total_msg_count += selected_topic_info[each]['count']
-
-        # .... Collect topics bag record timestamps ...............................................
-        progressbar = setup_progressbar(selected_topic_total_msg_count)
-        bag_timestamps = []
-        for connection, timestamp, _ in reader.messages(start=start, stop=stop):
-            if connection.topic in features_config:
-                bag_timestamps.append(timestamp)
-                progressbar.update(1)
-        progressbar.close()
+    progressbar = setup_progressbar(len(features))
+    bag_timestamps = []
+    for each in features:
+        bag_timestamps.append(each.bag_recorded_timestamps.stamps)
+        progressbar.update(1)
+    bag_timestamps = np.unique(np.concatenate(bag_timestamps))
+    progressbar.close()
 
     # .... TrajectoryFeatureBag declaration and instanciation .....................................
     trajectory_features_bag = make_dataclass(
@@ -183,7 +159,7 @@ def from_rosbag(
     return trajectory_features_bag(
         dataset_info,
         *features,
-        bag_timestamps=Timestamps(np.array(bag_timestamps)),
+        bag_timestamps=Timestamps(bag_timestamps),
         chunk_on=convert_rosbag_topic_key_to_tct_mf_topic_key(chunk_on),
     )
 
