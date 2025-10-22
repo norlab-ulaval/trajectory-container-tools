@@ -75,6 +75,7 @@ def gather_rosbag_trajectory_window_informations(
     :return: A formatted string summarizing the trajectory window configuration and selected topic information.
     """
     nb_feature = len(features_config)
+    print(f"[TCT] Gather rosbag trajectory window informations for selected topic from start={start} to stop={stop})")
     progressbar = setup_progressbar(nb_feature)
 
     with Reader(bag_path_abs) as reader:
