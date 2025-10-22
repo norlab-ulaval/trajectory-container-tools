@@ -292,7 +292,6 @@ class TestAbstractTrajectoryFeatureCaseNested:
     def test_fetch_nested_attribute(
         self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case
     ):
-        # ToDo: TCT-65 feat: unify dynamic_field getter setter with fetch_nested_attribute method
         mfc = setup_mock_feature_parent_range(t_nested_case)
         assert np.allclose(
             mfc.fetch_nested_attribute("child_one.aa"), mock_ROSbag_2_trj_DC_range.a

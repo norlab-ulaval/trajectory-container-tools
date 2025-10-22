@@ -355,16 +355,16 @@ Fetch rosbag typestore for ros2 humble
 [TCT] Collect topic /odom msg from rosbag
        ↳ 100%|██████████| 864/864
 [TCT] Post-process rosbag data and configure NavMsgsOdometry container
-       ↳ 100%|██████████| 4/4
+       ↳ 100%|██████████| 5/5
 [TCT] Extract single feature from rosbag › seeking /teleop
 [TCT] Collect topic /teleop msg from rosbag
        ↳ 100%|██████████| 783/783
 [TCT] Post-process rosbag data and configure AckermannMsgsAckermannDriveStamped container
-       ↳ 100%|██████████| 3/3
+       ↳ 100%|██████████| 4/4
 
 TrajectoryFeaturesBag(
    dataset_info: Warthog Mont-Morency 1 Dec 2025
-   aggregated_date: 2025-10-15 11:33:06.643908
+   aggregated_date: 2025-10-21 23:52:43.807338
    chunks_total: 783
    bag_timestamps:       
        Timestamps(
@@ -375,8 +375,11 @@ TrajectoryFeaturesBag(
    topic_odom:      
       NavMsgsOdometry(
          feature_name: "/odom"
-         trajectory_len: 864
-         transposed: False
+         bag_recorded_timestamps:      
+            Timestamps(
+               stamps: shape (864,) range 1695601812734067638 ←→ 1695601829992486976 (nanosec)
+               delta_stamps: shape (864,) range 6953885 ←→ 32941128 (nanosec)
+            )
          header:      
             StdMsgsHeader(
                frame_id: (str) odom
@@ -429,8 +432,11 @@ TrajectoryFeaturesBag(
    topic_teleop:      
       AckermannMsgsAckermannDriveStamped(
          feature_name: "/teleop"
-         trajectory_len: 783
-         transposed: False
+         bag_recorded_timestamps:      
+            Timestamps(
+               stamps: shape (783,) range 1695601812731601521 ←→ 1695601829989011954 (nanosec)
+               delta_stamps: shape (783,) range 419953 ←→ 172146558 (nanosec)
+            )
          header:      
             StdMsgsHeader(
                frame_id: (str) 
