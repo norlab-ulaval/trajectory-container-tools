@@ -107,6 +107,14 @@ def run_rosbag_timestamp_eda(
     rosbag_info_str, bag_timestamps_meta = gather_rosbag_informations(bag_path_abs)
     print(rosbag_info_str)
 
+    window_info = gather_rosbag_trajectory_window_informations(
+        bag_path_abs,
+        features_config,
+        bag_timestamps_meta.start_time,
+        bag_timestamps_meta.end_time,
+    )
+    print("\n", window_info)
+
     mf_container = tct.extractor.from_rosbag(
         rosbag_path=bag_path_abs,
         dataset_info=None,
@@ -122,14 +130,7 @@ def run_rosbag_timestamp_eda(
 
         print(rosbag_info_str, file=log_file)
 
-        window_info = gather_rosbag_trajectory_window_informations(
-            bag_path_abs,
-            features_config,
-            bag_timestamps_meta.start_time,
-            bag_timestamps_meta.end_time,
-        )
-        print(window_info)
-        print(window_info, file=log_file)
+        print("\n", window_info, file=log_file)
 
         MSG = "Multi-feature trajectory container"
         print(f"\n...{MSG:.<80}\n", file=log_file)

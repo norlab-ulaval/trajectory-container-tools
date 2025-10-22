@@ -74,31 +74,11 @@ def gather_rosbag_trajectory_window_informations(
     :param stop: The stop timestamp for the time window in nanoseconds. If None, the bag's end time is used.
     :return: A formatted string summarizing the trajectory window configuration and selected topic information.
     """
-    nb_feature = len(features_config)
-    print(f"[TCT] Gather rosbag trajectory window informations for selected topic from start={start} to stop={stop})")
-    progressbar = setup_progressbar(nb_feature)
+    print(
+        f"[TCT] Gather rosbag trajectory window informations for selected topic from start={start} to stop={stop})"
+    )
 
     with Reader(bag_path_abs) as reader:
-
-        # .... Gather topics trajectory window information ........................................
-        selected_topic_info = {}
-
-        for connection in reader.connections:
-            if connection.topic in features_config:
-                selected_topic_info.setdefault(
-                    str(connection.topic), {"count": 0, "type": connection.msgtype}
-                )
-
-                for connection_, timestamp, _ in reader.messages((connection,), start=start, stop=stop):
-                    selected_topic_info[str(connection_.topic)]["count"] += 1
-
-                progressbar.update(1)
-
-        info_str_selected_topic = ""
-        info_str_selected_topic += f"{'MSGCOUNT':>8}  {'TOPIC':<35} {'MSGTYPE'} \n"
-        for k, v in selected_topic_info.items():
-            info_str_selected_topic += f"{v['count']:>8}  {k:<35} {v['type']} \n"
-
         # .... Gather window related information ..................................................
         bag_start_time = reader.start_time
         bag_end_time = reader.end_time
@@ -121,11 +101,35 @@ def gather_rosbag_trajectory_window_informations(
         if stop is not None and start is not None:
             info_str_main += f"       window: {trajectory_container_tools.temporal.timestamps.to_seconds(stop - start)} s\n"
 
+        # .... Gather topics trajectory window information ........................................
+        selected_topic_info = {}
+        for connection in reader.connections:
+            if connection.topic in features_config:
+                print("Extract window information on topic:", str(connection.topic))
+                selected_topic_info.setdefault(
+                    str(connection.topic), {"count": 0, "type": connection.msgtype}
+                )
+
+                progressbar_window = setup_progressbar(connection.msgcount)
+                # progressbar_window.leave = False
+                for connection_, timestamp, _ in reader.messages(
+                    (connection,), start=start, stop=stop
+                ):
+                    selected_topic_info[str(connection_.topic)][
+                        "count"
+                    ] = connection_.msgcount
+                    progressbar_window.update(1)
+                progressbar_window.close()
+
+        info_str_selected_topic = ""
+        info_str_selected_topic += f"{'MSGCOUNT':>8}  {'TOPIC':<35} {'MSGTYPE'} \n"
+        for k, v in selected_topic_info.items():
+            info_str_selected_topic += f"{v['count']:>8}  {k:<35} {v['type']} \n"
+
         MSG = "Selected topics"
         info_str_main += f"\n...{MSG:.<80}\n\n"
         info_str_main += info_str_selected_topic + "\n"
 
-    progressbar.close()
     return info_str_main
 
 

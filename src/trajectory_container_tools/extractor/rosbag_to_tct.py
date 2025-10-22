@@ -199,12 +199,12 @@ def extract_rosbag_feature(
             data_container_type, (RosFeature, RosFeatureArray, RosStampedFeature)
         ):
             raise ValueError(
-                f"[TCT error] `{data_container_type}` must be a subclass of "
-                f"`RosFeature`, `RosStampedFeature` or `RosFeatureArray`"
+                f"[TCT error] '{data_container_type}' must be a subclass of "
+                f"'RosFeature', 'RosStampedFeature' or 'RosFeatureArray'"
             )
     except TypeError as e:
         raise AttributeError(
-            f"[TCT error] `{data_container_type}` must not be instanciated, just pass the "
+            f"[TCT error] '{data_container_type}' must not be instanciated, just pass the "
             f"class as attribute."
         )
     else:
@@ -225,16 +225,16 @@ def extract_rosbag_feature(
             selected_topic_msg_count = len(connections)
             if selected_topic_msg_count == 0:
                 raise ValueError(
-                    f"[TCT error] Topic `{feature_name}` does not exist in "
+                    f"[TCT error] Topic '{feature_name}' does not exist in "
                     f"{os.path.basename(rosbag_path)} "
                 )
 
-            print(f"[TCT] Extract single feature from rosbag › seeking {feature_name}")
+            print(f"[TCT] Extract single feature from rosbag › seeking '{feature_name}'")
 
             feature_msg_len = len(
                 list(reader.messages(connections=connections, start=start, stop=stop))
             )
-            print(f"[TCT] Collect topic {feature_name} msg from rosbag")
+            print(f"[TCT] Collect topic '{feature_name}' msgs from rosbag")
             progressbar = setup_progressbar(feature_msg_len)
 
             # (NICE TO HAVE) ToDo: Move rosbag msg reader logic to recursive loop leaf (ref task
