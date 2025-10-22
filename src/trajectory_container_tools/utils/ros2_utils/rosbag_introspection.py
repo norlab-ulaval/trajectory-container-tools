@@ -9,7 +9,7 @@ import trajectory_container_tools.temporal
 from trajectory_container_tools.temporal.trajectory_timestamps_metadata import (
     TrajectoryTimestampsMetadata,
 )
-from trajectory_container_tools.utils import dn_sanitize_path
+from trajectory_container_tools.utils import dn_sanitize_path, setup_progressbar
 
 
 def gather_rosbag_informations(
@@ -74,24 +74,29 @@ def gather_rosbag_trajectory_window_informations(
     :param stop: The stop timestamp for the time window in nanoseconds. If None, the bag's end time is used.
     :return: A formatted string summarizing the trajectory window configuration and selected topic information.
     """
+    nb_feature = len(features_config)
+    progressbar = setup_progressbar(nb_feature)
+
     with Reader(bag_path_abs) as reader:
 
         # .... Gather topics trajectory window information ........................................
         selected_topic_info = {}
+
         for connection in reader.connections:
             if connection.topic in features_config:
                 selected_topic_info.setdefault(
                     str(connection.topic), {"count": 0, "type": connection.msgtype}
                 )
 
-        for connection, timestamp, _ in reader.messages(start=start, stop=stop):
-            if connection.topic in features_config:
-                selected_topic_info[str(connection.topic)]["count"] += 1
+                for connection_, timestamp, _ in reader.messages((connection,), start=start, stop=stop):
+                    selected_topic_info[str(connection_.topic)]["count"] += 1
+
+                progressbar.update(1)
 
         info_str_selected_topic = ""
-        info_str_selected_topic += f"{'MSGCOUNT':>8}  {'TOPIC':<25} {'MSGTYPE'} \n"
+        info_str_selected_topic += f"{'MSGCOUNT':>8}  {'TOPIC':<35} {'MSGTYPE'} \n"
         for k, v in selected_topic_info.items():
-            info_str_selected_topic += f"{v['count']:>8}  {k:<25} {v['type']} \n"
+            info_str_selected_topic += f"{v['count']:>8}  {k:<35} {v['type']} \n"
 
         # .... Gather window related information ..................................................
         bag_start_time = reader.start_time
@@ -119,6 +124,7 @@ def gather_rosbag_trajectory_window_informations(
         info_str_main += f"\n...{MSG:.<80}\n\n"
         info_str_main += info_str_selected_topic + "\n"
 
+    progressbar.close()
     return info_str_main
 
 

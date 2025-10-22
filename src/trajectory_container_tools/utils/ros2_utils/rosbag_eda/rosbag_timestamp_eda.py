@@ -17,7 +17,7 @@ import trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass
 import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 import trajectory_container_tools.dataclasses.ros_msgs.sensor_msgs_dataclass
 import trajectory_container_tools.dataclasses.ros_msgs.vesc_msgs_dataclass
-from trajectory_container_tools.utils.general import dn_sanitize_path
+from trajectory_container_tools.utils.general import dn_sanitize_path, setup_progressbar
 from trajectory_container_tools.temporal.timestamps import to_seconds
 from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
     register_non_native_msgs,
@@ -172,6 +172,8 @@ def run_rosbag_timestamp_eda(
     num_iterations = compute_bag_target_window_nb(
         bag_timestamps_meta.duration, fast_forward_ns
     )
+    print("[TCT] Trajectory window crawling")
+    progressbar = setup_progressbar(num_iterations)
     for each_idx in range(num_iterations):
 
         window_start, window_stop = compute_window_start_and_stop(
@@ -198,7 +200,9 @@ def run_rosbag_timestamp_eda(
             figsize=figsize,
             save_dpi=save_dpi,
         )
+        progressbar.update(1)
 
+    progressbar.close()
     return mf_container
 
 
