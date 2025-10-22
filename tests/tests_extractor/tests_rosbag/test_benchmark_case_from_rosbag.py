@@ -73,11 +73,19 @@ def benchmark_from_rosbag(
 #                 'Multiprocessing enabled, n_jobs 4, chunk size 20000',
 #                 'Multiprocessing disabled']
 #         )
+@pytest.mark.benchmark(
+    group="FROM-ROSBAG",
+    min_time=0.05, # default: 0.000005
+    max_time=4.0, # default: 1.0
+    min_rounds=20, # default: 5
+    disable_gc=True,
+    warmup=True,
+)
 def test_from_rosbag_benchmark(benchmark, setup_rosbag_from_external_data_dir):
-    container: Union[NavMsgsOdometry, RosStampedFeature]
+    mf_container: Union[NavMsgsOdometry, RosStampedFeature]
     rosbag_path, rosbag_start, rosbag_stop = setup_rosbag_from_external_data_dir
 
-    container = benchmark(
+    mf_container = benchmark(
         benchmark_from_rosbag,
         bag_path=rosbag_path,
         rosbag_start=rosbag_start,
@@ -85,4 +93,5 @@ def test_from_rosbag_benchmark(benchmark, setup_rosbag_from_external_data_dir):
     )
 
     # Minimum logic to validate run success
-    print(container)
+    # print(mf_container)
+    assert isinstance(mf_container.topic_odom.pose.pose.position.x, np.ndarray)

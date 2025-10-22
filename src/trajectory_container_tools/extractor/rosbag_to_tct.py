@@ -27,7 +27,7 @@ from trajectory_container_tools.utils.general import (
     camelcase_to_snake_case,
     extract_class_name_from_type,
     setup_progressbar,
-    )
+)
 from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
     register_non_native_msgs,
 )
@@ -116,6 +116,7 @@ def from_rosbag(
         typestore = get_rosbag_typestore_auto_distro()
         typestore = register_non_native_msgs(typestore)
 
+    # .... Feature extraction .....................................................................
     for feature_name, feature_dataclass in features_config.items():
         # Case: features_config require parsing topic msg property
         if isinstance(feature_dataclass, tuple):
@@ -139,12 +140,41 @@ def from_rosbag(
         )
         features.append(feature)
 
+    # .... Bag record timestamps collection step ..................................................
+    print(f"[TCT] Collect each topics bag record timestamps")
     with Reader(rosbag_path) as reader:
+
+        # .... Gather selected topic window msg count .............................................
+        selected_topic_info = {}
+        for connection in reader.connections:
+            if connection.topic in features_config:
+                selected_topic_info.setdefault(
+                    str(connection.topic), {"count": 0, "collected": False, "type": connection.msgtype}
+                )
+
+                for window_connection, timestamp, _ in reader.messages(
+                    (connection,), start=start, stop=stop
+                ):
+                    if selected_topic_info[str(window_connection.topic)]["collected"]:
+                        break
+                    else:
+                        selected_topic_info[str(window_connection.topic)]["count"] = window_connection.msgcount
+                        selected_topic_info[str(window_connection.topic)]["collected"] = True
+
+        selected_topic_total_msg_count = 0
+        for each in selected_topic_info:
+            selected_topic_total_msg_count += selected_topic_info[each]['count']
+
+        # .... Collect topics bag record timestamps ...............................................
+        progressbar = setup_progressbar(selected_topic_total_msg_count)
         bag_timestamps = []
         for connection, timestamp, _ in reader.messages(start=start, stop=stop):
             if connection.topic in features_config:
                 bag_timestamps.append(timestamp)
+                progressbar.update(1)
+        progressbar.close()
 
+    # .... TrajectoryFeatureBag declaration and instanciation .....................................
     trajectory_features_bag = make_dataclass(
         "TrajectoryFeaturesBag",
         bases=(AbstractTrajectoryStampedFeaturesBag,),
@@ -218,44 +248,59 @@ def extract_rosbag_feature(
             typestore = get_rosbag_typestore_auto_distro()
             typestore = register_non_native_msgs(typestore)
 
+        print(f"[TCT] Extract single feature from rosbag › seeking '{feature_name}'")
         with Reader(rosbag_path) as reader:
-            connections = [
-                conn for conn in reader.connections if conn.topic == feature_name
-            ]
-            selected_topic_msg_count = len(connections)
-            if selected_topic_msg_count == 0:
+            connections = {}
+            feature_connection_collected = False
+            for connection in reader.connections:
+                if connection.topic == feature_name:
+                    connections[connection.topic] = connection
+                    feature_connection_collected = True
+                elif feature_connection_collected:
+                    break
+
+            if feature_name in connections:
+                feature_connection = connections[feature_name]
+
+                feature_msg_len = 0
+                window_count_collected = False
+                for window_connection, timestamp, _ in reader.messages(
+                    (feature_connection,), start=start, stop=stop
+                ):
+                    if window_count_collected:
+                        break
+                    else:
+                        feature_msg_len = window_connection.msgcount
+                        window_count_collected = True
+
+                print(f"[TCT] Collect topic '{feature_name}' msgs from rosbag")
+                progressbar = setup_progressbar(feature_msg_len)
+
+                # (NICE TO HAVE) ToDo: Move rosbag msg reader logic to recursive loop leaf (ref task
+                # TCT-40)
+                for window_connection, timestamp, rawdata in reader.messages(
+                    connections=(feature_connection,), start=start, stop=stop
+                ):
+                    progressbar.update(1)
+
+                    msg = typestore.deserialize_cdr(rawdata, window_connection.msgtype)
+
+                    # ... Fetch properties from rosbag ................................................
+                    shadow_data_container = _collect_properties_from_rosbag(
+                        data_container_type,
+                        feature_name,
+                        msg,
+                        timestamp,
+                        shadow_data_container,
+                    )
+
+                progressbar.close()
+
+            else:
                 raise ValueError(
                     f"[TCT error] Topic '{feature_name}' does not exist in "
                     f"{os.path.basename(rosbag_path)} "
                 )
-
-            print(f"[TCT] Extract single feature from rosbag › seeking '{feature_name}'")
-
-            feature_msg_len = len(
-                list(reader.messages(connections=connections, start=start, stop=stop))
-            )
-            print(f"[TCT] Collect topic '{feature_name}' msgs from rosbag")
-            progressbar = setup_progressbar(feature_msg_len)
-
-            # (NICE TO HAVE) ToDo: Move rosbag msg reader logic to recursive loop leaf (ref task
-            # TCT-40)
-            for connection, timestamp, rawdata in reader.messages(
-                connections=connections, start=start, stop=stop
-            ):
-                progressbar.update(1)
-
-                msg = typestore.deserialize_cdr(rawdata, connection.msgtype)
-
-                # ... Fetch properties from rosbag ................................................
-                shadow_data_container = _collect_properties_from_rosbag(
-                    data_container_type,
-                    feature_name,
-                    msg,
-                    timestamp,
-                    shadow_data_container,
-                )
-
-            progressbar.close()
 
         # .... Post-process rosbag data and create data container .................................
         try:
@@ -335,7 +380,9 @@ def _collect_properties_from_rosbag(
                 )
             elif each_property_name == "bag_recorded_timestamps":
                 if bag_timestamp is not None:
-                    shadow_data_container["bag_recorded_timestamps"]["data"].append(bag_timestamp)
+                    shadow_data_container["bag_recorded_timestamps"]["data"].append(
+                        bag_timestamp
+                    )
             else:
                 attribute_list = str(each_property_name).split("_")
                 attribute_parent = msg

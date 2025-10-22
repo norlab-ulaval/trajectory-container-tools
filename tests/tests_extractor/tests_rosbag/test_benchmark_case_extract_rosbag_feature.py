@@ -9,8 +9,9 @@ import pytest
 from trajectory_container_tools.extractor import (
     extract_rosbag_feature,
 )
-from trajectory_container_tools.utils.ros2_utils.rosbag_introspection import \
-    show_rosbag_summary_info
+from trajectory_container_tools.utils.ros2_utils.rosbag_introspection import (
+    show_rosbag_summary_info,
+)
 from trajectory_container_tools.dataclasses import NavMsgsOdometry, RosStampedFeature
 
 
@@ -37,13 +38,18 @@ def setup_rosbag_from_external_data_dir() -> Tuple[Path, Optional[int], Optional
     rosbag_start = None
     rosbag_stop = None
     rosbag_path = os.path.join(
-        "data", "repository_data", "tests_data", "rosbag_test_data", "rosbag-vaul-f110-grand-salon-raw-msg", BAG
+        "data",
+        "repository_data",
+        "tests_data",
+        "rosbag_test_data",
+        "rosbag-vaul-f110-grand-salon-raw-msg",
+        BAG,
     )
 
     return (
-            show_rosbag_summary_info(rosbag_path),
-            rosbag_start,
-            rosbag_stop,
+        show_rosbag_summary_info(rosbag_path),
+        rosbag_start,
+        rosbag_stop,
     )
 
 
@@ -76,11 +82,21 @@ def benchmark_extract_single_feature_from_rosbag(
 #                 'Multiprocessing enabled, n_jobs 4, chunk size 20000',
 #                 'Multiprocessing disabled']
 #         )
-def test_extract_rosbag_feature_benchmark(benchmark, setup_rosbag_from_external_data_dir):
-    container: Union[NavMsgsOdometry, RosStampedFeature]
+@pytest.mark.benchmark(
+    group="EXTRACT-ROSBAG-FEATURE",
+    min_time=0.05, # default: 0.000005
+    max_time=4.0, # default: 1.0
+    min_rounds=20, # default: 5
+    disable_gc=True,
+    warmup=True,
+)
+def test_extract_rosbag_feature_benchmark(
+    benchmark, setup_rosbag_from_external_data_dir
+):
+    t_container: Union[NavMsgsOdometry, RosStampedFeature]
     rosbag_path, rosbag_start, rosbag_stop = setup_rosbag_from_external_data_dir
 
-    container = benchmark(
+    t_container = benchmark(
         benchmark_extract_single_feature_from_rosbag,
         bag_path=rosbag_path,
         rosbag_start=rosbag_start,
@@ -88,5 +104,5 @@ def test_extract_rosbag_feature_benchmark(benchmark, setup_rosbag_from_external_
     )
 
     # Minimum logic to validate run success
-    print(container)
-    assert isinstance(container.pose.pose.position.x, np.ndarray)
+    # print(container)
+    assert isinstance(t_container.pose.pose.position.x, np.ndarray)

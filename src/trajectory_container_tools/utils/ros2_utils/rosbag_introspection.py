@@ -102,30 +102,25 @@ def gather_rosbag_trajectory_window_informations(
             info_str_main += f"       window: {trajectory_container_tools.temporal.timestamps.to_seconds(stop - start)} s\n"
 
         # .... Gather topics trajectory window information ........................................
-        selected_topic_info = {}
         progressbar_topic = setup_progressbar(len(reader.connections))
+        selected_topic_info = {}
         for connection in reader.connections:
             if connection.topic in features_config:
-                progressbar_topic.display(str(connection.topic))
-                # print("Extract window information on topic:", str(connection.topic))
                 selected_topic_info.setdefault(
                     str(connection.topic), {"count": 0, "collected": False, "type": connection.msgtype}
                 )
 
-                # progressbar_window = setup_progressbar(connection.msgcount)
-                # progressbar_window.leave = False
-                for connection_, timestamp, _ in reader.messages(
+                for window_connection, timestamp, _ in reader.messages(
                     (connection,), start=start, stop=stop
                 ):
-                    if selected_topic_info[str(connection_.topic)]["collected"]:
+                    if selected_topic_info[str(window_connection.topic)]["collected"]:
                         break
                     else:
-                        selected_topic_info[str(connection_.topic)]["count"] = connection_.msgcount
-                        selected_topic_info[str(connection_.topic)]["collected"] = True
-                        # progressbar_window.update(1)
-                # progressbar_window.close()
+                        selected_topic_info[str(window_connection.topic)]["count"] = window_connection.msgcount
+                        selected_topic_info[str(window_connection.topic)]["collected"] = True
 
             progressbar_topic.update(1)
+        progressbar_topic.close()
 
         info_str_selected_topic = ""
         info_str_selected_topic += f"{'MSGCOUNT':>8}  {'TOPIC':<35} {'MSGTYPE'} \n"
@@ -136,7 +131,6 @@ def gather_rosbag_trajectory_window_informations(
         info_str_main += f"\n...{MSG:.<80}\n\n"
         info_str_main += info_str_selected_topic + "\n"
 
-    progressbar_topic.close()
     return info_str_main
 
 
