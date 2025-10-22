@@ -52,16 +52,16 @@ graph TB
             FF[Factory Functions<br/>Optional]
         end
         
-        subgraph MFC["🗂️&nbsp;MULTIFEATURE&nbsp;CONTAINERS"]
-            AMC[AbstractMultifeatureDataclass<br/><br/>Contains multiple<br/>trajectory features<br/>in one container]
-            AMSC[AbstractMultifeatureStampedDataclass<br/><br/>Multifeature container with<br/>chunk-based iteration<br/>over timestamps]
+        subgraph MFC["🗂️&nbsp;TRAJECTORY&nbsp;FEATURES&nbsp;BAG&nbsp;CONTAINERS"]
+            AMC[AbstractTrajectoryFeaturesBag<br/><br/>Contains multiple<br/>trajectory features<br/>in one container]
+            AMSC[AbstractTrajectoryStampedFeaturesBag<br/><br/>TrajectoryFeaturesBag container with<br/>chunk-based iteration<br/>over timestamps]
         end
         
-        subgraph TC["📦&nbsp;TRAJECTORY&nbsp;CONTAINERS"]
-            ATC[AbstractTrajectoryDataclass]
-            BTC[BaseTrajectoryDataclass]
-            NBTC[NestedBaseTrajectoryDataclass]
-            SC[🎯 Specialized Dataclasses:<br/>• Primitive<br/>• PandaDataFrame<br/>• ROS2Feature<br/>• F110Gym<br/>• MathGymnasium<br/>]
+        subgraph TC["📦&nbsp;TRAJECTORY&nbsp;FEATURE&nbsp;CONTAINERS"]
+            ATC[AbstractTrajectoryFeature]
+            BTC[BaseTrajectoryFeature]
+            BTCA[BaseTrajectoryFeatureArray]
+            SC[🎯 Specialized Dataclasses:<br/>• Primitive<br/>• ROS2Feature<br/>• PandaDataFrame<br/>• F110Gym<br/>• MathGymnasium<br/>]
         end
     end
     
@@ -77,9 +77,9 @@ graph TB
     FF --> TC
     MFC --> TC 
     
-    ATC --> BTC --> SC
-    BTC --> NBTC --> SC 
     ATC --> SC
+    ATC --> BTC --> SC
+    ATC --> BTCA --> SC 
     
 ```
 
@@ -146,7 +146,7 @@ Detailed guide for customizing trajectory data processing at instantiation:
 Comprehensive guide for timestamp handling and utilities:
 - Timestamps class methods: `min()`, `max()`, `is_timestamps_in_bounds()`
 - Enhanced error handling with `TimestampMissingError` and `TimestampOutOfBoundError`
-- Multifeature timestamp methods: `get_timestamps()`, `trajectory_timestamps`, `trajectory_timestamps_limits`
+- TrajectoryFeaturesBag timestamp methods: `get_timestamps()`, `trajectory_timestamps`, `trajectory_timestamps_limits`
 - Nearest timestamp search for data synchronization
 - Practical examples for multi-sensor data handling
 
@@ -167,18 +167,18 @@ Trajectory containers are type-safe dataclasses that store trajectory data with:
 
 TCT provides specialized containers for aggregating multiple trajectory features:
 
-- **`AbstractMultifeatureDataclass`**: Base container for multiple trajectory features
+- **`AbstractTrajectoryFeaturesBag`**: Base container for multiple trajectory features
   - Aggregates different data sources (e.g., odometry, IMU, commands) into a single object
   - Provides unified access to all features through named attributes
   - Maintains metadata across all features
 
-- **`AbstractMultifeatureStampedDataclass`**: Extended multifeature container with chunk-based iteration
-  - Inherits all features from `AbstractMultifeatureDataclass`
+- **`AbstractTrajectoryStampedFeaturesBag`**: Extended trajectory features bag container with chunk-based iteration
+  - Inherits all features from `AbstractTrajectoryFeaturesBag`
   - Enables iteration over synchronized timestamp chunks across all features
   - Useful for processing large datasets incrementally
   - Supports indexing and slicing by chunk
 
-**Use Case Example**: When extracting data from a ROS bag with multiple topics (e.g., `/odom`, `/imu`, `/cmd`), the resulting container is an `AbstractMultifeatureStampedDataclass` that allows you to iterate through synchronized time windows of all sensor data together.
+**Use Case Example**: When extracting data from a ROS bag with multiple topics (e.g., `/odom`, `/imu`, `/cmd`), the resulting container is an `AbstractTrajectoryStampedFeaturesBag` that allows you to iterate through synchronized time windows of all sensor data together.
 
 ### Factory Pattern
 
@@ -232,9 +232,9 @@ Extract trajectory data from ROS bag files:
 Create trajectory containers directly from data arrays:
 
 **Available Dataclasses:**
-- `BaseTrajectoryDataclass` - Basic trajectory container
-- `NestedBaseTrajectoryDataclass` - Basic trajectory container intended to be nested in a `BaseTrajectoryDataclass` 
-- Custom dataclasses inheriting from `AbstractTrajectoryDataclass`
+- `BaseTrajectoryFeature` - Basic trajectory container
+- `BaseTrajectoryFeatureArray` - Basic trajectory container with an array of many heterogenous length `BaseTrajectoryFeature`  
+- Custom dataclasses inheriting from `AbstractTrajectoryFeature`
 
 ---
 

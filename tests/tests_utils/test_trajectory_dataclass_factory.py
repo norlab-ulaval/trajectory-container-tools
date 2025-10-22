@@ -5,13 +5,12 @@ import pytest
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     BaseDataframeFeatureDataclass,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
-from trajectory_container_tools.dataclasses import RosStampedDataclass
+from trajectory_container_tools.dataclasses import RosStampedFeature, StdMsgsHeader
 from trajectory_container_tools.utils.factory import (
     TrjDataClassFeatureSpecification,
     create_dataclass,
 )
-from trajectory_container_tools.dataclasses.core import abstract_trajectory_dataclass as atd
+from trajectory_container_tools.dataclasses.core import abstract_trajectory_feature_dataclass as atd
 
 
 # ====Pandas dataframe cases=======================================================================
@@ -59,8 +58,8 @@ class TestTrajectoryDataclassFactoryDataframeCase:
             trj_dataclass_subclass=BaseDataframeFeatureDataclass,
         )
         mock_value = np.arange(10)
-        assert issubclass(mock_cls, atd.AbstractTrajectoryDataclass)
-        assert not isinstance(mock_cls, atd.AbstractTrajectoryDataclass)
+        assert issubclass(mock_cls, atd.AbstractTrajectoryFeature)
+        assert not isinstance(mock_cls, atd.AbstractTrajectoryFeature)
         mock_cls_instance = mock_cls(
             feature_name="mock_data",
             xx=mock_value,
@@ -68,7 +67,7 @@ class TestTrajectoryDataclassFactoryDataframeCase:
             yaww=mock_value,
             timesteps_indices=mock_value,
         )
-        assert isinstance(mock_cls_instance, atd.AbstractTrajectoryDataclass)
+        assert isinstance(mock_cls_instance, atd.AbstractTrajectoryFeature)
         assert mock_cls.get_dimension_names() == ("xx", "yy", "yaww")
         assert hasattr(mock_cls_instance, "feature_name")
         assert hasattr(mock_cls_instance, "xx")
@@ -91,7 +90,7 @@ class TestTrajectoryDataclassFactoryROSbagCase:
     def test_spec_ok(self, setup_rosbag_style_config):
         create_dataclass(
             specification=setup_rosbag_style_config,
-            trj_dataclass_subclass=RosStampedDataclass,
+            trj_dataclass_subclass=RosStampedFeature,
         )
 
     def test_bad_spec(self):
@@ -101,32 +100,35 @@ class TestTrajectoryDataclassFactoryROSbagCase:
                     new_feature_dataclass_type="new_topic_msg_type",
                     dimension_names=("pose.xx", "pose_yy", 999),
                 ),
-                trj_dataclass_subclass=RosStampedDataclass,
+                trj_dataclass_subclass=RosStampedFeature,
             )
 
     def test_output_ok(self, setup_rosbag_style_config):
         mock_cls = create_dataclass(
             specification=setup_rosbag_style_config,
-            trj_dataclass_subclass=RosStampedDataclass,
+            trj_dataclass_subclass=RosStampedFeature,
         )
         mock_value = np.arange(10)
-        assert issubclass(mock_cls, atd.AbstractTrajectoryDataclass)
-        assert not isinstance(mock_cls, atd.AbstractTrajectoryDataclass)
+        assert issubclass(mock_cls, atd.AbstractTrajectoryFeature)
+        assert not isinstance(mock_cls, atd.AbstractTrajectoryFeature)
         mock_cls_instance = mock_cls(
             feature_name="mock_data",
-            header=Header(frame_id="topic_999", timestamps=mock_value),
+            bag_recorded_timestamps=mock_value,
+            header=StdMsgsHeader(frame_id="topic_999", timestamps=mock_value),
             pose_xx=mock_value,
             pose_yy=mock_value,
             pose_zz=mock_value,
         )
-        assert isinstance(mock_cls_instance, atd.AbstractTrajectoryDataclass)
+        assert isinstance(mock_cls_instance, atd.AbstractTrajectoryFeature)
         assert mock_cls.get_dimension_names() == (
+            "bag_recorded_timestamps",
             "header",
             "pose_xx",
             "pose_yy",
             "pose_zz",
         )
         assert hasattr(mock_cls_instance, "feature_name")
+        assert hasattr(mock_cls_instance, "bag_recorded_timestamps")
         assert hasattr(mock_cls_instance, "header")
         assert hasattr(mock_cls_instance, "pose_xx")
         assert hasattr(mock_cls_instance, "pose_yy")

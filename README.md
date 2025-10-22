@@ -228,10 +228,11 @@ Pose2DSA(
 import numpy as np
 import trajectory_container_tools as tct
 
-class CustomStatePose2D(tct.BaseTrajectoryDataclass):
-    x: np.ndarray
-    y: np.ndarray
-    yaw: np.ndarray
+
+class CustomStatePose2D(tct.BaseTrajectoryFeature):
+  x: np.ndarray
+  y: np.ndarray
+  yaw: np.ndarray
 ```
 
 
@@ -268,44 +269,46 @@ import numpy as np
 from dataclasses import dataclass
 import trajectory_container_tools as tct
 
+
 @dataclass
-class CustomTrajectoryWithCallbacks(tct.BaseTrajectoryDataclass):
-    x: np.ndarray
-    y: np.ndarray
-    velocity: np.ndarray
-    
-    def on_begin_post_init_callback(self):
-        """Executed at the beginning of __post_init__, before feature processing.
-        Use for initialization logic that affects all fields."""
-        # Example: Ensure data is in correct format
-        if self.x.dtype != np.float64:
-            self.set_dynamic_field('x', self.x.astype(np.float64))
-    
-    def post_init_feature_callback(self, feature_name: str):
-        """Executed once per feature (excluding internal/non-trajectory fields).
-        Use for feature-specific post-processing."""
-        # Example: Create cumulative sum features
-        feature = self.get_dynamic_field(feature_name)
-        if isinstance(feature, np.ndarray) and feature_name in ['x', 'y']:
-            cumsum = np.cumsum(feature)
-            self.set_dynamic_field(f"{feature_name}_cumsum", cumsum)
-    
-    def on_exit_post_init_callback(self):
-        """Executed at the end of __post_init__, after all processing.
-        Use for final validation or computed properties."""
-        # Example: Compute total distance traveled
-        dx = np.diff(self.x, prepend=0)
-        dy = np.diff(self.y, prepend=0)
-        distance = np.sqrt(dx**2 + dy**2)
-        self.set_dynamic_field('distance', distance)
+class CustomTrajectoryWithCallbacks(tct.BaseTrajectoryFeature):
+  x: np.ndarray
+  y: np.ndarray
+  velocity: np.ndarray
+  
+  def on_begin_post_init_callback(self):
+    """Executed at the beginning of __post_init__, before feature processing.
+    Use for initialization logic that affects all fields."""
+    # Example: Ensure data is in correct format
+    if self.x.dtype != np.float64:
+      self.set_dynamic_field('x', self.x.astype(np.float64))
+  
+  def post_init_feature_callback(self, feature_name: str):
+    """Executed once per feature (excluding internal/non-trajectory fields).
+    Use for feature-specific post-processing."""
+    # Example: Create cumulative sum features
+    feature = self.get_dynamic_field(feature_name)
+    if isinstance(feature, np.ndarray) and feature_name in ['x', 'y']:
+      cumsum = np.cumsum(feature)
+      self.set_dynamic_field(f"{feature_name}_cumsum", cumsum)
+  
+  def on_exit_post_init_callback(self):
+    """Executed at the end of __post_init__, after all processing.
+    Use for final validation or computed properties."""
+    # Example: Compute total distance traveled
+    dx = np.diff(self.x, prepend=0)
+    dy = np.diff(self.y, prepend=0)
+    distance = np.sqrt(dx ** 2 + dy ** 2)
+    self.set_dynamic_field('distance', distance)
+
 
 # Instantiate with automatic callback execution
 trajectory = CustomTrajectoryWithCallbacks(
-    feature_name="Callback example",
-    x=np.arange(10, dtype=float),
-    y=np.arange(10, dtype=float),
-    velocity=np.random.rand(10),
-)
+        feature_name="Callback example",
+        x=np.arange(10, dtype=float),
+        y=np.arange(10, dtype=float),
+        velocity=np.random.rand(10),
+        )
 
 # Access dynamically created fields
 print(f"X cumsum: {trajectory.x_cumsum}")
@@ -352,16 +355,16 @@ Fetch rosbag typestore for ros2 humble
 [TCT] Collect topic /odom msg from rosbag
        ↳ 100%|██████████| 864/864
 [TCT] Post-process rosbag data and configure NavMsgsOdometry container
-       ↳ 100%|██████████| 4/4
+       ↳ 100%|██████████| 5/5
 [TCT] Extract single feature from rosbag › seeking /teleop
 [TCT] Collect topic /teleop msg from rosbag
        ↳ 100%|██████████| 783/783
 [TCT] Post-process rosbag data and configure AckermannMsgsAckermannDriveStamped container
-       ↳ 100%|██████████| 3/3
+       ↳ 100%|██████████| 4/4
 
-Multifeature(
+TrajectoryFeaturesBag(
    dataset_info: Warthog Mont-Morency 1 Dec 2025
-   aggregated_date: 2025-10-15 11:33:06.643908
+   aggregated_date: 2025-10-21 23:52:43.807338
    chunks_total: 783
    bag_timestamps:       
        Timestamps(
@@ -372,10 +375,13 @@ Multifeature(
    topic_odom:      
       NavMsgsOdometry(
          feature_name: "/odom"
-         trajectory_len: 864
-         transposed: False
+         bag_recorded_timestamps:      
+            Timestamps(
+               stamps: shape (864,) range 1695601812734067638 ←→ 1695601829992486976 (nanosec)
+               delta_stamps: shape (864,) range 6953885 ←→ 32941128 (nanosec)
+            )
          header:      
-            Header(
+            StdMsgsHeader(
                frame_id: (str) odom
                timestamps:      
                   Timestamps(
@@ -384,17 +390,17 @@ Multifeature(
                   )
             )
          pose:      
-            PoseWithCovariance(
+            GeometryMsgsPoseWithCovariance(
                pose:      
-                  Pose(
+                  GeometryMsgsPose(
                      position:      
-                        Point(
+                        GeometryMsgsPoint(
                            x: (ndarray) shape (864,) range -1.7077189281656129 ←→ 2.135440133972323
                            y: (ndarray) shape (864,) range -1.8602605361391937 ←→ 1.84745732132406
                            z: (ndarray) shape (864,) range 0.0 ←→ 0.0
                         )
                      orientation:      
-                        Quaternion(
+                        GeometryMsgsQuaternion(
                            x: (ndarray) shape (864,) range 0.0 ←→ 0.0
                            y: (ndarray) shape (864,) range 0.0 ←→ 0.0
                            z: (ndarray) shape (864,) range -0.9999998984079552 ←→ 0.7856382323820762
@@ -404,17 +410,17 @@ Multifeature(
                covariance: (ndarray) shape (864, 36) range 0.0 ←→ 0.4
             )
          twist:      
-            TwistWithCovariance(
+            GeometryMsgsTwistWithCovariance(
                twist:      
-                  Twist(
+                  GeometryMsgsTwist(
                      linear:      
-                        Vector3(
+                        GeometryMsgsVector3(
                            x: (ndarray) shape (864,) range 0.0 ←→ 1.578
                            y: (ndarray) shape (864,) range 0.0 ←→ 0.0
                            z: (ndarray) shape (864,) range 0.0 ←→ 0.0
                         )
                      angular:      
-                        Vector3(
+                        GeometryMsgsVector3(
                            x: (ndarray) shape (864,) range 0.0 ←→ 0.0
                            y: (ndarray) shape (864,) range 0.0 ←→ 0.0
                            z: (ndarray) shape (864,) range -2.0234378278138845 ←→ 1.4445453875396634
@@ -426,10 +432,13 @@ Multifeature(
    topic_teleop:      
       AckermannMsgsAckermannDriveStamped(
          feature_name: "/teleop"
-         trajectory_len: 783
-         transposed: False
+         bag_recorded_timestamps:      
+            Timestamps(
+               stamps: shape (783,) range 1695601812731601521 ←→ 1695601829989011954 (nanosec)
+               delta_stamps: shape (783,) range 419953 ←→ 172146558 (nanosec)
+            )
          header:      
-            Header(
+            StdMsgsHeader(
                frame_id: (str) 
                timestamps:      
                   Timestamps(
@@ -450,35 +459,37 @@ Multifeature(
 ```
 
 
-### Chunk-based Iteration with AbstractMultifeatureStampedDataclass
+### Chunk-based Iteration with AbstractTrajectoryStampedFeaturesBag
 
 When extracting data from ROS bags, you can iterate over synchronized timestamp chunks across multiple features:
 
 ```python
+import trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass
+import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 import trajectory_container_tools as tct
 
-# Extract features from ROS bag (returns AbstractMultifeatureStampedDataclass)
-multifeature_data = tct.extractor.from_rosbag(
-    rosbag_path,
-    features_config={
-        "/odom": tct.dataclasses.NavMsgsOdometry,
-        "/cmd": tct.dataclasses.AckermannMsgsAckermannDriveStamped,
-    },
-    chunk_on="/cmd",
-)
+# Extract features from ROS bag (returns AbstractTrajectoryStampedFeaturesBag)
+trajectory_features_bag = tct.extractor.from_rosbag(
+        rosbag_path,
+        features_config={
+                "/odom": trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
+                "/cmd":  trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass.AckermannMsgsAckermannDriveStamped,
+                },
+        chunk_on="/cmd",
+        )
 
 # Iterate over timestamp chunks
-for chunk_idx, chunk in enumerate(multifeature_data):
-    print(f"Chunk {chunk_idx}:")
-    print(f"  Odometry data: {chunk.topic_odom}")
-    print(f"  Command data: {chunk.topic_cmd}")
-    
+for chunk_idx, chunk in enumerate(trajectory_features_bag):
+  print(f"Chunk {chunk_idx}:")
+  print(f"  Odometry data: {chunk.topic_odom}")
+  print(f"  Command data: {chunk.topic_cmd}")
+
 # Access specific chunk by index
-first_chunk = multifeature_data[0]
-last_chunk = multifeature_data[-1]
+first_chunk = trajectory_features_bag[0]
+last_chunk = trajectory_features_bag[-1]
 
 # Get total number of chunks
-total_chunks = multifeature_data.chunks_total
+total_chunks = trajectory_features_bag.chunks_total
 print(f"Total chunks: {total_chunks}")
 ```
 
@@ -508,7 +519,7 @@ print(trajectory_from_dataframe)
 ```
 
 ```text
-Multifeature(
+TrajectoryFeaturesBag(
    dataset_info: Marmote Mont-Morency 1 Dec 2025
    aggregated_date: 2025-10-10 23:58:10.859334
    icp_vel:      

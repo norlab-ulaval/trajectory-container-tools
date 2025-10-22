@@ -3,11 +3,11 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryDataclass
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryFeature
 
 
 @dataclass()
-class TestTrajectoryDataclass(BaseTrajectoryDataclass):
+class TestTrajectoryDataclass(BaseTrajectoryFeature):
     """
     Experience replay learning loop test-time trajectory dataclass
 

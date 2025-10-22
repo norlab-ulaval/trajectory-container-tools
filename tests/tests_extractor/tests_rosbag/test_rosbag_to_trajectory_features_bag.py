@@ -9,26 +9,25 @@ from trajectory_container_tools.extractor.rosbag_to_tct import (
     from_rosbag,
     extract_rosbag_feature,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
 
-from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
+from trajectory_container_tools.dataclasses.ros_msgs.tf_dataclass import (
     Tf2MsgsTFMessage,
 )
 from trajectory_container_tools.dataclasses import (
     AckermannMsgsAckermannDrive,
     AckermannMsgsAckermannDriveStamped,
     NavMsgsOdometry,
-    RosStampedDataclass,
-    Scan,
+    RosStampedFeature,
+    SensorMsgsLaserScan,
     SensorMsgsImu,
-    VescMsgsVescImuStamped,
+    StdMsgsHeader, VescMsgsVescImuStamped,
 )
 from trajectory_container_tools.temporal.timestamps import (
     TimestampCausalOrderingError,
 )
 
 
-class TestExtractROSBagFeature:
+class TestExtractROSBagCaseSingleFeatureExtraction:
     def test_extract_single_feature_from_rosbag(
         self, setup_rosbag_three_topics_filtered
     ):
@@ -46,7 +45,7 @@ class TestExtractROSBagFeature:
     def test_populate_nested_trajectory_dataclass(
         self, setup_rosbag_three_topics_filtered
     ):
-        container: Union[NavMsgsOdometry, RosStampedDataclass]
+        container: Union[NavMsgsOdometry, RosStampedFeature]
         container = extract_rosbag_feature(
             rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
             feature_name="/odom",
@@ -68,7 +67,7 @@ class TestExtractROSBagFeature:
         mock_value = np.arange(10)
         bad_argument = AckermannMsgsAckermannDriveStamped(
             feature_name=fn,
-            header=Header(frame_id="", timestamps=mock_value),
+            header=StdMsgsHeader(frame_id="", timestamps=mock_value),
             drive=AckermannMsgsAckermannDrive(
                 steeringAngle=mock_value,
                 steeringAngleVelocity=mock_value,
@@ -123,7 +122,7 @@ class TestExtractROSBagFeature:
         assert error_msg in exc_info.value.args[0]
 
 
-class TestExtractROSBagMultifeature:
+class TestExtractROSBagCaseMultipleFeatureExtraction:
     @pytest.fixture
     def setup_feature_config_custom_type(self):
         feature_config: dict = {
@@ -173,12 +172,13 @@ class TestExtractROSBagMultifeature:
 
         print(mf_container)
 
-        assert isinstance(mf_container.topic_sensors_imu_raw, RosStampedDataclass)
+        assert isinstance(mf_container.topic_sensors_imu_raw, RosStampedFeature)
         assert not isinstance(mf_container.topic_sensors_imu_raw, SensorMsgsImu)
         assert (
                 mf_container.topic_sensors_imu_raw.feature_name == "/sensors/imu/raw"
         )
         assert mf_container.topic_sensors_imu_raw.get_dimension_names() == (
+            "bag_recorded_timestamps",
             "header",
             "orientation_x",
             "orientation_y",
@@ -207,7 +207,7 @@ class TestExtractROSBagMultifeature:
         )
         assert isinstance(mf_container.topic_sensors_imu_raw, SensorMsgsImu)
 
-        assert isinstance(mf_container.topic_odom, RosStampedDataclass)
+        assert isinstance(mf_container.topic_odom, RosStampedFeature)
         assert mf_container.topic_odom.feature_name == "/odom"
 
     def test_with_known_type_six_topics(self, setup_rosbag_six_topics_filtered):
@@ -216,7 +216,7 @@ class TestExtractROSBagMultifeature:
         
           - '/odom': NavMsgsOdometry,
           - '/tf': Tf2MsgsTFMessage,
-          - '/scan': Scan,
+          - '/scan': SensorMsgsLaserScan,
           - '/teleop': AckermannMsgsAckermannDriveStamped,
           - '/sensors/imu/raw': SensorMsgsImu,
           - '/sensors/imu': VescMsgsVescImuStamped,
@@ -228,7 +228,7 @@ class TestExtractROSBagMultifeature:
                                    features_config={
                                            "/odom":            NavMsgsOdometry,
                                            "/tf":              Tf2MsgsTFMessage,
-                                           "/scan":            Scan,
+                                           "/scan":            SensorMsgsLaserScan,
                                            "/teleop":          AckermannMsgsAckermannDriveStamped,
                                            "/sensors/imu/raw": SensorMsgsImu,
                                            "/sensors/imu":     VescMsgsVescImuStamped,

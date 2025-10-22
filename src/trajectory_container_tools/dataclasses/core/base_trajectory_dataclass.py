@@ -4,16 +4,20 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 import numpy as np
+from deprecated import deprecated
 
-from .abstract_trajectory_dataclass import (
-    AbstractTrajectoryDataclass,
+from .abstract_trajectory_feature_dataclass import (
+    AbstractTrajectoryFeature,
 )
-from .abstract_no_trajectory_dataclass import AbstractNoTrajectoryDataclass
+from .abstract_trajectory_array_dataclass import (
+    AbstractTrajectoryArray,
+)
 
 
 @dataclass()
-class BaseTrajectoryDataclass(AbstractTrajectoryDataclass):
-    """Represents a base trajectory data structure.
+class BaseTrajectoryFeature(AbstractTrajectoryFeature):
+    """
+    Represents a base trajectory data structure.
 
     This class is intended to serve as a base class for specialized trajectory dataclasses,
     providing core functionalities and attributes to manage data related to trajectories. It
@@ -23,10 +27,9 @@ class BaseTrajectoryDataclass(AbstractTrajectoryDataclass):
     **Usage example**:
 
     Note: this example would represent a flat data representation as oposed to a nested one
-    (see ``NestedBaseTrajectoryDataclass`` usage example).
 
     >>> @dataclass()
-    >>> class MockContainer(BaseTrajectoryDataclass):
+    >>> class MockContainer(BaseTrajectoryFeature):
     >>>     timestamps: np.ndarray
     >>>     position_x: np.ndarray
     >>>     position_y: np.ndarray
@@ -46,8 +49,33 @@ class BaseTrajectoryDataclass(AbstractTrajectoryDataclass):
 
 
 @dataclass()
-class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
-    """Represents a nested base trajectory dataclass which extends the functionality of the
+class BaseTrajectoryFeatureArray(
+    AbstractTrajectoryArray
+):
+    """
+    Represents a base data structure without trajectory handling.
+
+    This class inherits from ``AbstractTrajectoryArray`` and serves as
+    a foundation for non-trajectory-based data classes. It is designed to hold
+    and manage data that does not involve trajectory-specific information at top-level but might
+    in nested ones e.g., `Tf2MsgsTFMessage.transforms` a list of `GeometryMsgsTransformStampedFeature` trj container
+
+    :ivar feature_name: Name of the feature associated with the trajectory.
+    :type feature_name: str
+    """
+
+    pass
+
+
+@deprecated(
+    reason="NestedBaseTrajectory dataclass is deprecated now that all TrajectoryFeature dataclass "
+           "support parent container reference tracking. Use `is_nested()` method to test if a "
+           "trajectory dataclass is nested or not."
+)
+@dataclass()
+class NestedBaseTrajectory(BaseTrajectoryFeature):
+    """
+    Represents a nested base trajectory dataclass which extends the functionality of the
     ``BaseTrajectoryDataclass``.
 
     This class summarizes the concept of a derived dataclass with specific attributes associated
@@ -58,7 +86,7 @@ class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
     1. Define the nested trajectory container
 
     >>> @dataclass()
-    >>> class MockNestedContainer(NestedBaseTrajectoryDataclass):
+    >>> class MockNestedContainer(NestedBaseTrajectory):
     >>>     x: np.ndarray
     >>>     y: np.ndarray
     >>>     z: np.ndarray
@@ -66,7 +94,7 @@ class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
     2. Define the main trajectory container
 
     >>> @dataclass()
-    >>> class MockContainer(BaseTrajectoryDataclass):
+    >>> class MockContainer(BaseTrajectoryFeature):
     >>>     timestamps: np.ndarray
     >>>     position: MockNestedContainer
 
@@ -76,24 +104,6 @@ class NestedBaseTrajectoryDataclass(BaseTrajectoryDataclass):
     :ivar batch: Boolean indicating if the data is batched (True) or pertaining to a
         single trajectory (False).
     :type batch: bool
-    """
-
-    feature_name: str = field(default=None, init=False)
-    _nested: str = field(default=True, init=False)
-
-
-@dataclass()
-class BaseNoTrajectoryDataclass(AbstractNoTrajectoryDataclass):
-    """
-    Represents a base data structure without trajectory handling.
-
-    This class inherits from ``AbstractNoTrajectoryDataclass`` and serves as
-    a foundation for non-trajectory-based data classes. It is designed to hold
-    and manage data that does not involve trajectory-specific information at top-level but might
-    in nested ones e.g., `Tf2MsgsTFMessage.transforms` a list of `TransformStamped` trj container
-
-    :ivar feature_name: Name of the feature associated with the trajectory.
-    :type feature_name: str
     """
 
     pass

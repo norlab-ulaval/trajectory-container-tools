@@ -1,7 +1,8 @@
 # coding=utf-8
 import abc
-from dataclasses import dataclass, fields
-from typing import Any, List, Tuple
+import weakref
+from dataclasses import dataclass, field, fields
+from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 from deprecated import deprecated
@@ -13,7 +14,7 @@ from trajectory_container_tools.utils.general import (
 
 
 @dataclass()
-class AbstractTrajectoryDataclassCommon(abc.ABC):
+class AbstractTrajectoryCommon(abc.ABC):
     """
     Provides an abstract base dataclass for dynamically interacting with and managing object
     attributes, including dynamic fields creation and nested attribute retrieval.
@@ -25,8 +26,125 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
 
     """
 
+    _parent: Optional["AbstractTrajectoryCommon"] = field(default=None, init=False)
+
+    def set_parent_container_reference_tracking(self):
+        """
+        Updates nested trajectory container parent container reference tracking.
+
+        This method iterates through all the attribute names and updates the parent
+        reference for any data property that is an instance of `AbstractTrajectoryCommon`.
+
+        :return: None
+        """
+        for each_name in self.get_dimension_names():
+            attribute = self.__getattribute__(each_name)
+            if isinstance(attribute, list) and isinstance(
+                attribute[0], AbstractTrajectoryCommon
+            ):
+                for idx in range(len(attribute)):
+                    attribute[idx]._parent = weakref.ref(self)
+            else:
+                if isinstance(attribute, AbstractTrajectoryCommon):
+                    attribute._parent = weakref.ref(self)
+        return None
+
+    def get_parent_container(self) -> Union["AbstractTrajectoryCommon", None]:
+        """
+        Retrieve the parent container associated with the object.
+
+        This method returns the parent container object of the current instance,
+        if such a reference exists. If no parent container is set for the object,
+        this method will return None.
+
+        :return: The parent container of the current object, or None if not set.
+        """
+        if not self.is_nested():
+            return None
+        return self._parent()
+
+    def get_container_root(
+        self, include_feature_bag=False
+    ) -> "AbstractTrajectoryCommon":
+        """
+        Recursively retrieves the root container in a hierarchy.
+
+        This method checks if the current object has a parent. If it does, it continues
+        to traverse up the hierarchy by calling the same method on the parent object,
+        until it reaches the top-most container (the root). If the current object
+        does not have a parent, it considers itself the root and returns the current
+        object.
+
+        :param include_feature_bag: Include 'TrajectoryFeaturesBag' as root (True), will stop at 'TrajectoryFeaturesBag' root otherwise (Default False).
+        :return: The top-most container in the hierarchy.
+        """
+        parent_container = self.get_parent_container()
+        if parent_container:
+            from .abstract_trajectory_features_bag_dataclass import (
+                AbstractTrajectoryFeaturesBag,
+            )
+
+            parent_is_feature_bag = isinstance(
+                parent_container, AbstractTrajectoryFeaturesBag
+            )
+
+            if include_feature_bag and parent_is_feature_bag:
+                return parent_container
+            elif not include_feature_bag and parent_is_feature_bag and self.is_nested():
+                return self
+
+        if not self.is_nested():
+            return self
+
+        # Recursively search up the parent chain
+        return parent_container.get_container_root(include_feature_bag)
+
+    def is_nested(self) -> bool:
+        """
+        Determines if the current object is nested within another object.
+
+        A nested object is identified by the presence of a parent object.
+        This method checks whether the current instance has a parent and
+        returns a boolean indicating the nesting status.
+
+        :return: Boolean value indicating if the object is nested.
+        """
+        return self._parent is not None
+
     @abc.abstractmethod
     def __post_init__(self):
+        """
+        Defines an abstract method to be implemented by subclasses ensuring post-initialization logic
+        is enforced for dataclass-like constructs.
+
+        This method serves as a placeholder for a post-construction initialization hook that should
+        be provided when subclassing. It is marked as abstract to mandate its implementation.
+
+        Expect the following at minimum:
+
+        >>> def __post_init__(self):
+        >>>     # .... Pre-condition ..............................................................
+        >>>     if not self.get_dimension_names():
+        >>>         raise TypeError(
+        >>>             f"[TCT error] {self.__class__.__name__} is an abstract baseclass, "
+        >>>             f"it must be subclassed in order to be instanciated."
+        >>>         )
+        >>>
+        >>>     # .... Base class initialization logic ............................................
+        >>>     self.set_parent_container_reference_tracking()
+        >>>
+        >>>     # .... Callback and attribute customization logic .................................
+        >>>     self.on_begin_post_init_callback()
+        >>>
+        >>>     for each_name in self.get_dimension_names():
+        >>>         self.post_init_feature_callback(feature_name=each_name)
+        >>>
+        >>>     self.on_exit_post_init_callback()
+        >>>
+        >>>     return None
+
+        :raises NotImplementedError: If the subclass does not implement this method.
+        """
         pass
 
     @classmethod
@@ -43,7 +161,7 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
 
         :return: A list containing the names of internal fields used in the data class.
         """
-        return []
+        return ["_parent"]
 
     @classmethod
     def non_trajectory_field(cls) -> List[str]:
@@ -92,7 +210,7 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
         return nested_attribute
 
     def set_dynamic_field(self, feature_name: str, value: Any) -> None:
-        """ Sets a dynamically resolved nested field or attribute within an object.
+        """Sets a dynamically resolved nested field or attribute within an object.
 
         This function dynamically locates and assigns the specified value to a
         nested attribute within an object. The attribute path is determined
@@ -140,7 +258,6 @@ class AbstractTrajectoryDataclassCommon(abc.ABC):
           structure of the attribute to retrieve.
         :return: The value of the resolved nested attribute.
         """
-        # ToDo: TCT-65 feat: unify dynamic_field getter setter with fetch_nested_attribute method
         nested_attribute = self
         for each in nested_attribute_path.split("."):
             nested_attribute = nested_attribute.get_dynamic_field(each)

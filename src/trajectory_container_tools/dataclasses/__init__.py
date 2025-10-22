@@ -4,51 +4,101 @@ Trajectory dataclasses for different data sources and formats.
 
 Available dataclasses:
 - ROS2 message types (NavMsgsOdometry, SensorMsgsImu, etc.)
-- Generic containers (BaseTrajectoryDataclass, etc.)
+- Generic containers (BaseTrajectoryFeature, etc.)
 - Primitive containers (Point2D, Vector2D, Pose2D, etc.)
 - Simulation environments (F110Gym, MathGymnasium, etc.)
 
 Usage example:
 
->>> import trajectory_container_tools as tct
->>> odom_class = tct.dataclasses.NavMsgsOdometry
+>>>import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass import trajectory_container_tools as tct
+>>> odom_class = trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry
 >>> imu_class = tct.dataclasses.ros_msgs.stamped_dataclass.SensorMsgsImu
 
 """
+__all__ = []
 
-# Abstract base classes and base classes
+# .... Abstract base classes and base classes .....................................................
 from trajectory_container_tools.dataclasses.core import (
-    AbstractTrajectoryDataclass,
-    AbstractMultifeatureDataclass,
-    AbstractMultifeatureStampedDataclass,
-    AbstractNoTrajectoryDataclass,
-    BaseTrajectoryDataclass,
-    NestedBaseTrajectoryDataclass,
-    BaseNoTrajectoryDataclass,
+    AbstractTrajectoryFeature,
+    AbstractTrajectoryFeaturesBag,
+    AbstractTrajectoryStampedFeaturesBag,
+    AbstractTrajectoryArray,
+    BaseTrajectoryFeature,
+    BaseTrajectoryFeatureArray,
 )
 
+__all__ += [
+    "AbstractTrajectoryFeature",
+    "AbstractTrajectoryFeaturesBag",
+    "AbstractTrajectoryStampedFeaturesBag",
+    "AbstractTrajectoryArray",
+    "BaseTrajectoryFeature",
+    "BaseTrajectoryFeatureArray",
+]
 
-# ROS2 dataclasses
-from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
+# .... ROS2 dataclasses ...........................................................................
+from trajectory_container_tools.dataclasses.ros_msgs.tf_dataclass import (
     Tf2MsgsTFMessage,
 )
-from .ros_msgs.stamped_dataclass import (
-    AckermannMsgsAckermannDriveStamped,
-    NavMsgsOdometry,
-    Scan,
+from .ros_msgs.sensor_msgs_dataclass import (
+    SensorMsgsLaserScan,
     SensorMsgsImu,
-    VescMsgsVescImuStamped,
-)
-from .ros_msgs.nested_dataclass import AckermannMsgsAckermannDrive
+    )
+from .ros_msgs.nav_msgs_dataclass import NavMsgsOdometry
+from .ros_msgs.ackermann_msgs_dataclass import (
+    AckermannMsgsAckermannDrive, AckermannMsgsAckermannDriveStamped,
+    )
+from .ros_msgs.vesc_msgs_dataclass import VescMsgsVescImu, VescMsgsVescImuStamped
 from .ros_msgs.core_dataclass import (
-    NestedRosStampedDataclass,
-    RosDataclass,
-    RosStampedDataclass,
+    RosFeature,
+    RosStampedFeature,
+    RosFeatureArray,
 )
 
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.ros_msgs.geometry_msgs_dataclass import (
+    GeometryMsgsPoint,
+    GeometryMsgsPose, GeometryMsgsPoseStamped, GeometryMsgsPoseWithCovariance,
+    GeometryMsgsPoseWithCovarianceStamped, GeometryMsgsTransformStampedFeature,
+    GeometryMsgsTwist, GeometryMsgsTwistStamped, GeometryMsgsTwistWithCovariance,
+    GeometryMsgsTwistWithCovarianceStamped, GeometryMsgsVector3,
+    GeometryMsgsVector3Stamped,
+    GeometryMsgsPointStamped,
+    GeometryMsgsQuaternion,
+    GeometryMsgsTransform,
+)
+from .ros_msgs.std_msgs_dataclass import StdMsgsHeader
 
-# Simulation environment dataclasses
+__all__ += [
+    "Tf2MsgsTFMessage",
+    "NavMsgsOdometry",
+    "AckermannMsgsAckermannDriveStamped",
+    "SensorMsgsLaserScan",
+    "VescMsgsVescImuStamped",
+    "SensorMsgsImu",
+    "GeometryMsgsPoseStamped",
+    "GeometryMsgsPoseWithCovarianceStamped",
+    "GeometryMsgsTwistStamped",
+    "GeometryMsgsTwistWithCovarianceStamped",
+    "GeometryMsgsPose",
+    "GeometryMsgsPoseWithCovariance",
+    "GeometryMsgsTwist",
+    "GeometryMsgsTwistWithCovariance",
+    "AckermannMsgsAckermannDrive",
+    "VescMsgsVescImu",
+    "GeometryMsgsTransformStampedFeature",
+    "RosFeatureArray",
+    "RosFeature",
+    "RosStampedFeature",
+    "StdMsgsHeader",
+    "GeometryMsgsPoint",
+    "GeometryMsgsVector3",
+    "GeometryMsgsVector3Stamped",
+    "GeometryMsgsPointStamped",
+    "GeometryMsgsQuaternion",
+    "GeometryMsgsTransform",
+]
+
+# .... Simulation environment dataclasses .........................................................
 from .f110_gym_trajectory_dataclass import (
     F110MotionDynamicDataclass,
     F110MotionDynamicDataclassNested,
@@ -66,7 +116,20 @@ from .erll_trajectory_dataclass import (
     TestMotionTrajectoryDataclass,
 )
 
-# DataFrame dataclasses
+__all__ += [
+    "F110MotionDynamicDataclass",
+    "F110MotionDynamicDataclassNested",
+    "F110observations",
+    "F110actions",
+    "MathEnvTrajectoryDataclass",
+    "StateAxDataclass",
+    "TimeAxDataclass",
+    "AxBaseDataclass",
+    "TestTrajectoryDataclass",
+    "TestMotionTrajectoryDataclass",
+]
+
+# .... DataFrame dataclasses ......................................................................
 from .panda_dataframe_feature_dataclass import (
     BaseDataframeFeatureDataclass,
     NestedBaseDataframeFeatureDataclass,
@@ -77,7 +140,17 @@ from .panda_dataframe_feature_dataclass import (
     VelocitySkidSteer,
 )
 
-# Primitive types
+__all__ += [
+    "BaseDataframeFeatureDataclass",
+    "NestedBaseDataframeFeatureDataclass",
+    "StatePose2D",
+    "CmdStandard",
+    "CmdSkidSteer",
+    "Velocity",
+    "VelocitySkidSteer",
+]
+
+# .... Primitive types ............................................................................
 from .primitive_dataclass import (
     Point2D,
     Vector2D,
@@ -89,54 +162,14 @@ from .primitive_dataclass import (
     Velocity2DSA,
 )
 
-__all__ = [
-    # Abstract classes
-    "AbstractTrajectoryDataclass",
-    "AbstractNoTrajectoryDataclass",
-    "AbstractMultifeatureDataclass",
-    "AbstractMultifeatureStampedDataclass",
-    # Base classes
-    "BaseTrajectoryDataclass",
-    "NestedBaseTrajectoryDataclass",
-    "BaseNoTrajectoryDataclass",
-    # ROS2 dataclasses
-    "NavMsgsOdometry",
-    "SensorMsgsImu",
-    "AckermannMsgsAckermannDriveStamped",
-    "AckermannMsgsAckermannDrive",
-    "Tf2MsgsTFMessage",
-    "VescMsgsVescImuStamped",
-    "Scan",
-    "RosStampedDataclass",
-    "RosDataclass",
-    "NestedRosStampedDataclass",
-    "Header",
-    # Simulation environments
-    "F110MotionDynamicDataclass",
-    "F110MotionDynamicDataclassNested",
-    "F110observations",
-    "F110actions",
-    "MathEnvTrajectoryDataclass",
-    "StateAxDataclass",
-    "TimeAxDataclass",
-    "AxBaseDataclass",
-    "TestTrajectoryDataclass",
-    "TestMotionTrajectoryDataclass",
-    # DataFrame
-    "BaseDataframeFeatureDataclass",
-    "NestedBaseDataframeFeatureDataclass",
-    "StatePose2D",
-    "CmdStandard",
-    "CmdSkidSteer",
-    "Velocity",
-    "VelocitySkidSteer",
-    # Primitives
+__all__ += [
     "Point2D",
     "Vector2D",
     "Pose2D",
     "Velocity2D",
+    "Pose2DSA",
     "Point2DSA",
     "Vector2DSA",
-    "Pose2DSA",
     "Velocity2DSA",
 ]
+

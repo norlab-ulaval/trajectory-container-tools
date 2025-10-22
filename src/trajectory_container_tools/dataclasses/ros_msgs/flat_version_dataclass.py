@@ -3,11 +3,11 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from trajectory_container_tools.dataclasses import RosStampedDataclass
+from trajectory_container_tools.dataclasses import RosStampedFeature
 
 
 @dataclass()
-class NavMsgsOdometryFlat(RosStampedDataclass):
+class NavMsgsOdometryFlat(RosStampedFeature):
     """Data container for navigation messages odometry (flat structure data container version).
 
     Compatible ros2 message interface: nav_msgs/msg/Odometry
@@ -67,7 +67,7 @@ class NavMsgsOdometryFlat(RosStampedDataclass):
 
 
 @dataclass()
-class AckermannMsgsAckermannDriveStampedFlat(RosStampedDataclass):
+class AckermannMsgsAckermannDriveStampedFlat(RosStampedFeature):
     """AckermannMsgsAckermannDriveStamped flat version
     Compatible ros2 message interface: ackermann_msgs/msg/AckermannDriveStamped
     """
@@ -80,7 +80,7 @@ class AckermannMsgsAckermannDriveStampedFlat(RosStampedDataclass):
 
 
 @dataclass()
-class SensorMsgsImuFlat(RosStampedDataclass):
+class SensorMsgsImuFlat(RosStampedFeature):
     """SensorMsgsImu flat version
 
     Compatible ros2 message interface: sensor_msgs/msg/Imu

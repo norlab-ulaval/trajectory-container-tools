@@ -5,16 +5,13 @@ from typing import Any, List, Optional, Union
 
 import numpy as np
 
-from .abstract_multifeature_dataclass import AbstractMultifeatureDataclass
-from .abstract_no_trajectory_dataclass import AbstractNoTrajectoryDataclass
-from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import (
-    NestedRosStampedDataclass,
+from .abstract_trajectory_features_bag_dataclass import AbstractTrajectoryFeaturesBag
+from .abstract_trajectory_array_dataclass import AbstractTrajectoryArray
+from trajectory_container_tools.dataclasses.ros_msgs.sensor_msgs_dataclass import (
+    RosStampedFeature,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass import (
-    RosStampedDataclass,
-)
-from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
-    RosDataclass,
+from trajectory_container_tools.dataclasses.ros_msgs.tf_dataclass import (
+    RosFeatureArray,
 )
 from trajectory_container_tools.dataclasses.ros_msgs.core_dataclass_utils import (
     get_timestamps_slice,
@@ -24,10 +21,11 @@ from ...temporal.trajectory_timestamps_metadata import TrajectoryTimestampsMetad
 
 
 @dataclass()
-class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
+class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
     """
-    AbstractMultifeatureStampedDataclass extends the functionality of AbstractMultifeatureDataclass
-    to handle chunk-based operations and iteration for specific attributes.
+    AbstractTrajectoryStampedFeaturesBag extends the functionality of
+    AbstractTrajectoryFeaturesBag to handle chunk-based operations and iteration for
+    stamped features.
 
     This dataclass serves the purpose of managing and processing operations for multi-feature data
     structured in chunks, such as splitting, accessing, and iterating over these chunks based on
@@ -66,7 +64,7 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
         super().__post_init__()
 
     @classmethod
-    def _dataclass_internal_field(cls) -> List[str]:
+    def _dataclass_internal_field(cls) -> list[str]:
         return super()._dataclass_internal_field() + ["_iter_index"]
 
     @property
@@ -83,7 +81,10 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
         repr_str += f"{m_space}chunks_total: {self.chunks_total}\n"
         return repr_str
 
-    def __getitem__(self, chunk_idx: Union[int, slice]):
+    def __getitem__(
+        self, chunk_idx: Union[int, slice]
+    ) -> "AbstractTrajectoryStampedFeaturesBag":
+
         mf_dataclass_at_t = deepcopy(self)
 
         chunk_on_attribute = self.get_dynamic_field(self.chunk_on)
@@ -101,14 +102,14 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
             mf_dataclass_at_t.__setattr__("bag_timestamps", bag_timestamps_subset)
 
         each_attribute: Union[
-            RosStampedDataclass, NestedRosStampedDataclass, RosDataclass
+            RosStampedFeature, RosFeatureArray
         ]
         for each_topic in self.topic_key_list:
             each_attribute = self.get_dynamic_field(each_topic)
 
             if each_topic is self.chunk_on:
                 each_attribute = each_attribute[chunk_idx]
-            elif isinstance(each_attribute, AbstractNoTrajectoryDataclass):
+            elif isinstance(each_attribute, AbstractTrajectoryArray):
                 registred_trj_object_list_name = (
                     each_attribute.registred_trajectory_object_list
                 )
@@ -134,11 +135,11 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
 
         return mf_dataclass_at_t
 
-    def __iter__(self):
+    def __iter__(self) -> "AbstractTrajectoryStampedFeaturesBag":
         self._iter_index = 0
         return self
 
-    def __next__(self):
+    def __next__(self) -> "AbstractTrajectoryStampedFeaturesBag":
         if self._iter_index < self.chunks_total:
             item = self[self._iter_index]
             self._iter_index += 1
@@ -152,7 +153,7 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
         stop: Optional[int] = None,
         startpoint: bool = True,
         endpoint: bool = False,
-    ):
+    ) -> "AbstractTrajectoryStampedFeaturesBag":
         """
         Retrieve a trajectory interval within a specified timestamps range.
 
@@ -183,17 +184,17 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
 
         for each_topic in self.topic_key_list:
             each_attribute: Union[
-                RosStampedDataclass, NestedRosStampedDataclass, RosDataclass
+                RosStampedFeature, RosFeatureArray
             ] = self.get_dynamic_field(each_topic)
 
-            if isinstance(each_attribute, AbstractNoTrajectoryDataclass):
+            if isinstance(each_attribute, AbstractTrajectoryArray):
                 registred_trj_object_list_name = (
                     each_attribute.registred_trajectory_object_list
                 )
                 if registred_trj_object_list_name is not None:
                     trj_container_list_object = []
                     for idx, each in enumerate(each_attribute):
-                        each: Union[RosStampedDataclass, NestedRosStampedDataclass] = (
+                        each: RosStampedFeature = (
                             each.get_timestamps(
                                 start=start,
                                 stop=stop,
@@ -223,7 +224,7 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
         return mf_dataclass_at_t
 
     @property
-    def trajectory_timestamps(self):
+    def trajectory_timestamps(self) -> np.ndarray[int, np.dtype[int]]:
         """
         Returns all timestamps for all features. The returned numpy array is sorted and contains unique timestamps.
         Note: Those does not include the `bag_timestamps` ones.
@@ -239,16 +240,16 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
 
         for each_topic in self.topic_key_list:
             each_attribute: Union[
-                RosStampedDataclass, NestedRosStampedDataclass, RosDataclass
+                RosStampedFeature, RosFeatureArray
             ] = self.get_dynamic_field(each_topic)
 
-            if isinstance(each_attribute, AbstractNoTrajectoryDataclass):
+            if isinstance(each_attribute, AbstractTrajectoryArray):
                 registred_trj_object_list_name = (
                     each_attribute.registred_trajectory_object_list
                 )
                 if registred_trj_object_list_name is not None:
                     for idx, each in enumerate(each_attribute):
-                        each: Union[RosStampedDataclass, NestedRosStampedDataclass]
+                        each: RosStampedFeature
                         all_features_stamps.append(each.header.timestamps.stamps)
             else:
                 all_features_stamps.append(each_attribute.header.timestamps.stamps)
@@ -282,9 +283,9 @@ class AbstractMultifeatureStampedDataclass(AbstractMultifeatureDataclass):
 def _get_attribute_timestamps(
     chunck_on_timestamp: int,
     chunk_idx: Union[int, slice],
-    chunk_on_topic: RosStampedDataclass,
-    each_attribute: RosStampedDataclass | NestedRosStampedDataclass | Timestamps,
-) -> RosStampedDataclass | NestedRosStampedDataclass | RosDataclass | Timestamps:
+    chunk_on_topic: RosStampedFeature,
+    each_attribute: RosStampedFeature |  Timestamps,
+) -> RosStampedFeature | RosFeatureArray | Timestamps:
     if isinstance(chunk_idx, slice):
         chunk_idx = chunk_idx.start
 

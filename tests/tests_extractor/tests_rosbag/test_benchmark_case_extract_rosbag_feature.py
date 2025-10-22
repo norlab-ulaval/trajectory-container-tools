@@ -10,7 +10,7 @@ from trajectory_container_tools.extractor import (
     check_bag_topics,
     extract_rosbag_feature,
 )
-from trajectory_container_tools.dataclasses import NavMsgsOdometry, RosStampedDataclass
+from trajectory_container_tools.dataclasses import NavMsgsOdometry, RosStampedFeature
 
 
 @pytest.fixture(scope="function")
@@ -75,8 +75,8 @@ def benchmark_extract_single_feature_from_rosbag(
 #                 'Multiprocessing enabled, n_jobs 4, chunk size 20000',
 #                 'Multiprocessing disabled']
 #         )
-def test_extract_rosbag_benchmark(benchmark, setup_rosbag_from_external_data_dir):
-    container: Union[NavMsgsOdometry, RosStampedDataclass]
+def test_extract_rosbag_feature_benchmark(benchmark, setup_rosbag_from_external_data_dir):
+    container: Union[NavMsgsOdometry, RosStampedFeature]
     rosbag_path, rosbag_start, rosbag_stop = setup_rosbag_from_external_data_dir
 
     container = benchmark(

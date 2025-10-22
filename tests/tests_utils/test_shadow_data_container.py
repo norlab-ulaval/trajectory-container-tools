@@ -3,75 +3,85 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import (
-    Point,
-    Quaternion,
+from trajectory_container_tools.dataclasses.ros_msgs.geometry_msgs_dataclass import (
+    GeometryMsgsPoint,
+    GeometryMsgsQuaternion,
 )
+from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.utils.shadow_data_container import (
     instanciate_shadow_data_container,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.nested_dataclass import Pose
-from trajectory_container_tools.dataclasses import RosDataclass
+from trajectory_container_tools.dataclasses import GeometryMsgsPose, RosFeatureArray
 
 
 @dataclass()
-class MockListOfNestedDataclass(RosDataclass):
-    list_of_point: list[Point]
+class MockListOfNestedFeatureArray(RosFeatureArray):
+    list_of_point: list[GeometryMsgsPoint]
 
 
 class TestInstanciateShadowDataContainer:
     def test_case_leaf_container(self):
-        sdc = instanciate_shadow_data_container(Point)
+        sdc = instanciate_shadow_data_container(GeometryMsgsPoint)
 
         assert isinstance(sdc, dict)
         assert sdc == {
-            "type": Point,
-            "x": {"data": [], "type": np.ndarray},
-            "y": {"data": [], "type": np.ndarray},
-            "z": {"data": [], "type": np.ndarray},
+            "type": GeometryMsgsPoint,
+            "nested_lvl":        0,
+            "bag_recorded_timestamps": {"data": [], "type": Timestamps},
+            "x":    {"data": [], "type": np.ndarray},
+            "y":    {"data": [], "type": np.ndarray},
+            "z":    {"data": [], "type": np.ndarray},
         }
 
         # print(sdc)
 
     def test_case_parent_container(self):
-        sdc = instanciate_shadow_data_container(Pose)
+        sdc = instanciate_shadow_data_container(GeometryMsgsPose)
 
         assert isinstance(sdc, dict)
         assert sdc == {
-            "type": Pose,
-            # 'feature_name':   None,
-            # 'timesteps_indices': None,
-            "position": {
-                "type": Point,
-                "x": {"data": [], "type": np.ndarray},
-                "y": {"data": [], "type": np.ndarray},
-                "z": {"data": [], "type": np.ndarray},
+            "type":        GeometryMsgsPose,
+            "nested_lvl":        0,
+            "bag_recorded_timestamps": {"data": [], "type": Timestamps},
+            "position":    {
+                "type": GeometryMsgsPoint,
+                "nested_lvl": 1,
+                "bag_recorded_timestamps": {"data": [], "type": Timestamps},
+                "x":    {"data": [], "type": np.ndarray},
+                "y":    {"data": [], "type": np.ndarray},
+                "z":    {"data": [], "type": np.ndarray},
             },
             "orientation": {
-                "type": Quaternion,
-                "x": {"data": [], "type": np.ndarray},
-                "y": {"data": [], "type": np.ndarray},
-                "z": {"data": [], "type": np.ndarray},
-                "w": {"data": [], "type": np.ndarray},
+                "type": GeometryMsgsQuaternion,
+                "nested_lvl": 1,
+                "bag_recorded_timestamps": {"data": [], "type": Timestamps},
+                "x":    {"data": [], "type": np.ndarray},
+                "y":    {"data": [], "type": np.ndarray},
+                "z":    {"data": [], "type": np.ndarray},
+                "w":    {"data": [], "type": np.ndarray},
             },
         }
 
         # print(sdc)
 
     def test_case_list_of_type(self):
-        sdc = instanciate_shadow_data_container(MockListOfNestedDataclass)
+        sdc = instanciate_shadow_data_container(MockListOfNestedFeatureArray)
 
         print(sdc)
 
         assert isinstance(sdc, dict)
         assert sdc == {
-            "type": MockListOfNestedDataclass,
+            "type":          MockListOfNestedFeatureArray,
+            "nested_lvl": 0,
+            "bag_recorded_timestamps": {"data": [], "type": Timestamps},
             "list_of_point": [
                 {
-                    "type": Point,
-                    "x": {"data": [], "type": np.ndarray},
-                    "y": {"data": [], "type": np.ndarray},
-                    "z": {"data": [], "type": np.ndarray},
+                    "type": GeometryMsgsPoint,
+                    "nested_lvl": 1,
+                    "bag_recorded_timestamps": {"data": [], "type": Timestamps},
+                    "x":    {"data": [], "type": np.ndarray},
+                    "y":    {"data": [], "type": np.ndarray},
+                    "z":    {"data": [], "type": np.ndarray},
                 },
             ],
         }

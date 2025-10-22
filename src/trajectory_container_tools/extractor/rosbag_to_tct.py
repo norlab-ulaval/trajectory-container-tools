@@ -6,16 +6,18 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import numpy as np
 
-from trajectory_container_tools.dataclasses.core.abstract_multifeature_stamped_dataclass import AbstractMultifeatureStampedDataclass
-from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
-    BaseTrajectoryDataclass,
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_stamped_features_bag_dataclass import (
+    AbstractTrajectoryStampedFeaturesBag,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
+    BaseTrajectoryFeature,
+)
 from trajectory_container_tools.dataclasses import (
     NavMsgsOdometry,
-    NestedRosStampedDataclass,
-    RosDataclass,
-    RosStampedDataclass,
+    RosFeature,
+    RosFeatureArray,
+    RosStampedFeature,
+    StdMsgsHeader,
 )
 from trajectory_container_tools.utils.factory import (
     parse_feature_spec,
@@ -47,7 +49,7 @@ from trajectory_container_tools.temporal.timestamps import (
     Timestamps,
 )
 from trajectory_container_tools.typing import (
-    MultifeatureTrajectoryDataclass,
+    TrajectoryFeaturesBag,
     ShadowDataContainer,
 )
 
@@ -93,23 +95,23 @@ def from_rosbag(
     rosbag_path: Path,
     dataset_info: Optional[str],
     features_config: Dict[
-        str, Union[type[RosDataclass], type[RosStampedDataclass], Tuple[str, ...]]
+        str, Union[type[RosFeatureArray], type[RosStampedFeature], Tuple[str, ...]]
     ],
     chunk_on="/teleop",
     start: Optional[int] = None,
     stop: Optional[int] = None,
     typestore: Optional[Typestore] = None,
-) -> AbstractMultifeatureStampedDataclass:
+) -> AbstractTrajectoryStampedFeaturesBag:
     """Extract multiple features (i.e. topics) from a rosbag_path based on a configuration
     dictionary.
 
     Notes:
 
     The `features_config` parameter specify the feature name and type (i.e. topic name and type)
-    to lookout in the rosbag topic list and agregate them in a *multifeature* dataclass.
+    to lookout in the rosbag topic list and agregate them in a `TrajectoryFeaturesBag` dataclass.
 
     Feature dimensions such as 'pose.position.x' or 'twist.linear.y' are specified either by
-    using existing `RosStampedDataclass` subclass such as `NavMsgsOdometry`,
+    using existing `RosStampedFeature` subclass such as `NavMsgsOdometry`,
     `AckermannMsgsAckermannDriveStamped`, `Tf2MsgsTFMessage`, `SensorMsgsImu` or by using tuple
     of strings such as `('<NewFeatureDataclassTypeName>', '<topic_property_name_1>',
     '<topic_property_name_2>', ...)`.
@@ -136,7 +138,7 @@ def from_rosbag(
     :param start: The rosbag timestamp where to start in nanosecond.
     :param stop: The rosbag timestamp where to stop in nanosecond.
     :param typestore: Optional overrides the custom TCT rosbag typestore.
-    :return: An instance of the `AbstractMultifeatureDataclass` containing the processed data
+    :return: An instance of the `AbstractTrajectoryFeaturesBag` containing the processed data
         for all features.
     """
 
@@ -152,7 +154,7 @@ def from_rosbag(
         if isinstance(feature_dataclass, tuple):
             feature_dataclass = parse_feature_spec(
                 feature_dataclass,
-                target_subclass=RosStampedDataclass,
+                target_subclass=RosStampedFeature,
                 feature_name=feature_name,
             )
 
@@ -176,12 +178,12 @@ def from_rosbag(
             if connection.topic in features_config:
                 bag_timestamps.append(timestamp)
 
-    rosbag_multifeature = make_dataclass(
-        "multifeature",
-        bases=(AbstractMultifeatureStampedDataclass,),
+    trajectory_features_bag = make_dataclass(
+        "TrajectoryFeaturesBag",
+        bases=(AbstractTrajectoryStampedFeaturesBag,),
         fields=features_type,
     )
-    return rosbag_multifeature(
+    return trajectory_features_bag(
         dataset_info,
         *features,
         bag_timestamps=Timestamps(np.array(bag_timestamps)),
@@ -192,17 +194,19 @@ def from_rosbag(
 def extract_rosbag_feature(
     rosbag_path: Path,
     feature_name: str,
-    data_container_type: Union[type[RosDataclass], type[RosStampedDataclass]],
+    data_container_type: Union[
+        type[RosFeature], type[RosFeatureArray], type[RosStampedFeature]
+    ],
     start: Optional[int] = None,
     stop: Optional[int] = None,
     typestore: Optional[Typestore] = None,
-) -> Union[RosDataclass, RosStampedDataclass]:
+) -> Union[RosFeature, RosFeatureArray, RosStampedFeature]:
     """
     Extracts a specific feature from a ROS bag file and returns it in a structured data container.
 
     This function retrieves messages from a specified topic within a ROS bag, processes them, and
     organizes the extracted data into a provided custom dataclass that inherits from the
-    `RosStampedDataclass`. Handles data integrity checks and enables customization for
+    `RosStampedFeature`. Handles data integrity checks and enables customization for
     specialized message types.
 
     Usage:
@@ -216,7 +220,7 @@ def extract_rosbag_feature(
 
     :param rosbag_path: Path to the input ROS bag file.
     :param feature_name: Name of the topic to extract data from.
-    :param data_container_type: Custom dataclass type inheriting from `RosStampedDataclass`
+    :param data_container_type: Custom dataclass type inheriting from `RosStampedFeature`
         used to construct the final structured data container.
     :param start: Optional start time for filtering messages, measured in nanoseconds.
     :param stop: Optional stop time for filtering messages, measured in nanoseconds.
@@ -224,10 +228,12 @@ def extract_rosbag_feature(
     :return: An instance of the `data_container_type` containing the processed feature data.
     """
     try:
-        if not issubclass(data_container_type, (RosDataclass, RosStampedDataclass)):
+        if not issubclass(
+            data_container_type, (RosFeature, RosFeatureArray, RosStampedFeature)
+        ):
             raise ValueError(
                 f"[TCT error] `{data_container_type}` must be a subclass of "
-                f"`RosStampedDataclass` or `RosDataclass`"
+                f"`RosFeature`, `RosStampedFeature` or `RosFeatureArray`"
             )
     except TypeError as e:
         raise AttributeError(
@@ -236,7 +242,9 @@ def extract_rosbag_feature(
         )
     else:
         # ... Create and initialize temporary container ...........................................
-        shadow_data_container = instanciate_shadow_data_container(data_container_type)
+        shadow_data_container = instanciate_shadow_data_container(
+            data_container_type, 0
+        )
 
         # .... Crawl topic msgs ...................................................................
         if not typestore:
@@ -273,7 +281,11 @@ def extract_rosbag_feature(
 
                 # ... Fetch properties from rosbag ................................................
                 shadow_data_container = _collect_properties_from_rosbag(
-                    data_container_type, feature_name, msg, shadow_data_container
+                    data_container_type,
+                    feature_name,
+                    msg,
+                    timestamp,
+                    shadow_data_container,
                 )
 
             progressbar.close()
@@ -299,13 +311,13 @@ def extract_rosbag_feature(
 
 def _collect_properties_from_rosbag(
     data_container_type: Union[
-        type[RosDataclass],
-        type[RosStampedDataclass],
-        type[NestedRosStampedDataclass],
-        type[BaseTrajectoryDataclass],
+        type[RosFeatureArray],
+        type[RosStampedFeature],
+        type[BaseTrajectoryFeature],
     ],
     feature_name: str,
     msg: object | Any,
+    bag_timestamp: int,
     shadow_data_container: ShadowDataContainer,
 ) -> ShadowDataContainer:
     for each_property_name in data_container_type.get_dimension_names():
@@ -337,11 +349,14 @@ def _collect_properties_from_rosbag(
                             data_container_type=each["type"],
                             feature_name=each_property_name,
                             msg=msg_property_value[idx],
+                            bag_timestamp=bag_timestamp,
                             shadow_data_container=each,
                         )
                     )
 
-            elif issubclass(shadow_data_container[each_property_name]["type"], Header):
+            elif issubclass(
+                shadow_data_container[each_property_name]["type"], StdMsgsHeader
+            ):
                 # (NICE TO HAVE) ToDo: TCT-40 move rosbag msg reader here for handling non-trj data
                 if not shadow_data_container["header"]["frame_id"]["data"]:
                     shadow_data_container["header"]["frame_id"][
@@ -351,6 +366,9 @@ def _collect_properties_from_rosbag(
                 shadow_data_container["header"]["timestamps"]["data"].append(
                     rosbag_topic_time_to_timestamp(msg.header.stamp)
                 )
+            elif each_property_name == "bag_recorded_timestamps":
+                if bag_timestamp is not None:
+                    shadow_data_container["bag_recorded_timestamps"]["data"].append(bag_timestamp)
             else:
                 attribute_list = str(each_property_name).split("_")
                 attribute_parent = msg
@@ -367,7 +385,7 @@ def _collect_properties_from_rosbag(
 
                 if issubclass(
                     shadow_data_container[each_property_name]["type"],
-                    (RosDataclass, BaseTrajectoryDataclass),
+                    (RosFeatureArray, BaseTrajectoryFeature),
                 ):
                     shadow_data_container[each_property_name] = (
                         _collect_properties_from_rosbag(
@@ -376,6 +394,7 @@ def _collect_properties_from_rosbag(
                             ]["type"],
                             feature_name=each_property_name,
                             msg=attribute_parent,
+                            bag_timestamp=None,
                             shadow_data_container=shadow_data_container[
                                 each_property_name
                             ],

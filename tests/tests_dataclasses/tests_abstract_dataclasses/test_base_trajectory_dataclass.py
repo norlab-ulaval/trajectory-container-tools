@@ -4,62 +4,74 @@ from dataclasses import dataclass
 import pytest
 
 from trajectory_container_tools import (
-    BaseNoTrajectoryDataclass,
-    BaseTrajectoryDataclass,
-    NestedBaseTrajectoryDataclass
+    BaseTrajectoryFeatureArray,
+    BaseTrajectoryFeature,
 )
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import NestedBaseTrajectory
 import numpy as np
 
 
-def test_BaseTrajectoryDataclass():
+def test_BaseTrajectoryFeature():
 
     @dataclass()
-    class MockSubBaseTrajectoryDataclass(BaseTrajectoryDataclass):
+    class MockBaseTrajectoryFeature(BaseTrajectoryFeature):
         timestamps: np.ndarray
         mock_attribute: np.ndarray
 
-    t_container = MockSubBaseTrajectoryDataclass(
+    t_container = MockBaseTrajectoryFeature(
         feature_name="mock", timestamps=np.arange(10), mock_attribute=np.ones(10)
     )
 
     assert t_container.feature_name == "mock"
+    assert t_container.is_nested() == False
     assert np.array_equal(t_container.timestamps, np.arange(10))
     assert np.array_equal(t_container.mock_attribute, np.ones(10))
 
-def test_NestedBaseTrajectoryDataclass():
+
+@pytest.mark.deprecated("Dataclass NestedBaseTrajectory is marked as deprecated (ref task TCT-87)")
+def test_NestedBaseTrajectory():
 
     @dataclass()
-    class MockSubNestedBaseTrajectoryDataclass(NestedBaseTrajectoryDataclass):
+    class MockNestedBaseTrajectory(NestedBaseTrajectory):
         timestamps: np.ndarray
         mock_attribute: np.ndarray
 
-    t_container = MockSubNestedBaseTrajectoryDataclass(
-        timestamps=np.arange(10), mock_attribute=np.ones(10)
+    @dataclass()
+    class MockBaseTrajectoryDataclass(BaseTrajectoryFeature):
+        timestamps: np.ndarray
+        mock_attribute: np.ndarray
+        nested_container: MockNestedBaseTrajectory
+
+    t_container = MockBaseTrajectoryDataclass(
+        timestamps=np.arange(10),
+        mock_attribute=np.ones(10),
+        nested_container=MockNestedBaseTrajectory(
+            timestamps=np.arange(10),
+            mock_attribute=np.ones(10),
+        ),
     )
+
     assert t_container.feature_name is None
-    assert t_container._nested == True
+    assert t_container.is_nested() == False
+    assert t_container.nested_container.is_nested() == True
     assert np.array_equal(t_container.timestamps, np.arange(10))
     assert np.array_equal(t_container.mock_attribute, np.ones(10))
 
-    with pytest.raises(TypeError) as exc_info:
-        # The 'feature_name' parameter should not exist
-        t_container = MockSubNestedBaseTrajectoryDataclass(
-            feature_name="mock", timestamps=np.arange(10), mock_attribute=np.ones(10)
-        )
 
-def test_BaseNoTrajectoryDataclass():
+def test_BaseTrajectoryArray():
 
     @dataclass()
-    class MockSubBaseNoTrajectoryDataclass(BaseNoTrajectoryDataclass):
+    class MockBaseTrajectoryFeatureArray(BaseTrajectoryFeatureArray):
         mock_attribute: np.ndarray
 
-    t_container = MockSubBaseNoTrajectoryDataclass(
+    t_container = MockBaseTrajectoryFeatureArray(
         feature_name="mock", mock_attribute=np.ones(10)
     )
 
     assert t_container.feature_name == "mock"
+    assert t_container.is_nested() == False
     assert np.array_equal(t_container.mock_attribute, np.ones(10))
 
     with pytest.raises(AttributeError) as exc_info:
         # The 'timestamps' attribute should not exist
-        assert t_container.__getattribute__('timestamps')
+        assert t_container.__getattribute__("timestamps")

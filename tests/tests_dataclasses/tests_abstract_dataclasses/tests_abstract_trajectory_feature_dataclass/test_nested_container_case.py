@@ -17,7 +17,7 @@ from ..mock_trj_dataclasses import (
     ],
     ids=["t_nested_case=nested-and-ndarray", "t_nested_case=nested-only"],
 )
-class TestAbstractTrajectoryDataclassNestedROSbagCase:
+class TestAbstractTrajectoryFeatureCaseNested:
     @pytest.fixture(scope="function")
     def setup_mock_feature_child(
         self, mock_ROSbag_2_trj_DC
@@ -292,7 +292,6 @@ class TestAbstractTrajectoryDataclassNestedROSbagCase:
     def test_fetch_nested_attribute(
         self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case
     ):
-        # ToDo: TCT-65 feat: unify dynamic_field getter setter with fetch_nested_attribute method
         mfc = setup_mock_feature_parent_range(t_nested_case)
         assert np.allclose(
             mfc.fetch_nested_attribute("child_one.aa"), mock_ROSbag_2_trj_DC_range.a

@@ -8,11 +8,11 @@ import pytest
 from trajectory_container_tools.dataclasses import (
     AckermannMsgsAckermannDriveStamped,
     NavMsgsOdometry,
-    Scan,
+    SensorMsgsLaserScan,
     SensorMsgsImu,
+    StdMsgsHeader,
     VescMsgsVescImuStamped,
 )
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
 from trajectory_container_tools.utils.general import RosImportError
 
 has_ros_dependencies = True
@@ -23,7 +23,7 @@ try:
         get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short,
         get_rosbag_vaul_f1tenth_nx_orin_path_offending_timestamps,
     )
-    from trajectory_container_tools.dataclasses.ros_msgs.non_trajectory_dataclass import (
+    from trajectory_container_tools.dataclasses.ros_msgs.tf_dataclass import (
         Tf2MsgsTFMessage,
     )
 except RosImportError:
@@ -95,7 +95,10 @@ class MockROSbagDataContainer:
     b: np.ndarray
     c: np.ndarray
     batch: bool
-    header: Header = Header(
+    bag_recorded_timestamps: np.ndarray = np.arange(
+        TS_START, TS_STOP, (TS_STOP - TS_START) / TRJ_LEN, dtype=int
+    )
+    header: StdMsgsHeader = StdMsgsHeader(
         frame_id="map",
         timestamps=np.arange(
             TS_START, TS_STOP, (TS_STOP - TS_START) / TRJ_LEN, dtype=int
@@ -148,50 +151,10 @@ def mock_ROSbag_2_trj_DC_uneven_time_index() -> MockROSbagDataContainer:
         a=np.ones((TRJ_LEN,)),
         b=np.ones((TRJ_LEN,)),
         c=np.ones((TRJ_LEN - 1, 36)),
-        header=Header(frame_id="map", timestamps=(np.arange(10)) * 10 + 1000),
+        bag_recorded_timestamps=np.arange(10) * 10 + 1000,
+        header=StdMsgsHeader(frame_id="map", timestamps=(np.arange(10)) * 10 + 1000),
         batch=False,
     )
-
-
-@pytest.fixture(scope="function")
-def mock_trajectory_dict_ordered(
-    mock_ROSbag_2_trj_DC_range,
-) -> Dict[str, Union[str, int, np.ndarray]]:
-    ordered_trajectory_dict = asdict(mock_ROSbag_2_trj_DC_range)
-
-    timestamps_ = []
-    for each_idx in np.arange(mock_ROSbag_2_trj_DC_range.header.trajectory_len):
-        timestamps_.append(
-            mock_ROSbag_2_trj_DC_range.header.timestamps[each_idx].stamps
-        )
-
-    ordered_trajectory_dict["feature_name"] = "/mock_ROSbag_2_trj_DC_range"
-    ordered_trajectory_dict["header"] = Header(
-        frame_id=mock_ROSbag_2_trj_DC_range.header.frame_id,
-        timestamps=np.array(timestamps_),
-    )
-    # print(ordered_trajectory_dict)
-
-    return ordered_trajectory_dict
-
-
-@pytest.fixture(scope="function")
-def mock_trajectory_dict_unordered(
-    mock_trajectory_dict_ordered,
-) -> Dict[str, Union[str, int, np.ndarray]]:
-    unordered_trajectory_dict = mock_trajectory_dict_ordered
-
-    unordered_idx = np.arange(TRJ_LEN)
-    np.random.shuffle(unordered_idx)
-
-    for each in unordered_trajectory_dict:
-        if isinstance(each, np.ndarray):
-            each = each[unordered_idx]
-
-    # print(unordered_idx)
-    # print(unordered_trajectory_dict)
-
-    return unordered_trajectory_dict
 
 
 # ==== rosbag related =============================================================================
@@ -214,7 +177,6 @@ if has_ros_dependencies:
         )
         return ros_bag_config
 
-
     @pytest.fixture(scope="function")
     def setup_rosbag_six_topics_filtered():
         bag_path, bag_name, selected_topic = (
@@ -229,14 +191,13 @@ if has_ros_dependencies:
             feature_config={
                 "/odom": NavMsgsOdometry,
                 "/tf": Tf2MsgsTFMessage,
-                "/scan": Scan,
+                "/scan": SensorMsgsLaserScan,
                 "/teleop": AckermannMsgsAckermannDriveStamped,
                 "/sensors/imu/raw": SensorMsgsImu,
                 "/sensors/imu": VescMsgsVescImuStamped,
             },
         )
         return ros_bag_config
-
 
     @pytest.fixture(scope="function")
     def setup_rosbag_six_topics_offending_timestamps():
@@ -252,7 +213,7 @@ if has_ros_dependencies:
             feature_config={
                 "/pf/pose/odom": NavMsgsOdometry,
                 "/tf": Tf2MsgsTFMessage,
-                "/scan": Scan,
+                "/scan": SensorMsgsLaserScan,
                 "/ackermann_cmd": AckermannMsgsAckermannDriveStamped,
                 "/teleop": AckermannMsgsAckermannDriveStamped,
                 "/sensors/imu/raw": SensorMsgsImu,

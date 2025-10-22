@@ -6,15 +6,15 @@ import numpy as np
 from ..mock_trj_dataclasses import (
     MockTrajectoryChildRosBagCase,
     )
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
-    AbstractTrajectoryDataclass,
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_feature_dataclass import (
+    AbstractTrajectoryFeature,
 )
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     StatePose2D,
 )
 
 
-class TestAbstractTrajectoryDataclassROSbagCase:
+class TestAbstractTrajectoryFeatureCaseRosbag:
     @pytest.fixture
     def setup_mock_feature_child(
         self, mock_ROSbag_2_trj_DC
@@ -41,7 +41,7 @@ class TestAbstractTrajectoryDataclassROSbagCase:
 
     def test_FeatureDataclass_baseclass_not_instantiable(self):
         with pytest.raises(TypeError):
-            shouldfail = AbstractTrajectoryDataclass(feature_name="try_to_do_it")
+            shouldfail = AbstractTrajectoryFeature(feature_name="try_to_do_it")
 
     def test_class_feature_post_init_base(
         self, setup_mock_feature_child, mock_ROSbag_2_trj_DC

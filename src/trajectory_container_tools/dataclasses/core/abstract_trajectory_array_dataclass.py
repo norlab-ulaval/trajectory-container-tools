@@ -1,38 +1,30 @@
 # coding=utf-8
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional, Union
 
 import numpy as np
 
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass import (
-    AbstractTrajectoryDataclass,
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_feature_dataclass import (
+    AbstractTrajectoryFeature,
 )
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass_common import (
-    AbstractTrajectoryDataclassCommon,
+    AbstractTrajectoryCommon,
 )
 from trajectory_container_tools.utils import extract_class_name_from_instance
 
 
 @dataclass()
-class AbstractNoTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
+class AbstractTrajectoryArray(AbstractTrajectoryCommon):
     """
-    Representation of an abstract data structure for entities without trajectory data at top-level
-    but might in nested ones e.g., a container that contains many trajectory dataclass of different
-    trajectory lenghts.
-
-    :ivar feature_name: Name of the feature associated with the trajectory.
-    :type feature_name: str
+    Representation of an abstract data structure for entities containing heterogonous trajectory
+    data e.g., a container that contains many trajectory feature dataclass of different trajectory lenghts.
     """
-
-    feature_name: str
+    feature_name: Optional[str] = field(default=None, kw_only=True)
 
     @classmethod
     def _dataclass_internal_field(cls) -> List[str]:
-        return super()._dataclass_internal_field() + [
-            "_iter_index",
-            "feature_name",
-        ]
+        return super()._dataclass_internal_field() + ["feature_name", "_iter_index"]
 
     @property
     def registred_trajectory_object_list(self) -> Optional[str]:
@@ -40,8 +32,8 @@ class AbstractNoTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         Specify the attribute name corresponding of the list of trajectory objects.
 
         :return: The attribute name for the NoTrajectoryDataclass lists of trajectory objects.
-        :rtype: str
         """
+        # (NICE TO HAVE) ToDo: implement a mechanism to automaticaly populate 'registred_trajectory_object_list'.
         return None
 
     @classmethod
@@ -55,20 +47,22 @@ class AbstractNoTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         # .... Pre-condition ......................................................................
         if not self.get_dimension_names():
             raise TypeError(
-                f"[TCT error] AbstractNoTrajectoryDataclass is an abstract baseclass, "
+                f"[TCT error] AbstractTrajectoryArray is an abstract baseclass, "
                 f"it must be subclassed in order to be instanciated."
             )
 
-        # .... Base class post init logic .........................................................
+        # .... Base class initialization logic ....................................................
         registred_list = self.registred_trajectory_object_list
         if registred_list is not None:
             registred_list = self.get_dynamic_field(registred_list)
             if registred_list is not None:
                 assert isinstance(registred_list, list)
                 for each in registred_list:
-                    assert isinstance(each, AbstractTrajectoryDataclass)
+                    assert isinstance(each, AbstractTrajectoryFeature)
 
-        # .... Callback logic .....................................................................
+        self.set_parent_container_reference_tracking()
+
+        # .... Callback and attribute customization logic .........................................
         self.on_begin_post_init_callback()
 
         for each_name in self.get_dimension_names():
@@ -85,7 +79,7 @@ class AbstractNoTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         nested_sp = " " * 3
         dataclass_name = extract_class_name_from_instance(self)
         repr_str = f"\n{out_sp}{dataclass_name}(\n"
-        v: Union[np.ndarray, AbstractTrajectoryDataclass, str, int, float]
+        v: Union[np.ndarray, AbstractTrajectoryFeature, str, int, float]
 
         v = self.__dict__.get("feature_name")
         if v is not None:
@@ -105,7 +99,7 @@ class AbstractNoTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 repr_str += f"{indent_v}"
                 repr_str += f"\n{out_sp}{in_sp}]\n"
 
-            elif isinstance(v, AbstractTrajectoryDataclass):
+            elif isinstance(v, AbstractTrajectoryFeature):
                 indent_v = []
                 for each_line in str(v).splitlines():
                     indent_v.append(f"{out_sp}{in_sp}{nested_sp}{each_line}\n")
@@ -121,7 +115,7 @@ class AbstractNoTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
     @property
     def lists_len(self) -> int | None:
         """
-        Provides the length of the registred lists containing AbstractTrajectoryDataclass objects.
+        Provides the length of the registred lists containing AbstractTrajectoryFeature objects.
 
         :return: The total count of items in the registered list of trajectory objects or None if
             there is no registred trajectory object list.
@@ -135,14 +129,14 @@ class AbstractNoTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
     def __len__(self) -> int:
         """
-        Provides the length of the registred lists containing AbstractTrajectoryDataclass objects.
+        Provides the length of the registred lists containing AbstractTrajectoryFeature objects.
 
         :return: The total count of items in the registered list of trajectory objects or `0` if
             there is no registred trajectory object list.
         """
         return self.lists_len or 0
 
-    def __getitem__(self, index) -> AbstractTrajectoryDataclass | None:
+    def __getitem__(self, index) -> AbstractTrajectoryFeature | None:
         trj_obj_list = self.registred_trajectory_object_list
         if trj_obj_list is not None:
             registred_list = self.__getattribute__(trj_obj_list)
@@ -151,11 +145,11 @@ class AbstractNoTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         else:
             return None
 
-    def __iter__(self):
+    def __iter__(self) -> "AbstractTrajectoryArray":
         self._iter_index = 0
         return self
 
-    def __next__(self) -> AbstractTrajectoryDataclass:
+    def __next__(self) -> AbstractTrajectoryFeature:
         if self._iter_index < len(self):
             item = self[self._iter_index]
             self._iter_index += 1

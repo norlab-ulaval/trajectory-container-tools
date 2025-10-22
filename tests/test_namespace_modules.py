@@ -84,6 +84,18 @@ class TestRosNamespaceModule:
         assert hasattr(tct.ros, "rosbag_topic_time_to_ros_time")
         assert callable(tct.ros.rosbag_topic_time_to_ros_time)
 
+    def test_gather_rosbag_informations_function_exists(self, setup_namespace):
+        """Test that gather_rosbag_informations function is available in ros namespace."""
+        tct = setup_namespace
+        assert hasattr(tct.ros, "gather_rosbag_informations")
+        assert callable(tct.ros.gather_rosbag_informations)
+
+    def test_gather_rosbag_trajectory_window_informations_function_exists(self, setup_namespace):
+        """Test that gather_rosbag_trajectory_window_informations function is available in ros namespace."""
+        tct = setup_namespace
+        assert hasattr(tct.ros, "gather_rosbag_trajectory_window_informations")
+        assert callable(tct.ros.gather_rosbag_trajectory_window_informations)
+
     def test_ros_all_attribute(self, setup_namespace):
         """Test that ros module has proper __all__ attribute."""
         tct = setup_namespace
@@ -224,15 +236,15 @@ class TestTypingNamespaceModule:
         assert hasattr(tct, "typing")
         assert tct.typing is not None
 
-    def test_trajectory_dataclass_type_exists(self, setup_namespace):
-        """Test that TrajectoryDataclass type is available in typing namespace."""
+    def test_trajectory_feature_dataclass_type_exists(self, setup_namespace):
+        """Test that TrajectoryFeature type is available in typing namespace."""
         tct = setup_namespace
-        assert hasattr(tct.typing, "TrajectoryDataclass")
+        assert hasattr(tct.typing, "TrajectoryFeature")
 
-    def test_multifeature_trajectory_dataclass_type_exists(self, setup_namespace):
-        """Test that MultifeatureTrajectoryDataclass type is available in typing namespace."""
+    def test_trajectory_feature_bag_dataclass_type_exists(self, setup_namespace):
+        """Test that TrajectoryFeaturesBag type is available in typing namespace."""
         tct = setup_namespace
-        assert hasattr(tct.typing, "MultifeatureTrajectoryDataclass")
+        assert hasattr(tct.typing, "TrajectoryFeaturesBag")
 
     def test_shadow_data_container_type_exists(self, setup_namespace):
         """Test that ShadowDataContainer type is available in typing namespace."""
@@ -253,13 +265,12 @@ class TestMainNamespaceAPI:
         """Test that core abstract classes are available in main namespace."""
         tct = setup_namespace
         core_classes = [
-            "AbstractTrajectoryDataclass",
-            "AbstractMultifeatureDataclass",
-            "AbstractMultifeatureStampedDataclass",
-            "AbstractNoTrajectoryDataclass",
-            "BaseTrajectoryDataclass",
-            "NestedBaseTrajectoryDataclass",
-            "BaseNoTrajectoryDataclass",
+            "AbstractTrajectoryFeature",
+            "AbstractTrajectoryFeaturesBag",
+            "AbstractTrajectoryStampedFeaturesBag",
+            "AbstractTrajectoryArray",
+            "BaseTrajectoryFeature",
+            "BaseTrajectoryFeatureArray",
         ]
 
         for class_name in core_classes:
@@ -284,7 +295,7 @@ class TestDataclassesNamespace:
             "AckermannMsgsAckermannDriveStamped",
             "Tf2MsgsTFMessage",
             "VescMsgsVescImuStamped",
-            "Scan",
+            "SensorMsgsLaserScan",
         ]
 
         for dataclass_name in ros2_dataclasses:
@@ -296,10 +307,10 @@ class TestDataclassesNamespace:
         """Test that abstract classes are available in dataclasses namespace."""
         tct = setup_namespace
         abstract_classes = [
-            "AbstractTrajectoryDataclass",
-            "AbstractMultifeatureDataclass",
-            "AbstractMultifeatureStampedDataclass",
-            "AbstractNoTrajectoryDataclass",
+            "AbstractTrajectoryFeature",
+            "AbstractTrajectoryFeaturesBag",
+            "AbstractTrajectoryStampedFeaturesBag",
+            "AbstractTrajectoryArray",
         ]
 
         for class_name in abstract_classes:
@@ -311,9 +322,8 @@ class TestDataclassesNamespace:
         """Test that abstract classes are available in dataclasses namespace."""
         tct = setup_namespace
         abstract_classes = [
-            "BaseTrajectoryDataclass",
-            "NestedBaseTrajectoryDataclass",
-            "BaseNoTrajectoryDataclass",
+            "BaseTrajectoryFeature",
+            "BaseTrajectoryFeatureArray",
         ]
 
         for class_name in abstract_classes:

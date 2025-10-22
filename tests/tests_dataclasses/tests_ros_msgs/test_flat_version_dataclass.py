@@ -1,14 +1,19 @@
 # coding=utf-8
-from trajectory_container_tools.dataclasses import Header
-from trajectory_container_tools.dataclasses.ros_msgs.flat_version_dataclass import \
-    NavMsgsOdometryFlat, SensorMsgsImuFlat
+from trajectory_container_tools.dataclasses import StdMsgsHeader
+from trajectory_container_tools.dataclasses.ros_msgs.flat_version_dataclass import (
+    NavMsgsOdometryFlat,
+    SensorMsgsImuFlat,
+)
 
 
 def test_NavMsgsOdometry_init_flat_version(mock_ROSbag_2_trj_DC):
     md = mock_ROSbag_2_trj_DC
     dc_ = NavMsgsOdometryFlat(
         feature_name="/pf/pose/odom",
-        header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
+        bag_recorded_timestamps=md.bag_recorded_timestamps,
+        header=StdMsgsHeader(
+            frame_id=md.header.frame_id, timestamps=md.header.timestamps
+        ),
         pose_pose_position_x=md.a,
         pose_pose_position_y=md.a,
         pose_pose_position_z=md.a,
@@ -33,7 +38,10 @@ def test_SensorMsgsImuFlat_init(mock_ROSbag_2_trj_DC):
     md = mock_ROSbag_2_trj_DC
     dc_ = SensorMsgsImuFlat(
         feature_name="/sensors/imu/raw",
-        header=Header(frame_id=md.header.frame_id, timestamps=md.header.timestamps),
+        bag_recorded_timestamps=md.bag_recorded_timestamps,
+        header=StdMsgsHeader(
+            frame_id=md.header.frame_id, timestamps=md.header.timestamps
+        ),
         orientation_x=md.a,
         orientation_y=md.a,
         orientation_z=md.a,

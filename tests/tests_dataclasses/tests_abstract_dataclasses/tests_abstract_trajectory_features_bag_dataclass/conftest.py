@@ -6,21 +6,21 @@ from typing import Tuple, Union
 import numpy as np
 import pytest
 
-from trajectory_container_tools.dataclasses import Header, RosStampedDataclass
-from trajectory_container_tools.dataclasses.core import AbstractMultifeatureStampedDataclass
+from trajectory_container_tools.dataclasses import StdMsgsHeader, RosStampedFeature
+from trajectory_container_tools.dataclasses.core import AbstractTrajectoryStampedFeaturesBag
 from trajectory_container_tools.temporal import Timestamps
 
 
 # ==== Mock dataclasses ===========================================================================
 @dataclass
-class MockRosStampedDataclass(RosStampedDataclass):
+class MockRosStampedFeature(RosStampedFeature):
     mock_feature: np.ndarray
 
 
 @dataclass
-class MockMultifeatureStampedDataclass(AbstractMultifeatureStampedDataclass):
-    topic_mock_observation: MockRosStampedDataclass
-    topic_mock_action: MockRosStampedDataclass
+class MockFeatureBagTrajectoryStampedDataclass(AbstractTrajectoryStampedFeaturesBag):
+    topic_mock_observation: MockRosStampedFeature
+    topic_mock_action: MockRosStampedFeature
 
 
 @dataclass
@@ -177,26 +177,26 @@ def setup_mock_timestamps_case_mixing() -> MockTopicsTimestamps:
 @pytest.fixture(scope="function")
 def setup_mock_mf_container():
 
-    def setup_fct(timestamp_case) -> MockMultifeatureStampedDataclass:
-        topic_mock_obs = MockRosStampedDataclass(
+    def setup_fct(timestamp_case) -> MockFeatureBagTrajectoryStampedDataclass:
+        topic_mock_obs = MockRosStampedFeature(
             feature_name="Mock observation topic",
-            header=Header(
+            header=StdMsgsHeader(
                 frame_id="topic_obs",
                 timestamps=Timestamps(timestamp_case.t_obs_timestamps),
             ),
             mock_feature=np.arange(timestamp_case.t_obs_timestamps.size),
         )
 
-        topic_mock_act = MockRosStampedDataclass(
+        topic_mock_act = MockRosStampedFeature(
             feature_name="Mock action topic",
-            header=Header(
+            header=StdMsgsHeader(
                 frame_id="topic_act",
                 timestamps=Timestamps(timestamp_case.t_act_timestamps),
             ),
             mock_feature=np.arange(timestamp_case.t_act_timestamps.size),
         )
 
-        mf_container = MockMultifeatureStampedDataclass(
+        mf_container = MockFeatureBagTrajectoryStampedDataclass(
             dataset_info="Mock",
             topic_mock_observation=topic_mock_obs,
             topic_mock_action=topic_mock_act,

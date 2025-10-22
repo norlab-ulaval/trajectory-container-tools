@@ -6,40 +6,41 @@ import numpy as np
 import pytest
 
 from trajectory_container_tools import (
-    AbstractMultifeatureDataclass,
+    AbstractTrajectoryFeaturesBag,
 )
-from trajectory_container_tools.dataclasses import RosStampedDataclass
-from trajectory_container_tools.dataclasses.ros_msgs.primitive_dataclass import Header
+from trajectory_container_tools.dataclasses import RosStampedFeature, StdMsgsHeader
 from trajectory_container_tools.temporal.timestamps import Timestamps
 
 
 @dataclass
-class MockMultifeatureDataclass(AbstractMultifeatureDataclass):
-    topic_mock_1: RosStampedDataclass
-    topic_mock_2: RosStampedDataclass
+class MockTrajectoryFeaturesBag(AbstractTrajectoryFeaturesBag):
+    topic_mock_1: RosStampedFeature
+    topic_mock_2: RosStampedFeature
 
 
-class TestAbstractMultifeatureDataclass:
+class TestAbstractTrajectoryFeaturesBag:
 
     @pytest.fixture(scope="function")
     def setup_mock_topic_container(
         self,
-    ) -> Tuple[RosStampedDataclass, RosStampedDataclass]:
-        topic_mock_1 = RosStampedDataclass(
+    ) -> Tuple[RosStampedFeature, RosStampedFeature]:
+        topic_mock_1 = RosStampedFeature(
             feature_name="Mock topic 1",
-            header=Header(frame_id="topic_1", timestamps=np.arange(20) * 1e9),
+            bag_recorded_timestamps=np.arange(20) * 1e9,
+            header=StdMsgsHeader(frame_id="topic_1", timestamps=np.arange(20) * 1e9),
         )
 
-        topic_mock_2 = RosStampedDataclass(
+        topic_mock_2 = RosStampedFeature(
             feature_name="Mock topic 2",
-            header=Header(frame_id="topic_2", timestamps=np.arange(20) * 1e9),
+            bag_recorded_timestamps=np.arange(20) * 1e9,
+            header=StdMsgsHeader(frame_id="topic_2", timestamps=np.arange(20) * 1e9),
         )
         return topic_mock_1, topic_mock_2
 
     def test_instanciation_base_case(self, setup_mock_topic_container):
         topic_mock_1, topic_mock_2 = setup_mock_topic_container
 
-        mf_container = MockMultifeatureDataclass(
+        mf_container = MockTrajectoryFeaturesBag(
             dataset_info="Mock",
             topic_mock_1=topic_mock_1,
             topic_mock_2=topic_mock_2,
@@ -48,8 +49,9 @@ class TestAbstractMultifeatureDataclass:
 
         assert isinstance(mf_container.aggregated_date, datetime.datetime)
         assert mf_container.dataset_info == "Mock"
-        assert isinstance(mf_container.topic_mock_1, RosStampedDataclass)
-        assert isinstance(mf_container.topic_mock_2, RosStampedDataclass)
+        assert mf_container._parent is None
+        assert isinstance(mf_container.topic_mock_1, RosStampedFeature)
+        assert isinstance(mf_container.topic_mock_2, RosStampedFeature)
         assert mf_container.topic_mock_1.feature_name == "Mock topic 1"
         assert mf_container.topic_mock_2.feature_name == "Mock topic 2"
 
@@ -65,7 +67,7 @@ class TestAbstractMultifeatureDataclass:
         else:
             mock_bag_timestamps = None
 
-        mf_container = MockMultifeatureDataclass(
+        mf_container = MockTrajectoryFeaturesBag(
             dataset_info="Mock",
             topic_mock_1=topic_mock_1,
             topic_mock_2=topic_mock_2,
@@ -77,7 +79,7 @@ class TestAbstractMultifeatureDataclass:
 
     def test_case_no_bag_level_timestamps(self, setup_mock_topic_container):
         topic_mock_1, topic_mock_2 = setup_mock_topic_container
-        mf_container = MockMultifeatureDataclass(
+        mf_container = MockTrajectoryFeaturesBag(
             dataset_info="Mock",
             topic_mock_1=topic_mock_1,
             topic_mock_2=topic_mock_2,
@@ -91,7 +93,7 @@ class TestAbstractMultifeatureDataclass:
 
         mock_bag_timestamps = Timestamps(stamps=np.arange(20) * 1e9)
 
-        mf_container = MockMultifeatureDataclass(
+        mf_container = MockTrajectoryFeaturesBag(
             dataset_info="Mock",
             topic_mock_1=topic_mock_1,
             topic_mock_2=topic_mock_2,
@@ -105,7 +107,7 @@ class TestAbstractMultifeatureDataclass:
 
         mock_bag_timestamps = Timestamps(stamps=np.arange(20) * 1e9)
 
-        mf_container = MockMultifeatureDataclass(
+        mf_container = MockTrajectoryFeaturesBag(
             dataset_info="Mock",
             topic_mock_1=topic_mock_1,
             topic_mock_2=topic_mock_2,
@@ -119,3 +121,19 @@ class TestAbstractMultifeatureDataclass:
         assert "topic_mock_1" in topic_key_list
         assert "topic_mock_2" in topic_key_list
 
+    def test_nested_member_parent_tracking(self, setup_mock_topic_container):
+        topic_mock_1, topic_mock_2 = setup_mock_topic_container
+        mf_container = MockTrajectoryFeaturesBag(
+            dataset_info="Mock",
+            topic_mock_1=topic_mock_1,
+            topic_mock_2=topic_mock_2,
+            bag_timestamps=None,
+        )
+
+        assert mf_container._parent is None
+        for each_key in mf_container.topic_key_list:
+            each_attribute = mf_container.get_dynamic_field(each_key)
+            assert id(each_attribute.get_parent_container()) == id(mf_container)
+
+            t_parent = each_attribute.header.get_parent_container()
+            assert id(t_parent) == id(each_attribute)

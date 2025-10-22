@@ -207,7 +207,7 @@ def find_max_timestamp_delta_over_all_topics(
     This function extracts topic's data from a given ROS bag file. It computes and returns the largest delta
     between consecutive timestamps for all topics specified in the feature configuration dictionary.
 
-    Note: AbstractTrajectoryDataclass subclasses are evaluated
+    Note: AbstractTrajectoryFeature subclasses are evaluated
 
     :param bag_path_abs: Path to the ROS bag file.
     :param features_config: Dictionary containing configuration for extracting features.
@@ -225,7 +225,7 @@ def find_max_timestamp_delta_over_all_topics(
     for each in mf_container.topic_key_list:
         if issubclass(
             mf_container.get_dimension_type(each)[0],
-            tct.AbstractTrajectoryDataclass,
+            tct.AbstractTrajectoryFeature,
         ):
             topics_max_delta_stamp.append(
                 np.max(

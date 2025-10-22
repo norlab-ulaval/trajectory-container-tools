@@ -2,10 +2,10 @@
 from copy import deepcopy
 from dataclasses import dataclass, field
 import numpy as np
-from typing import List, Union
+from typing import List, Optional, Union
 
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass_common import (
-    AbstractTrajectoryDataclassCommon,
+    AbstractTrajectoryCommon,
 )
 from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.temporal import validate_timestep_indices
@@ -15,9 +15,9 @@ from trajectory_container_tools.utils.general import (
 
 
 @dataclass()
-class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
+class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
     """
-    AbstractTrajectoryDataclass serves as a structured representation for trajectory data,
+    AbstractTrajectoryFeature serves as a structured representation for trajectory data,
     providing methods for metadata management, data manipulation, and field extraction.
 
     This dataclass is designed to handle trajectory-related data encapsulated in structured
@@ -37,8 +37,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
     _timestep_indexes: np.ndarray = field(default=None, init=False)
     _iter_index: int = field(default=0, init=False)
     _transposed: bool = field(default=False, init=False)
-    _nested: bool = field(default=False, init=False)
-    feature_name: str
+    feature_name: Optional[str] = field(default=None, kw_only=True)
     batch: bool = field(default=False, compare=True, kw_only=True)
 
     # Note on timesteps_indices:
@@ -50,12 +49,11 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
     @classmethod
     def _dataclass_internal_field(cls) -> List[str]:
         return super()._dataclass_internal_field() + [
-            "feature_name",
-            "timesteps_indices",
             "_timestep_indexes",
             "_iter_index",
             "_transposed",
-            "_nested",
+            "feature_name",
+            "timesteps_indices",
             "batch",
         ]
 
@@ -98,18 +96,23 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                 if isinstance(attribute_, np.ndarray):
                     ravel__copy = attribute_.ravel()
                     self.__setattr__(each_data_property, ravel__copy)
-                elif isinstance(attribute_, AbstractTrajectoryDataclass):
+                elif isinstance(attribute_, AbstractTrajectoryFeature):
                     attribute_.ravel_dimensions_in_place()
 
         return None
 
     def __post_init__(self):
+        # .... Pre-condition ......................................................................
         if not self.get_dimension_names():
             raise TypeError(
-                f"[TCT error] AbstractTrajectoryDataclass is an abstract baseclass, "
+                f"[TCT error] AbstractTrajectoryFeature is an abstract baseclass, "
                 f"it must be subclassed in order to be instanciated."
             )
 
+        # .... Base class initialization logic ....................................................
+        self.set_parent_container_reference_tracking()
+
+        # .... Callback and attribute customization logic .........................................
         self.on_begin_post_init_callback()
 
         for each_name in self.get_dimension_names():
@@ -118,10 +121,10 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
             else:
                 self.post_init_feature_callback(feature_name=each_name)
 
-                # .... Setup timestep indexing ....................................................
                 data_property = self.__getattribute__(each_name)
 
-                if isinstance(data_property, (AbstractTrajectoryDataclass, Timestamps)):
+                # .... Setup timestep indexing ....................................................
+                if isinstance(data_property, (AbstractTrajectoryFeature, Timestamps)):
                     # Case nested container: Init timesteps using nested entity trajectory_len
                     if self._timestep_indexes is None:
                         self._timestep_indexes = np.arange(len(data_property))
@@ -171,7 +174,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         try:
             for each_name in self.get_dimension_names():
                 data_property = self.__getattribute__(each_name)
-                if isinstance(data_property, AbstractTrajectoryDataclass):
+                if isinstance(data_property, AbstractTrajectoryFeature):
                     del data_property
         except AttributeError as e:
             # Skip missing attribute.
@@ -184,13 +187,13 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         nested_sp = " " * 3
         dataclass_name = extract_class_name_from_instance(self)
         repr_str = f"\n{out_sp}{dataclass_name}(\n"
-        v: Union[np.ndarray, AbstractTrajectoryDataclass, str, int, float]
+        v: Union[np.ndarray, AbstractTrajectoryFeature, str, int, float]
 
         v = self.__dict__.get("feature_name")
         if v is not None:
             repr_str += f'{out_sp}{in_sp}feature_name: "{v}"\n'
 
-        if not self._nested:
+        if not self.is_nested():
             repr_str += f"{out_sp}{in_sp}trajectory_len: {self.trajectory_len}\n"
             if self.batch:
                 repr_str += f"{out_sp}{in_sp}batch: {self.batch}\n"
@@ -199,7 +202,9 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         for k, v in self.__dict__.items():
             if k in self._dataclass_internal_field():
                 pass
-            elif k == "timesteps_indices" and self._nested:
+            elif k == "timesteps_indices" and self.is_nested():
+                pass
+            elif k == "bag_recorded_timestamps" and self.is_nested() and v is None:
                 pass
             elif isinstance(v, (np.ndarray, Timestamps)):
                 if isinstance(v, Timestamps):
@@ -217,7 +222,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
                         f"{out_sp}{in_sp}{k}: ({extract_class_name_from_instance(v)}) "
                         f"shape {v.shape} {range_str}\n"
                     )
-            elif isinstance(v, AbstractTrajectoryDataclass):
+            elif isinstance(v, AbstractTrajectoryFeature):
                 indent_v = []
                 for each_line in str(v).splitlines():
                     indent_v.append(f"{out_sp}{in_sp}{nested_sp}{each_line}\n")
@@ -237,7 +242,8 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
         else:
             return self._time_axis
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> "AbstractTrajectoryFeature":
+
         feature_dataclass_at_t = deepcopy(self)
 
         feature_dataclass_at_t.__setattr__(
@@ -254,7 +260,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
                 if isinstance(
                     each_attribute,
-                    (np.ndarray, AbstractTrajectoryDataclass, Timestamps),
+                    (np.ndarray, AbstractTrajectoryFeature, Timestamps),
                 ):
                     if self.current_trj_axe == 0:
                         # Case: time-serie
@@ -276,11 +282,11 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
 
         return feature_dataclass_at_t
 
-    def __iter__(self):
+    def __iter__(self) -> "AbstractTrajectoryFeature":
         self._iter_index = 0
         return self
 
-    def __next__(self):
+    def __next__(self) -> "AbstractTrajectoryFeature":
         if self._iter_index < self.trajectory_len:
             item = self[self._iter_index]
             self._iter_index += 1
@@ -289,7 +295,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
             raise StopIteration
 
     @property
-    def T(self):
+    def T(self) -> "AbstractTrajectoryFeature":
         """Flips the axes of the ndarray properties."""
         for each_name in self.get_dimension_names():
             if each_name in self.non_trajectory_field():
@@ -297,7 +303,7 @@ class AbstractTrajectoryDataclass(AbstractTrajectoryDataclassCommon):
             else:
                 data_property = self.__getattribute__(each_name)
 
-                if isinstance(data_property, (np.ndarray, AbstractTrajectoryDataclass)):
+                if isinstance(data_property, (np.ndarray, AbstractTrajectoryFeature)):
                     self.__setattr__(each_name, data_property.T)
 
         self._transposed = not self._transposed

@@ -5,14 +5,19 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "trajectory-container-tools"
 dynamic = ["version"]
-
 description = "Trajectory Container Tools for Robotic Deep Reinforcement Learning"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
-    { name = "RedLeader Research", email = "research@redleader.com" }
+    { name = "Luc Coupal", email = "luc.coupal.1@ulaval.ca" }
 ]
-keywords = ["robotics", "reinforcement-learning", "trajectory", "dataclass"]
+keywords = [
+    "trajectory",
+    "dataclasses",
+    "sequential-decision-making-problem",
+    "robotics",
+    "deep-reinforcement-learning"
+]
 classifiers = [
     "Development Status :: 3 - Beta",
     "Intended Audience :: Science/Research",

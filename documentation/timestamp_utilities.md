@@ -11,7 +11,7 @@ This guide covers the timestamp-related utilities and methods available in Traje
   - [Nearest Timestamp Search](#nearest-timestamp-search)
   - [Index Operations](#index-operations)
   - [Error Handling](#error-handling)
-- [Multifeature Timestamp Methods](#multifeature-timestamp-methods)
+- [TrajectoryFeaturesBag Timestamp Methods](#trajectoryfeaturesbag-timestamp-methods)
   - [The `get_timestamps()` method](#the-get_timestamps-method)
   - [The `trajectory_timestamps` and `trajectory_timestamps_limits` properties](#the-trajectory_timestamps-and-trajectory_timestamps_limits-properties)
 - [Use Cases and Examples](#use-cases-and-examples)
@@ -146,39 +146,41 @@ except TimestampCausalOrderingError as e:
 - **TimestampOutOfBoundError**: Raised when timestamp is outside the valid range
 - **TimestampCausalOrderingError**: Raised when timestamps violate monotonic ordering
 
-## Multifeature Timestamp Methods
+## TrajectoryFeaturesBag Timestamp Methods
 
-For `AbstractMultifeatureStampedDataclass` containers (e.g., extracted from ROS bags with multiple topics), TCT provides methods to work with timestamps across all features.
+For `AbstractTrajectoryStampedFeaturesBag` containers (e.g., extracted from ROS bags with multiple topics), TCT provides methods to work with timestamps across all features.
 
 ### The `get_timestamps()` method
 
 Retrieve trajectory data within a specified timestamp range:
 
 ```python
+import trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass
+import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 import trajectory_container_tools as tct
 
-# Extract multifeature data from ROS bag
-multifeature_data = tct.extractor.from_rosbag(
-    rosbag_path=rosbag_path,
-    features_config={
-        '/odom': tct.dataclasses.NavMsgsOdometry,
-        '/cmd': tct.dataclasses.AckermannMsgsAckermannDriveStamped,
-    },
-    chunk_on="/cmd",
-)
+# Extract trajectory features data from ROS bag
+trajectory_features_bag = tct.extractor.from_rosbag(
+        rosbag_path=rosbag_path,
+        features_config={
+                '/odom': trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
+                '/cmd':  trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass.AckermannMsgsAckermannDriveStamped,
+                },
+        chunk_on="/cmd",
+        )
 
 # Extract data within specific timestamp window
 start_time = 1695601812731601521
 stop_time = 1695601815000000000
 
-windowed_data = multifeature_data.get_timestamps(
-    start=start_time,
-    stop=stop_time,
-    startpoint=True,   # Include start timestamp
-    endpoint=False     # Exclude end timestamp
-)
+windowed_data = trajectory_features_bag.get_timestamps(
+        start=start_time,
+        stop=stop_time,
+        startpoint=True,  # Include start timestamp
+        endpoint=False  # Exclude end timestamp
+        )
 
-print(f"Original chunks: {multifeature_data.chunks_total}")
+print(f"Original chunks: {trajectory_features_bag.chunks_total}")
 print(f"Windowed chunks: {windowed_data.chunks_total}")
 ```
 
@@ -188,7 +190,7 @@ print(f"Windowed chunks: {windowed_data.chunks_total}")
 - `startpoint` (bool): Include the starting timestamp (default: True)
 - `endpoint` (bool): Include the ending timestamp (default: False)
 
-**Returns:** A new multifeature container containing only data within the specified timestamp range.
+**Returns:** A new trajectory features bag container containing only data within the specified timestamp range.
 
 **Use Cases:**
 - Extract specific time windows from long recordings
@@ -203,7 +205,7 @@ Access all unique timestamps across all features (excluding bag_timestamps):
 
 ```python
 # Get sorted unique timestamps from all features
-all_timestamps = multifeature_data.trajectory_timestamps
+all_timestamps = trajectory_features_bag.trajectory_timestamps
 
 print(f"Total unique timestamps: {len(all_timestamps)}")
 ```
@@ -219,7 +221,7 @@ print(f"Total unique timestamps: {len(all_timestamps)}")
 Get the first and last timestamps across all features:
 
 ```python
-ts_limits = multifeature_data.trajectory_timestamps_limits
+ts_limits = trajectory_features_bag.trajectory_timestamps_limits
 print(f"First timestamp: {ts_limits.first}")
 print(f"Last timestamp: {ts_limits.last}")
 print(f"Recording duration: {ts_limits.duration}")
@@ -242,18 +244,20 @@ if limits.first <= my_timestamp and my_timestamp <= limits.last:
 ### Example 1: Synchronize Multi-Sensor Data
 
 ```python
+import trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass
+import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 import trajectory_container_tools as tct
 
 # Extract multi-sensor data
 robot_data = tct.extractor.from_rosbag(
-    rosbag_path=rosbag_path,
-    features_config={
-        "/odom": tct.dataclasses.NavMsgsOdometry,
-        "/imu": tct.dataclasses.SensorMsgsImu,
-        "/cmd": tct.dataclasses.AckermannMsgsAckermannDriveStamped,
-    },
-    chunk_on="/cmd",
-)
+        rosbag_path=rosbag_path,
+        features_config={
+                "/odom": trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
+                "/imu":  tct.dataclasses.SensorMsgsImu,
+                "/cmd":  trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass.AckermannMsgsAckermannDriveStamped,
+                },
+        chunk_on="/cmd",
+        )
 
 # Get timestamps for each sensor
 odom_stamps = robot_data.topic_odom.header.timestamps
@@ -261,12 +265,12 @@ cmd_stamps = robot_data.topic_cmd.header.timestamps
 
 # Find synchronized timestamps
 for cmd_stamp in cmd_stamps.stamps[:10]:  # First 10 commands
-    # Find nearest future odometry reading
-    if odom_stamps.is_timestamps_in_bounds(cmd_stamp):
-        nearest_odom_stamp = odom_stamps.get_nearest_stamp(
+  # Find nearest future odometry reading
+  if odom_stamps.is_timestamps_in_bounds(cmd_stamp):
+    nearest_odom_stamp = odom_stamps.get_nearest_stamp(
             cmd_stamp, future=True, include=False
-        )
-        print(f"Command at {cmd_stamp} -> Odom at {nearest_odom_stamp}")
+            )
+    print(f"Command at {cmd_stamp} -> Odom at {nearest_odom_stamp}")
 
 ```
 

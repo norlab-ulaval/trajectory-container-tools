@@ -6,24 +6,24 @@ import pytest
 import numpy as np
 
 from trajectory_container_tools import (
-    AbstractNoTrajectoryDataclass,
-    AbstractTrajectoryDataclass,
+    AbstractTrajectoryArray,
+    AbstractTrajectoryFeature,
 )
 
 
 @dataclass()
-class MockNoNestedListAbstractTrajectoryDataclass(AbstractNoTrajectoryDataclass):
+class MockNoNestedListAbstractTrajectoryArray(AbstractTrajectoryArray):
     mock_no_trj_attribute: np.ndarray
 
 
 @dataclass()
-class MockAbstractTrajectoryDataclass(AbstractTrajectoryDataclass):
+class MockAbstractTrajectoryFeature(AbstractTrajectoryFeature):
     mock_attribute: np.ndarray
 
 
 @dataclass()
-class MockNestedListAbstractTrajectoryDataclass(AbstractNoTrajectoryDataclass):
-    mock_list_attribute: list[MockAbstractTrajectoryDataclass]
+class MockNestedListAbstractTrajectoryArray(AbstractTrajectoryArray):
+    mock_list_attribute: list[MockAbstractTrajectoryFeature]
 
     @property
     def registred_trajectory_object_list(self) -> Optional[str]:
@@ -31,28 +31,28 @@ class MockNestedListAbstractTrajectoryDataclass(AbstractNoTrajectoryDataclass):
 
 
 @pytest.fixture
-def setup_mock_no_nested_list_subclass() -> MockNoNestedListAbstractTrajectoryDataclass:
-    return MockNoNestedListAbstractTrajectoryDataclass(
+def setup_mock_no_nested_list_subclass() -> MockNoNestedListAbstractTrajectoryArray:
+    return MockNoNestedListAbstractTrajectoryArray(
         feature_name="mock", mock_no_trj_attribute=np.ones(10)
     )
 
 
 @pytest.fixture
-def setup_mock_nested_list_subclass() -> MockNestedListAbstractTrajectoryDataclass:
-    return MockNestedListAbstractTrajectoryDataclass(
+def setup_mock_nested_list_subclass() -> MockNestedListAbstractTrajectoryArray:
+    return MockNestedListAbstractTrajectoryArray(
         feature_name="mock",
         mock_list_attribute=[
-            MockAbstractTrajectoryDataclass(
+            MockAbstractTrajectoryFeature(
                 feature_name="mock nested attrib 1", mock_attribute=np.arange(10)
             ),
-            MockAbstractTrajectoryDataclass(
+            MockAbstractTrajectoryFeature(
                 feature_name="mock nested attrib 2", mock_attribute=np.arange(15)
             ),
         ],
     )
 
 
-class TestAbstractNoTrajectoryDataclassCaseNoNestedListSubclass:
+class TestCaseNoArray:
 
     def test_instanciation(self, setup_mock_no_nested_list_subclass):
         t_container = setup_mock_no_nested_list_subclass
@@ -87,7 +87,7 @@ class TestAbstractNoTrajectoryDataclassCaseNoNestedListSubclass:
         assert len([*t_container]) == 0
 
 
-class TestAbstractNoTrajectoryDataclassCaseNestedListSubclass:
+class TestCaseArrayOfTrajectoryFeatureDataclasses:
 
     def test_instanciation(self, setup_mock_nested_list_subclass):
 
@@ -133,3 +133,10 @@ class TestAbstractNoTrajectoryDataclassCaseNestedListSubclass:
 
         for each in t_container:
             print(each)
+
+    def test_nested_member_parent_tracking(self, setup_mock_nested_list_subclass):
+        t_container = setup_mock_nested_list_subclass
+
+        assert t_container.get_parent_container() is None
+        assert id(t_container.mock_list_attribute[0].get_parent_container()) == id(t_container)
+        assert id(t_container.mock_list_attribute[1].get_parent_container()) == id(t_container)
