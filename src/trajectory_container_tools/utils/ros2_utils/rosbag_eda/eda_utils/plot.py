@@ -119,9 +119,9 @@ def plot_bag_timestamp_delta(
                         )
 
                     if use_bag_stamps:
-                        topic_label = f"{each_topic_name} (record stamps)"
+                        topic_label = f"{each_topic_name} (recorded time)"
                     else:
-                        topic_label = f"{each_topic_name} (publish stamps)"
+                        topic_label = f"{each_topic_name} (published time)"
 
                     plt.plot(
                         x_in_second,

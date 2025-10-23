@@ -117,7 +117,7 @@ def gather_rosbag_trajectory_window_informations(
                 ):
                     counter += 1
 
-                selected_topic_info[str(window_connection.topic)]["count"] = counter
+                selected_topic_info[str(connection.topic)]["count"] = counter
 
             progressbar_topic.update(1)
         progressbar_topic.close()
