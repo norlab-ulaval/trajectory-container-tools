@@ -70,8 +70,16 @@ def plot_bag_timestamp_delta(
 
             if isinstance(each_topic, tct.dataclasses.RosStampedFeature):
 
-                topic_ts_stamps = each_topic.header.timestamps.stamps[1:]
-                topic_ts_delta = each_topic.header.timestamps.delta_stamps[1:]
+                use_bag_stamps = False
+                if each_topic.has_dynamic_field("header.timestamps"):
+                    topic_ts_stamps = each_topic.get_dynamic_field("header.timestamps").stamps[1:]
+                    topic_ts_delta = each_topic.get_dynamic_field("header.timestamps").delta_stamps[1:]
+                elif each_topic.has_dynamic_field("bag_recorded_timestamps"):
+                    topic_ts_stamps = each_topic.get_dynamic_field("bag_recorded_timestamps").stamps[1:]
+                    topic_ts_delta = each_topic.get_dynamic_field("bag_recorded_timestamps").delta_stamps[1:]
+                    use_bag_stamps = True
+                else:
+                    raise AttributeError(f"{each_topic_name} has no timestamps attribute!")
 
                 if topic_ts_delta is not None and len(topic_ts_delta) > 0:
                     y = topic_ts_delta
@@ -110,11 +118,16 @@ def plot_bag_timestamp_delta(
                             linewidth=0.5,
                         )
 
+                    if use_bag_stamps:
+                        topic_label = f"{each_topic_name} (record stamps)"
+                    else:
+                        topic_label = f"{each_topic_name} (publish stamps)"
+
                     plt.plot(
                         x_in_second,
                         y,
                         alpha=0.6,
-                        label=f"{each_topic_name}",
+                        label=topic_label,
                         linewidth=LINEWIDTH,
                         linestyle=_l,
                         marker=_m,

@@ -193,8 +193,8 @@ class AbstractTrajectoryCommon(abc.ABC):
         This function allows accessing nested attributes of an object dynamically, based on a
         string representation of the attribute's hierarchical structure. It takes a dot-separated
         attribute name, traverses the object's nested levels sequentially, and retrieves the final
-        attribute e.g., "topic_odom.pose.pose.position.x" would sequentialy crawl into nested
-        container "topic_odom" -> "pose" -> "pose" -> "position" -> "x".
+        attribute e.g., "feature_name=topic_odom.pose.pose.position.x" would sequentialy crawl into
+        nested container "topic_odom" -> "pose" -> "pose" -> "position" -> "x".
 
         Example:
 
@@ -208,6 +208,31 @@ class AbstractTrajectoryCommon(abc.ABC):
         for each in feature_name.split("."):
             nested_attribute = nested_attribute.__getattribute__(each)
         return nested_attribute
+
+    def has_dynamic_field(self, feature_name) -> bool:
+        """
+        Check if a dynamicaly declared attribute exists in the object.
+
+        This function allows checking nested attributes of an object dynamically, based on a
+        string representation of the attribute's hierarchical structure. It takes a dot-separated
+        attribute name, traverses the object's nested levels sequentially until reaching the final
+        attribute in which case it returns True
+        e.g., "feature_name=topic_odom.pose.pose.position.x" would sequentialy crawl into nested
+        container "topic_odom" -> "pose" -> "pose" -> "position" -> "x"  ->  True.
+
+        Example:
+
+        >>> self.has_dynamic_field("topic_odom.pose.pose.position.x")
+
+        :param feature_name: A dot-separated string representing the hierarchical
+          structure of the attribute to retrieve.
+        :return: True if the dynamic field exists, False otherwise.
+        """
+        try:
+            self.get_dynamic_field(feature_name)
+            return True
+        except AttributeError:
+            return False
 
     def set_dynamic_field(self, feature_name: str, value: Any) -> None:
         """Sets a dynamically resolved nested field or attribute within an object.

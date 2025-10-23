@@ -257,6 +257,17 @@ class TestAbstractTrajectoryCommon:
             t_container.mock_nested_attr.mock_nested_attr.mock_attr_nested_attr,
         )
 
+    def test_has_dynamic_field(self, setup_three_lvl_trajectory_dataclass):
+        t_container = setup_three_lvl_trajectory_dataclass
+
+        assert t_container.has_dynamic_field("mock_attr") == True
+        assert t_container.has_dynamic_field("mock_nested_attr.mock_attr") == True
+        assert t_container.has_dynamic_field("mock_nested_attr.mock_nested_attr.mock_attr_nested_attr") == True
+
+        assert t_container.has_dynamic_field("mock_attr999") == False
+        assert t_container.has_dynamic_field("mock_nested_attr.mock_attr999") == False
+        assert t_container.has_dynamic_field("mock_nested_attr.mock_nested_attr.mock_attr_nested_attr999") == False
+
     def test_set_dynamic_field(self, setup_three_lvl_trajectory_dataclass):
         t_container = setup_three_lvl_trajectory_dataclass
 
