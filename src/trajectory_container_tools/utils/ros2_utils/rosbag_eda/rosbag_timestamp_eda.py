@@ -60,8 +60,8 @@ def run_rosbag_timestamp_eda(
     figsize: Tuple[int, int] = (28, 10),
     save_dpi: int = 100,
     typestore: Optional[Typestore] = None,
-    start: bool = None,
-    stop: bool = None,
+    bag_start: bool = None,
+    bag_stop: bool = None,
 ) -> AbstractTrajectoryStampedFeaturesBag:
     """
     Executes timestamp-based Exploratory Data Analysis (EDA) on a ROSbag file by analyzing
@@ -83,8 +83,8 @@ def run_rosbag_timestamp_eda(
     :param save_dpi: Dpi of the saved figures. Default to matplotlib default i.e., dpi=100
     :param typestore: Optional. The typestore instance to register the non-native
         messages. If not provided, a default typestore will be initialized.
-    :param start: The start timestamp for the time window in nanoseconds. If None, the bag's start time is used.
-    :param stop: The stop timestamp for the time window in nanoseconds. If None, the bag's end time is used.
+    :param bag_start: The start timestamp for the time window in nanoseconds. If None, the bag's start time is used.
+    :param bag_stop: The stop timestamp for the time window in nanoseconds. If None, the bag's end time is used.
     :return: None
     """
     # .... Setup path .............................................................................
@@ -115,22 +115,22 @@ def run_rosbag_timestamp_eda(
     rosbag_info_str, bag_timestamps_meta = gather_rosbag_informations(bag_path_abs)
     print(rosbag_info_str)
 
-    if start is None:
-        start = bag_timestamps_meta.start_time
+    if bag_start is None:
+        bag_start = bag_timestamps_meta.start_time
 
-    if stop is None:
-        stop = bag_timestamps_meta.end_time
+    if bag_stop is None:
+        bag_stop = bag_timestamps_meta.end_time
 
-    if start is None and stop is None:
+    if bag_start is None and bag_stop is None:
         duration = bag_timestamps_meta.duration
     else:
-        duration = stop - start
+        duration = bag_stop - bag_start
 
     window_info = gather_rosbag_trajectory_window_informations(
         bag_path_abs,
         features_config,
-        start,
-        stop,
+        bag_start,
+        bag_stop,
     )
     print("\n", window_info)
 
@@ -139,8 +139,8 @@ def run_rosbag_timestamp_eda(
         dataset_info=None,
         features_config=features_config,
         chunk_on=chunk_on,
-        start=start,
-        stop=stop,
+        start=bag_start,
+        stop=bag_stop,
         typestore=typestore,
     )
 
@@ -194,23 +194,23 @@ def run_rosbag_timestamp_eda(
     progressbar = setup_progressbar(num_iterations)
     for each_idx in range(num_iterations):
 
-        window_start, window_stop = compute_window_start_and_stop(
-            start,
-            stop,
+        idx_window_start, idx_window_stop = compute_window_start_and_stop(
+            bag_start,
+            bag_stop,
             each_idx,
             fast_forward_ns,
             window_ns,
         )
 
         plot_bag_timestamp_delta(
-            start,
+            bag_timestamps_meta.start_time,
             mf_container.get_timestamps(
-                start=window_start, stop=window_stop, startpoint=True, endpoint=True
+                start=idx_window_start, stop=idx_window_stop, startpoint=True, endpoint=True
             ),
             bag_path_abs,
             experiment_dir_path,
             chunk_on=chunk_on,
-            append_to_title=f"trajectory window size: {to_seconds(window_stop - window_start)} (s)",
+            append_to_title=f"trajectory window size: {to_seconds(idx_window_stop - idx_window_start)} (s)",
             comment=None,
             plot_ylim=plot_ylim,
             plot_postfix=each_idx,
@@ -242,10 +242,10 @@ if __name__ == "__main__":
         bag_path_,
         eda_dir_path=dn_sanitize_path("artifact/rosbag_eda"),
         features_config={
+            "/teleop": trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass.AckermannMsgsAckermannDriveStamped,
             "/odom": trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
             "/tf": tct_dataclasses.Tf2MsgsTFMessage,
             "/scan": tct_dataclasses.SensorMsgsLaserScan,
-            "/teleop": trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass.AckermannMsgsAckermannDriveStamped,
             "/sensors/imu/raw": trajectory_container_tools.dataclasses.ros_msgs.sensor_msgs_dataclass.SensorMsgsImu,
             "/sensors/imu": trajectory_container_tools.dataclasses.ros_msgs.vesc_msgs_dataclass.VescMsgsVescImuStamped,
         },

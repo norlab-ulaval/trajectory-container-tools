@@ -111,7 +111,7 @@ def gather_rosbag_trajectory_window_informations(
                 )
 
                 counter = 0
-                for window_connection, _, _ in reader.messages(
+                for _ in reader.messages(
                     (connection,), start=start, stop=stop
                 ):
                     counter += 1

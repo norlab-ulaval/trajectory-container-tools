@@ -248,7 +248,7 @@ def extract_rosbag_feature(
                 feature_connection = connections[feature_name]
 
                 feature_msg_len = 0
-                for window_connection, _, _ in reader.messages(
+                for _ in reader.messages(
                     (feature_connection,), start=start, stop=stop
                 ):
                     feature_msg_len += 1

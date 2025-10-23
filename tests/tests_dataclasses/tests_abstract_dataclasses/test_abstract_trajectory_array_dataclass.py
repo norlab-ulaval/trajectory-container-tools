@@ -1,6 +1,6 @@
 # coding=utf-8
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
 
 import pytest
 import numpy as np
@@ -15,6 +15,10 @@ from trajectory_container_tools import (
 class MockNoNestedListAbstractTrajectoryArray(AbstractTrajectoryArray):
     mock_no_trj_attribute: np.ndarray
 
+    @classmethod
+    def non_trajectory_field(cls) -> List[str]:
+        return super().non_trajectory_field() + ["mock_no_trj_attribute"]
+
 
 @dataclass()
 class MockAbstractTrajectoryFeature(AbstractTrajectoryFeature):
@@ -23,17 +27,24 @@ class MockAbstractTrajectoryFeature(AbstractTrajectoryFeature):
 
 @dataclass()
 class MockNestedListAbstractTrajectoryArray(AbstractTrajectoryArray):
-    mock_list_attribute: list[MockAbstractTrajectoryFeature]
+    mock_trj_feature_array: list[MockAbstractTrajectoryFeature]
+    mock_no_trj_attribute: list[int]
+    mock_trj_attribute: np.ndarray
 
     @property
     def registred_trajectory_object_list(self) -> Optional[str]:
-        return "mock_list_attribute"
+        return "mock_trj_feature_array"
+
+    @classmethod
+    def non_trajectory_field(cls) -> List[str]:
+        return super().non_trajectory_field() + ["mock_no_trj_attribute"]
 
 
 @pytest.fixture
 def setup_mock_no_nested_list_subclass() -> MockNoNestedListAbstractTrajectoryArray:
     return MockNoNestedListAbstractTrajectoryArray(
-        feature_name="mock", mock_no_trj_attribute=np.ones(10)
+        feature_name="mock",
+        mock_no_trj_attribute=np.ones(10),
     )
 
 
@@ -41,12 +52,16 @@ def setup_mock_no_nested_list_subclass() -> MockNoNestedListAbstractTrajectoryAr
 def setup_mock_nested_list_subclass() -> MockNestedListAbstractTrajectoryArray:
     return MockNestedListAbstractTrajectoryArray(
         feature_name="mock",
-        mock_list_attribute=[
+        mock_no_trj_attribute=[*range(99)],
+        mock_trj_attribute=np.arange(20),
+        mock_trj_feature_array=[
             MockAbstractTrajectoryFeature(
-                feature_name="mock nested attrib 1", mock_attribute=np.arange(10)
+                feature_name="mock nested attrib 1",
+                mock_attribute=np.arange(10),
             ),
             MockAbstractTrajectoryFeature(
-                feature_name="mock nested attrib 2", mock_attribute=np.arange(15)
+                feature_name="mock nested attrib 2",
+                mock_attribute=np.arange(15),
             ),
         ],
     )
@@ -95,19 +110,23 @@ class TestCaseArrayOfTrajectoryFeatureDataclasses:
 
         assert t_container.feature_name == "mock"
         assert "feature_name" in t_container._dataclass_internal_field()
-        assert t_container.registred_trajectory_object_list == "mock_list_attribute"
+        assert t_container.registred_trajectory_object_list == "mock_trj_feature_array"
         assert (
             None not in t_container.non_trajectory_field()
             and "None" not in t_container.non_trajectory_field()
         )
 
-        assert t_container.mock_list_attribute[0].feature_name == "mock nested attrib 1"
-        assert t_container.mock_list_attribute[1].feature_name == "mock nested attrib 2"
-        assert np.array_equal(
-            t_container.mock_list_attribute[0].mock_attribute, np.arange(10)
+        assert (
+            t_container.mock_trj_feature_array[0].feature_name == "mock nested attrib 1"
+        )
+        assert (
+            t_container.mock_trj_feature_array[1].feature_name == "mock nested attrib 2"
         )
         assert np.array_equal(
-            t_container.mock_list_attribute[1].mock_attribute, np.arange(15)
+            t_container.mock_trj_feature_array[0].mock_attribute, np.arange(10)
+        )
+        assert np.array_equal(
+            t_container.mock_trj_feature_array[1].mock_attribute, np.arange(15)
         )
 
     def test_string_representation(self, setup_mock_nested_list_subclass):
@@ -138,5 +157,9 @@ class TestCaseArrayOfTrajectoryFeatureDataclasses:
         t_container = setup_mock_nested_list_subclass
 
         assert t_container.get_parent_container() is None
-        assert id(t_container.mock_list_attribute[0].get_parent_container()) == id(t_container)
-        assert id(t_container.mock_list_attribute[1].get_parent_container()) == id(t_container)
+        assert id(t_container.mock_trj_feature_array[0].get_parent_container()) == id(
+            t_container
+        )
+        assert id(t_container.mock_trj_feature_array[1].get_parent_container()) == id(
+            t_container
+        )
