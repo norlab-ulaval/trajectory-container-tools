@@ -187,7 +187,7 @@ def run_rosbag_timestamp_eda(
     num_iterations = compute_bag_target_window_nb(
         bag_timestamps_meta.duration, fast_forward_ns
     )
-    print("[TCT] Trajectory window crawling")
+    print(f"\n[TCT] Trajectory window crawling")
     progressbar = setup_progressbar(num_iterations)
     for each_idx in range(num_iterations):
 

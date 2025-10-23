@@ -106,18 +106,18 @@ def gather_rosbag_trajectory_window_informations(
         selected_topic_info = {}
         for connection in reader.connections:
             if connection.topic in features_config:
+                progressbar_topic.display(str(connection.topic))
                 selected_topic_info.setdefault(
-                    str(connection.topic), {"count": 0, "collected": False, "type": connection.msgtype}
+                    str(connection.topic), {"count": 0, "type": connection.msgtype}
                 )
 
-                for window_connection, timestamp, _ in reader.messages(
+                counter = 0
+                for window_connection, _, _ in reader.messages(
                     (connection,), start=start, stop=stop
                 ):
-                    if selected_topic_info[str(window_connection.topic)]["collected"]:
-                        break
-                    else:
-                        selected_topic_info[str(window_connection.topic)]["count"] = window_connection.msgcount
-                        selected_topic_info[str(window_connection.topic)]["collected"] = True
+                    counter += 1
+
+                selected_topic_info[str(window_connection.topic)]["count"] = counter
 
             progressbar_topic.update(1)
         progressbar_topic.close()

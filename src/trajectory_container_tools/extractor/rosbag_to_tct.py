@@ -112,7 +112,9 @@ def from_rosbag(
     try:
         assert chunk_on in features_config
     except AssertionError:
-        raise ValueError(f"Param chunk_on='{chunk_on}' can't be found in provided 'features_config' dictionary!")
+        raise ValueError(
+            f"Param chunk_on='{chunk_on}' can't be found in provided 'features_config' dictionary!"
+        )
 
     # .... Setup ..................................................................................
     features: list[RosFeature | RosFeatureArray | RosStampedFeature] = []
@@ -245,15 +247,10 @@ def extract_rosbag_feature(
                 feature_connection = connections[feature_name]
 
                 feature_msg_len = 0
-                window_count_collected = False
-                for window_connection, timestamp, _ in reader.messages(
-                    (feature_connection,), start=start, stop=stop
+                for window_connection, _, _ in reader.messages(
+                    (connection,), start=start, stop=stop
                 ):
-                    if window_count_collected:
-                        break
-                    else:
-                        feature_msg_len = window_connection.msgcount
-                        window_count_collected = True
+                    feature_msg_len += 1
 
                 print(f"[TCT] Collect topic '{feature_name}' msgs from rosbag")
                 progressbar = setup_progressbar(feature_msg_len)
@@ -263,7 +260,6 @@ def extract_rosbag_feature(
                 for window_connection, timestamp, rawdata in reader.messages(
                     connections=(feature_connection,), start=start, stop=stop
                 ):
-                    progressbar.update(1)
 
                     msg = typestore.deserialize_cdr(rawdata, window_connection.msgtype)
 
@@ -275,6 +271,7 @@ def extract_rosbag_feature(
                         timestamp,
                         shadow_data_container,
                     )
+                    progressbar.update(1)
 
                 progressbar.close()
 
