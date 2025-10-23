@@ -108,8 +108,14 @@ def from_rosbag(
     :return: An instance of the `AbstractTrajectoryFeaturesBag` containing the processed data
         for all features.
     """
+    # .... Pre-condition ..........................................................................
+    try:
+        assert chunk_on in features_config
+    except AssertionError:
+        raise ValueError(f"Param chunk_on='{chunk_on}' can't be found in provided 'features_config' dictionary!")
 
-    features: list[ RosFeature | RosFeatureArray | RosStampedFeature] = []
+    # .... Setup ..................................................................................
+    features: list[RosFeature | RosFeatureArray | RosStampedFeature] = []
     features_type = []
 
     if not typestore:
