@@ -88,6 +88,9 @@ class RosFeature(BaseTrajectoryFeature):
                 include_feature_bag=False
             ).bag_recorded_timestamps
 
+        if use_timestamps is None:
+            return self
+
         timestamps_slice = get_timestamps_slice(
             use_timestamps,
             start,

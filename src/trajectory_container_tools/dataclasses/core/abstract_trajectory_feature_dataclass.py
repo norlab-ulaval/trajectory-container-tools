@@ -131,7 +131,7 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
 
                     if self.timesteps_indices is None:
                         self.timesteps_indices = self._timestep_indexes
-                    elif self.timesteps_indices is not None:
+                    elif self.timesteps_indices is not None and len(self._timestep_indexes) > 0:
                         assert isinstance(self.timesteps_indices, np.ndarray)
                         _timesteps_indices_vs_index_len_check(
                             self.timesteps_indices, self._timestep_indexes

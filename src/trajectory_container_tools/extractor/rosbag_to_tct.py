@@ -153,7 +153,8 @@ def from_rosbag(
     progressbar = setup_progressbar(len(features))
     bag_timestamps = []
     for each in features:
-        bag_timestamps.append(each.bag_recorded_timestamps.stamps)
+        if each.bag_recorded_timestamps is not None:
+            bag_timestamps.append(each.bag_recorded_timestamps.stamps)
         progressbar.update(1)
     bag_timestamps = np.unique(np.concatenate(bag_timestamps))
     progressbar.close()
@@ -243,12 +244,12 @@ def extract_rosbag_feature(
                 elif feature_connection_collected:
                     break
 
-            if feature_name in connections:
+            if feature_name in connections.keys():
                 feature_connection = connections[feature_name]
 
                 feature_msg_len = 0
                 for window_connection, _, _ in reader.messages(
-                    (connection,), start=start, stop=stop
+                    (feature_connection,), start=start, stop=stop
                 ):
                     feature_msg_len += 1
 

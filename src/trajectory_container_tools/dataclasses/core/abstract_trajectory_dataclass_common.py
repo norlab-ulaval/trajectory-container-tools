@@ -79,7 +79,7 @@ class AbstractTrajectoryCommon(abc.ABC):
         :return: The top-most container in the hierarchy.
         """
         parent_container = self.get_parent_container()
-        if parent_container:
+        if parent_container is not None:
             from .abstract_trajectory_features_bag_dataclass import (
                 AbstractTrajectoryFeaturesBag,
             )
@@ -90,7 +90,7 @@ class AbstractTrajectoryCommon(abc.ABC):
 
             if include_feature_bag and parent_is_feature_bag:
                 return parent_container
-            elif not include_feature_bag and parent_is_feature_bag and self.is_nested():
+            elif not include_feature_bag and parent_is_feature_bag:
                 return self
 
         if not self.is_nested():

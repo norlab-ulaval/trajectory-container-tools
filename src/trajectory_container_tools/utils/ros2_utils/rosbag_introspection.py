@@ -106,7 +106,6 @@ def gather_rosbag_trajectory_window_informations(
         selected_topic_info = {}
         for connection in reader.connections:
             if connection.topic in features_config:
-                progressbar_topic.display(str(connection.topic))
                 selected_topic_info.setdefault(
                     str(connection.topic), {"count": 0, "type": connection.msgtype}
                 )

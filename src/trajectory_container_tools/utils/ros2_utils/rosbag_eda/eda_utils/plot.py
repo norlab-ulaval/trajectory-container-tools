@@ -68,23 +68,39 @@ def plot_bag_timestamp_delta(
                 tct.dataclasses.RosFeatureArray, tct.dataclasses.RosStampedFeature
             ] = tct_container.get_dynamic_field(each_topic_name)
 
-            if isinstance(each_topic, tct.dataclasses.RosStampedFeature):
+            if isinstance(
+                each_topic,
+                (
+                    tct.dataclasses.RosFeature,
+                    tct.dataclasses.RosStampedFeature,
+                    tct.dataclasses.RosFeatureArray,
+                ),
+            ):
 
-                use_bag_stamps = False
+                topic_ts_stamps = None
+                topic_ts_delta = None
                 if each_topic.has_dynamic_field("header.timestamps"):
-                    topic_ts_stamps = each_topic.get_dynamic_field("header.timestamps").stamps[1:]
-                    topic_ts_delta = each_topic.get_dynamic_field("header.timestamps").delta_stamps[1:]
+                    timestamps = each_topic.get_dynamic_field("header.timestamps")
+                    topic_ts_stamps = timestamps.stamps[1:]
+                    topic_ts_delta = timestamps.delta_stamps[1:]
+                    use_bag_stamps = False
                 elif each_topic.has_dynamic_field("bag_recorded_timestamps"):
-                    topic_ts_stamps = each_topic.get_dynamic_field("bag_recorded_timestamps").stamps[1:]
-                    topic_ts_delta = each_topic.get_dynamic_field("bag_recorded_timestamps").delta_stamps[1:]
+                    timestamps = each_topic.get_dynamic_field("bag_recorded_timestamps")
+                    if timestamps is not None:
+                        topic_ts_stamps = timestamps.stamps[1:]
+                        topic_ts_delta = timestamps.delta_stamps[1:]
                     use_bag_stamps = True
                 else:
-                    raise AttributeError(f"{each_topic_name} has no timestamps attribute!")
+                    raise AttributeError(
+                        f"{each_topic_name} has no timestamps attribute!"
+                    )
 
                 if topic_ts_delta is not None and len(topic_ts_delta) > 0:
                     y = topic_ts_delta
                     x = topic_ts_stamps - bag_start_time
-                    x_in_second = trajectory_container_tools.temporal.timestamps.to_seconds(x)
+                    x_in_second = (
+                        trajectory_container_tools.temporal.timestamps.to_seconds(x)
+                    )
 
                     if "ackermann" in each_topic_name:
                         _l = "-"
@@ -138,7 +154,9 @@ def plot_bag_timestamp_delta(
                 topic_ts_delta = each_topic.delta_stamps[1:]
                 if topic_ts_delta is not None and len(topic_ts_delta) > 0:
                     x = topic_ts_stamps - bag_start_time
-                    x_in_second = trajectory_container_tools.temporal.timestamps.to_seconds(x)
+                    x_in_second = (
+                        trajectory_container_tools.temporal.timestamps.to_seconds(x)
+                    )
 
                     plt.vlines(
                         x=x_in_second,
