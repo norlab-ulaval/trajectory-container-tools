@@ -5,9 +5,10 @@ from pathlib import Path
 from typing import List, Optional, Union
 from tqdm import tqdm
 
-from trajectory_container_tools.extractor.rosbag_to_tct import check_bag_topics
+from trajectory_container_tools.utils.ros2_utils.rosbag_introspection import \
+    show_rosbag_summary_info
 from trajectory_container_tools.utils.general import (
-    dn_validate_path,
+    dn_sanitize_path,
     show_directory_content,
 )
 from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
@@ -115,9 +116,9 @@ if __name__ == "__main__":
         "data", "repository_data", "tests_data", "rosbag_test_data"
     )
 
-    show_directory_content(dn_validate_path(share_data_path))
-    show_directory_content(dn_validate_path(external_data_path))
-    show_directory_content(dn_validate_path(test_data_path))
+    show_directory_content(dn_sanitize_path(share_data_path))
+    show_directory_content(dn_sanitize_path(external_data_path))
+    show_directory_content(dn_sanitize_path(test_data_path))
 
     # .... Path to ROS bag in 'shared_data' directory ...........................................
     # rosbag_dir = "rosbag-vaul-f110-grand-salon-raw-msg"
@@ -138,7 +139,7 @@ if __name__ == "__main__":
 
     # rosbag_path = os.path.join(share_data_path, rosbag_dir, BAG)
     # target_destination = test_data_path
-    # target_destination = dn_validate_path(target_destination)
+    # target_destination = dn_sanitize_path(target_destination)
     # target_rosbag_path = os.path.join(
     #     target_destination,
     #     rosbag_dir,
@@ -171,7 +172,7 @@ if __name__ == "__main__":
     rosbag_path = os.path.join(share_data_path, rosbag_dir, BAG)
 
     target_destination = test_data_path
-    target_destination = dn_validate_path(target_destination)
+    target_destination = dn_sanitize_path(target_destination)
     target_rosbag_path = os.path.join(
         target_destination,
         rosbag_dir,
@@ -190,7 +191,7 @@ if __name__ == "__main__":
     ]
 
     # .............................................................................................
-    rosbag_path = check_bag_topics(rosbag_path)
+    rosbag_path = show_rosbag_summary_info(rosbag_path)
 
     create_filtered_rosbag(
         input_rosbag_path=rosbag_path,

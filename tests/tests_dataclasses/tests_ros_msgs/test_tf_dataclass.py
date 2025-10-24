@@ -44,7 +44,7 @@ def test_Tf2MsgsTFMessage_init(mock_ROSbag_2_trj_DC):
         ],
     )
     print(dc_)
-    assert dc_.registred_trajectory_object_list == "transforms"
+    assert dc_.trajectory_array_field_names() == ["transforms"]
     assert isinstance(dc_.transforms[0].header, StdMsgsHeader)
     assert isinstance(dc_.transforms[1].header, StdMsgsHeader)
     assert dc_.transforms[0].header.timestamps.stamps == pytest.approx(

@@ -38,10 +38,6 @@ class MockRosFeatureArray(RosFeatureArray):
     mock_attribute: np.ndarray
     mock_array: list[RosStampedFeature]
 
-    @property
-    def registred_trajectory_object_list(self) -> Optional[str]:
-        return "mock_array"
-
 
 @deprecated(
     reason="NestedRosStampedFeature dataclass is deprecated now that all TrajectoryFeature dataclass "
@@ -262,7 +258,11 @@ class TestRosFeatureCaseNoNestedBagStamps:
         ],
     )
     def test_get_timestamp_case_endpoint(
-        self, setup_mock_nested_dataclass, setup_real_timestamps, t_startpoint, t_endpoint
+        self,
+        setup_mock_nested_dataclass,
+        setup_real_timestamps,
+        t_startpoint,
+        t_endpoint,
     ):
         t_container, t_mock_attribute = setup_mock_nested_dataclass
 
@@ -541,7 +541,6 @@ class TestRosFeatureArray:
             # The 'timestamps' attribute should not exist
             assert t_container.__getattribute__("header")
 
-    @pytest.mark.skip(reason="ToDo: implement test case (ref task TCT-87)")
     @pytest.mark.parametrize(
         argnames="t_startpoint",
         argvalues=[True, False],
@@ -557,23 +556,38 @@ class TestRosFeatureArray:
         t_container, t_mock_attribute = setup_mock_dataclass
 
         t_start_idx = 1
-        t_start = int(setup_real_timestamps[t_start_idx])
+        t_start = int(setup_mock_timestamps[t_start_idx])
 
         t_container_interval = t_container.get_timestamps(
             start=t_start, startpoint=t_startpoint
         )
+        print(t_container)
         print(t_container_interval)
 
+        # .... Test top level .....................................................................
         assert t_container_interval.bag_recorded_timestamps.stamps.size == 1
         assert t_container_interval.bag_recorded_timestamps.stamps[0] == int(
-            setup_real_timestamps[t_start_idx + int(not t_startpoint)]
+            setup_mock_timestamps[t_start_idx + int(not t_startpoint)]
         )
         assert (
             t_container_interval.mock_attribute[0]
             == t_mock_attribute[t_start_idx + int(not t_startpoint)]
         )
 
-    @pytest.mark.skip(reason="ToDo: implement test case (ref task TCT-87)")
+        # .... Test nested level ..................................................................
+        assert (
+            t_container_interval.mock_array[0].bag_recorded_timestamps.stamps.size == 1
+        )
+        assert t_container_interval.mock_array[0].bag_recorded_timestamps.stamps[
+            0
+        ] == int(setup_mock_timestamps[t_start_idx + int(not t_startpoint)])
+        assert (
+            t_container_interval.mock_array[1].bag_recorded_timestamps.stamps.size == 1
+        )
+        assert t_container_interval.mock_array[1].bag_recorded_timestamps.stamps[
+            0
+        ] == int(setup_mock_timestamps[t_start_idx + int(not t_startpoint)] + 999)
+
     def test_get_timestamp_case_interval(
         self, setup_mock_dataclass, setup_real_timestamps, setup_mock_timestamps
     ):
@@ -582,23 +596,44 @@ class TestRosFeatureArray:
         t_start_idx = 1
         t_stop_idx = 4
         t_container_interval = t_container.get_timestamps(
-            start=(int(setup_real_timestamps[t_start_idx])),
-            stop=(int(setup_real_timestamps[t_stop_idx])),
+            start=(int(setup_mock_timestamps[t_start_idx])),
+            stop=(int(setup_mock_timestamps[t_stop_idx])),
         )
+        print(t_container)
+        print(t_container_interval)
 
+        # .... Test top level .....................................................................
         assert t_container_interval.bag_recorded_timestamps.stamps[0] == int(
-            setup_real_timestamps[t_start_idx]
+            setup_mock_timestamps[t_start_idx]
         )
         assert t_container_interval.bag_recorded_timestamps.stamps[-1] == int(
-            setup_real_timestamps[t_stop_idx - 1]
+            setup_mock_timestamps[t_stop_idx - 1]
         )
         assert np.array_equal(
             t_container_interval.mock_attribute,
             t_mock_attribute[slice(t_start_idx, t_stop_idx)],
         )
-        print(t_container_interval)
 
-    @pytest.mark.skip(reason="ToDo: implement test case (ref task TCT-87)")
+        # .... Test nested level ..................................................................
+        assert (
+            t_container_interval.mock_array[0].bag_recorded_timestamps.stamps.size == 3
+        )
+        assert t_container_interval.mock_array[0].bag_recorded_timestamps.stamps[
+            0
+        ] == int(setup_mock_timestamps[t_start_idx])
+        assert t_container_interval.mock_array[0].bag_recorded_timestamps.stamps[
+            -1
+        ] == int(setup_mock_timestamps[t_stop_idx - 1])
+        assert (
+            t_container_interval.mock_array[1].bag_recorded_timestamps.stamps.size == 3
+        )
+        assert t_container_interval.mock_array[1].bag_recorded_timestamps.stamps[
+            0
+        ] == int(setup_mock_timestamps[t_start_idx] + 999)
+        assert t_container_interval.mock_array[1].bag_recorded_timestamps.stamps[
+            -1
+        ] == int(setup_mock_timestamps[t_stop_idx - 1] + 999)
+
     @pytest.mark.parametrize(
         argnames="t_startpoint, t_endpoint",
         argvalues=[(True, False), (False, True), (True, True), (False, False)],
@@ -622,8 +657,8 @@ class TestRosFeatureArray:
         t_start_idx = 0
         t_stop_idx = 4
         t_container_interval = t_container.get_timestamps(
-            start=int(setup_real_timestamps[t_start_idx]),
-            stop=int(setup_real_timestamps[t_stop_idx]),
+            start=int(setup_mock_timestamps[t_start_idx]),
+            stop=int(setup_mock_timestamps[t_stop_idx]),
             startpoint=t_startpoint,
             endpoint=t_endpoint,
         )
@@ -632,7 +667,7 @@ class TestRosFeatureArray:
 
         assert np.array_equal(
             t_container_interval.bag_recorded_timestamps.stamps,
-            setup_real_timestamps[
+            setup_mock_timestamps[
                 slice(
                     t_start_idx + int(not t_startpoint),
                     t_stop_idx + 1 - int(not t_endpoint),

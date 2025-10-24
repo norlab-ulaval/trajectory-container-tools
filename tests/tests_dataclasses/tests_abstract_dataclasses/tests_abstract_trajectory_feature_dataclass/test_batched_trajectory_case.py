@@ -96,7 +96,9 @@ class TestAbstractTrajectoryFeatureCaseBatched:
         mfc = setup_mock_feature_child
         assert np.allclose(mfc.get_dynamic_field("aa"), mock_batched_trj_DC.a)
 
-    @pytest.mark.deprecated("Method fetch_nested_attribute is marked as deprecated (ref task TCT-65)")
+    @pytest.mark.deprecated(
+        "Method fetch_nested_attribute is marked as deprecated (ref task TCT-65)"
+    )
     def test_fetch_nested_attribute(
         self, setup_mock_feature_child, mock_batched_trj_DC
     ):
@@ -131,7 +133,6 @@ class TestAbstractTrajectoryFeatureCaseBatched:
             mock_batched_trj_DC_range.c.shape[0] * mock_batched_trj_DC_range.c.shape[1],
         )
         # print(mdc)
-        # (Priority) ToDo: implement test asserting a range
 
     def test_get_item(self, setup_mock_feature_child_range, mock_batched_trj_DC_range):
         mdc = setup_mock_feature_child_range
@@ -224,3 +225,23 @@ class TestAbstractTrajectoryFeatureCaseBatched:
         assert np.array_equal(t_mdc2.cc, t_ref.c)
         # print(t_mdc2)
         # print(t_mdc2.get_dimension_names())
+
+    def test_empty(self, setup_mock_feature_child_range, mock_batched_trj_DC_range):
+        mdc = setup_mock_feature_child_range
+        assert mdc.trajectory_len == 40
+
+        mdc_empty = mdc.empty()
+
+        assert isinstance(mdc_empty, type(mdc))
+
+        assert mdc_empty.aa.size == 0
+        assert mdc_empty.bb.size == 0
+        assert mdc_empty.cc.size == 0
+        assert mdc_empty.timesteps_indices.size == 0
+        assert np.array_equal(mdc_empty.aa, np.array([], dtype=np.int64))
+        assert np.array_equal(mdc_empty.bb, np.array([], dtype=np.int64))
+        assert np.array_equal(mdc_empty.cc, np.array([], dtype=np.int64))
+        assert np.array_equal(mdc_empty.timesteps_indices, np.array([], dtype=np.int64))
+        # mdc.get_dimension_names()
+        # print(mdc)
+        # print(mdc_at_t0)

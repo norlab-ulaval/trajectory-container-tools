@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import pytest
 
 from trajectory_container_tools import (
-    BaseTrajectoryFeatureArray,
+    BaseTrajectoryFeatureUnboundedArray,
     BaseTrajectoryFeature,
 )
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import NestedBaseTrajectory
@@ -61,7 +61,7 @@ def test_NestedBaseTrajectory():
 def test_BaseTrajectoryArray():
 
     @dataclass()
-    class MockBaseTrajectoryFeatureArray(BaseTrajectoryFeatureArray):
+    class MockBaseTrajectoryFeatureArray(BaseTrajectoryFeatureUnboundedArray):
         mock_attribute: np.ndarray
 
     t_container = MockBaseTrajectoryFeatureArray(

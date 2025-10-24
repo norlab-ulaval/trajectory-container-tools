@@ -39,19 +39,6 @@ class TestTrajectoryDataclassFactoryDataframeCase:
                 trj_dataclass_subclass=BaseDataframeFeatureDataclass,
             )
 
-        # ToDo: assessment >> next bloc ↓↓ is not relevant since refactoring to
-        # specification object as a dataclass
-        # with pytest.raises(KeyError):
-        #     fdf1 = atd.create_dataclass(
-        #             specification=atd.TrjDataClassFeatureSpecification(
-        #             feature_AAAA='new_feature_dataclass',
-        #                                                     dimension_names=('xx', 'yy',
-        #                                                     'yaww')))
-        #     fdf2 = atd.create_dataclass(
-        #             specification=atd.TrjDataClassFeatureSpecification(
-        #             new_feature_dataclass_type='new_feature_dataclass',
-        #                                                     dimension_AAAA=('xx', 'yy', 'yaww')))
-
     def test_output_ok(self, setup_dataframe_style_config):
         mock_cls = create_dataclass(
             specification=setup_dataframe_style_config,

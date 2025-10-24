@@ -60,7 +60,7 @@ graph TB
         subgraph TC["📦&nbsp;TRAJECTORY&nbsp;FEATURE&nbsp;CONTAINERS"]
             ATC[AbstractTrajectoryFeature]
             BTC[BaseTrajectoryFeature]
-            BTCA[BaseTrajectoryFeatureArray]
+            BTCA[BaseTrajectoryFeatureUnboundedArray]
             SC[🎯 Specialized Dataclasses:<br/>• Primitive<br/>• ROS2Feature<br/>• PandaDataFrame<br/>• F110Gym<br/>• MathGymnasium<br/>]
         end
     end
@@ -221,7 +221,7 @@ Extract trajectory data from ROS bag files:
 **Key Functions:**
 - `extractor.from_rosbag()` - Multiple ROS topics
 - `extractor.extract_rosbag_feature()` - Single topic extraction
-- `extractor.check_bag_topics()` - Inspect available topics
+- `extractor.show_rosbag_summary_info()` - Inspect available topics
 
 **Requirements:**
 - ROS2
@@ -233,7 +233,7 @@ Create trajectory containers directly from data arrays:
 
 **Available Dataclasses:**
 - `BaseTrajectoryFeature` - Basic trajectory container
-- `BaseTrajectoryFeatureArray` - Basic trajectory container with an array of many heterogenous length `BaseTrajectoryFeature`  
+- `BaseTrajectoryFeatureUnboundedArray` - Basic trajectory container with an array of many heterogenous length `BaseTrajectoryFeature`  
 - Custom dataclasses inheriting from `AbstractTrajectoryFeature`
 
 ---

@@ -5,7 +5,7 @@ import numpy as np
 
 from ..mock_trj_dataclasses import (
     MockTrajectoryChildRosBagCase,
-    )
+)
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_feature_dataclass import (
     AbstractTrajectoryFeature,
 )
@@ -130,7 +130,6 @@ class TestAbstractTrajectoryFeatureCaseRosbag:
         mdc = setup_mock_feature_child
         assert mdc.trajectory_len == mock_ROSbag_2_trj_DC.a.shape[mdc._time_axis]
 
-    # @pytest.mark.skip(reason="todo")
     def test_ravel_dimensions_in_place(
         self, setup_mock_feature_child_range, mock_ROSbag_2_trj_DC_range
     ):
@@ -143,7 +142,7 @@ class TestAbstractTrajectoryFeatureCaseRosbag:
         # mdc.cc
         # mdc.get_dimension_names()
         # print(mdc)
-        # (Priority) ToDo: implement test asserting a range
+        # (NICE TO HAVE) ToDo: implement test asserting a range
 
     def test_get_item(self, setup_mock_feature_child_range, mock_ROSbag_2_trj_DC_range):
         mdc = setup_mock_feature_child_range
@@ -235,3 +234,20 @@ class TestAbstractTrajectoryFeatureCaseRosbag:
         assert np.array_equal(t_mdc2.cc, t_ref.c)
         # print(t_mdc2)
         # print(t_mdc2.get_dimension_names())
+
+    def test_empty(self, setup_mock_feature_child_range):
+        mdc = setup_mock_feature_child_range
+        assert mdc.trajectory_len == 40
+        # print(mdc)
+
+        mdc_empty = mdc.empty()
+
+        assert isinstance(mdc_empty, type(mdc))
+
+        assert mdc_empty.aa.size == 0
+        assert mdc_empty.bb.size == 0
+        assert mdc_empty.cc.size == 0
+        assert mdc_empty.timesteps_indices.size == 0
+        assert np.array_equal(mdc_empty.cc, np.array([], dtype=np.int64))
+        assert np.array_equal(mdc_empty.timesteps_indices, np.array([], dtype=np.int64))
+        print(mdc_empty)

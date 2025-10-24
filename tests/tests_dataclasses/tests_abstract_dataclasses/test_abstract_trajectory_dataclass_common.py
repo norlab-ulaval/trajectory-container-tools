@@ -70,6 +70,7 @@ class MockTrajectory(AbstractTrajectoryCommon):
 @dataclass
 class MockTrajectoryArray(MockTrajectory):
     mock_nested_attr: list[MockNestedTrajectory]
+    mock_trj_array_w_arbitrary_type: list[list[int]]
     mock_attr: np.ndarray
 
 
@@ -88,6 +89,7 @@ def setup_two_lvl_trajectory_dataclass() -> MockTrajectory:
 @pytest.fixture(scope="function")
 def setup_two_lvl_trajectory_array_dataclass() -> MockTrajectory:
     return MockTrajectoryArray(
+        mock_trj_array_w_arbitrary_type=[[*range(99)]] * 10,
         mock_nested_attr=[
             MockNestedTrajectory(np.arange(10)),
             MockNestedTrajectory(np.arange(10) + 10),
@@ -186,7 +188,8 @@ class TestAbstractTrajectoryCommon:
     ):
 
         t_feature_bag = MockAbstractTrajectoryFeaturesBag(
-            dataset_info="Mock feature bag", topic_mock_feature=setup_three_lvl_trajectory_dataclass
+            dataset_info="Mock feature bag",
+            topic_mock_feature=setup_three_lvl_trajectory_dataclass,
         )
 
         t_feature_bag.set_parent_container_reference_tracking()
@@ -257,6 +260,27 @@ class TestAbstractTrajectoryCommon:
             t_container.mock_nested_attr.mock_nested_attr.mock_attr_nested_attr,
         )
 
+    def test_has_dynamic_field(self, setup_three_lvl_trajectory_dataclass):
+        t_container = setup_three_lvl_trajectory_dataclass
+
+        assert t_container.has_dynamic_field("mock_attr") == True
+        assert t_container.has_dynamic_field("mock_nested_attr.mock_attr") == True
+        assert (
+            t_container.has_dynamic_field(
+                "mock_nested_attr.mock_nested_attr.mock_attr_nested_attr"
+            )
+            == True
+        )
+
+        assert t_container.has_dynamic_field("mock_attr999") == False
+        assert t_container.has_dynamic_field("mock_nested_attr.mock_attr999") == False
+        assert (
+            t_container.has_dynamic_field(
+                "mock_nested_attr.mock_nested_attr.mock_attr_nested_attr999"
+            )
+            == False
+        )
+
     def test_set_dynamic_field(self, setup_three_lvl_trajectory_dataclass):
         t_container = setup_three_lvl_trajectory_dataclass
 
@@ -312,6 +336,13 @@ class TestAbstractTrajectoryCommon:
         )
         assert issubclass(dimension_type, MockNestedTrajectory)
         assert is_list_of_type == True
+
+        dimension_type, is_list_of_type = t_container_array.get_dimension_type(
+            "mock_trj_array_w_arbitrary_type"
+        )
+        assert issubclass(dimension_type, list)
+        assert is_list_of_type == True
+
 
     def test_get_dimension_names(self, setup_three_lvl_trajectory_dataclass):
         t_container = setup_three_lvl_trajectory_dataclass

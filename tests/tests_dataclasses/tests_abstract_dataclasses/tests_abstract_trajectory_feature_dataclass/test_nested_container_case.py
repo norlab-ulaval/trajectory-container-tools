@@ -331,7 +331,6 @@ class TestAbstractTrajectoryFeatureCaseNested:
             assert each_child.cc.shape[0] == mfc.trajectory_len * 36
 
         # print(mfc)
-        # (Priority) ToDo: implement test asserting a range
 
     def test_get_item(
         self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case
@@ -514,3 +513,28 @@ class TestAbstractTrajectoryFeatureCaseNested:
         #        f"{t_mdc2.child_one}\n\n",
         #        f"{t_mdc2.child_two}\n\n",
         #        )
+
+    def test_empty(self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case
+    ):
+        mfc = setup_mock_feature_parent_range(t_nested_case)
+        # print(mfc)
+        assert mfc.trajectory_len == 40
+
+        mfc_empty = mfc.empty()
+
+        assert isinstance(mfc_empty, type(mfc))
+
+        assert mfc_empty.child_one.aa.size == 0
+        assert mfc_empty.child_one.bb.size == 0
+        assert mfc_empty.child_one.cc.size == 0
+        assert mfc_empty.child_one.timesteps_indices.size == 0
+        assert np.array_equal(mfc_empty.child_one.aa, np.array([], dtype=np.int64))
+        assert np.array_equal(mfc_empty.child_one.bb, np.array([], dtype=np.int64))
+        assert np.array_equal(
+            mfc_empty.child_one.cc, np.array([], dtype=np.int64)
+        )
+        assert np.array_equal(mfc_empty.timesteps_indices, np.array([], dtype=np.int64))
+        assert np.array_equal(mfc_empty.child_one.timesteps_indices, np.array([], dtype=np.int64))
+
+        # mfc.get_dimension_names()
+        print(mfc_empty)

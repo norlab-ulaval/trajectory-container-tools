@@ -10,9 +10,10 @@ Available dataclasses:
 
 Usage example:
 
->>>import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass import trajectory_container_tools as tct
->>> odom_class = trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry
->>> imu_class = tct.dataclasses.ros_msgs.stamped_dataclass.SensorMsgsImu
+>>> import trajectory_container_tools as tct
+>>> odom_class = tct.dataclasses.NavMsgsOdometry
+or
+>>> odom_class = tct.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry
 
 """
 __all__ = []
@@ -22,18 +23,18 @@ from trajectory_container_tools.dataclasses.core import (
     AbstractTrajectoryFeature,
     AbstractTrajectoryFeaturesBag,
     AbstractTrajectoryStampedFeaturesBag,
-    AbstractTrajectoryArray,
+    AbstractTrajectoryUnboundedArray,
     BaseTrajectoryFeature,
-    BaseTrajectoryFeatureArray,
+    BaseTrajectoryFeatureUnboundedArray,
 )
 
 __all__ += [
     "AbstractTrajectoryFeature",
     "AbstractTrajectoryFeaturesBag",
     "AbstractTrajectoryStampedFeaturesBag",
-    "AbstractTrajectoryArray",
+    "AbstractTrajectoryUnboundedArray",
     "BaseTrajectoryFeature",
-    "BaseTrajectoryFeatureArray",
+    "BaseTrajectoryFeatureUnboundedArray",
 ]
 
 # .... ROS2 dataclasses ...........................................................................

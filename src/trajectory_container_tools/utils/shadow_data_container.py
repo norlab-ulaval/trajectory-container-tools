@@ -8,7 +8,7 @@ from .general import extract_class_name_from_type, setup_progressbar
 from trajectory_container_tools.typing import ShadowDataContainer
 from ..dataclasses import RosFeature, RosFeatureArray, RosStampedFeature
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
-    BaseTrajectoryFeatureArray,
+    BaseTrajectoryFeatureUnboundedArray,
     BaseTrajectoryFeature,
 )
 from trajectory_container_tools.temporal import Timestamps
@@ -105,7 +105,7 @@ def post_process_shadown_data_container(
             if (
                 issubclass(
                     data_container_type,
-                    (BaseTrajectoryFeature, BaseTrajectoryFeatureArray),
+                    (BaseTrajectoryFeature, BaseTrajectoryFeatureUnboundedArray),
                 )
                 and shadow_data_container["nested_lvl"] == 0
             ):
@@ -145,7 +145,7 @@ def post_process_shadown_data_container(
                 if "nested_lvl" in ppsdc:
                     del ppsdc["nested_lvl"]
                 shadow_data_container[k][idx] = target_type(**ppsdc)
-        elif not issubclass(data_container_type, BaseTrajectoryFeatureArray) and (
+        elif not issubclass(data_container_type, BaseTrajectoryFeatureUnboundedArray) and (
             k in data_container_type.non_trajectory_field()
             or k in data_container_type._dataclass_internal_field()
         ):

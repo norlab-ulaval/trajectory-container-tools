@@ -55,8 +55,10 @@ from trajectory_container_tools.dataclasses import NavMsgsOdometry, RosStampedFe
 
 ```python
 # Inspect available topics in the bag
+import trajectory_container_tools.utils.ros2_utils.rosbag_introspection
+
 rosbag_path = Path("path/to/your/rosbag")
-tct.extractor.check_bag_topics(rosbag_path)
+trajectory_container_tools.utils.ros2_utils.rosbag_introspection.show_rosbag_summary_info(rosbag_path)
 ```
 
 **Example Output:**
@@ -380,11 +382,12 @@ Error: Topic '/odom' not found in rosbag
 **Solutions:**
 
 ```python
+import trajectory_container_tools.utils.ros2_utils.rosbag_introspection
 import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 import trajectory_container_tools as tct
 
 # Check available topics
-tct.extractor.check_bag_topics(rosbag_path)
+trajectory_container_tools.utils.ros2_utils.rosbag_introspection.show_rosbag_summary_info(rosbag_path)
 
 # Common topic name variations
 common_odom_topics = ['/odom', '/odometry', '/robot/odom', '/base_link/odom']

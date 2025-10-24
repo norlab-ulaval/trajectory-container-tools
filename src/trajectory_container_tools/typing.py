@@ -9,12 +9,17 @@ from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_feature_dataclass import (
     AbstractTrajectoryFeature,
 )
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass_common import AbstractTrajectoryCommon
 from trajectory_container_tools import AbstractTrajectoryFeaturesBag
 from trajectory_container_tools.dataclasses import (
     RosFeature,
     RosFeatureArray,
     RosStampedFeature,
 )
+
+# (☕minor) ToDo: TCT-90 chore: assess naming convention for the hierarchy highest class,
+#   either TrajectoryContainer or TrajectoryDataclass
+TrajectoryContainer = NewType("TrajectoryContainer", AbstractTrajectoryCommon)
 
 TrajectoryFeature = NewType("TrajectoryFeature", AbstractTrajectoryFeature)
 

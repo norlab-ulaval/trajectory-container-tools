@@ -103,13 +103,25 @@ class Timestamps:
             raise StopIteration
 
     def __getitem__(self, index):
-        feature_dataclass_at_t = deepcopy(self)
+        timestamps_at_t = deepcopy(self)
         for each_name in ["_stamps", "_delta_stamps"]:
             data_property = self.__getattribute__(each_name)
             data_value = data_property[index]
-            feature_dataclass_at_t.__setattr__(each_name, data_value)
+            timestamps_at_t.__setattr__(each_name, data_value)
 
-        return feature_dataclass_at_t
+        return timestamps_at_t
+
+    def empty(self) -> "Timestamps":
+        """
+        Creates an empty copy of the current Timestamps object.
+
+        :return: A new empty instance of Timestamps.
+        """
+        timestamps_empty = deepcopy(self)
+        for each_name in ["_stamps", "_delta_stamps"]:
+            timestamps_empty.__setattr__(each_name, np.array([], dtype=np.int64))
+
+        return timestamps_empty
 
     def __contains__(
         self,

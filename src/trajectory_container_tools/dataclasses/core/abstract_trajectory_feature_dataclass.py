@@ -11,6 +11,7 @@ from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.temporal import validate_timestep_indices
 from trajectory_container_tools.utils.general import (
     extract_class_name_from_instance,
+    size_zero_array_like,
 )
 
 
@@ -131,7 +132,10 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
 
                     if self.timesteps_indices is None:
                         self.timesteps_indices = self._timestep_indexes
-                    elif self.timesteps_indices is not None:
+                    elif (
+                        self.timesteps_indices is not None
+                        and len(self._timestep_indexes) > 0
+                    ):
                         assert isinstance(self.timesteps_indices, np.ndarray)
                         _timesteps_indices_vs_index_len_check(
                             self.timesteps_indices, self._timestep_indexes
@@ -182,22 +186,7 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
 
     def __str__(self):
         """User representation. Dynamically handle property added at run time"""
-        out_sp = " " * 0
-        in_sp = " " * 3
-        nested_sp = " " * 3
-        dataclass_name = extract_class_name_from_instance(self)
-        repr_str = f"\n{out_sp}{dataclass_name}(\n"
-        v: Union[np.ndarray, AbstractTrajectoryFeature, str, int, float]
-
-        v = self.__dict__.get("feature_name")
-        if v is not None:
-            repr_str += f'{out_sp}{in_sp}feature_name: "{v}"\n'
-
-        if not self.is_nested():
-            repr_str += f"{out_sp}{in_sp}trajectory_len: {self.trajectory_len}\n"
-            if self.batch:
-                repr_str += f"{out_sp}{in_sp}batch: {self.batch}\n"
-            repr_str += f"{out_sp}{in_sp}transposed: {self._transposed}\n"
+        in_sp, nested_sp, out_sp, repr_str = self._repr_pre()
 
         for k, v in self.__dict__.items():
             if k in self._dataclass_internal_field():
@@ -207,33 +196,43 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
             elif k == "bag_recorded_timestamps" and self.is_nested() and v is None:
                 pass
             elif isinstance(v, (np.ndarray, Timestamps)):
-                if isinstance(v, Timestamps):
-                    indent_v = []
-                    for each_line in str(v).splitlines():
-                        indent_v.append(f"{out_sp}{in_sp}{nested_sp}{each_line}\n")
-                    indent_v = "".join(indent_v)
-                    repr_str += f"{out_sp}{in_sp}{k}:{indent_v}"
-                else:
-                    if v.size == 0:
-                        range_str = f"empty"
-                    else:
-                        range_str = f"range {np.min(v)} ←→ {np.max(v)}"
-                    repr_str += (
-                        f"{out_sp}{in_sp}{k}: ({extract_class_name_from_instance(v)}) "
-                        f"shape {v.shape} {range_str}\n"
-                    )
+                repr_str = _repr_ndarray_and_timestamps_obj(
+                    repr_str, k, v, nested_sp, in_sp, out_sp
+                )
             elif isinstance(v, AbstractTrajectoryFeature):
-                indent_v = []
-                for each_line in str(v).splitlines():
-                    indent_v.append(f"{out_sp}{in_sp}{nested_sp}{each_line}\n")
-                indent_v = "".join(indent_v)
-                repr_str += f"{out_sp}{in_sp}{k}:{indent_v}"
+                repr_str = _repr_nested_AbstractTrajectoryFeature_obj(
+                    repr_str, k, v, in_sp, out_sp, nested_sp
+                )
             else:
                 repr_str += (
                     f"{out_sp}{in_sp}{k}: ({extract_class_name_from_instance(v)}) {v}\n"
                 )
         repr_str += f"{out_sp})"
         return repr_str
+
+    def _repr_pre(self) -> tuple[
+        str,
+        str,
+        str,
+        str,
+    ]:
+        out_sp = " " * 0
+        in_sp = " " * 3
+        nested_sp = " " * 3
+        dataclass_name = extract_class_name_from_instance(self)
+        repr_str = f"\n{out_sp}{dataclass_name}(\n"
+        v: Union[np.ndarray, AbstractTrajectoryFeature, str, int, float]
+
+        v = self.__dict__.get("feature_name")
+        if v is not None:
+            repr_str += f"{out_sp}{in_sp}feature_name: '{v}'\n"
+
+        if not self.is_nested():
+            repr_str += f"{out_sp}{in_sp}trajectory_len: {self.trajectory_len}\n"
+            if self.batch:
+                repr_str += f"{out_sp}{in_sp}batch: {self.batch}\n"
+            repr_str += f"{out_sp}{in_sp}transposed: {self._transposed}\n"
+        return in_sp, nested_sp, out_sp, repr_str
 
     @property
     def current_trj_axe(self):
@@ -243,44 +242,74 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
             return self._time_axis
 
     def __getitem__(self, index) -> "AbstractTrajectoryFeature":
+        trj_feature_at_t = deepcopy(self)
+        trj_feature_at_t.__setattr__("_timestep_indexes", self._timestep_indexes[index])
+        trj_feature_at_t.__setattr__("timesteps_indices", self.timesteps_indices[index])
+        for each_name in self.get_dimension_names():
+            each_attribute = self.__getattribute__(each_name)
 
-        feature_dataclass_at_t = deepcopy(self)
+            if each_name in self.non_trajectory_field():
+                continue
 
-        feature_dataclass_at_t.__setattr__(
-            "_timestep_indexes", self._timestep_indexes[index]
+            if isinstance(each_attribute, Timestamps):
+                trj_feature_at_t.__setattr__(each_name, each_attribute[index])
+            elif isinstance(
+                each_attribute, (np.ndarray, AbstractTrajectoryFeature)
+            ):
+                if self.current_trj_axe == 0:
+                    # Case: time-serie
+                    data_value = each_attribute[index]
+                elif self.current_trj_axe == 1:
+                    # Case: batch
+                    data_value = each_attribute[:, index, ...]
+                elif self.current_trj_axe == -1:
+                    # Case: transposed
+                    data_value = each_attribute[..., index]
+                else:
+                    raise ValueError(
+                        f"Unexpected trajectory time axe {self.current_trj_axe=}"
+                    )
+
+                trj_feature_at_t.__setattr__(each_name, data_value)
+
+        return trj_feature_at_t
+
+    def empty(self) -> "AbstractTrajectoryFeature":
+        """
+        Creates an empty copy of the current trajectory feature with the same structure.
+
+        This method generates a deep copy of the instance with all trajectory-related
+        attributes emptied, while maintaining the original structure and types.
+        Non-trajectory-related fields remain unchanged. It is useful for initializing
+        or resetting trajectory-related data while retaining the overall object schema.
+
+        :return: A new instance of the same class where all trajectory-related fields
+            have been reset to empty, and non-trajectory-related fields stay unchanged.
+        """
+        empty_trj_feature = deepcopy(self)
+
+        empty_trj_feature.__setattr__(
+            "_timestep_indexes", size_zero_array_like(self._timestep_indexes)
         )
-        feature_dataclass_at_t.__setattr__(
-            "timesteps_indices", self.timesteps_indices[index]
+        empty_trj_feature.__setattr__(
+            "timesteps_indices", size_zero_array_like(self.timesteps_indices)
         )
         for each_name in self.get_dimension_names():
+            each_attribute = self.__getattribute__(each_name)
+
             if each_name in self.non_trajectory_field():
                 pass
             else:
-                each_attribute = self.__getattribute__(each_name)
-
-                if isinstance(
-                    each_attribute,
-                    (np.ndarray, AbstractTrajectoryFeature, Timestamps),
+                if isinstance(each_attribute, np.ndarray):
+                    empty_trj_feature.__setattr__(
+                        each_name, size_zero_array_like(each_attribute)
+                    )
+                elif isinstance(
+                    each_attribute, (AbstractTrajectoryFeature, Timestamps)
                 ):
-                    if self.current_trj_axe == 0:
-                        # Case: time-serie
-                        data_value = each_attribute[index]
-                    elif self.current_trj_axe == 1:
-                        # Case: batch
-                        data_value = each_attribute[:, index, ...]
-                    elif self.current_trj_axe == -1:
-                        # Case: transposed
-                        data_value = each_attribute[..., index]
-                    else:
-                        raise ValueError(
-                            f"Unexpected trajectory time axe {self.current_trj_axe=}"
-                        )
+                    empty_trj_feature.__setattr__(each_name, each_attribute.empty())
 
-                    feature_dataclass_at_t.__setattr__(each_name, data_value)
-                else:
-                    feature_dataclass_at_t.__setattr__(each_name, each_attribute)
-
-        return feature_dataclass_at_t
+        return empty_trj_feature
 
     def __iter__(self) -> "AbstractTrajectoryFeature":
         self._iter_index = 0
@@ -319,3 +348,45 @@ def _timesteps_indices_vs_index_len_check(
         f"[TCT error] timesteps_indices expecte " f"lemgth {ts_idx_len} != {ts_id_len}"
     )
     return None
+
+
+def _repr_ndarray_and_timestamps_obj(
+    repr_str: str,
+    k: str,
+    v: np.ndarray,
+    nested_sp: str,
+    in_sp: str,
+    out_sp: str,
+) -> str:
+    if isinstance(v, Timestamps):
+        indent_v = []
+        for each_line in str(v).splitlines():
+            indent_v.append(f"{out_sp}{in_sp}{nested_sp}{each_line}\n")
+        indent_v = "".join(indent_v)
+        repr_str += f"{out_sp}{in_sp}{k}:{indent_v}"
+    else:
+        if v.size == 0:
+            range_str = f"empty"
+        else:
+            range_str = f"range {np.min(v)} ←→ {np.max(v)}"
+        repr_str += (
+            f"{out_sp}{in_sp}{k}: ({extract_class_name_from_instance(v)}) "
+            f"shape {v.shape} {range_str}\n"
+        )
+    return repr_str
+
+
+def _repr_nested_AbstractTrajectoryFeature_obj(
+    repr_str: str,
+    k: str,
+    v: "AbstractTrajectoryFeature",
+    in_sp: str,
+    out_sp: str,
+    nested_sp: str,
+) -> str:
+    indent_v = []
+    for each_line in str(v).splitlines():
+        indent_v.append(f"{out_sp}{in_sp}{nested_sp}{each_line}\n")
+    indent_v = "".join(indent_v)
+    repr_str += f"{out_sp}{in_sp}{k}:{indent_v}"
+    return repr_str

@@ -147,17 +147,23 @@ def check_typing_union_and_extract_first_union_type(
 
 
 def check_typing_list_and_extract_list_type(type_hint: type) -> Tuple[bool, type[Any]]:
-    """Safely extract the first type from a Union, or return the type if not a Union."""
+    """Safely extract the first type from a list, or return the type if not a list."""
     if is_typing_list(type_hint):
-        return True, get_args(type_hint)[0]  # Return the List first type.
+        top_lvl_type = get_args(type_hint)
+        if len(top_lvl_type) > 0:
+            primary_type = top_lvl_type[0]
+            if is_typing_list(primary_type):
+                # Handle nested list cases e.g., list[list[int]
+                primary_type = get_origin(primary_type)
+        return True, primary_type  # Return the List primiray type.
     else:
         return False, type_hint  # Not a List, return as-is.
 
 
 # :::: Directory related ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-def dn_validate_path(rosbag_path: str | Path) -> str:
+def dn_sanitize_path(path: str | Path) -> Path:
     """
-    dockerized-norlab aware path validation and resolution.
+    Dockerized-norlab aware path validation and resolution.
 
     This function ensures that the given file path exists. If the path is not directly
     accessible, it attempts to resolve it within the context of a "Dockerized-NorLab" (DN)
@@ -165,25 +171,25 @@ def dn_validate_path(rosbag_path: str | Path) -> str:
 
     Handle cases: pycharm-born dna run and shell-born dna run
 
-    :param rosbag_path: The relative or absolute path to the ROS bag file.
-    :return: An absolute and resolved path to the ROS bag file.
+    :param path: The relative or absolute path.
+    :return: An absolute and resolved path.
     :raises AssertionError: If the provided or resolved file path does not exist.
     """
     try:
-        assert os.path.exists(rosbag_path)
+        assert os.path.exists(path)
     except AssertionError:
         dn_project_path = os.getenv("DN_PROJECT_PATH")
 
         if os.path.exists(dn_project_path):
             # Case running in a Dockerized-NorLab docker container
-            rosbag_path = os.path.join(dn_project_path, rosbag_path)
+            path = os.path.join(dn_project_path, path)
 
         assert os.path.exists(
-            rosbag_path
-        ), f"[TCT] rosbag path is unreachable at {rosbag_path}"
+            path
+        ), f"[TCT] rosbag path is unreachable at {path}"
 
-    rosbag_path = os.path.realpath(rosbag_path)
-    return rosbag_path
+    path = os.path.realpath(path)
+    return Path(path)
 
 
 def show_directory_content(top_dir: Union[AnyStr, Path]):
@@ -200,7 +206,7 @@ def show_directory_content(top_dir: Union[AnyStr, Path]):
     """
     print("." * 80)
     print(f"{top_dir}:")
-    resolved_top_path = dn_validate_path(top_dir)
+    resolved_top_path = dn_sanitize_path(top_dir)
     top_level_entries = os.listdir(resolved_top_path)
     if len(top_level_entries) > 0:
         for each_top in sorted(top_level_entries):
@@ -242,3 +248,8 @@ def get_directory_size_mb(directory_path):
 
     # Convert bytes to megabytes (1 MB = 1024 * 1024 bytes)
     return total_size / (1024 * 1024)
+
+
+def size_zero_array_like(a) -> np.ndarray:
+    assert isinstance(a, np.ndarray)
+    return np.array([], dtype=a.dtype)

@@ -1,17 +1,17 @@
 # coding=utf-8
-import warnings
-from typing import Optional, Tuple, Union, NamedTuple
+from typing import Optional, Union
 import os
 from pathlib import Path
 import numpy as np
 
 import trajectory_container_tools as tct
-import trajectory_container_tools.temporal.timestamps
-from trajectory_container_tools.temporal.trajectory_timestamps_metadata import (
-    TrajectoryTimestampsMetadata,
+from trajectory_container_tools.dataclasses import (
+    RosFeature,
+    RosFeatureArray,
+    RosStampedFeature,
 )
 from trajectory_container_tools.utils.general import RosImportError
-0
+
 try:
     from rosbags.rosbag2 import Reader
     from rosbags.typesys.store import Typestore
@@ -33,111 +33,6 @@ def rosbag_log_file_name(
         return f"{os.path.basename(bag_path_abs)}-{file_postfix}.log"
     else:
         return f"{os.path.basename(bag_path_abs)}.log"
-
-
-def gather_rosbag_informations(
-    bag_path_abs: Path,
-) -> Tuple[str, TrajectoryTimestampsMetadata]:
-    """This function reads a rosbag file to extract trajectory timestamps metadata information in
-    addition to detailing all topics, message types, and message counts.
-
-    :param bag_path_abs: The absolute file path of the ROS bag to read.
-    :return: A formatted string summarizing the bag's information and a
-        TrajectoryTimestampsMetadata object.
-    """
-
-    info_str = ""
-    with Reader(bag_path_abs) as reader:
-        bag_time_metadata = TrajectoryTimestampsMetadata(
-            start_time=reader.start_time,
-            end_time=reader.end_time,
-            duration=reader.duration,
-        )
-
-        MSG = "Rosbag information"
-        info_str += f"\n===={MSG:=<80}\n"
-        info_str += f"Bag name: {os.path.basename(bag_path_abs)}\n"
-
-        MSG = "Bag time (nanosecond)"
-        info_str += f"\n...{MSG:.<80}\n"
-        info_str += (
-            f"    start_time: {bag_time_metadata.start_time}\n"
-            f"      end_time: {bag_time_metadata.end_time}\n"
-            f"      duration: {bag_time_metadata.duration}\n"
-        )
-
-        MSG = "Topic and message"
-        info_str += f"\n...{MSG:.<80}\n\n"
-        info_str += f"{'MSGCOUNT':>8}  {'TOPIC':<25} {'MSGTYPE'} \n"
-        for connection in reader.connections:
-            info_str += f"{connection.msgcount:>8}  {connection.topic:<25} {connection.msgtype} \n"
-
-        info_str += f"\n===={'='*80}\n"
-
-    return info_str, bag_time_metadata
-
-
-def gather_rosbag_trajectory_window_informations(
-    bag_path_abs: Path, features_config: dict, start: Optional[int], stop: Optional[int]
-) -> str:
-    """Analyzes a ROS bag file to extract and summarize trajectory windows and specific topic information.
-
-    This function inspects a ROS bag file, extracts information about messages within a specific time
-    window (if specified), and gathers metadata about selected topics of interest. It formats and
-    returns a detailed summary of the results.
-
-    :param bag_path_abs: The absolute path to the ROS bag file being analyzed.
-    :param features_config: A dictionary mapping topic names to configurations for selected topics.
-    :param start: The start timestamp for the time window in nanoseconds. If None, the bag's start time is used.
-    :param stop: The stop timestamp for the time window in nanoseconds. If None, the bag's end time is used.
-    :return: A formatted string summarizing the trajectory window configuration and selected topic information.
-    """
-    with Reader(bag_path_abs) as reader:
-
-        # .... Gather topics trajectory window information ........................................
-        selected_topic_info = {}
-        for connection in reader.connections:
-            if connection.topic in features_config:
-                selected_topic_info.setdefault(
-                    str(connection.topic), {"count": 0, "type": connection.msgtype}
-                )
-
-        for connection, timestamp, _ in reader.messages(start=start, stop=stop):
-            if connection.topic in features_config:
-                selected_topic_info[str(connection.topic)]["count"] += 1
-
-        info_str_selected_topic = ""
-        info_str_selected_topic += f"{'MSGCOUNT':>8}  {'TOPIC':<25} {'MSGTYPE'} \n"
-        for k, v in selected_topic_info.items():
-            info_str_selected_topic += f"{v['count']:>8}  {k:<25} {v['type']} \n"
-
-        # .... Gather window related information ..................................................
-        bag_start_time = reader.start_time
-        bag_end_time = reader.end_time
-        bag_duration = reader.duration
-
-        MSG = f"Crawler trajectory window configuration"
-        info_str_main = f"\n...{MSG:.<80}\n"
-        info_str_main += (
-            f"\nCrawl bag (nanosecond):\n        start: {start or bag_start_time} ns\n      "
-            f"   stop: {stop or bag_end_time} ns\n"
-        )
-        if stop is not None and start is not None:
-            info_str_main += f"       window: {stop - start} ns\n"
-
-        if start is not None:
-            info_str_main += f"\nCrawl bag (second):\n        start: {trajectory_container_tools.temporal.timestamps.to_seconds(start)} s\n"
-
-        if stop is not None:
-            info_str_main += f"         stop: {trajectory_container_tools.temporal.timestamps.to_seconds(stop)} s\n"
-        if stop is not None and start is not None:
-            info_str_main += f"       window: {trajectory_container_tools.temporal.timestamps.to_seconds(stop - start)} s\n"
-
-        MSG = "Selected topics"
-        info_str_main += f"\n...{MSG:.<80}\n\n"
-        info_str_main += info_str_selected_topic + "\n"
-
-    return info_str_main
 
 
 def compute_window_start_and_stop(
@@ -227,9 +122,13 @@ def find_max_timestamp_delta_over_all_topics(
             mf_container.get_dimension_type(each)[0],
             tct.AbstractTrajectoryFeature,
         ):
-            topics_max_delta_stamp.append(
-                np.max(
-                    mf_container.get_dynamic_field(each).header.timestamps.delta_stamps
-                )
+            each_field: Union[RosFeature, RosStampedFeature, RosFeatureArray] = (
+                mf_container.get_dynamic_field(each)
             )
+            if isinstance(each_field, tct.dataclasses.StdMsgsHeader):
+                delta_stamps = each_field.header.timestamps.delta_stamps
+            else:
+                delta_stamps = each_field.bag_recorded_timestamps.delta_stamps
+
+            topics_max_delta_stamp.append(np.max(delta_stamps))
     return np.max(np.array(topics_max_delta_stamp))

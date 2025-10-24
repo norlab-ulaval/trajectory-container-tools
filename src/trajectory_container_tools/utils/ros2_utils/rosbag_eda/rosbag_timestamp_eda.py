@@ -13,28 +13,27 @@ import os
 from pathlib import Path
 
 import trajectory_container_tools as tct
-import trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass
-import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
-import trajectory_container_tools.dataclasses.ros_msgs.sensor_msgs_dataclass
-import trajectory_container_tools.dataclasses.ros_msgs.vesc_msgs_dataclass
-from trajectory_container_tools.utils.general import dn_validate_path
+from trajectory_container_tools.utils.general import dn_sanitize_path, setup_progressbar
 from trajectory_container_tools.temporal.timestamps import to_seconds
 from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
     register_non_native_msgs,
 )
-from trajectory_container_tools.dataclasses.core import AbstractTrajectoryStampedFeaturesBag
+from trajectory_container_tools.dataclasses.core import (
+    AbstractTrajectoryStampedFeaturesBag,
+)
 from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.general_utils import (
     compute_bag_target_window_nb,
     compute_window_start_and_stop,
     find_max_timestamp_delta_over_all_topics,
+    rosbag_log_file_name,
+)
+from trajectory_container_tools.utils.ros2_utils.rosbag_introspection import (
     gather_rosbag_informations,
     gather_rosbag_trajectory_window_informations,
-    rosbag_log_file_name,
 )
 from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.plot import (
     plot_bag_timestamp_delta,
 )
-import trajectory_container_tools.dataclasses as tct_dataclasses
 from trajectory_container_tools.utils.general import RosImportError
 
 try:
@@ -56,6 +55,8 @@ def run_rosbag_timestamp_eda(
     figsize: Tuple[int, int] = (28, 10),
     save_dpi: int = 100,
     typestore: Optional[Typestore] = None,
+    bag_start: bool = None,
+    bag_stop: bool = None,
 ) -> AbstractTrajectoryStampedFeaturesBag:
     """
     Executes timestamp-based Exploratory Data Analysis (EDA) on a ROSbag file by analyzing
@@ -77,9 +78,12 @@ def run_rosbag_timestamp_eda(
     :param save_dpi: Dpi of the saved figures. Default to matplotlib default i.e., dpi=100
     :param typestore: Optional. The typestore instance to register the non-native
         messages. If not provided, a default typestore will be initialized.
+    :param bag_start: The start timestamp for the time window in nanoseconds. If None, the bag's start time is used.
+    :param bag_stop: The stop timestamp for the time window in nanoseconds. If None, the bag's end time is used.
     :return: None
     """
     # .... Setup path .............................................................................
+    bag_path = dn_sanitize_path(bag_path)
     bag_path_abs = Path(bag_path)
 
     if experiment_dir is None:
@@ -106,13 +110,32 @@ def run_rosbag_timestamp_eda(
     rosbag_info_str, bag_timestamps_meta = gather_rosbag_informations(bag_path_abs)
     print(rosbag_info_str)
 
+    if bag_start is None:
+        bag_start = bag_timestamps_meta.start_time
+
+    if bag_stop is None:
+        bag_stop = bag_timestamps_meta.end_time
+
+    if bag_start is None and bag_stop is None:
+        duration = bag_timestamps_meta.duration
+    else:
+        duration = bag_stop - bag_start
+
+    window_info = gather_rosbag_trajectory_window_informations(
+        bag_path_abs,
+        features_config,
+        bag_start,
+        bag_stop,
+    )
+    print("\n", window_info)
+
     mf_container = tct.extractor.from_rosbag(
         rosbag_path=bag_path_abs,
         dataset_info=None,
         features_config=features_config,
         chunk_on=chunk_on,
-        start=bag_timestamps_meta.start_time,
-        stop=bag_timestamps_meta.end_time,
+        start=bag_start,
+        stop=bag_stop,
         typestore=typestore,
     )
 
@@ -121,14 +144,7 @@ def run_rosbag_timestamp_eda(
 
         print(rosbag_info_str, file=log_file)
 
-        window_info = gather_rosbag_trajectory_window_informations(
-            bag_path_abs,
-            features_config,
-            bag_timestamps_meta.start_time,
-            bag_timestamps_meta.end_time,
-        )
-        print(window_info)
-        print(window_info, file=log_file)
+        print("\n", window_info, file=log_file)
 
         MSG = "Multi-feature trajectory container"
         print(f"\n...{MSG:.<80}\n", file=log_file)
@@ -168,14 +184,14 @@ def run_rosbag_timestamp_eda(
         )
 
     # .... Begin trajectory window crawling .......................................................
-    num_iterations = compute_bag_target_window_nb(
-        bag_timestamps_meta.duration, fast_forward_ns
-    )
+    num_iterations = compute_bag_target_window_nb(duration, fast_forward_ns)
+    print(f"\n[TCT] Trajectory window crawling")
+    progressbar = setup_progressbar(num_iterations)
     for each_idx in range(num_iterations):
 
-        window_start, window_stop = compute_window_start_and_stop(
-            bag_timestamps_meta.start_time,
-            bag_timestamps_meta.end_time,
+        idx_window_start, idx_window_stop = compute_window_start_and_stop(
+            bag_start,
+            bag_stop,
             each_idx,
             fast_forward_ns,
             window_ns,
@@ -184,12 +200,12 @@ def run_rosbag_timestamp_eda(
         plot_bag_timestamp_delta(
             bag_timestamps_meta.start_time,
             mf_container.get_timestamps(
-                start=window_start, stop=window_stop, startpoint=True, endpoint=True
+                start=idx_window_start, stop=idx_window_stop, startpoint=True, endpoint=True
             ),
             bag_path_abs,
             experiment_dir_path,
             chunk_on=chunk_on,
-            append_to_title=f"trajectory window size: {to_seconds(window_stop - window_start)} (s)",
+            append_to_title=f"trajectory window size: {to_seconds(idx_window_stop - idx_window_start)} (s)",
             comment=None,
             plot_ylim=plot_ylim,
             plot_postfix=each_idx,
@@ -197,7 +213,9 @@ def run_rosbag_timestamp_eda(
             figsize=figsize,
             save_dpi=save_dpi,
         )
+        progressbar.update(1)
 
+    progressbar.close()
     return mf_container
 
 
@@ -207,7 +225,7 @@ if __name__ == "__main__":
     """
 
     bag_name_ = "rosbag2_2023_09_24-20_30_12-filtered-short"
-    bag_path_ = dn_validate_path(
+    bag_path_ = dn_sanitize_path(
         os.path.join(
             "data/repository_data/tests_data/rosbag_test_data",
             "bags_vaul-f1tenth-nx-orin",
@@ -217,14 +235,14 @@ if __name__ == "__main__":
 
     run_rosbag_timestamp_eda(
         bag_path_,
-        eda_dir_path=dn_validate_path("artifact/rosbag_eda"),
+        eda_dir_path=dn_sanitize_path("artifact/rosbag_eda"),
         features_config={
-            "/odom":            trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
-            "/tf":              tct_dataclasses.Tf2MsgsTFMessage,
-            "/scan":            tct_dataclasses.SensorMsgsLaserScan,
-            "/teleop":          trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass.AckermannMsgsAckermannDriveStamped,
-            "/sensors/imu/raw": trajectory_container_tools.dataclasses.ros_msgs.stamped_dataclass.SensorMsgsImu,
-            "/sensors/imu":     trajectory_container_tools.dataclasses.ros_msgs.vesc_msgs_dataclass.VescMsgsVescImuStamped,
+            "/teleop": tct.dataclasses.AckermannMsgsAckermannDriveStamped,
+            "/odom": tct.dataclasses.NavMsgsOdometry,
+            "/tf": tct.dataclasses.Tf2MsgsTFMessage,
+            "/scan": tct.dataclasses.SensorMsgsLaserScan,
+            "/sensors/imu/raw": tct.dataclasses.SensorMsgsImu,
+            "/sensors/imu": tct.dataclasses.VescMsgsVescImuStamped,
         },
         chunk_on="/teleop",
         fast_forward_ns=0.1e9,
