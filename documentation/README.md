@@ -186,6 +186,7 @@ TCT uses a factory pattern to dynamically create trajectory containers based on 
 
 ```python
 import trajectory_container_tools as tct 
+
 features_config = {
     'pose': tct.dataclasses.StatePose2D,
     'velocity': ('CustomVel', 'vx', 'vy', 'vtheta'),

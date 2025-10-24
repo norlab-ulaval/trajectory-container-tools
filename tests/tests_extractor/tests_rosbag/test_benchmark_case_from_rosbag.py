@@ -11,8 +11,6 @@ from trajectory_container_tools.extractor import (
     from_rosbag,
 )
 from trajectory_container_tools.utils import dn_sanitize_path
-from trajectory_container_tools.utils.ros2_utils.rosbag_introspection import \
-    show_rosbag_summary_info
 from trajectory_container_tools.dataclasses import (
     AckermannMsgsAckermannDriveStamped,
     NavMsgsOdometry,

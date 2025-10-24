@@ -155,16 +155,14 @@ For `AbstractTrajectoryStampedFeaturesBag` containers (e.g., extracted from ROS 
 Retrieve trajectory data within a specified timestamp range:
 
 ```python
-import trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass
-import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 import trajectory_container_tools as tct
 
 # Extract trajectory features data from ROS bag
 trajectory_features_bag = tct.extractor.from_rosbag(
         rosbag_path=rosbag_path,
         features_config={
-                '/odom': trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
-                '/cmd':  trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass.AckermannMsgsAckermannDriveStamped,
+                '/odom': tct.dataclasses.NavMsgsOdometry,
+                '/cmd':  tct.dataclasses.AckermannMsgsAckermannDriveStamped,
                 },
         chunk_on="/cmd",
         )
@@ -244,17 +242,15 @@ if limits.first <= my_timestamp and my_timestamp <= limits.last:
 ### Example 1: Synchronize Multi-Sensor Data
 
 ```python
-import trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass
-import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 import trajectory_container_tools as tct
 
 # Extract multi-sensor data
 robot_data = tct.extractor.from_rosbag(
         rosbag_path=rosbag_path,
         features_config={
-                "/odom": trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
+                "/odom": tct.dataclasses.NavMsgsOdometry,
                 "/imu":  tct.dataclasses.SensorMsgsImu,
-                "/cmd":  trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass.AckermannMsgsAckermannDriveStamped,
+                "/cmd":  tct.dataclasses.AckermannMsgsAckermannDriveStamped,
                 },
         chunk_on="/cmd",
         )
