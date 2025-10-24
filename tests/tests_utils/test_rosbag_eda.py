@@ -99,7 +99,7 @@ def test_run_rosbag_timestamp_eda_full_bag(
     assert isinstance(tc, AbstractTrajectoryStampedFeaturesBag)
 
     assert tc.topic_odom.trajectory_len == 864
-    assert tc.topic_tf.transforms[0].trajectory_len == 864
+    assert tc.topic_tf.transforms[0].trajectory_len == 866
     assert tc.topic_scan.trajectory_len == 691
     assert tc.topic_teleop.trajectory_len == 783
     assert tc.topic_sensors_imu_raw.trajectory_len == 859

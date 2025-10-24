@@ -109,9 +109,15 @@ def from_rosbag(
         for all features.
     """
     # .... Pre-condition ..........................................................................
-    try:
-        assert chunk_on in features_config
-    except AssertionError:
+    topic_keys = features_config.keys()
+    if chunk_on in features_config:
+        pass
+    elif (
+            len(topic_keys) == 1
+            and chunk_on not in topic_keys
+    ):
+        chunk_on = [*topic_keys][0]
+    elif chunk_on not in topic_keys:
         raise ValueError(
             f"Param chunk_on='{chunk_on}' can't be found in provided 'features_config' dictionary!"
         )

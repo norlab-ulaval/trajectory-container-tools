@@ -13,10 +13,6 @@ import os
 from pathlib import Path
 
 import trajectory_container_tools as tct
-import trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass
-import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
-import trajectory_container_tools.dataclasses.ros_msgs.sensor_msgs_dataclass
-import trajectory_container_tools.dataclasses.ros_msgs.vesc_msgs_dataclass
 from trajectory_container_tools.utils.general import dn_sanitize_path, setup_progressbar
 from trajectory_container_tools.temporal.timestamps import to_seconds
 from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
@@ -38,7 +34,6 @@ from trajectory_container_tools.utils.ros2_utils.rosbag_introspection import (
 from trajectory_container_tools.utils.ros2_utils.rosbag_eda.eda_utils.plot import (
     plot_bag_timestamp_delta,
 )
-import trajectory_container_tools.dataclasses as tct_dataclasses
 from trajectory_container_tools.utils.general import RosImportError
 
 try:
@@ -242,12 +237,12 @@ if __name__ == "__main__":
         bag_path_,
         eda_dir_path=dn_sanitize_path("artifact/rosbag_eda"),
         features_config={
-            "/teleop": trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass.AckermannMsgsAckermannDriveStamped,
-            "/odom": trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
-            "/tf": tct_dataclasses.Tf2MsgsTFMessage,
-            "/scan": tct_dataclasses.SensorMsgsLaserScan,
-            "/sensors/imu/raw": trajectory_container_tools.dataclasses.ros_msgs.sensor_msgs_dataclass.SensorMsgsImu,
-            "/sensors/imu": trajectory_container_tools.dataclasses.ros_msgs.vesc_msgs_dataclass.VescMsgsVescImuStamped,
+            "/teleop": tct.dataclasses.AckermannMsgsAckermannDriveStamped,
+            "/odom": tct.dataclasses.NavMsgsOdometry,
+            "/tf": tct.dataclasses.Tf2MsgsTFMessage,
+            "/scan": tct.dataclasses.SensorMsgsLaserScan,
+            "/sensors/imu/raw": tct.dataclasses.SensorMsgsImu,
+            "/sensors/imu": tct.dataclasses.VescMsgsVescImuStamped,
         },
         chunk_on="/teleop",
         fast_forward_ns=0.1e9,

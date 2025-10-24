@@ -10,7 +10,7 @@ from .abstract_trajectory_feature_dataclass import (
     AbstractTrajectoryFeature,
 )
 from .abstract_trajectory_array_dataclass import (
-    AbstractTrajectoryArray,
+    AbstractTrajectoryUnboundedArray,
 )
 
 
@@ -49,21 +49,16 @@ class BaseTrajectoryFeature(AbstractTrajectoryFeature):
 
 
 @dataclass()
-class BaseTrajectoryFeatureArray(
-    AbstractTrajectoryArray
+class BaseTrajectoryFeatureUnboundedArray(
+    AbstractTrajectoryUnboundedArray
 ):
     """
-    Represents a base data structure without trajectory handling.
+    Represents a base class for trajectory feature arrays.
 
-    This class inherits from ``AbstractTrajectoryArray`` and serves as
-    a foundation for non-trajectory-based data classes. It is designed to hold
-    and manage data that does not involve trajectory-specific information at top-level but might
-    in nested ones e.g., `Tf2MsgsTFMessage.transforms` a list of `GeometryMsgsTransformStampedFeature` trj container
-
-    :ivar feature_name: Name of the feature associated with the trajectory.
-    :type feature_name: str
+    This class serves as a foundational structure for handling arrays of trajectory features.
+    It extends the functionality of the AbstractTrajectoryUnboundedArray and may be further specialized
+    in derived classes.
     """
-
     pass
 
 

@@ -5,8 +5,13 @@ from pathlib import Path
 import numpy as np
 
 import trajectory_container_tools as tct
+from trajectory_container_tools.dataclasses import (
+    RosFeature,
+    RosFeatureArray,
+    RosStampedFeature,
+)
 from trajectory_container_tools.utils.general import RosImportError
-0
+
 try:
     from rosbags.rosbag2 import Reader
     from rosbags.typesys.store import Typestore
@@ -117,9 +122,13 @@ def find_max_timestamp_delta_over_all_topics(
             mf_container.get_dimension_type(each)[0],
             tct.AbstractTrajectoryFeature,
         ):
-            topics_max_delta_stamp.append(
-                np.max(
-                    mf_container.get_dynamic_field(each).header.timestamps.delta_stamps
-                )
+            each_field: Union[RosFeature, RosStampedFeature, RosFeatureArray] = (
+                mf_container.get_dynamic_field(each)
             )
+            if isinstance(each_field, tct.dataclasses.StdMsgsHeader):
+                delta_stamps = each_field.header.timestamps.delta_stamps
+            else:
+                delta_stamps = each_field.bag_recorded_timestamps.delta_stamps
+
+            topics_max_delta_stamp.append(np.max(delta_stamps))
     return np.max(np.array(topics_max_delta_stamp))

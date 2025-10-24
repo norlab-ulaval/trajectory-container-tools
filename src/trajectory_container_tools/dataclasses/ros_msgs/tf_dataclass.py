@@ -21,7 +21,3 @@ class Tf2MsgsTFMessage(RosFeatureArray):
 
     transforms: list[GeometryMsgsTransformStampedFeature]
 
-    @property
-    def registred_trajectory_object_list(self) -> str:
-        return 'transforms'
-

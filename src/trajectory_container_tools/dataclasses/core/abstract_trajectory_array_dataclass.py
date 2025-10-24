@@ -1,94 +1,138 @@
 # coding=utf-8
-from copy import deepcopy
-from dataclasses import dataclass, field
-from typing import List, Optional, Union
-
+from dataclasses import dataclass
 import numpy as np
 
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_feature_dataclass import (
     AbstractTrajectoryFeature,
+    _repr_ndarray_and_timestamps_obj,
+    _repr_nested_AbstractTrajectoryFeature_obj,
 )
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass_common import (
-    AbstractTrajectoryCommon,
-)
+
+from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.utils import extract_class_name_from_instance
 
 
 @dataclass()
-class AbstractTrajectoryArray(AbstractTrajectoryCommon):
+class AbstractTrajectoryUnboundedArray(AbstractTrajectoryFeature):
     """
     Representation of an abstract data structure for entities containing heterogonous trajectory
-    data e.g., a container that contains many trajectory feature dataclass of different trajectory lenghts.
+    data e.g., a container that contains an array of many trajectory feature dataclass of different
+    trajectory lenghts.
     """
-    feature_name: Optional[str] = field(default=None, kw_only=True)
 
     @classmethod
-    def _dataclass_internal_field(cls) -> List[str]:
-        return super()._dataclass_internal_field() + ["feature_name", "_iter_index"]
-
-    @property
-    def registred_trajectory_object_list(self) -> Optional[str]:
+    def trajectory_array_field_names(
+        cls,
+        trajectory_containers_array_only: bool = False,
+        non_trajectory_containers_array_only: bool = False,
+    ) -> list[str]:
         """
-        Specify the attribute name corresponding of the list of trajectory objects.
+        Get attribute name corresponding of the list of trajectory objects.
 
-        :return: The attribute name for the NoTrajectoryDataclass lists of trajectory objects.
+        :param trajectory_containers_array_only: (Optional) Return only arrays containing TrajectoryContainer dataclasses.
+        :param non_trajectory_containers_array_only: (Optional) Return only arrays not containing TrajectoryContainer dataclasses.
+        :return: The attribute names for the AbstractTrajectoryUnboundedArray lists of nested trajectory objects.
+        :raises ValueError: If both paramters are set to True
         """
-        # (NICE TO HAVE) ToDo: implement a mechanism to automaticaly populate 'registred_trajectory_object_list'.
-        return None
 
-    @classmethod
-    def non_trajectory_field(cls) -> List[str]:
-        attribute_name = cls.registred_trajectory_object_list
-        if attribute_name is None:
-            attribute_name = ""
-        return super().non_trajectory_field() + [attribute_name]
+        trj_array_w_arbitrary_type_field_names = []
+        trj_array_w_trj_containers_type_field_names = []
 
-    def __post_init__(self):
-        # .... Pre-condition ......................................................................
-        if not self.get_dimension_names():
-            raise TypeError(
-                f"[TCT error] AbstractTrajectoryArray is an abstract baseclass, "
-                f"it must be subclassed in order to be instanciated."
+        dim_names = cls.get_dimension_names()
+        for each in dim_names:
+            if each in cls.non_trajectory_field():
+                continue
+
+            dimension_type, is_list_of_type = cls.get_dimension_type(each)
+            if is_list_of_type and issubclass(
+                dimension_type, AbstractTrajectoryFeature
+            ):
+                trj_array_w_trj_containers_type_field_names.append(each)
+            elif is_list_of_type:
+                trj_array_w_arbitrary_type_field_names.append(each)
+
+        if (
+            trajectory_containers_array_only is True
+            and non_trajectory_containers_array_only is True
+        ):
+            raise ValueError(
+                "Parameters 'trajectory_containers_array_only' and 'non_trajectory_containers_array_only' are both set to True. This would return an empty list!"
+            )
+        elif trajectory_containers_array_only:
+            return trj_array_w_trj_containers_type_field_names
+        elif non_trajectory_containers_array_only:
+            return trj_array_w_arbitrary_type_field_names
+        else:
+            return (
+                trj_array_w_arbitrary_type_field_names
+                + trj_array_w_trj_containers_type_field_names
             )
 
-        # .... Base class initialization logic ....................................................
-        registred_list = self.registred_trajectory_object_list
-        if registred_list is not None:
-            registred_list = self.get_dynamic_field(registred_list)
-            if registred_list is not None:
-                assert isinstance(registred_list, list)
-                for each in registred_list:
-                    assert isinstance(each, AbstractTrajectoryFeature)
+    def __getitem__(self, index) -> "AbstractTrajectoryUnboundedArray":
+        trj_feature_array_at_t = super().__getitem__(index)
 
-        self.set_parent_container_reference_tracking()
+        for each_array_name in self.trajectory_array_field_names(
+            trajectory_containers_array_only=True
+        ):
+            updated_list = []
 
-        # .... Callback and attribute customization logic .........................................
-        self.on_begin_post_init_callback()
+            each_trj_array = trj_feature_array_at_t.__getattribute__(each_array_name)
+            for each_member in each_trj_array:
+                try:
+                    each_member = each_member[index]
+                except IndexError:
+                    each_member = each_member.empty()
 
-        for each_name in self.get_dimension_names():
-            self.post_init_feature_callback(feature_name=each_name)
+                updated_list.append(each_member)
 
-        self.on_exit_post_init_callback()
+            trj_feature_array_at_t.__setattr__(each_array_name, updated_list)
 
-        return None
+        for each_array_name in self.trajectory_array_field_names(
+            non_trajectory_containers_array_only=True
+        ):
+            each_trj_array = trj_feature_array_at_t.__getattribute__(each_array_name)
+            trj_feature_array_at_t.__setattr__(each_array_name, each_trj_array[index])
+
+        return trj_feature_array_at_t
+
+    def empty(self) -> "Timestamps":
+        empty_trj_feature = super().empty()
+
+        updated_list = []
+        for each_array_name in self.trajectory_array_field_names(
+            trajectory_containers_array_only=True
+        ):
+            for each_member in empty_trj_feature.get_dynamic_field(each_array_name):
+                each_member: AbstractTrajectoryFeature
+                updated_list.append(each_member.empty())
+
+            empty_trj_feature.__setattr__(each_array_name, updated_list)
+
+        for each_array_name in self.trajectory_array_field_names(
+            non_trajectory_containers_array_only=True
+        ):
+            each_trj_array = empty_trj_feature.__getattribute__(each_array_name)
+            if isinstance(each_trj_array, list):
+                empty_trj_feature.__setattr__(each_array_name, [])
+            elif isinstance(each_trj_array, tuple):
+                empty_trj_feature.__setattr__(each_array_name, tuple)
+
+        return empty_trj_feature
 
     def __str__(self):
         """User representation. Dynamically handle property added at run time"""
-        out_sp = " " * 0
-        in_sp = " " * 3
-        nested_sp = " " * 3
-        dataclass_name = extract_class_name_from_instance(self)
-        repr_str = f"\n{out_sp}{dataclass_name}(\n"
-        v: Union[np.ndarray, AbstractTrajectoryFeature, str, int, float]
-
-        v = self.__dict__.get("feature_name")
-        if v is not None:
-            repr_str += f"{in_sp}feature_name: {v}\n"
+        in_sp, nested_sp, out_sp, repr_str = self._repr_pre()
 
         for k, v in self.__dict__.items():
             if k in self._dataclass_internal_field():
                 pass
-            elif k == self.registred_trajectory_object_list:
+            elif k == "timesteps_indices" and self.is_nested():
+                pass
+            elif k == "bag_recorded_timestamps" and self.is_nested() and v is None:
+                pass
+            elif k in self.trajectory_array_field_names(
+                trajectory_containers_array_only=True
+            ):
                 indent_v = []
                 for each in v:
                     for each_line in str(each).splitlines():
@@ -98,61 +142,50 @@ class AbstractTrajectoryArray(AbstractTrajectoryCommon):
                 repr_str += f"{out_sp}{in_sp}{k}: ["
                 repr_str += f"{indent_v}"
                 repr_str += f"\n{out_sp}{in_sp}]\n"
+            elif k in self.trajectory_array_field_names(
+                non_trajectory_containers_array_only=True
+            ):
 
+                nested_type = ""
+                if len(v) > 0:
+                    nested_type = f"[{extract_class_name_from_instance(v[0])}]"
+                class_type = f"{extract_class_name_from_instance(v)}{nested_type}"
+
+                dimension_type, _ = self.get_dimension_type(k)
+                if isinstance(dimension_type, (int, float)):
+                    if len(v) == 0:
+                        range_str = f"empty"
+                    else:
+                        range_str = f"range {min(v)} ←→ {max(v)}"
+                    repr_str += (
+                        f"{out_sp}{in_sp}{k}: ({class_type}) "
+                        f"len {len(v)} {range_str}\n"
+                    )
+                else:
+                    if len(v) == 0:
+                        range_str = f"empty"
+                    elif len(v) == 1:
+                        range_str = f"[{v[0]}]"
+                    elif len(v) == 2:
+                        range_str = f"[{v[0]}, {v[1]}]"
+                    else:
+                        range_str = f"[{v[0]}, ..., {v[-1]}]"
+                    repr_str += (
+                        f"{out_sp}{in_sp}{k}: ({class_type}) "
+                        f"len {len(v)} {range_str}\n"
+                    )
+
+            elif isinstance(v, (np.ndarray, Timestamps)):
+                repr_str = _repr_ndarray_and_timestamps_obj(
+                    repr_str, k, v, nested_sp, in_sp, out_sp
+                )
             elif isinstance(v, AbstractTrajectoryFeature):
-                indent_v = []
-                for each_line in str(v).splitlines():
-                    indent_v.append(f"{out_sp}{in_sp}{nested_sp}{each_line}\n")
-                indent_v = "".join(indent_v)
-                repr_str += f"{out_sp}{in_sp}{k}:{indent_v}"
+                repr_str = _repr_nested_AbstractTrajectoryFeature_obj(
+                    repr_str, k, v, in_sp, out_sp, nested_sp
+                )
             else:
                 repr_str += (
                     f"{out_sp}{in_sp}{k}: ({extract_class_name_from_instance(v)}) {v}\n"
                 )
         repr_str += f"{out_sp})"
         return repr_str
-
-    @property
-    def lists_len(self) -> int | None:
-        """
-        Provides the length of the registred lists containing AbstractTrajectoryFeature objects.
-
-        :return: The total count of items in the registered list of trajectory objects or None if
-            there is no registred trajectory object list.
-        """
-        trj_obj_list = self.registred_trajectory_object_list
-        if trj_obj_list is not None:
-            registred_list = self.__getattribute__(trj_obj_list)
-            return len(registred_list)
-        else:
-            return None
-
-    def __len__(self) -> int:
-        """
-        Provides the length of the registred lists containing AbstractTrajectoryFeature objects.
-
-        :return: The total count of items in the registered list of trajectory objects or `0` if
-            there is no registred trajectory object list.
-        """
-        return self.lists_len or 0
-
-    def __getitem__(self, index) -> AbstractTrajectoryFeature | None:
-        trj_obj_list = self.registred_trajectory_object_list
-        if trj_obj_list is not None:
-            registred_list = self.__getattribute__(trj_obj_list)
-            trajectory_object = deepcopy(registred_list[index])
-            return trajectory_object
-        else:
-            return None
-
-    def __iter__(self) -> "AbstractTrajectoryArray":
-        self._iter_index = 0
-        return self
-
-    def __next__(self) -> AbstractTrajectoryFeature:
-        if self._iter_index < len(self):
-            item = self[self._iter_index]
-            self._iter_index += 1
-            return item
-        else:
-            raise StopIteration

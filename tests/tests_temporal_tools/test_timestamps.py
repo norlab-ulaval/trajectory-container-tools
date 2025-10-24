@@ -119,6 +119,16 @@ class TestTimestampsCore:
         # Case individual key
         assert ts.seconds_nanoseconds(0) == to_seconds_nanoseconds(mock_ts_array[0])
 
+    def test_empty(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+        ts = Timestamps(stamps=mock_ts_array)
+        # print(ts)
+        ts_empty = ts.empty()
+
+        assert np.array_equal(ts_empty.stamps, np.array([], dtype=np.int64))
+        assert np.array_equal(ts_empty.delta_stamps, np.array([], dtype=np.int64))
+        assert len(ts_empty) == 0
+
 
 class TestTimestampsIterableMethods:
 

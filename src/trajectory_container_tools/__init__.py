@@ -41,7 +41,7 @@ from .dataclasses.core.abstract_trajectory_feature_dataclass import (
     AbstractTrajectoryFeature,
 )
 from .dataclasses.core.abstract_trajectory_array_dataclass import (
-    AbstractTrajectoryArray,
+    AbstractTrajectoryUnboundedArray,
 )
 from .dataclasses.core.abstract_trajectory_features_bag_dataclass import (
     AbstractTrajectoryFeaturesBag,
@@ -51,7 +51,7 @@ from .dataclasses.core.abstract_trajectory_stamped_features_bag_dataclass import
 )
 from .dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryFeature,
-    BaseTrajectoryFeatureArray,
+    BaseTrajectoryFeatureUnboundedArray,
 )
 
 from .utils.containers_sanity_checks import containers_timestep_alignment_sanity_check
@@ -73,11 +73,11 @@ __all__ = [
     "__version__",
     # Core classes
     "AbstractTrajectoryFeature",
-    "AbstractTrajectoryArray",
+        "AbstractTrajectoryUnboundedArray",
     "AbstractTrajectoryFeaturesBag",
     "AbstractTrajectoryStampedFeaturesBag",
     "BaseTrajectoryFeature",
-    "BaseTrajectoryFeatureArray",
+        "BaseTrajectoryFeatureUnboundedArray",
     # Namespaces
     "dataclasses",
     "factory",

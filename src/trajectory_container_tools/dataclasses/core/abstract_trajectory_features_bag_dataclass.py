@@ -14,7 +14,7 @@ from trajectory_container_tools.dataclasses.core.abstract_trajectory_feature_dat
     AbstractTrajectoryFeature,
 )
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_array_dataclass import (
-    AbstractTrajectoryArray,
+    AbstractTrajectoryUnboundedArray,
 )
 from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.utils import extract_class_name_from_instance
@@ -105,7 +105,7 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
                         f"shape {v.shape} {range_str}\n"
                     )
             elif isinstance(
-                v, (AbstractTrajectoryFeature, AbstractTrajectoryArray)
+                v, (AbstractTrajectoryFeature, AbstractTrajectoryUnboundedArray)
             ):
                 indent_v = []
                 for each_line in str(v).splitlines():

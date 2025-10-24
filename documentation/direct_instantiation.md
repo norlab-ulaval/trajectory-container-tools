@@ -324,7 +324,7 @@ Expected error caught: ValueError
 ### Base Classes
 
 - `BaseTrajectoryFeature`: Base class providing trajectory single feature core functionality
-- `BaseTrajectoryFeatureArray`: Base class providing core functionality for trajectory features array of `AbstractTrajectoryFeature` 
+`- `BaseTrajectoryFeatureUnboundedArray`: Base class providing core functionality for trajectory features array of `AbstractTrajectoryFeature` 
 
 ### Factory Functions
 

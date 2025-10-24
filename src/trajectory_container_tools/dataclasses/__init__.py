@@ -23,18 +23,18 @@ from trajectory_container_tools.dataclasses.core import (
     AbstractTrajectoryFeature,
     AbstractTrajectoryFeaturesBag,
     AbstractTrajectoryStampedFeaturesBag,
-    AbstractTrajectoryArray,
+    AbstractTrajectoryUnboundedArray,
     BaseTrajectoryFeature,
-    BaseTrajectoryFeatureArray,
+    BaseTrajectoryFeatureUnboundedArray,
 )
 
 __all__ += [
     "AbstractTrajectoryFeature",
     "AbstractTrajectoryFeaturesBag",
     "AbstractTrajectoryStampedFeaturesBag",
-    "AbstractTrajectoryArray",
+    "AbstractTrajectoryUnboundedArray",
     "BaseTrajectoryFeature",
-    "BaseTrajectoryFeatureArray",
+    "BaseTrajectoryFeatureUnboundedArray",
 ]
 
 # .... ROS2 dataclasses ...........................................................................

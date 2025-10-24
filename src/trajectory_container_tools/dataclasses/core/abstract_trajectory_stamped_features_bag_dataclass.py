@@ -6,7 +6,7 @@ from typing import Any, List, Optional, Union
 import numpy as np
 
 from .abstract_trajectory_features_bag_dataclass import AbstractTrajectoryFeaturesBag
-from .abstract_trajectory_array_dataclass import AbstractTrajectoryArray
+from .abstract_trajectory_array_dataclass import AbstractTrajectoryUnboundedArray
 from trajectory_container_tools.dataclasses.ros_msgs.sensor_msgs_dataclass import (
     RosStampedFeature,
 )
@@ -47,11 +47,11 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
     _iter_index: int = field(default=0, init=False)
 
     def __post_init__(self):
-        chunk_on_is_default = self.chunk_on == "topic_teleop"
-        if (
+        if self.chunk_on in self.topic_key_list:
+            pass
+        elif (
             len(self.topic_key_list) == 1
             and self.chunk_on not in self.topic_key_list
-            and chunk_on_is_default
         ):
             self.chunk_on = self.topic_key_list[0]
         elif self.chunk_on not in self.topic_key_list:
@@ -87,48 +87,73 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
 
         mf_dataclass_at_t = deepcopy(self)
 
-        chunk_on_attribute = self.get_dynamic_field(self.chunk_on)
-        if isinstance(chunk_idx, slice):
-            chunck_on_timestamp = chunk_on_attribute.header.timestamps[
-                chunk_idx.stop - 1
-            ].stamps
+        # .... Set chunk reference ................................................................
+        chunk_on_attribute: Union[RosStampedFeature, RosFeatureArray] = (
+            self.get_dynamic_field(self.chunk_on)
+        )
+        if chunk_on_attribute.has_dynamic_field("header.timestamps"):
+            chunk_timestamps_field_name = "header.timestamps"
         else:
-            chunck_on_timestamp = chunk_on_attribute.header.timestamps[chunk_idx].stamps
+            chunk_timestamps_field_name = "bag_recorded_timestamps"
 
+        chunck_on_timestamps: Timestamps = chunk_on_attribute.get_dynamic_field(
+            chunk_timestamps_field_name
+        )
+        if isinstance(chunk_idx, slice):
+            chunck_on_stamp = chunck_on_timestamps[chunk_idx.stop - 1].stamps
+        else:
+            chunck_on_stamp = chunck_on_timestamps[chunk_idx].stamps
+
+        # .... Set bag level timestamps ...........................................................
         if self.bag_timestamps is not None:
-            bag_timestamps_subset = _get_attribute_timestamps(
-                chunck_on_timestamp, chunk_idx, chunk_on_attribute, self.bag_timestamps
+            bag_timestamps_subset = _get_attribute_at_timestamps(
+                chunck_on_stamp, chunk_idx, chunk_on_attribute, self.bag_timestamps
             )
             mf_dataclass_at_t.__setattr__("bag_timestamps", bag_timestamps_subset)
 
-        each_attribute: Union[
-            RosStampedFeature, RosFeatureArray
-        ]
+        # .... Set topic attributes ...............................................................
         for each_topic in self.topic_key_list:
-            each_attribute = self.get_dynamic_field(each_topic)
+            each_attribute: Union[RosStampedFeature, RosFeatureArray] = (
+                self.get_dynamic_field(each_topic)
+            )
 
             if each_topic is self.chunk_on:
                 each_attribute = each_attribute[chunk_idx]
-            elif isinstance(each_attribute, AbstractTrajectoryArray):
-                registred_trj_object_list_name = (
-                    each_attribute.registred_trajectory_object_list
-                )
-                if registred_trj_object_list_name is not None:
+            elif isinstance(each_attribute, AbstractTrajectoryUnboundedArray):
+                # (☕minor) ToDo: update unit-test (ref task TCT-91)
+
+                for each_trj_array_name in each_attribute.trajectory_array_field_names(
+                    trajectory_containers_array_only=True,
+                ):
                     trj_container_list_object = []
-                    for idx, each in enumerate(each_attribute):
-                        each = _get_attribute_timestamps(
-                            chunck_on_timestamp, chunk_idx, chunk_on_attribute, each
+                    for each_trj_array in each_attribute.get_dynamic_field(
+                        each_trj_array_name
+                    ):
+                        each_trj_array = _get_attribute_at_timestamps(
+                            chunck_on_stamp,
+                            chunk_idx,
+                            chunk_on_attribute,
+                            each_trj_array,
                         )
-                        trj_container_list_object.append(each)
+                        trj_container_list_object.append(each_trj_array)
                     each_attribute.__setattr__(
-                        registred_trj_object_list_name, trj_container_list_object
+                        each_trj_array_name, trj_container_list_object
                     )
-                else:
-                    # Note: set attribute as is
-                    pass
+
+                for each_trj_array_name in each_attribute.trajectory_array_field_names(
+                    non_trajectory_containers_array_only=True,
+                ):
+                    each_trj_array = _get_attribute_at_timestamps(
+                        chunck_on_stamp,
+                        chunk_idx,
+                        chunk_on_attribute,
+                        each_trj_array,
+                    )
+                    each_attribute.__setattr__(each_trj_array_name, each_trj_array)
+
             else:
-                each_attribute = _get_attribute_timestamps(
-                    chunck_on_timestamp, chunk_idx, chunk_on_attribute, each_attribute
+                each_attribute = _get_attribute_at_timestamps(
+                    chunck_on_stamp, chunk_idx, chunk_on_attribute, each_attribute
                 )
 
             mf_dataclass_at_t.__setattr__(each_topic, each_attribute)
@@ -183,41 +208,18 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
             mf_dataclass_at_t.__setattr__("bag_timestamps", bag_timestamps_subset)
 
         for each_topic in self.topic_key_list:
-            each_attribute: Union[
-                RosStampedFeature, RosFeatureArray
-            ] = self.get_dynamic_field(each_topic)
+            each_attribute: Union[RosStampedFeature, RosFeatureArray] = (
+                self.get_dynamic_field(each_topic)
+            )
+            # (☕minor) ToDo: update unit-test (ref task TCT-91)
 
-            if isinstance(each_attribute, AbstractTrajectoryArray):
-                registred_trj_object_list_name = (
-                    each_attribute.registred_trajectory_object_list
-                )
-                if registred_trj_object_list_name is not None:
-                    trj_container_list_object = []
-                    for idx, each in enumerate(each_attribute):
-                        each: RosStampedFeature = (
-                            each.get_timestamps(
-                                start=start,
-                                stop=stop,
-                                startpoint=startpoint,
-                                endpoint=endpoint,
-                                resolve_out_of_bounds=True,
-                            )
-                        )
-                        trj_container_list_object.append(each)
-                    each_attribute.__setattr__(
-                        registred_trj_object_list_name, trj_container_list_object
-                    )
-                else:
-                    # Note: set attribute as is
-                    pass
-            else:
-                each_attribute = each_attribute.get_timestamps(
-                    start=start,
-                    stop=stop,
-                    startpoint=startpoint,
-                    endpoint=endpoint,
-                    resolve_out_of_bounds=True,
-                )
+            each_attribute = each_attribute.get_timestamps(
+                start=start,
+                stop=stop,
+                startpoint=startpoint,
+                endpoint=endpoint,
+                resolve_out_of_bounds=True,
+            )
 
             mf_dataclass_at_t.__setattr__(each_topic, each_attribute)
 
@@ -239,20 +241,21 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
         all_features_stamps = []
 
         for each_topic in self.topic_key_list:
-            each_attribute: Union[
-                RosStampedFeature, RosFeatureArray
-            ] = self.get_dynamic_field(each_topic)
+            each_attribute: Union[RosStampedFeature, RosFeatureArray] = (
+                self.get_dynamic_field(each_topic)
+            )
 
-            if isinstance(each_attribute, AbstractTrajectoryArray):
-                registred_trj_object_list_name = (
-                    each_attribute.registred_trajectory_object_list
-                )
-                if registred_trj_object_list_name is not None:
-                    for idx, each in enumerate(each_attribute):
-                        each: RosStampedFeature
-                        all_features_stamps.append(each.header.timestamps.stamps)
-            else:
+            if each_attribute.has_dynamic_field("header.timestamps"):
                 all_features_stamps.append(each_attribute.header.timestamps.stamps)
+
+            if isinstance(each_attribute, AbstractTrajectoryUnboundedArray):
+                for each_trj_array_name in each_attribute.trajectory_array_field_names(
+                    trajectory_containers_array_only=True
+                ):
+                    for each in each_attribute.get_dynamic_field(each_trj_array_name):
+                        if each.has_dynamic_field("header.timestamps"):
+                            each: RosStampedFeature
+                            all_features_stamps.append(each.header.timestamps.stamps)
 
         return np.unique(np.concatenate(all_features_stamps))
 
@@ -280,11 +283,11 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
         )
 
 
-def _get_attribute_timestamps(
+def _get_attribute_at_timestamps(
     chunck_on_timestamp: int,
     chunk_idx: Union[int, slice],
     chunk_on_topic: RosStampedFeature,
-    each_attribute: RosStampedFeature |  Timestamps,
+    each_attribute: RosStampedFeature | Timestamps,
 ) -> RosStampedFeature | RosFeatureArray | Timestamps:
     if isinstance(chunk_idx, slice):
         chunk_idx = chunk_idx.start

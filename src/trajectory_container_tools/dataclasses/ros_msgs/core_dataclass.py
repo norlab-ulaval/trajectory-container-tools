@@ -6,7 +6,7 @@ from deprecated import deprecated
 
 from .core_dataclass_utils import get_timestamps_slice
 from ..core.base_trajectory_dataclass import (
-    BaseTrajectoryFeatureArray,
+    BaseTrajectoryFeatureUnboundedArray,
     BaseTrajectoryFeature,
     NestedBaseTrajectory,
 )
@@ -84,9 +84,7 @@ class RosFeature(BaseTrajectoryFeature):
         if self.bag_recorded_timestamps is not None:
             use_timestamps = self.bag_recorded_timestamps
         else:
-            use_timestamps = self.get_container_root(
-                include_feature_bag=False
-            ).bag_recorded_timestamps
+            use_timestamps = self.get_container_root(include_feature_bag=False).bag_recorded_timestamps
 
         if use_timestamps is None:
             return self
@@ -183,7 +181,7 @@ class RosStampedFeature(RosFeature):
 
 
 @dataclass()
-class RosFeatureArray(BaseTrajectoryFeatureArray):
+class RosFeatureArray(BaseTrajectoryFeatureUnboundedArray):
     """
     Represents a ROS dataclass containing trajectory information.
 
@@ -198,11 +196,6 @@ class RosFeatureArray(BaseTrajectoryFeatureArray):
                                     array (converted to Timestamps internally at instanciation).
     :type bag_recorded_timestamps: Timestamps | numpy ndarray
     """
-
-    pass
-
-    # (CRITICAL) inprogress: extend test case for bag_recorded_timestamps (ref task TCT-87)
-    # (CRITICAL) inprogress: add test case for get_timestamps (ref task TCT-87)
     bag_recorded_timestamps: Union[Timestamps, np.ndarray] = field(
         default=None, kw_only=True
     )
@@ -222,7 +215,7 @@ class RosFeatureArray(BaseTrajectoryFeatureArray):
         startpoint: bool = True,
         endpoint: bool = False,
         resolve_out_of_bounds=True,
-    ) -> Union[RosStampedFeature, RosFeature, None]:
+    ) -> "RosFeatureArray":
         """
         Retrieve a trajectory interval within a specified timestamps range.
 
@@ -241,16 +234,16 @@ class RosFeatureArray(BaseTrajectoryFeatureArray):
         :raises TimestampOutOfBoundError: if start or stop is outside 'bag_recorded_timestamps' and their corresponing
             startpoint/endpoint parameter is set to 'False' and 'resolve_out_of_bounds' is set to 'False'.
         """
-        raise NotImplementedError(
-            "(Priority) ToDo: implement 'get_timestamps' support for trj feature array (ref task TCT-87)"
-        )
         if self.bag_recorded_timestamps is not None:
             use_timestamps = self.bag_recorded_timestamps
         else:
             use_timestamps = self.get_container_root(include_feature_bag=False).bag_recorded_timestamps
 
+        if use_timestamps is None:
+            return self
+
         timestamps_slice = get_timestamps_slice(
-            self.bag_recorded_timestamps,
+            use_timestamps,
             start,
             stop,
             startpoint,

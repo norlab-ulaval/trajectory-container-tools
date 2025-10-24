@@ -252,8 +252,6 @@ class AbstractTrajectoryCommon(abc.ABC):
         :param value: The value to assign to the specified feature or attribute.
         :return: None
         """
-        # ToDo: update documentation (re task TCT-65)
-
         nested_attribute = self
         feature_name_split = feature_name.split(".")
         target = feature_name_split.pop()

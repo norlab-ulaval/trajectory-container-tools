@@ -147,9 +147,15 @@ def check_typing_union_and_extract_first_union_type(
 
 
 def check_typing_list_and_extract_list_type(type_hint: type) -> Tuple[bool, type[Any]]:
-    """Safely extract the first type from a Union, or return the type if not a Union."""
+    """Safely extract the first type from a list, or return the type if not a list."""
     if is_typing_list(type_hint):
-        return True, get_args(type_hint)[0]  # Return the List first type.
+        top_lvl_type = get_args(type_hint)
+        if len(top_lvl_type) > 0:
+            primary_type = top_lvl_type[0]
+            if is_typing_list(primary_type):
+                # Handle nested list cases e.g., list[list[int]
+                primary_type = get_origin(primary_type)
+        return True, primary_type  # Return the List primiray type.
     else:
         return False, type_hint  # Not a List, return as-is.
 
@@ -242,3 +248,8 @@ def get_directory_size_mb(directory_path):
 
     # Convert bytes to megabytes (1 MB = 1024 * 1024 bytes)
     return total_size / (1024 * 1024)
+
+
+def size_zero_array_like(a) -> np.ndarray:
+    assert isinstance(a, np.ndarray)
+    return np.array([], dtype=a.dtype)

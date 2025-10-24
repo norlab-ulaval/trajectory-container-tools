@@ -274,9 +274,9 @@ class TestMainNamespaceAPI:
             "AbstractTrajectoryFeature",
             "AbstractTrajectoryFeaturesBag",
             "AbstractTrajectoryStampedFeaturesBag",
-            "AbstractTrajectoryArray",
+            "AbstractTrajectoryUnboundedArray",
             "BaseTrajectoryFeature",
-            "BaseTrajectoryFeatureArray",
+            "BaseTrajectoryFeatureUnboundedArray",
         ]
 
         for class_name in core_classes:
@@ -395,7 +395,7 @@ class TestDataclassesNamespace:
             "AbstractTrajectoryFeature",
             "AbstractTrajectoryFeaturesBag",
             "AbstractTrajectoryStampedFeaturesBag",
-            "AbstractTrajectoryArray",
+            "AbstractTrajectoryUnboundedArray",
         ]
 
         for class_name in abstract_classes:
@@ -408,7 +408,7 @@ class TestDataclassesNamespace:
         tct = setup_namespace
         abstract_classes = [
             "BaseTrajectoryFeature",
-            "BaseTrajectoryFeatureArray",
+            "BaseTrajectoryFeatureUnboundedArray",
         ]
 
         for class_name in abstract_classes:
