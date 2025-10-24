@@ -8,9 +8,6 @@ from pathlib import Path
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_stamped_features_bag_dataclass import (
     AbstractTrajectoryStampedFeaturesBag,
 )
-from trajectory_container_tools.dataclasses.core import (
-    abstract_trajectory_features_bag_dataclass,
-)
 from trajectory_container_tools.utils.general import RosImportError
 
 try:

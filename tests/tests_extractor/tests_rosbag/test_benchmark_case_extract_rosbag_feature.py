@@ -9,13 +9,14 @@ import pytest
 from trajectory_container_tools.extractor import (
     extract_rosbag_feature,
 )
+from trajectory_container_tools.utils import dn_sanitize_path
 from trajectory_container_tools.utils.ros2_utils.rosbag_introspection import (
     show_rosbag_summary_info,
 )
 from trajectory_container_tools.dataclasses import NavMsgsOdometry, RosStampedFeature
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def setup_rosbag_from_external_data_dir() -> Tuple[Path, Optional[int], Optional[int]]:
     # .... Path to ROS bag in 'shared_data' directory ...........................................
 
@@ -47,7 +48,7 @@ def setup_rosbag_from_external_data_dir() -> Tuple[Path, Optional[int], Optional
     )
 
     return (
-        show_rosbag_summary_info(rosbag_path),
+        dn_sanitize_path(rosbag_path),
         rosbag_start,
         rosbag_stop,
     )
@@ -66,27 +67,11 @@ def benchmark_extract_single_feature_from_rosbag(
     )
 
 
-# @pytest.mark.parametrize(
-#         argnames="t_enable_multiprocessing, t_n_jobs, t_chunk_size",
-#         argvalues=[
-#                 (True, 8, 50000),
-#                 (True, 4, 50000),
-#                 (True, 8, 20000),
-#                 (True, 4, 20000),
-#                 (False, 0, 0)
-#                 ],
-#         ids=[
-#                 'Multiprocessing enabled, n_jobs 8, chunk size 50000',
-#                 'Multiprocessing enabled, n_jobs 4, chunk size 50000',
-#                 'Multiprocessing enabled, n_jobs 8, chunk size 20000',
-#                 'Multiprocessing enabled, n_jobs 4, chunk size 20000',
-#                 'Multiprocessing disabled']
-#         )
 @pytest.mark.benchmark(
     group="EXTRACT-ROSBAG-FEATURE",
-    min_time=0.05, # default: 0.000005
-    max_time=4.0, # default: 1.0
-    min_rounds=20, # default: 5
+    min_time=0.05,  # default: 0.000005
+    max_time=4.0,  # default: 1.0
+    min_rounds=20,  # default: 5
     disable_gc=True,
     warmup=True,
 )

@@ -102,23 +102,20 @@ def gather_rosbag_trajectory_window_informations(
             info_str_main += f"       window: {trajectory_container_tools.temporal.timestamps.to_seconds(stop - start)} s\n"
 
         # .... Gather topics trajectory window information ........................................
-        progressbar_topic = setup_progressbar(len(reader.connections))
+        progressbar_topic = setup_progressbar(reader.message_count)
         selected_topic_info = {}
+        selected_connections = []
         for connection in reader.connections:
             if connection.topic in features_config:
                 selected_topic_info.setdefault(
                     str(connection.topic), {"count": 0, "type": connection.msgtype}
                 )
+                selected_connections.append(connection)
 
-                counter = 0
-                for _ in reader.messages(
-                    (connection,), start=start, stop=stop
-                ):
-                    counter += 1
-
-                selected_topic_info[str(connection.topic)]["count"] = counter
-
+        for connection, _, _ in reader.messages(selected_connections, start=start, stop=stop):
+            selected_topic_info[str(connection.topic)]["count"] += 1
             progressbar_topic.update(1)
+
         progressbar_topic.close()
 
         info_str_selected_topic = ""
