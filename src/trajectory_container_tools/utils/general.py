@@ -121,6 +121,7 @@ def setup_progressbar(feature_msg_len: int) -> tqdm:
         total=feature_msg_len,
         desc="       ↳ ",
         bar_format="{desc}{percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}",
+        leave=False
     )
     return progressbar
 
