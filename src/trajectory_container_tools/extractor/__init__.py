@@ -9,10 +9,11 @@ This module provides functions for extracting trajectory data from various sourc
 """
 
 # Main extractor API functions
-from trajectory_container_tools.extractor.rosbag_to_tct import from_rosbag, extract_rosbag_feature
-from trajectory_container_tools.utils.ros2_utils.rosbag_introspection import \
-    show_rosbag_summary_info
-
+from trajectory_container_tools.extractor.rosbag_to_tct import (
+    from_rosbag,
+    extract_rosbag_feature,
+)
+from trajectory_container_tools.utils.ros2_utils.rosbag_introspection import show_rosbag_summary_info
 from trajectory_container_tools.extractor.dataframe_to_tct import (
     from_dataframe,
     extract_dataframe_feature,
@@ -23,7 +24,8 @@ __all__ = [
     # ROS bag extraction functions
     "from_rosbag",
     "extract_rosbag_feature",
-        # DataFrame extraction functions
+    "show_rosbag_summary_info",
+    # DataFrame extraction functions
     "from_dataframe",
     "extract_dataframe_feature",
     "unpack_dataframe_and_show_topic",

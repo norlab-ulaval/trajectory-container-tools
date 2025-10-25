@@ -5,7 +5,6 @@ properly expose their expected functionality and maintain the correct API struct
 """
 import pytest
 
-import trajectory_container_tools.utils.ros2_utils.rosbag_introspection
 
 
 @pytest.fixture(scope="function")
@@ -46,8 +45,7 @@ class TestRosNamespaceModule:
         """Test that show_rosbag_summary_info function is available in ros namespace."""
         tct = setup_namespace
         assert hasattr(tct.ros, "show_rosbag_summary_info")
-        assert callable(
-            trajectory_container_tools.utils.ros2_utils.rosbag_introspection.show_rosbag_summary_info)
+        assert callable(tct.ros.show_rosbag_summary_info)
 
     def test_get_ros2_distro_function_exists(self, setup_namespace):
         """Test that get_ros2_distro function is available in ros namespace."""
@@ -100,6 +98,14 @@ class TestRosNamespaceModule:
         tct = setup_namespace
         assert hasattr(tct.ros, "gather_rosbag_trajectory_window_informations")
         assert callable(tct.ros.gather_rosbag_trajectory_window_informations)
+
+    def test_show_rosbag_summary_info_function_exists(
+        self, setup_namespace
+    ):
+        """Test that show_rosbag_summary_info function is available in ros namespace."""
+        tct = setup_namespace
+        assert hasattr(tct.ros, "show_rosbag_summary_info")
+        assert callable(tct.ros.show_rosbag_summary_info)
 
     def test_ros_all_attribute(self, setup_namespace):
         """Test that ros module has proper __all__ attribute."""
@@ -216,8 +222,7 @@ class TestExtractorNamespaceModule:
         """Test that show_rosbag_summary_info function is available in extractor namespace."""
         tct = setup_namespace
         assert hasattr(tct.extractor, "show_rosbag_summary_info")
-        assert callable(
-            trajectory_container_tools.utils.ros2_utils.rosbag_introspection.show_rosbag_summary_info)
+        assert callable(tct.extractor.show_rosbag_summary_info)
 
     def test_unpack_dataframe_and_show_topic_function_exists(self, setup_namespace):
         """Test that unpack_dataframe_and_show_topic function is available in extractor namespace."""

@@ -330,17 +330,13 @@ For more details, see the [Post-Processing Callbacks documentation](documentatio
 
 ```python
 import trajectory_container_tools as tct
-from trajectory_container_tools.dataclasses import (
-    NavMsgsOdometry,
-    AckermannMsgsAckermannDriveStamped,
-)
 
 trajectory_from_rosbag = tct.extractor.from_rosbag(
     rosbag_path,
     dataset_info="Warthog Mont-Morency 1 Dec 2025",
     features_config={
-        "/odom": NavMsgsOdometry,
-        "/teleop": AckermannMsgsAckermannDriveStamped,
+        "/odom": tct.dataclasses.NavMsgsOdometry,
+        "/teleop": tct.dataclasses.AckermannMsgsAckermannDriveStamped,
     },
     chunk_on="/teleop",
 )
@@ -464,16 +460,14 @@ TrajectoryFeaturesBag(
 When extracting data from ROS bags, you can iterate over synchronized timestamp chunks across multiple features:
 
 ```python
-import trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass
-import trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass
 import trajectory_container_tools as tct
 
 # Extract features from ROS bag (returns AbstractTrajectoryStampedFeaturesBag)
 trajectory_features_bag = tct.extractor.from_rosbag(
         rosbag_path,
         features_config={
-                "/odom": trajectory_container_tools.dataclasses.ros_msgs.nav_msgs_dataclass.NavMsgsOdometry,
-                "/cmd":  trajectory_container_tools.dataclasses.ros_msgs.ackermann_msgs_dataclass.AckermannMsgsAckermannDriveStamped,
+                "/odom": tct.dataclasses.NavMsgsOdometry,
+                "/cmd":  tct.dataclasses.AckermannMsgsAckermannDriveStamped,
                 },
         chunk_on="/cmd",
         )
@@ -503,14 +497,13 @@ This enables processing synchronized multi-sensor data in manageable time window
 
 ```python
 import trajectory_container_tools as tct
-from trajectory_container_tools.dataclasses import StatePose2D
 
 trajectory_from_dataframe = tct.extractor.from_dataframe(
     mock_dataset_snow,
     dataset_info="Marmote Mont-Morency 1 Dec 2025",
     features_config={
-        "icp_vel": StatePose2D,
-        "idd_vel": StatePose2D,
+        "icp_vel": tct.dataclasses.StatePose2D,
+        "idd_vel": tct.dataclasses.StatePose2D,
     },
 )
 

@@ -31,7 +31,8 @@ from .utils.ros2_utils.ros2_timestamps import (
 )
 from .utils.ros2_utils.rosbag_introspection import (
     gather_rosbag_informations,
-    gather_rosbag_trajectory_window_informations, show_rosbag_summary_info,
+    gather_rosbag_trajectory_window_informations,
+    show_rosbag_summary_info,
 )
 
 from .utils.ros2_utils.filtered_rosbag_creator import create_filtered_rosbag
@@ -50,4 +51,5 @@ __all__ = [
     "rosbag_topic_time_to_ros_time",
     "gather_rosbag_informations",
     "gather_rosbag_trajectory_window_informations",
+    "show_rosbag_summary_info",
 ]

@@ -10,8 +10,7 @@ from tests.rosbag_test_utils import get_rosbag_vaul_f1tenth_nx_orin_path_filtere
 from trajectory_container_tools.extractor import (
     from_rosbag,
 )
-from trajectory_container_tools.utils.ros2_utils.rosbag_introspection import \
-    show_rosbag_summary_info
+from trajectory_container_tools.utils import dn_sanitize_path
 from trajectory_container_tools.dataclasses import (
     AckermannMsgsAckermannDriveStamped,
     NavMsgsOdometry,
@@ -23,14 +22,14 @@ from trajectory_container_tools.dataclasses import (
 )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def setup_rosbag_from_external_data_dir() -> Tuple[Path, Optional[int], Optional[int]]:
     rosbag_start = None
     rosbag_stop = None
     rosbag_path, bag, selected_topics = get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short()
 
     return (
-            show_rosbag_summary_info(rosbag_path),
+            dn_sanitize_path(rosbag_path),
             rosbag_start,
             rosbag_stop,
     )
