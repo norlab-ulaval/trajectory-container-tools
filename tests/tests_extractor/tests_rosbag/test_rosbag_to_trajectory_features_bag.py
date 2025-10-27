@@ -4,7 +4,7 @@ from typing import Union
 import pytest
 import numpy as np
 
-from tests.rosbag_test_utils import get_rosbag_vaul_f110_grand_salon_path
+from tests.testing_utils_rosbag import get_rosbag_vaul_f110_grand_salon_path
 from trajectory_container_tools.extractor.rosbag_to_tct import (
     from_rosbag,
     extract_rosbag_feature,

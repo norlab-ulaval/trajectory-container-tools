@@ -6,7 +6,7 @@ from typing import Optional, Tuple, Union
 import numpy as np
 import pytest
 
-from tests.rosbag_test_utils import get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short
+from tests.testing_utils_rosbag import get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short
 from trajectory_container_tools.extractor import (
     from_rosbag,
 )

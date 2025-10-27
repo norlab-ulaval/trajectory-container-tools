@@ -17,7 +17,7 @@ from trajectory_container_tools.utils.general import RosImportError
 
 has_ros_dependencies = True
 try:
-    from tests.rosbag_test_utils import (
+    from tests.testing_utils_rosbag import (
         RosBagConfig,
         get_rosbag_vaul_f110_grand_salon_path,
         get_rosbag_vaul_f1tenth_nx_orin_path_filtered_short,

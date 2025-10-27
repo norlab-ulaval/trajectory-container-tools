@@ -5,11 +5,11 @@ import os
 import shutil
 from pathlib import Path
 
-from tests.testing_utilities import is_run_on_a_teamcity_continuous_integration_server
+from tests.testing_utils_general import is_run_on_a_teamcity_continuous_integration_server
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_stamped_features_bag_dataclass import (
     AbstractTrajectoryStampedFeaturesBag,
 )
-from trajectory_container_tools.utils.general import RosImportError
+from trajectory_container_tools.utils.general import RosImportError, dn_sanitize_path
 
 try:
     from rosbags.rosbag2 import Reader
@@ -44,6 +44,7 @@ def setup_teardown_artifact_dir():
 )
 @pytest.mark.slow
 def test_main():
+
     out = os.system(
         f"python3 -m trajectory_container_tools.utils.ros2_utils.rosbag_eda.rosbag_timestamp_eda"
     )
