@@ -122,6 +122,7 @@ def setup_mock_timestamps_case_act_and_obs_shared_stamps() -> MockTopicsTimestam
         t_act_timestamps=[
             3,
             5,
+            6,
         ],
     )
 

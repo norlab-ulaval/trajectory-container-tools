@@ -1,4 +1,6 @@
 # coding=utf-8
+import os
+from pathlib import Path
 
 import pytest
 import numpy as np
@@ -6,6 +8,7 @@ import numpy as np
 from trajectory_container_tools.utils.general import (
     camelcase_to_snake_case,
     check_is_finite,
+    dn_sanitize_path,
     extract_class_name_from_type,
     extract_class_name_from_instance,
 )
@@ -58,3 +61,33 @@ class TestStringUtilities:
             == "drive__steering_angle_velocity"
         )
         assert camelcase_to_snake_case("MSG") == "m_s_g"
+
+
+def test_dn_sanitize_path():
+    existing_path = os.path.join(
+        "data",
+        "repository_data",
+        "tests_data",
+        "dataframe_test_data",
+        "marmotte",
+        "ga_hard_snow_25_01_a",
+        "slip_dataset_all.pkl",
+    )
+
+    # Case: relative path
+    t_path = dn_sanitize_path(existing_path)
+    assert isinstance(t_path, Path)
+    assert os.path.basename(t_path) == "slip_dataset_all.pkl"
+
+    # Case: no dna by bypassing dna env var related logic using an absolute path
+    t_path = dn_sanitize_path(
+        os.path.join("/", "ros2_ws", "src", "trajectory-container-tools", existing_path)
+    )
+    assert isinstance(t_path, Path)
+    assert os.path.basename(t_path) == "slip_dataset_all.pkl"
+
+    # Case: path does'nt exist
+    with pytest.raises(AssertionError) as exc_info:
+        dn_sanitize_path("data999")
+    print(f"{exc_info=}")
+    assert "[TCT] path is unreachable at" in exc_info.value.args[0]

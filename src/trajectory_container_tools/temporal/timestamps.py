@@ -88,7 +88,7 @@ class Timestamps:
         return self._stamps.shape
 
     def __len__(self):
-        return len(self._stamps)
+        return self._stamps.size
 
     def __iter__(self):
         self._iter_index = 0

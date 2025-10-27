@@ -112,10 +112,7 @@ def from_rosbag(
     topic_keys = features_config.keys()
     if chunk_on in features_config:
         pass
-    elif (
-            len(topic_keys) == 1
-            and chunk_on not in topic_keys
-    ):
+    elif len(topic_keys) == 1 and chunk_on not in topic_keys:
         chunk_on = [*topic_keys][0]
     elif chunk_on not in topic_keys:
         raise ValueError(
@@ -131,6 +128,7 @@ def from_rosbag(
         typestore = register_non_native_msgs(typestore)
 
     # .... Feature extraction .....................................................................
+    chunk_on_attribute = None
     for feature_name, feature_dataclass in features_config.items():
         # Case: features_config require parsing topic msg property
         if isinstance(feature_dataclass, tuple):
@@ -153,6 +151,25 @@ def from_rosbag(
             (convert_rosbag_topic_key_to_tct_mf_topic_key(feature_name), type(feature))
         )
         features.append(feature)
+        if feature_name == chunk_on:
+            chunk_on_attribute = feature
+
+    # .... Align containers to chunk_on timestamps limits .........................................
+    if chunk_on_attribute is None:
+        raise ValueError(f"Chunk on attribute is empty!")
+    else:
+        # Update bag start/stop to align with chunk_on attribute
+        if chunk_on_attribute.has_dynamic_field("header"):
+            start = chunk_on_attribute.header.timestamps.stamps[0]
+            stop = chunk_on_attribute.header.timestamps.stamps[-1]
+        else:
+            start = chunk_on_attribute.bag_recorded_timestamps.stamps[0]
+            stop = chunk_on_attribute.bag_recorded_timestamps.stamps[-1]
+
+    for idx, each in enumerate(features):
+        features[idx] = features[idx].get_timestamps(
+            start, stop, startpoint=True, endpoint=True, resolve_out_of_bounds=True
+        )
 
     # .... Bag record timestamps collection step ..................................................
     print(f"[TCT] Collect each topics bag record timestamps")
@@ -254,9 +271,7 @@ def extract_rosbag_feature(
                 feature_connection = connections[feature_name]
 
                 feature_msg_len = 0
-                for _ in reader.messages(
-                    (feature_connection,), start=start, stop=stop
-                ):
+                for _ in reader.messages((feature_connection,), start=start, stop=stop):
                     feature_msg_len += 1
 
                 print(f"[TCT] Collect topic '{feature_name}' msgs from rosbag")

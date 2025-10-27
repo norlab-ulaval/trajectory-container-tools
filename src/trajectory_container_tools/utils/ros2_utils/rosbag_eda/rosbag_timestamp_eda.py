@@ -55,8 +55,8 @@ def run_rosbag_timestamp_eda(
     figsize: Tuple[int, int] = (28, 10),
     save_dpi: int = 100,
     typestore: Optional[Typestore] = None,
-    bag_start: bool = None,
-    bag_stop: bool = None,
+    window_start: Optional[int] = None,
+    window_stop: Optional[int] = None,
 ) -> AbstractTrajectoryStampedFeaturesBag:
     """
     Executes timestamp-based Exploratory Data Analysis (EDA) on a ROSbag file by analyzing
@@ -78,8 +78,8 @@ def run_rosbag_timestamp_eda(
     :param save_dpi: Dpi of the saved figures. Default to matplotlib default i.e., dpi=100
     :param typestore: Optional. The typestore instance to register the non-native
         messages. If not provided, a default typestore will be initialized.
-    :param bag_start: The start timestamp for the time window in nanoseconds. If None, the bag's start time is used.
-    :param bag_stop: The stop timestamp for the time window in nanoseconds. If None, the bag's end time is used.
+    :param window_start: The start timestamp for the time window in nanoseconds. If None, the bag's start time is used.
+    :param window_stop: The stop timestamp for the time window in nanoseconds. If None, the bag's end time is used.
     :return: None
     """
     # .... Setup path .............................................................................
@@ -110,22 +110,17 @@ def run_rosbag_timestamp_eda(
     rosbag_info_str, bag_timestamps_meta = gather_rosbag_informations(bag_path_abs)
     print(rosbag_info_str)
 
-    if bag_start is None:
-        bag_start = bag_timestamps_meta.start_time
+    if window_start is None:
+        window_start = bag_timestamps_meta.start_time
 
-    if bag_stop is None:
-        bag_stop = bag_timestamps_meta.end_time
-
-    if bag_start is None and bag_stop is None:
-        duration = bag_timestamps_meta.duration
-    else:
-        duration = bag_stop - bag_start
+    if window_stop is None:
+        window_stop = bag_timestamps_meta.end_time
 
     window_info = gather_rosbag_trajectory_window_informations(
         bag_path_abs,
         features_config,
-        bag_start,
-        bag_stop,
+        window_start,
+        window_stop,
     )
     print("\n", window_info)
 
@@ -134,8 +129,8 @@ def run_rosbag_timestamp_eda(
         dataset_info=None,
         features_config=features_config,
         chunk_on=chunk_on,
-        start=bag_start,
-        stop=bag_stop,
+        start=window_start,
+        stop=window_stop,
         typestore=typestore,
     )
 
@@ -179,29 +174,35 @@ def run_rosbag_timestamp_eda(
 
     # .... Setup plot .............................................................................
     if plot_ylim is None:
-        plot_ylim = find_max_timestamp_delta_over_all_topics(
-            bag_path_abs, features_config, typestore
-        )
+        print("[TCT] No plot_ylim → find max timestamp delta over all topics.")
+        plot_ylim = find_max_timestamp_delta_over_all_topics(mf_container)
 
     # .... Begin trajectory window crawling .......................................................
-    num_iterations = compute_bag_target_window_nb(duration, fast_forward_ns)
+    window_duration = mf_container.get_chunk_on_timestamps().max() - mf_container.get_chunk_on_timestamps().min()
+    num_iterations = compute_bag_target_window_nb(window_duration, fast_forward_ns)
+
     print(f"\n[TCT] Trajectory window crawling")
     progressbar = setup_progressbar(num_iterations)
     for each_idx in range(num_iterations):
 
         idx_window_start, idx_window_stop = compute_window_start_and_stop(
-            bag_start,
-            bag_stop,
+            mf_container.get_chunk_on_timestamps().min(),
+            mf_container.get_chunk_on_timestamps().max(),
             each_idx,
             fast_forward_ns,
             window_ns,
         )
 
+        mf_container_at_timestamps = mf_container.get_timestamps(
+            start=idx_window_start,
+            stop=idx_window_stop,
+            startpoint=True,
+            endpoint=True,
+        )
+
         plot_bag_timestamp_delta(
             bag_timestamps_meta.start_time,
-            mf_container.get_timestamps(
-                start=idx_window_start, stop=idx_window_stop, startpoint=True, endpoint=True
-            ),
+            mf_container_at_timestamps,
             bag_path_abs,
             experiment_dir_path,
             chunk_on=chunk_on,

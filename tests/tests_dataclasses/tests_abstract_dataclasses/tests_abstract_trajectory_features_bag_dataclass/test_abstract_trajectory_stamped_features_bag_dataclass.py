@@ -35,13 +35,26 @@ import trajectory_container_tools as tct
 )
 class TestAbstractTrajectoryStampedFeaturesBagAllCasses:
 
-    def test_total_chunks(
+    def test_get_chunk_on_timestamps(
         self,
         setup_mock_mf_container,
         t_timestamp_case,
     ):
         mf_container = setup_mock_mf_container(t_timestamp_case)
-        assert mf_container.chunks_total == t_timestamp_case.t_act_timestamps.size
+
+        # Case: chunk_on has a header field
+        assert np.array_equal(mf_container.get_chunk_on_timestamps().stamps, t_timestamp_case.t_act_timestamps)
+
+        # Case: chunk_on as no a header field
+        # (Nice to have) ToDo: add test case where chunk_on has no header (ref task TCT-92)
+
+    def test_chunks_total(
+        self,
+        setup_mock_mf_container,
+        t_timestamp_case,
+    ):
+        mf_container = setup_mock_mf_container(t_timestamp_case)
+        assert mf_container.chunks_total == t_timestamp_case.t_act_timestamps.size - 1
 
     def test_len(
         self,
@@ -49,7 +62,7 @@ class TestAbstractTrajectoryStampedFeaturesBagAllCasses:
         t_timestamp_case,
     ):
         mf_container = setup_mock_mf_container(t_timestamp_case)
-        assert len(mf_container) == t_timestamp_case.t_act_timestamps.size
+        assert len(mf_container) == t_timestamp_case.t_act_timestamps.size - 1
 
     def test_string_representation(self, setup_mock_mf_container, t_timestamp_case):
         mf_container = setup_mock_mf_container(t_timestamp_case)
@@ -156,11 +169,11 @@ class TestAbstractTrajectoryStampedFeaturesBagIndexingAndSlicing:
 
             assert (
                 mf_container[idx].topic_mock_observation.header.timestamps.stamps
-                == mf_container.topic_mock_observation[idx].header.timestamps.stamps
+                == mf_container.topic_mock_observation[idx+1].header.timestamps.stamps
             )
             assert (
                 mf_container[idx].topic_mock_observation.mock_feature
-                == mf_container.topic_mock_observation[idx].mock_feature
+                == mf_container.topic_mock_observation[idx+1].mock_feature
             )
 
             assert (
@@ -188,11 +201,11 @@ class TestAbstractTrajectoryStampedFeaturesBagIndexingAndSlicing:
 
         assert np.array_equal(
             mf_container[0].topic_mock_observation.header.timestamps.stamps,
-            mf_container.topic_mock_observation[0:2].header.timestamps.stamps,
+            mf_container.topic_mock_observation[2:4].header.timestamps.stamps,
         )
         assert np.array_equal(
             mf_container[0].topic_mock_observation.mock_feature,
-            mf_container.topic_mock_observation[0:2].mock_feature,
+            mf_container.topic_mock_observation[2:4].mock_feature,
         )
 
         assert (
@@ -209,11 +222,11 @@ class TestAbstractTrajectoryStampedFeaturesBagIndexingAndSlicing:
 
         assert np.array_equal(
             mf_container[1].topic_mock_observation.header.timestamps.stamps,
-            mf_container.topic_mock_observation[2:4].header.timestamps.stamps,
+            mf_container.topic_mock_observation[4:5].header.timestamps.stamps,
         )
         assert np.array_equal(
             mf_container[1].topic_mock_observation.mock_feature,
-            mf_container.topic_mock_observation[2:4].mock_feature,
+            mf_container.topic_mock_observation[4:5].mock_feature,
         )
 
         assert (
@@ -241,11 +254,11 @@ class TestAbstractTrajectoryStampedFeaturesBagIndexingAndSlicing:
 
         assert np.array_equal(
             mf_container[0].topic_mock_observation.header.timestamps.stamps,
-            mf_container.topic_mock_observation[0:2].header.timestamps.stamps,
+            mf_container.topic_mock_observation[2:3].header.timestamps.stamps,
         )
         assert np.array_equal(
             mf_container[0].topic_mock_observation.mock_feature,
-            mf_container.topic_mock_observation[0:2].mock_feature,
+            mf_container.topic_mock_observation[2:3].mock_feature,
         )
 
         assert (
@@ -270,11 +283,11 @@ class TestAbstractTrajectoryStampedFeaturesBagIndexingAndSlicing:
 
         assert np.array_equal(
             mf_container[0:3].topic_mock_observation.header.timestamps.stamps,
-            mf_container.topic_mock_observation[0:3].header.timestamps.stamps,
+            mf_container.topic_mock_observation[1:4].header.timestamps.stamps,
         )
         assert np.array_equal(
             mf_container[0:3].topic_mock_observation.mock_feature,
-            mf_container.topic_mock_observation[0:3].mock_feature,
+            mf_container.topic_mock_observation[1:4].mock_feature,
         )
 
         assert np.array_equal(

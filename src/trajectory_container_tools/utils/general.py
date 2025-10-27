@@ -141,6 +141,7 @@ def check_typing_union_and_extract_first_union_type(
     type_hint: type,
 ) -> Tuple[bool, type[Any]]:
     """Safely extract the first type from a Union, or return the type if not a Union."""
+    # (NICE TO HAVE) ToDo: unit-test (indirectly tested for now)
     if is_typing_union(type_hint):
         return True, get_args(type_hint)[0]  # Return the Union first type.
     else:
@@ -149,6 +150,7 @@ def check_typing_union_and_extract_first_union_type(
 
 def check_typing_list_and_extract_list_type(type_hint: type) -> Tuple[bool, type[Any]]:
     """Safely extract the first type from a list, or return the type if not a list."""
+    # (NICE TO HAVE) ToDo: unit-test (indirectly tested for now)
     if is_typing_list(type_hint):
         top_lvl_type = get_args(type_hint)
         if len(top_lvl_type) > 0:
@@ -176,20 +178,16 @@ def dn_sanitize_path(path: str | Path) -> Path:
     :return: An absolute and resolved path.
     :raises AssertionError: If the provided or resolved file path does not exist.
     """
-    try:
-        assert os.path.exists(path)
-    except AssertionError:
+    if not os.path.exists(path):
+        # Handle cases: pycharm-born dna run and shell-born dna run
         dn_project_path = os.getenv("DN_PROJECT_PATH")
-
-        if os.path.exists(dn_project_path):
+        if dn_project_path is not None and os.path.exists(dn_project_path):
             # Case running in a Dockerized-NorLab docker container
             path = os.path.join(dn_project_path, path)
 
-        assert os.path.exists(
-            path
-        ), f"[TCT] rosbag path is unreachable at {path}"
-
     path = os.path.realpath(path)
+    assert os.path.exists(path), f"[TCT] path is unreachable at {path}"
+
     return Path(path)
 
 

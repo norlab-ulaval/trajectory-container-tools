@@ -15,6 +15,7 @@ from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass im
 from trajectory_container_tools.temporal.timestep_indexing import (
     validate_dataframe_timesteps_indexing,
 )
+from trajectory_container_tools.utils import dn_sanitize_path
 from trajectory_container_tools.utils.factory import parse_feature_spec
 
 
@@ -33,25 +34,11 @@ def unpack_dataframe_and_show_topic(
     :return: A tuple containing the unpacked dataframe as a `pd.DataFrame` object
         and the resolved absolute `Path` of the dataframe file.
     """
-    # .... Construct absolute path to selected dataframe bag ......................................
-    # Handle cases: pycharm-born dna run and shell-born dna run
-    try:
-        assert os.path.exists(dataframe_path)
-    except AssertionError:
-        dn_project_path = os.getenv("DN_PROJECT_PATH")
-        if os.path.exists(dn_project_path):
-            # Case running in a Dockerized-NorLab docker container
-            dataframe_path = os.path.join(dn_project_path, dataframe_path)
 
-        assert os.path.exists(
-            dataframe_path
-        ), f"[TCT] dataframe path is unreachable at {dataframe_path}"
-
-    dataframe_path = Path(os.path.realpath(dataframe_path))
+    dataframe_path = dn_sanitize_path(dataframe_path)
 
     # .... Introspect dataframe header ............................................................
     print(f"Using dataframe bag: {dataframe_path}")
-    assert os.path.exists(dataframe_path)
 
     print("Available column label:")
     dataframe_ = pd.read_pickle(dataframe_path)

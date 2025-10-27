@@ -89,6 +89,10 @@ def plot_bag_timestamp_delta(
                     if timestamps is not None:
                         topic_ts_stamps = timestamps.stamps[1:]
                         topic_ts_delta = timestamps.delta_stamps[1:]
+                    else:
+                        raise AttributeError(
+                            f"{each_topic_name} has no timestamps attribute!"
+                        )
                     use_bag_stamps = True
                 else:
                     raise AttributeError(
@@ -193,7 +197,7 @@ def plot_bag_timestamp_delta(
         fig.text(
             0.99,
             footer_comment_v,
-            f"+ bag start time {trajectory_container_tools.temporal.timestamps.to_seconds(bag_start_time)} (s)",
+            f"+ Trajectory start time {trajectory_container_tools.temporal.timestamps.to_seconds(bag_start_time)} (s)",
             horizontalalignment="right",
         )
 

@@ -151,6 +151,8 @@ pip install trajectory-container-tools
 pip install trajectory-container-tools[ros]
 ```
 
+The `ros` install extra enable two specialized namespaces i.e., `extractor` and `ros` which provide functionalities for extracting data from rosbag and from dataframe as well as functionalities directly related to rosbag handling and ros time. 
+
 ### For developer, playing with the interactive example Jupyter notebook or using the `tests_data` 
 
 #### Option 1: Clone and Install with pip
@@ -164,7 +166,9 @@ cd trajectory-container-tools
 pip install -e .[ros,dev]
 ```
 
-#### Option 2: Using DNA (Dockerized-NorLab Application)
+The `dev` install extra install developement dependencies.
+
+#### Option 2: Using DNA ([Dockerized-NorLab Application](https://github.com/norlab-ulaval/dockerized-norlab-project))
 
 ```bash
 # Build and run the container
