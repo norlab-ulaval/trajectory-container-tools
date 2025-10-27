@@ -83,23 +83,20 @@ def run_rosbag_timestamp_eda(
     :return: None
     """
     # .... Setup path .............................................................................
-    bag_path = dn_sanitize_path(bag_path)
-    bag_path_abs = Path(bag_path)
-
     if experiment_dir is None:
         bag_name = os.path.basename(bag_path)
         experiment_dir = bag_name
 
     experiment_dir_path = Path(os.path.join(eda_dir_path, experiment_dir))
     log_file_path = Path(
-        os.path.join(experiment_dir_path, rosbag_log_file_name(bag_path_abs))
+        os.path.join(experiment_dir_path, rosbag_log_file_name(bag_path))
     )
     os.makedirs(experiment_dir_path, exist_ok=True)
 
     print(
         (
             f"\nBegin rosbag timestamp eda:\n\n"
-            f"   bag path: {bag_path_abs}\n\n"
+            f"   bag path: {bag_path}\n\n"
             f"   crawler artifact path: {experiment_dir_path}\n"
         )
     )
@@ -107,7 +104,7 @@ def run_rosbag_timestamp_eda(
     # .... Setup general ..........................................................................
     typestore = register_non_native_msgs(typestore)
 
-    rosbag_info_str, bag_timestamps_meta = gather_rosbag_informations(bag_path_abs)
+    rosbag_info_str, bag_timestamps_meta = gather_rosbag_informations(bag_path)
     print(rosbag_info_str)
 
     if window_start is None:
@@ -117,7 +114,7 @@ def run_rosbag_timestamp_eda(
         window_stop = bag_timestamps_meta.end_time
 
     window_info = gather_rosbag_trajectory_window_informations(
-        bag_path_abs,
+        bag_path,
         features_config,
         window_start,
         window_stop,
@@ -125,7 +122,7 @@ def run_rosbag_timestamp_eda(
     print("\n", window_info)
 
     mf_container = tct.extractor.from_rosbag(
-        rosbag_path=bag_path_abs,
+        rosbag_path=bag_path,
         dataset_info=None,
         features_config=features_config,
         chunk_on=chunk_on,
@@ -203,7 +200,7 @@ def run_rosbag_timestamp_eda(
         plot_bag_timestamp_delta(
             bag_timestamps_meta.start_time,
             mf_container_at_timestamps,
-            bag_path_abs,
+            bag_path,
             experiment_dir_path,
             chunk_on=chunk_on,
             append_to_title=f"trajectory window size: {to_seconds(idx_window_stop - idx_window_start)} (s)",
@@ -226,17 +223,20 @@ if __name__ == "__main__":
     """
 
     bag_name_ = "rosbag2_2023_09_24-20_30_12-filtered-short"
-    bag_path_ = dn_sanitize_path(
-        os.path.join(
+    bag_path_ = dn_sanitize_path(os.path.join(
             "data/repository_data/tests_data/rosbag_test_data",
             "bags_vaul-f1tenth-nx-orin",
             bag_name_,
-        )
-    )
+    ))
+
+    artifact_path = "artifact/rosbag_eda"
+    dn_project_path = os.getenv("DN_PROJECT_PATH")
+    if dn_project_path is not None and os.path.exists(dn_project_path):
+        artifact_path = os.path.join(dn_project_path, artifact_path)
 
     run_rosbag_timestamp_eda(
         bag_path_,
-        eda_dir_path=dn_sanitize_path("artifact/rosbag_eda"),
+        eda_dir_path=artifact_path,
         features_config={
             "/teleop": tct.dataclasses.AckermannMsgsAckermannDriveStamped,
             "/odom": tct.dataclasses.NavMsgsOdometry,
