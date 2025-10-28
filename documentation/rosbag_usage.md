@@ -197,7 +197,7 @@ tc_odom = tct.extractor.extract_rosbag_feature(
 
 print(f"Odometry timestamps: {len(tc_odom.header.timestamps)}")
 print(f"Position data shape: {tc_odom.topic_odom.pose.pose.position.x.shape}")
-print(f"Available dimensions: {tc_odom.get_dimension_names()}")
+print(f"Available dimensions: {tc_odom.get_public_attribute_names()}")
 
 # Access pose data
 position = tc_odom.topic_odom.pose.pose.position

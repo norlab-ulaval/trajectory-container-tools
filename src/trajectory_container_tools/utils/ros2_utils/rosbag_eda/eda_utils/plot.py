@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 
 import trajectory_container_tools as tct
 import trajectory_container_tools.temporal.timestamps
+import trajectory_container_tools.utils.typing.new_types_and_aliases
 
 from ...ros2_general import convert_rosbag_topic_key_to_tct_mf_topic_key
 from .plot_management import plot_manager
@@ -14,7 +15,7 @@ from .plot_management import plot_manager
 
 def plot_bag_timestamp_delta(
     bag_start_time: int,
-    tct_container: tct.typing.TrajectoryFeaturesBag,
+    tct_container: trajectory_container_tools.utils.typing.new_types_and_aliases.TrajectoryFeaturesBag,
     bag_path_abs: pathlib.Path,
     experiment_dir_path: pathlib.Path,
     chunk_on: Optional[str] = "/teleop",
@@ -66,7 +67,7 @@ def plot_bag_timestamp_delta(
         for each_topic_name in [*tct_container.topic_key_list, "bag_timestamps"]:
             each_topic: Union[
                 tct.dataclasses.RosFeatureArray, tct.dataclasses.RosStampedFeature
-            ] = tct_container.get_dynamic_field(each_topic_name)
+            ] = tct_container.get_dynamic_attribute(each_topic_name)
 
             if isinstance(
                 each_topic,
@@ -79,13 +80,13 @@ def plot_bag_timestamp_delta(
 
                 topic_ts_stamps = None
                 topic_ts_delta = None
-                if each_topic.has_dynamic_field("header.timestamps"):
-                    timestamps = each_topic.get_dynamic_field("header.timestamps")
+                if each_topic.has_dynamic_attribute("header.timestamps"):
+                    timestamps = each_topic.get_dynamic_attribute("header.timestamps")
                     topic_ts_stamps = timestamps.stamps[1:]
                     topic_ts_delta = timestamps.delta_stamps[1:]
                     use_bag_stamps = False
-                elif each_topic.has_dynamic_field("bag_recorded_timestamps"):
-                    timestamps = each_topic.get_dynamic_field("bag_recorded_timestamps")
+                elif each_topic.has_dynamic_attribute("bag_recorded_timestamps"):
+                    timestamps = each_topic.get_dynamic_attribute("bag_recorded_timestamps")
                     if timestamps is not None:
                         topic_ts_stamps = timestamps.stamps[1:]
                         topic_ts_delta = timestamps.delta_stamps[1:]

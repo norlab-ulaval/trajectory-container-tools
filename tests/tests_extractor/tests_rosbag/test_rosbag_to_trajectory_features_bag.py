@@ -177,7 +177,7 @@ class TestFromRosBag:
         assert (
                 mf_container.topic_sensors_imu_raw.feature_name == "/sensors/imu/raw"
         )
-        assert mf_container.topic_sensors_imu_raw.get_dimension_names() == (
+        assert mf_container.topic_sensors_imu_raw.get_cls_public_field_names() == (
             "bag_recorded_timestamps",
             "header",
             "orientation_x",

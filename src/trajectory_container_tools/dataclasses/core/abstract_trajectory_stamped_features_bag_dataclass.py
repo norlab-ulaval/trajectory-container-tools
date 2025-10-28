@@ -17,6 +17,10 @@ from trajectory_container_tools.dataclasses.ros_msgs.core_dataclass_utils import
 )
 from trajectory_container_tools.temporal import Timestamps
 from ...temporal.trajectory_timestamps_metadata import TrajectoryTimestampsMetadata
+from trajectory_container_tools.utils.typing.tct_custom_field import (
+    NonTrajectoryField,
+    TCTInternalField,
+)
 
 
 @dataclass()
@@ -43,7 +47,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
     """
 
     chunk_on: str = field(default="topic_teleop", kw_only=True)
-    _iter_index: int = field(default=0, init=False)
+    _iter_index: TCTInternalField[int] = field(default=0, init=False)
 
     def __post_init__(self):
         if self.chunk_on in self.topic_key_list:
@@ -70,11 +74,11 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
         :return: Timestamps based on the chunk-on attribute.
         """
         chunk_on_attribute: Union[RosStampedFeature, RosFeature, RosFeatureArray] = (
-            self.get_dynamic_field(self.chunk_on)
+            self.get_dynamic_attribute(self.chunk_on)
         )
 
         # Update bag start/stop to align with chunk_on attribute
-        if chunk_on_attribute.has_dynamic_field("header"):
+        if chunk_on_attribute.has_dynamic_attribute("header"):
             return chunk_on_attribute.header.timestamps
         else:
             return chunk_on_attribute.bag_recorded_timestamps
@@ -89,12 +93,8 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
 
         :return: The total number of chunks.
         """
-        # return len(self.get_dynamic_field(self.chunk_on)) - 1
+        # return len(self.get_dynamic_attribute(self.chunk_on)) - 1
         return len(self.get_chunk_on_timestamps()) - 1
-
-    @classmethod
-    def _dataclass_internal_field(cls) -> list[str]:
-        return super()._dataclass_internal_field() + ["_iter_index"]
 
     def __len__(self) -> int:
         return self.chunks_total
@@ -125,7 +125,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
         # .... Set topic attributes ...............................................................
         for each_topic in self.topic_key_list:
             each_attribute: Union[RosStampedFeature, RosFeatureArray] = (
-                self.get_dynamic_field(each_topic)
+                self.get_dynamic_attribute(each_topic)
             )
 
             if each_topic is self.chunk_on:
@@ -137,7 +137,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
                     trajectory_containers_array_only=True,
                 ):
                     trj_container_list_object = []
-                    for each_trj_array in each_attribute.get_dynamic_field(
+                    for each_trj_array in each_attribute.get_dynamic_attribute(
                         each_trj_array_name
                     ):
                         each_trj_array = _get_attribute_at_timestamps(
@@ -214,7 +214,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
 
         for each_topic in self.topic_key_list:
             each_attribute: Union[RosStampedFeature, RosFeatureArray] = (
-                self.get_dynamic_field(each_topic)
+                self.get_dynamic_attribute(each_topic)
             )
             # (☕minor) ToDo: update unit-test (ref task TCT-91)
 
@@ -247,18 +247,18 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
 
         for each_topic in self.topic_key_list:
             each_attribute: Union[RosStampedFeature, RosFeatureArray] = (
-                self.get_dynamic_field(each_topic)
+                self.get_dynamic_attribute(each_topic)
             )
 
-            if each_attribute.has_dynamic_field("header.timestamps"):
+            if each_attribute.has_dynamic_attribute("header.timestamps"):
                 all_features_stamps.append(each_attribute.header.timestamps.stamps)
 
             if isinstance(each_attribute, AbstractTrajectoryUnboundedArray):
                 for each_trj_array_name in each_attribute.trajectory_array_field_names(
                     trajectory_containers_array_only=True
                 ):
-                    for each in each_attribute.get_dynamic_field(each_trj_array_name):
-                        if each.has_dynamic_field("header.timestamps"):
+                    for each in each_attribute.get_dynamic_attribute(each_trj_array_name):
+                        if each.has_dynamic_attribute("header.timestamps"):
                             each: RosStampedFeature
                             all_features_stamps.append(each.header.timestamps.stamps)
 

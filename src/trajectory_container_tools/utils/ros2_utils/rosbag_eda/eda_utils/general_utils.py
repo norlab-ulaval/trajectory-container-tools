@@ -10,7 +10,7 @@ from trajectory_container_tools.dataclasses import (
     RosFeatureArray,
     RosStampedFeature,
 )
-from trajectory_container_tools.typing import TrajectoryFeaturesBag
+from trajectory_container_tools.utils.typing.new_types_and_aliases import TrajectoryFeaturesBag
 from trajectory_container_tools.utils.general import RosImportError
 
 try:
@@ -110,11 +110,11 @@ def find_max_timestamp_delta_over_all_topics(feature_bag_trajectory_container: T
     topics_max_delta_stamp = []
     for each in feature_bag_trajectory_container.topic_key_list:
         if issubclass(
-            feature_bag_trajectory_container.get_dimension_type(each)[0],
+            feature_bag_trajectory_container.get_cls_public_field_type(each)[0],
             tct.AbstractTrajectoryFeature,
         ):
             each_field: Union[RosFeature, RosStampedFeature, RosFeatureArray] = (
-                feature_bag_trajectory_container.get_dynamic_field(each)
+                feature_bag_trajectory_container.get_dynamic_attribute(each)
             )
             if isinstance(each_field, tct.dataclasses.StdMsgsHeader):
                 delta_stamps = each_field.header.timestamps.delta_stamps

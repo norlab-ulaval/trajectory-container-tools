@@ -221,7 +221,7 @@ pose_container = tct.extractor.extract_dataframe_feature(dataset=df, feature_nam
                                            data_container_type=StatePose2D)
 
 print(f"Pose data shape: {pose_container.x.shape}")
-print(f"Available dimensions: {pose_container.get_dimension_names()}")
+print(f"Available dimensions: {pose_container.get_public_attribute_names()}")
 ```
 
 ## Custom Post-Processing

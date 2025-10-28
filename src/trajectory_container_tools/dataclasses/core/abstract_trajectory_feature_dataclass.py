@@ -13,6 +13,10 @@ from trajectory_container_tools.utils.general import (
     extract_class_name_from_instance,
     size_zero_array_like,
 )
+from trajectory_container_tools.utils.typing.tct_custom_field import (
+    NonTrajectoryField,
+    TCTInternalField,
+)
 
 
 @dataclass()
@@ -28,6 +32,11 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
     are expected to extend this class to define domain-specific behaviors and additional
     fields.
 
+    Note on the 'timesteps_indices' field:
+      - Can be explicitly set by the user, by an arbitrary TCT fct or automaticaly set post-init.
+      - 'timesteps_indices' make no assumption about the beginning indices e.g., trajectory could
+        be a intervall window from a larger trajectory.
+
     :ivar feature_name: Name of the feature associated with the trajectory.
     :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
         to a subset of a larger trajectory (Automaticaly generated if set to None).
@@ -35,28 +44,14 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
         single trajectory (False).
     """
 
-    _timestep_indexes: np.ndarray = field(default=None, init=False)
-    _iter_index: int = field(default=0, init=False)
-    _transposed: bool = field(default=False, init=False)
-    feature_name: Optional[str] = field(default=None, kw_only=True)
-    batch: bool = field(default=False, compare=True, kw_only=True)
-
-    # Note on timesteps_indices:
-    #   - Can be explicitly set by user, TCT fct or automaticaly set post-init.
-    #   - timesteps_indices make no assumption about the beginning indices e.g., trajectory could
-    #     be a selected intervall from a larger trajectory
-    timesteps_indices: np.ndarray = field(default=None, compare=True, kw_only=True)
-
-    @classmethod
-    def _dataclass_internal_field(cls) -> List[str]:
-        return super()._dataclass_internal_field() + [
-            "_timestep_indexes",
-            "_iter_index",
-            "_transposed",
-            "feature_name",
-            "timesteps_indices",
-            "batch",
-        ]
+    _timestep_indexes: TCTInternalField[np.ndarray] = field(default=None, init=False)
+    _iter_index: TCTInternalField[int] = field(default=0, init=False)
+    _transposed: TCTInternalField[bool] = field(default=False, init=False)
+    feature_name: TCTInternalField[Optional[str]] = field(default=None, kw_only=True)
+    batch: TCTInternalField[bool] = field(default=False, compare=True, kw_only=True)
+    timesteps_indices: TCTInternalField[np.ndarray] = field(
+        default=None, compare=True, kw_only=True
+    )
 
     @property
     def _time_axis(self) -> int:
@@ -89,22 +84,22 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
 
         :return: This method does not return a value and performs all operations in-place.
         """
-        for each_data_property in self.get_dimension_names():
-            if each_data_property in self.non_trajectory_field():
-                pass
-            else:
-                attribute_ = self.__getattribute__(each_data_property)
-                if isinstance(attribute_, np.ndarray):
-                    ravel__copy = attribute_.ravel()
-                    self.__setattr__(each_data_property, ravel__copy)
-                elif isinstance(attribute_, AbstractTrajectoryFeature):
-                    attribute_.ravel_dimensions_in_place()
+        for each_attribute in self.get_public_attribute_names():
+            if each_attribute in self.non_trajectory_field():
+                continue
+
+            attribute_ = self.__getattribute__(each_attribute)
+            if isinstance(attribute_, np.ndarray):
+                ravel__copy = attribute_.ravel()
+                self.__setattr__(each_attribute, ravel__copy)
+            elif isinstance(attribute_, AbstractTrajectoryFeature):
+                attribute_.ravel_dimensions_in_place()
 
         return None
 
     def __post_init__(self):
         # .... Pre-condition ......................................................................
-        if not self.get_dimension_names():
+        if not self.get_cls_public_field_names(include_non_init_dim=False):
             raise TypeError(
                 f"[TCT error] AbstractTrajectoryFeature is an abstract baseclass, "
                 f"it must be subclassed in order to be instanciated."
@@ -113,70 +108,67 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
         # .... Base class initialization logic ....................................................
         self.set_parent_container_reference_tracking()
 
+        for each_name in self.get_cls_public_field_names(include_non_init_dim=True):
+            if each_name not in self.non_trajectory_field():
+                self._setup_timestep_indexing(each_name)
+
         # .... Callback and attribute customization logic .........................................
         self.on_begin_post_init_callback()
-
-        for each_name in self.get_dimension_names():
-            if each_name in self.non_trajectory_field():
-                pass
-            else:
-                self.post_init_feature_callback(feature_name=each_name)
-
-                data_property = self.__getattribute__(each_name)
-
-                # .... Setup timestep indexing ....................................................
-                if isinstance(data_property, (AbstractTrajectoryFeature, Timestamps)):
-                    # Case nested container: Init timesteps using nested entity trajectory_len
-                    if self._timestep_indexes is None:
-                        self._timestep_indexes = np.arange(len(data_property))
-
-                    if self.timesteps_indices is None:
-                        self.timesteps_indices = self._timestep_indexes
-                    elif (
-                        self.timesteps_indices is not None
-                        and len(self._timestep_indexes) > 0
-                    ):
-                        assert isinstance(self.timesteps_indices, np.ndarray)
-                        _timesteps_indices_vs_index_len_check(
-                            self.timesteps_indices, self._timestep_indexes
-                        )
-                        validate_timestep_indices(self.timesteps_indices)
-
-                elif isinstance(data_property, np.ndarray):
-                    # Case leaf: initialize time-steps index
-                    data_property: np.ndarray
-
-                    # [Re-]Compute trajectory length from data arrays
-                    data_property_trajectory_len = data_property.shape[self._time_axis]
-
-                    if self._timestep_indexes is None:
-                        self._timestep_indexes = np.arange(data_property_trajectory_len)
-
-                    # Init timesteps with dataclass trajectory_len
-                    if self.timesteps_indices is None:
-                        self.timesteps_indices = self._timestep_indexes
-                    elif self.timesteps_indices is not None:
-                        assert isinstance(self.timesteps_indices, np.ndarray)
-                        _timesteps_indices_vs_index_len_check(
-                            self.timesteps_indices, self._timestep_indexes
-                        )
-
-                    if data_property_trajectory_len != self.trajectory_len:
-                        raise ValueError(
-                            f"{data_property_trajectory_len} != {self.trajectory_len}\n"
-                            f"[TCT error] `{self.feature_name}` with container `"
-                            f"{each_name}`"
-                            " received numpy arrays which do not match "
-                            "the trajectory length"
-                        )
+        for each_name in self.get_cls_public_field_names(include_non_init_dim=True):
+            self.post_init_feature_callback(feature_name=each_name)
 
         self.on_exit_post_init_callback()
 
         return None
 
+    def _setup_timestep_indexing(self, each_name: str):
+        data_property = self.__getattribute__(each_name)
+        if isinstance(data_property, (AbstractTrajectoryFeature, Timestamps)):
+            # Case nested container: Init timesteps using nested entity trajectory_len
+            if self._timestep_indexes is None:
+                self._timestep_indexes = np.arange(len(data_property))
+
+            if self.timesteps_indices is None:
+                self.timesteps_indices = self._timestep_indexes
+            elif self.timesteps_indices is not None and len(self._timestep_indexes) > 0:
+                assert isinstance(self.timesteps_indices, np.ndarray)
+                _timesteps_indices_vs_index_len_check(
+                    self.timesteps_indices, self._timestep_indexes
+                )
+                validate_timestep_indices(self.timesteps_indices)
+
+        elif isinstance(data_property, np.ndarray):
+            # Case leaf: initialize time-steps index
+            data_property: np.ndarray
+
+            # [Re-]Compute trajectory length from data arrays
+            data_property_trajectory_len = data_property.shape[self._time_axis]
+
+            if self._timestep_indexes is None:
+                self._timestep_indexes = np.arange(data_property_trajectory_len)
+
+            # Init timesteps with dataclass trajectory_len
+            if self.timesteps_indices is None:
+                self.timesteps_indices = self._timestep_indexes
+            elif self.timesteps_indices is not None:
+                assert isinstance(self.timesteps_indices, np.ndarray)
+                _timesteps_indices_vs_index_len_check(
+                    self.timesteps_indices, self._timestep_indexes
+                )
+
+            if data_property_trajectory_len != self.trajectory_len:
+                raise ValueError(
+                    f"{data_property_trajectory_len} != {self.trajectory_len}\n"
+                    f"[TCT error] `{self.feature_name}` with container `"
+                    f"{each_name}`"
+                    " received numpy arrays which do not match "
+                    "the trajectory length"
+                )
+        return None
+
     def __del__(self):
         try:
-            for each_name in self.get_dimension_names():
+            for each_name in self.get_public_attribute_names():
                 data_property = self.__getattribute__(each_name)
                 if isinstance(data_property, AbstractTrajectoryFeature):
                     del data_property
@@ -245,7 +237,8 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
         trj_feature_at_t = deepcopy(self)
         trj_feature_at_t.__setattr__("_timestep_indexes", self._timestep_indexes[index])
         trj_feature_at_t.__setattr__("timesteps_indices", self.timesteps_indices[index])
-        for each_name in self.get_dimension_names():
+
+        for each_name in self.get_public_attribute_names():
             each_attribute = self.__getattribute__(each_name)
 
             if each_name in self.non_trajectory_field():
@@ -254,25 +247,73 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
             if isinstance(each_attribute, Timestamps):
                 trj_feature_at_t.__setattr__(each_name, each_attribute[index])
             elif isinstance(
-                each_attribute, (np.ndarray, AbstractTrajectoryFeature)
-            ):
-                if self.current_trj_axe == 0:
-                    # Case: time-serie
-                    data_value = each_attribute[index]
-                elif self.current_trj_axe == 1:
-                    # Case: batch
-                    data_value = each_attribute[:, index, ...]
-                elif self.current_trj_axe == -1:
-                    # Case: transposed
-                    data_value = each_attribute[..., index]
-                else:
-                    raise ValueError(
-                        f"Unexpected trajectory time axe {self.current_trj_axe=}"
-                    )
+                each_attribute, AbstractTrajectoryFeature
+            ) or self.is_trajectory_sequence(each_attribute):
 
-                trj_feature_at_t.__setattr__(each_name, data_value)
+                try:
+                    if self.current_trj_axe == 0:
+                        # Case: time-serie
+                        data_value = each_attribute[index]
+                    elif self.current_trj_axe == 1:
+                        # Case: batch
+                        data_value = each_attribute[:, index, ...]
+                    elif self.current_trj_axe == -1:
+                        # Case: transposed
+                        data_value = each_attribute[..., index]
+                    else:
+                        raise ValueError(
+                            f"Unexpected trajectory time axe {self.current_trj_axe=}"
+                        )
+                    trj_feature_at_t.__setattr__(each_name, data_value)
+                except IndexError:
+                    # Not a trajectory array
+                    pass
+                except ValueError:
+                    raise
 
         return trj_feature_at_t
+
+    def is_trajectory_sequence(
+        self,
+        sequence: Union[TCTInternalField, NonTrajectoryField, np.ndarray, list, tuple],
+    ) -> bool:
+        """
+        Determines whether a given sequence is a trajectory.
+
+        This function checks whether the input sequence matches the predefined trajectory
+        length based on its type and shape. The sequence can be represented as a NumPy
+        array, list, or tuple, with specific cases being handled for time-series, batch,
+        and transposed formats. If the provided sequence does not match the expected
+        dimensions or type, it is treated using a fallback comparison.
+
+        :param sequence: The input sequence to check, which can be of types
+            `TCTInternalField`, `NonTrajectoryField`, `np.ndarray`, `list`, or `tuple`.
+        :return: A boolean indicating if the input sequence qualifies as a trajectory.
+        """
+        is_trajectory = False
+
+        if isinstance(sequence, np.ndarray):
+            try:
+                is_trajectory = (
+                    sequence.shape[self.current_trj_axe] == self.trajectory_len
+                )
+            except IndexError:
+                is_trajectory = sequence.size == self.trajectory_len
+        elif isinstance(sequence, (list, tuple)):
+            try:
+                if self.current_trj_axe == 0:
+                    # Case: time-serie
+                    is_trajectory = len(sequence) == self.trajectory_len
+                elif self.current_trj_axe == 1:
+                    # Case: batch
+                    is_trajectory = len(sequence[0]) == self.trajectory_len
+                elif self.current_trj_axe == -1:
+                    # Case: transposed
+                    is_trajectory = len(sequence[0][0]) == self.trajectory_len
+            except (IndexError, TypeError):
+                is_trajectory = len(sequence) == self.trajectory_len
+
+        return is_trajectory
 
     def empty(self) -> "AbstractTrajectoryFeature":
         """
@@ -294,20 +335,18 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
         empty_trj_feature.__setattr__(
             "timesteps_indices", size_zero_array_like(self.timesteps_indices)
         )
-        for each_name in self.get_dimension_names():
+        for each_name in self.get_public_attribute_names():
             each_attribute = self.__getattribute__(each_name)
 
             if each_name in self.non_trajectory_field():
-                pass
-            else:
-                if isinstance(each_attribute, np.ndarray):
-                    empty_trj_feature.__setattr__(
-                        each_name, size_zero_array_like(each_attribute)
-                    )
-                elif isinstance(
-                    each_attribute, (AbstractTrajectoryFeature, Timestamps)
-                ):
-                    empty_trj_feature.__setattr__(each_name, each_attribute.empty())
+                continue
+
+            if isinstance(each_attribute, np.ndarray):
+                empty_trj_feature.__setattr__(
+                    each_name, size_zero_array_like(each_attribute)
+                )
+            elif isinstance(each_attribute, (AbstractTrajectoryFeature, Timestamps)):
+                empty_trj_feature.__setattr__(each_name, each_attribute.empty())
 
         return empty_trj_feature
 
@@ -326,14 +365,13 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
     @property
     def T(self) -> "AbstractTrajectoryFeature":
         """Flips the axes of the ndarray properties."""
-        for each_name in self.get_dimension_names():
+        for each_name in self.get_public_attribute_names():
             if each_name in self.non_trajectory_field():
-                pass
-            else:
-                data_property = self.__getattribute__(each_name)
+                continue
 
-                if isinstance(data_property, (np.ndarray, AbstractTrajectoryFeature)):
-                    self.__setattr__(each_name, data_property.T)
+            data_property = self.__getattribute__(each_name)
+            if isinstance(data_property, (np.ndarray, AbstractTrajectoryFeature)):
+                self.__setattr__(each_name, data_property.T)
 
         self._transposed = not self._transposed
         return self

@@ -43,7 +43,7 @@ class TestExtractDataframeCaseSingleFeatureExtraction:
             data_container_type=StatePose2D,
         )
 
-        df = setup_panda_dataframe.filter(like=f"{fn}_{check_property}")
+        df: pd.DataFrame = setup_panda_dataframe.filter(like=f"{fn}_{check_property}")
         assert container.feature_name is fn
         assert container.trajectory_len == df.shape[1]
 
@@ -57,7 +57,7 @@ class TestExtractDataframeCaseSingleFeatureExtraction:
             data_container_type=CmdSkidSteer,
         )
 
-        df = setup_panda_dataframe.filter(like=f"{fn}_{check_property}")
+        df: pd.DataFrame = setup_panda_dataframe.filter(like=f"{fn}_{check_property}")
         assert container.feature_name is fn
         assert container.trajectory_len == df.shape[1]
 
@@ -132,18 +132,18 @@ class TestExtractDataframeCaseMultipleFeatureExtraction:
             StatePose2D,
         )
         assert feats.icp_interpolated.feature_name == "icp_interpolated"
-        assert feats.icp_interpolated.get_dimension_names() == ("x", "y", "yaw")
+        assert feats.icp_interpolated.get_cls_public_field_names() == ("x", "y", "yaw")
 
         assert isinstance(
             feats.idd_vel,
             StatePose2D,
         )
         assert feats.idd_vel.feature_name == "idd_vel"
-        assert feats.idd_vel.get_dimension_names() == ("x", "y", "yaw")
+        assert feats.idd_vel.get_cls_public_field_names() == ("x", "y", "yaw")
 
         assert isinstance(feats.icp, atd.AbstractTrajectoryFeature)
         assert feats.icp.feature_name == "icp"
-        assert feats.icp.get_dimension_names() == (
+        assert feats.icp.get_cls_public_field_names() == (
             "x",
             "y",
             "z",

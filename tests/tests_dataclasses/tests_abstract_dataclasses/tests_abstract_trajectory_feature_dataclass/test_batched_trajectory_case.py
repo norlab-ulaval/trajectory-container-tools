@@ -67,34 +67,34 @@ class TestAbstractTrajectoryFeatureCaseBatched:
                 batch=mock_batched_trj_DC_uneven_time_index.batch,
             )
 
-    def test_get_dimension_names(self, setup_mock_feature_child, mock_batched_trj_DC):
+    def test_get_cls_public_field_names(self, setup_mock_feature_child, mock_batched_trj_DC):
         mfc = setup_mock_feature_child
         for each in ("feature_name", "timesteps_indices"):
             assert hasattr(mfc, each)
-            assert each not in mfc.get_dimension_names()
+            assert each not in mfc.get_cls_public_field_names()
         assert mfc.feature_name is mock_batched_trj_DC.name
-        assert ("aa", "bb", "cc", "dd_metadata") == mfc.get_dimension_names()
+        assert ("aa", "bb", "cc", "dd_metadata") == mfc.get_cls_public_field_names()
 
-    def test_get_dimension_type(self, setup_mock_feature_child):
+    def test_get_cls_public_field_type(self, setup_mock_feature_child):
         mfc = setup_mock_feature_child
-        dimension_type, is_list_of_type = mfc.get_dimension_type("aa")
+        dimension_type, is_list_of_type = mfc.get_cls_public_field_type("aa")
         assert issubclass(dimension_type, np.ndarray)
 
-    def test_set_dynamic_field(self, setup_mock_feature_child):
+    def test_set_dynamic_attribute(self, setup_mock_feature_child):
         mfc = setup_mock_feature_child
 
         # Case override field
-        mfc.set_dynamic_field("aa", None)
+        mfc.set_dynamic_attribute("aa", None)
         assert mfc.aa is None
 
         # Case create new field
-        mfc.set_dynamic_field("new_field", "new-field-value")
+        mfc.set_dynamic_attribute("new_field", "new-field-value")
         assert mfc.new_field == "new-field-value"
 
-    def test_get_dynamic_field(self, setup_mock_feature_child, mock_batched_trj_DC):
+    def test_get_dynamic_attribute(self, setup_mock_feature_child, mock_batched_trj_DC):
         # Note: should work even if the trj data container has a flat structure
         mfc = setup_mock_feature_child
-        assert np.allclose(mfc.get_dynamic_field("aa"), mock_batched_trj_DC.a)
+        assert np.allclose(mfc.get_dynamic_attribute("aa"), mock_batched_trj_DC.a)
 
     @pytest.mark.deprecated(
         "Method fetch_nested_attribute is marked as deprecated (ref task TCT-65)"
@@ -106,9 +106,9 @@ class TestAbstractTrajectoryFeatureCaseBatched:
         mfc = setup_mock_feature_child
         assert np.allclose(mfc.fetch_nested_attribute("aa"), mock_batched_trj_DC.a)
 
-    def test_get_dimension_names_on_uninstiated_class(self):
+    def test_get_cls_public_field_names_on_uninstiated_class(self):
         stp = StatePose2D
-        stp.get_dimension_names()
+        stp.get_cls_public_field_names()
 
     def test_string_representation(self, setup_mock_feature_child, mock_batched_trj_DC):
         mdc = setup_mock_feature_child
@@ -150,9 +150,28 @@ class TestAbstractTrajectoryFeatureCaseBatched:
         assert np.array_equal(mdc_at_t0.bb, np.arange(mdc.bb.shape[0]))
         assert np.array_equal(mdc_at_t0.cc, np.arange(mdc.cc.shape[0]))
         assert mdc_at_t0.timesteps_indices == mdc.timesteps_indices[0]
-        # mdc.get_dimension_names()
+        # mdc.get_cls_public_field_names()
         # print(mdc)
         # print(mdc_at_t0)
+
+    def test_is_trajectory_sequence(
+        self, setup_mock_feature_child_range, mock_batched_trj_DC_range
+    ):
+        mdc = setup_mock_feature_child_range
+        assert mdc.trajectory_len == 40
+        print(mdc)
+
+        assert mdc.is_trajectory_sequence(mdc.aa) is True
+        assert mdc.is_trajectory_sequence(mdc.bb) is True
+        assert mdc.is_trajectory_sequence(mdc.cc) is True
+        assert (
+            mdc.is_trajectory_sequence(mdc.timesteps_indices)
+            is True
+        )
+        assert (
+            mdc.is_trajectory_sequence(mdc.dd_metadata) is False
+        )
+        assert mdc.is_trajectory_sequence([1, 2, 3]) is False
 
     def test_iterator(self, setup_mock_feature_child_range, mock_batched_trj_DC_range):
         mdc = setup_mock_feature_child_range
@@ -171,7 +190,7 @@ class TestAbstractTrajectoryFeatureCaseBatched:
                 mdc_at_t.cc, np.arange(mdc.cc.shape[0]) + mdc.cc[0, t]
             )
             assert mdc_at_t.timesteps_indices == mdc.timesteps_indices[t]
-            # mdc.get_dimension_names()
+            # mdc.get_cls_public_field_names()
             # print(mdc_at_t)
 
     def test_transpose(self, setup_mock_feature_child_range, mock_batched_trj_DC_range):
@@ -207,7 +226,7 @@ class TestAbstractTrajectoryFeatureCaseBatched:
         assert np.array_equal(t_mdc.bb, t_ref.b.T)
         assert np.array_equal(t_mdc.cc, t_ref.c.T)
         # print(t_mdc)
-        # print(t_mdc.get_dimension_names())
+        # print(t_mdc.get_cls_public_field_names())
 
         t_mdc2 = t_mdc.T
 
@@ -224,7 +243,7 @@ class TestAbstractTrajectoryFeatureCaseBatched:
         assert np.array_equal(t_mdc2.bb, t_ref.b)
         assert np.array_equal(t_mdc2.cc, t_ref.c)
         # print(t_mdc2)
-        # print(t_mdc2.get_dimension_names())
+        # print(t_mdc2.get_cls_public_field_names())
 
     def test_empty(self, setup_mock_feature_child_range, mock_batched_trj_DC_range):
         mdc = setup_mock_feature_child_range
@@ -242,6 +261,6 @@ class TestAbstractTrajectoryFeatureCaseBatched:
         assert np.array_equal(mdc_empty.bb, np.array([], dtype=np.int64))
         assert np.array_equal(mdc_empty.cc, np.array([], dtype=np.int64))
         assert np.array_equal(mdc_empty.timesteps_indices, np.array([], dtype=np.int64))
-        # mdc.get_dimension_names()
+        # mdc.get_cls_public_field_names()
         # print(mdc)
         # print(mdc_at_t0)

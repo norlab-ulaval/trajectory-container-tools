@@ -1,4 +1,5 @@
 # coding=utf-8
+import typing
 from dataclasses import dataclass
 from typing import Union
 
@@ -9,6 +10,10 @@ from trajectory_container_tools.dataclasses.core.abstract_trajectory_features_ba
 )
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass_common import (
     AbstractTrajectoryCommon,
+)
+from trajectory_container_tools.utils.typing.tct_custom_field import (
+    NonTrajectoryField,
+    TCTInternalField,
 )
 import numpy as np
 
@@ -25,10 +30,12 @@ class MockNestedTrajectory(AbstractTrajectoryCommon):
 class MockTrajectory(AbstractTrajectoryCommon):
     mock_nested_attr: Union[MockNestedTrajectory, "MockTrajectory"]
     mock_attr: np.ndarray
+    mock_non_trj_array: NonTrajectoryField[np.ndarray]
+    mock_internal: TCTInternalField[list[int]]
 
     def __post_init__(self):
         # .... Pre-condition ......................................................................
-        if not self.get_dimension_names():
+        if not self.get_cls_public_field_names():
             raise TypeError(
                 f"[TCT error] {self.__class__.__name__} is an abstract baseclass, "
                 f"it must be subclassed in order to be instanciated."
@@ -40,7 +47,7 @@ class MockTrajectory(AbstractTrajectoryCommon):
         # .... Callback and attribute customization logic .........................................
         self.on_begin_post_init_callback()
 
-        for each_name in self.get_dimension_names():
+        for each_name in self.get_cls_public_field_names(include_non_init_dim=True):
             self.post_init_feature_callback(feature_name=each_name)
 
         self.on_exit_post_init_callback()
@@ -72,6 +79,8 @@ class MockTrajectoryArray(MockTrajectory):
     mock_nested_attr: list[MockNestedTrajectory]
     mock_trj_array_w_arbitrary_type: list[list[int]]
     mock_attr: np.ndarray
+    mock_non_trj_array = NonTrajectoryField[np.ndarray]
+    mock_internal: TCTInternalField[list[int]]
 
 
 @dataclass()
@@ -82,7 +91,10 @@ class MockAbstractTrajectoryFeaturesBag(AbstractTrajectoryFeaturesBag):
 @pytest.fixture(scope="function")
 def setup_two_lvl_trajectory_dataclass() -> MockTrajectory:
     return MockTrajectory(
-        mock_nested_attr=MockNestedTrajectory(np.arange(10)), mock_attr=np.arange(10)
+        mock_nested_attr=MockNestedTrajectory(np.arange(10)),
+        mock_attr=np.arange(10),
+        mock_non_trj_array=np.ones((3,)),
+        mock_internal=[1, 2, 3],
     )
 
 
@@ -95,6 +107,8 @@ def setup_two_lvl_trajectory_array_dataclass() -> MockTrajectory:
             MockNestedTrajectory(np.arange(10) + 10),
         ],
         mock_attr=np.arange(10),
+        mock_non_trj_array=np.ones((3,)),
+        mock_internal=[1, 2, 3],
     )
 
 
@@ -104,12 +118,64 @@ def setup_three_lvl_trajectory_dataclass() -> MockTrajectory:
         mock_nested_attr=MockTrajectory(
             mock_nested_attr=MockNestedTrajectory(np.arange(10)),
             mock_attr=np.arange(10),
+            mock_non_trj_array=np.ones((3,)),
+            mock_internal=[1, 2, 3],
         ),
         mock_attr=np.arange(10),
+        mock_non_trj_array=np.ones((3,)),
+        mock_internal=[1, 2, 3],
     )
 
 
 class TestAbstractTrajectoryCommon:
+
+    def test_instanciation_with_special_type_field(
+        self, setup_three_lvl_trajectory_dataclass
+    ):
+        t_container = setup_three_lvl_trajectory_dataclass
+
+        # .... Test field typed with NonTrajectoryField[Any] ......................................
+        assert (
+            typing.get_origin(typing.get_type_hints(MockTrajectory)['mock_non_trj_array']) is NonTrajectoryField
+        )
+        assert isinstance(t_container.mock_non_trj_array, np.ndarray)
+
+        # .... Test field typed with TCTInternalField[Any] ........................................
+        assert typing.get_origin(typing.get_type_hints(MockTrajectory)['mock_internal']) is TCTInternalField
+        assert isinstance(t_container.mock_internal, list)
+
+        # .... Test field typed with Union ........................................................
+        assert typing.get_origin(typing.get_type_hints(MockTrajectory)['mock_nested_attr']) is Union
+        assert isinstance(t_container.mock_nested_attr, MockTrajectory)
+
+        # .... Test other fields ..................................................................
+        assert isinstance(t_container, MockTrajectory)
+        assert isinstance(t_container.mock_attr, np.ndarray)
+
+        assert isinstance(
+            t_container.mock_nested_attr.mock_nested_attr, MockNestedTrajectory
+        )
+        assert isinstance(t_container.mock_nested_attr.mock_attr, np.ndarray)
+        assert isinstance(t_container.mock_nested_attr.mock_non_trj_array, np.ndarray)
+        assert isinstance(t_container.mock_nested_attr.mock_internal, list)
+
+        assert isinstance(
+            t_container.mock_nested_attr.mock_nested_attr.mock_attr_nested_attr,
+            np.ndarray,
+        )
+
+    def test_non_trajectory_field(self, setup_three_lvl_trajectory_dataclass):
+        t_container = setup_three_lvl_trajectory_dataclass
+        assert t_container.non_trajectory_field() == [
+            "mock_non_trj_array",
+        ]
+        assert t_container.mock_nested_attr.non_trajectory_field() == [
+            "mock_non_trj_array",
+        ]
+        assert np.array_equal(t_container.mock_non_trj_array, np.ones((3,)))
+        assert np.array_equal(
+            t_container.mock_nested_attr.mock_non_trj_array, np.ones((3,))
+        )
 
     def test_set_parent_container_reference_tracking_case_base(
         self, setup_three_lvl_trajectory_dataclass
@@ -244,66 +310,70 @@ class TestAbstractTrajectoryCommon:
             t_container.__getattribute__("mock_attr_init") == t_container.mock_attr[-1]
         )
 
-    def test_get_dynamic_field(self, setup_three_lvl_trajectory_dataclass):
+    def test_get_dynamic_attribute(self, setup_three_lvl_trajectory_dataclass):
         t_container = setup_three_lvl_trajectory_dataclass
         assert np.array_equal(
-            t_container.get_dynamic_field("mock_attr"), t_container.mock_attr
+            t_container.get_dynamic_attribute("mock_attr"), t_container.mock_attr
         )
         assert np.array_equal(
-            t_container.get_dynamic_field("mock_nested_attr.mock_attr"),
+            t_container.get_dynamic_attribute("mock_nested_attr.mock_attr"),
             t_container.mock_nested_attr.mock_attr,
         )
         assert np.array_equal(
-            t_container.get_dynamic_field(
+            t_container.get_dynamic_attribute(
                 "mock_nested_attr.mock_nested_attr.mock_attr_nested_attr"
             ),
             t_container.mock_nested_attr.mock_nested_attr.mock_attr_nested_attr,
         )
 
-    def test_has_dynamic_field(self, setup_three_lvl_trajectory_dataclass):
+    def test_has_dynamic_attribute(self, setup_three_lvl_trajectory_dataclass):
         t_container = setup_three_lvl_trajectory_dataclass
 
-        assert t_container.has_dynamic_field("mock_attr") == True
-        assert t_container.has_dynamic_field("mock_nested_attr.mock_attr") == True
+        assert t_container.has_dynamic_attribute("mock_attr") == True
+        assert t_container.has_dynamic_attribute("mock_nested_attr.mock_attr") == True
         assert (
-            t_container.has_dynamic_field(
+            t_container.has_dynamic_attribute(
                 "mock_nested_attr.mock_nested_attr.mock_attr_nested_attr"
             )
             == True
         )
 
-        assert t_container.has_dynamic_field("mock_attr999") == False
-        assert t_container.has_dynamic_field("mock_nested_attr.mock_attr999") == False
+        assert t_container.has_dynamic_attribute("mock_attr999") == False
         assert (
-            t_container.has_dynamic_field(
+            t_container.has_dynamic_attribute("mock_nested_attr.mock_attr999") == False
+        )
+        assert (
+            t_container.has_dynamic_attribute(
                 "mock_nested_attr.mock_nested_attr.mock_attr_nested_attr999"
             )
             == False
         )
 
-    def test_set_dynamic_field(self, setup_three_lvl_trajectory_dataclass):
+    def test_set_dynamic_attribute(self, setup_three_lvl_trajectory_dataclass):
         t_container = setup_three_lvl_trajectory_dataclass
 
         t_expected = np.ones((10,))
-        t_container.set_dynamic_field("mock_attr", t_expected)
-        t_container.set_dynamic_field("mock_nested_attr.mock_attr", t_expected)
-        t_container.set_dynamic_field(
+        t_container.set_dynamic_attribute("mock_attr", t_expected)
+        t_container.set_dynamic_attribute("mock_nested_attr.mock_attr", t_expected)
+        t_container.set_dynamic_attribute(
             "mock_nested_attr.mock_nested_attr.mock_attr_nested_attr", t_expected
         )
 
-        assert np.array_equal(t_container.get_dynamic_field("mock_attr"), t_expected)
         assert np.array_equal(
-            t_container.get_dynamic_field("mock_nested_attr.mock_attr"),
+            t_container.get_dynamic_attribute("mock_attr"), t_expected
+        )
+        assert np.array_equal(
+            t_container.get_dynamic_attribute("mock_nested_attr.mock_attr"),
             t_expected,
         )
         assert np.array_equal(
-            t_container.get_dynamic_field(
+            t_container.get_dynamic_attribute(
                 "mock_nested_attr.mock_nested_attr.mock_attr_nested_attr"
             ),
             t_expected,
         )
 
-    def test_get_dimension_type(
+    def test_get_cls_public_field_type(
         self,
         setup_two_lvl_trajectory_dataclass,
         setup_two_lvl_trajectory_array_dataclass,
@@ -312,11 +382,13 @@ class TestAbstractTrajectoryCommon:
         # .... Case nested feature trajectory dataclass ...........................................
         t_container = setup_two_lvl_trajectory_dataclass
 
-        dimension_type, is_list_of_type = t_container.get_dimension_type("mock_attr")
+        dimension_type, is_list_of_type = t_container.get_cls_public_field_type(
+            "mock_attr"
+        )
         assert issubclass(dimension_type, np.ndarray)
         assert is_list_of_type == False
 
-        dimension_type, is_list_of_type = t_container.get_dimension_type(
+        dimension_type, is_list_of_type = t_container.get_cls_public_field_type(
             "mock_nested_attr"
         )
         assert issubclass(dimension_type, MockNestedTrajectory)
@@ -325,26 +397,44 @@ class TestAbstractTrajectoryCommon:
         # .... Case nested array features trajectory dataclass ....................................
         t_container_array = setup_two_lvl_trajectory_array_dataclass
 
-        dimension_type, is_list_of_type = t_container_array.get_dimension_type(
+        dimension_type, is_list_of_type = t_container_array.get_cls_public_field_type(
             "mock_attr"
         )
         assert issubclass(dimension_type, np.ndarray)
         assert is_list_of_type == False
 
-        dimension_type, is_list_of_type = t_container_array.get_dimension_type(
+        dimension_type, is_list_of_type = t_container_array.get_cls_public_field_type(
             "mock_nested_attr"
         )
         assert issubclass(dimension_type, MockNestedTrajectory)
         assert is_list_of_type == True
 
-        dimension_type, is_list_of_type = t_container_array.get_dimension_type(
+        dimension_type, is_list_of_type = t_container_array.get_cls_public_field_type(
             "mock_trj_array_w_arbitrary_type"
         )
         assert issubclass(dimension_type, list)
         assert is_list_of_type == True
 
-
-    def test_get_dimension_names(self, setup_three_lvl_trajectory_dataclass):
+    def test_get_cls_public_field_names(self, setup_three_lvl_trajectory_dataclass):
         t_container = setup_three_lvl_trajectory_dataclass
-        assert t_container.get_dimension_names() == ("mock_nested_attr", "mock_attr")
-        assert "_parent" not in t_container.get_dimension_names()
+        assert t_container.get_cls_public_field_names() == (
+            "mock_nested_attr",
+            "mock_attr",
+            "mock_non_trj_array",
+        )
+        assert "_parent" not in t_container.get_cls_public_field_names()
+        assert "mock_internal" not in t_container.get_cls_public_field_names()
+
+    def test_get_public_attribute_names(self, setup_three_lvl_trajectory_dataclass):
+        t_container = setup_three_lvl_trajectory_dataclass
+        assert t_container.get_public_attribute_names() == (
+            "mock_nested_attr",
+            "mock_attr",
+            "mock_non_trj_array",
+            "test_on_begin_post_init_callback",
+            "test_post_init_feature_callback",
+            "test_on_exit_post_init_callback",
+            "mock_attr_init",
+        )
+        assert "_parent" not in t_container.get_public_attribute_names()
+        assert "mock_internal" not in t_container.get_public_attribute_names()

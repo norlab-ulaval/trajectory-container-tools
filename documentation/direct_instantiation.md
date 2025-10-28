@@ -49,7 +49,7 @@ trajectory = Simple2DTrajectory(
 
 print((
         f"Created trajectory with {trajectory.trajectory_len} timesteps\n"
-        f"Available dimensions: {trajectory.get_dimension_names()}\n"
+        f"Available dimensions: {trajectory.get_public_attribute_names()}\n"
 ), trajectory)
 ```
 ```text

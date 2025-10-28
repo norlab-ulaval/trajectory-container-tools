@@ -6,7 +6,7 @@ import pandas as pd
 from typing import Dict, Tuple, Union
 from dataclasses import make_dataclass
 
-from trajectory_container_tools.typing import TrajectoryFeaturesBag
+from trajectory_container_tools.utils.typing.new_types_and_aliases import TrajectoryFeaturesBag
 from trajectory_container_tools import AbstractTrajectoryFeaturesBag
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     BaseDataframeFeatureDataclass,
@@ -174,7 +174,7 @@ def extract_dataframe_feature(
         )
     else:
         try:
-            df_features = dataset.filter(like=feature_name)
+            df_features: pd.DataFrame = dataset.filter(like=feature_name)
             if df_features.empty:
                 raise ValueError(
                     f"[TCT error] The parameter `{feature_name}` does not exist in "
@@ -184,10 +184,10 @@ def extract_dataframe_feature(
             # (NICE TO HAVE) ToDo: refactor using "shadow_data_container" module
             tmp_container = {
                 each_field: None
-                for each_field in data_container_type.get_dimension_names()
+                for each_field in data_container_type.get_cls_public_field_names(include_non_init_dim=False)
             }
 
-            for each_property in data_container_type.get_dimension_names():
+            for each_property in data_container_type.get_cls_public_field_names(include_non_init_dim=False):
                 if each_property == "timestamps":
                     print(
                         "Be advised timestamps sanity check is not supported yet with "
@@ -203,9 +203,9 @@ def extract_dataframe_feature(
                     f"is a `{feature_name}` postfix in the dataset_frame"
                 )
 
-                df_property = df_features.filter(items=[df_header_field])
+                df_property: pd.DataFrame = df_features.filter(items=[df_header_field])
                 if df_property.empty and header_mix_label_and_timesteps:
-                    df_property = df_features.filter(regex=f"{df_header_field}_\\d+")
+                    df_property: pd.DataFrame = df_features.filter(regex=f"{df_header_field}_\\d+")
                     if df_property.empty:
                         raise ValueError(empty_property_error_msg)
 

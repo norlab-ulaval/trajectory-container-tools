@@ -20,9 +20,8 @@ class AbstractTrajectoryUnboundedArray(AbstractTrajectoryFeature):
     trajectory lenghts.
     """
 
-    @classmethod
     def trajectory_array_field_names(
-        cls,
+        self,
         trajectory_containers_array_only: bool = False,
         non_trajectory_containers_array_only: bool = False,
     ) -> list[str]:
@@ -38,12 +37,11 @@ class AbstractTrajectoryUnboundedArray(AbstractTrajectoryFeature):
         trj_array_w_arbitrary_type_field_names = []
         trj_array_w_trj_containers_type_field_names = []
 
-        dim_names = cls.get_dimension_names()
-        for each in dim_names:
-            if each in cls.non_trajectory_field():
+        for each in self.get_public_attribute_names():
+            if each in self.non_trajectory_field():
                 continue
 
-            dimension_type, is_list_of_type = cls.get_dimension_type(each)
+            dimension_type, is_list_of_type = self.get_cls_public_field_type(each)
             if is_list_of_type and issubclass(
                 dimension_type, AbstractTrajectoryFeature
             ):
@@ -90,8 +88,9 @@ class AbstractTrajectoryUnboundedArray(AbstractTrajectoryFeature):
         for each_array_name in self.trajectory_array_field_names(
             non_trajectory_containers_array_only=True
         ):
-            each_trj_array = trj_feature_array_at_t.__getattribute__(each_array_name)
-            trj_feature_array_at_t.__setattr__(each_array_name, each_trj_array[index])
+            if self.is_trajectory_sequence(each_array_name):
+                each_trj_array = trj_feature_array_at_t.__getattribute__(each_array_name)
+                trj_feature_array_at_t.__setattr__(each_array_name, each_trj_array[index])
 
         return trj_feature_array_at_t
 
@@ -102,7 +101,7 @@ class AbstractTrajectoryUnboundedArray(AbstractTrajectoryFeature):
         for each_array_name in self.trajectory_array_field_names(
             trajectory_containers_array_only=True
         ):
-            for each_member in empty_trj_feature.get_dynamic_field(each_array_name):
+            for each_member in empty_trj_feature.get_dynamic_attribute(each_array_name):
                 each_member: AbstractTrajectoryFeature
                 updated_list.append(each_member.empty())
 
@@ -151,7 +150,7 @@ class AbstractTrajectoryUnboundedArray(AbstractTrajectoryFeature):
                     nested_type = f"[{extract_class_name_from_instance(v[0])}]"
                 class_type = f"{extract_class_name_from_instance(v)}{nested_type}"
 
-                dimension_type, _ = self.get_dimension_type(k)
+                dimension_type, _ = self.get_cls_public_field_type(k)
                 if isinstance(dimension_type, (int, float)):
                     if len(v) == 0:
                         range_str = f"empty"

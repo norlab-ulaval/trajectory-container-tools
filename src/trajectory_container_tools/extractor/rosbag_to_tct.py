@@ -47,9 +47,7 @@ from trajectory_container_tools.temporal.timestamps import (
     TimestampCausalOrderingError,
     Timestamps,
 )
-from trajectory_container_tools.typing import (
-    ShadowDataContainer,
-)
+from trajectory_container_tools.utils.typing.new_types_and_aliases import ShadowDataContainer
 
 try:
     from rosbags.rosbag2 import Reader
@@ -159,7 +157,7 @@ def from_rosbag(
         raise ValueError(f"Chunk on attribute is empty!")
     else:
         # Update bag start/stop to align with chunk_on attribute
-        if chunk_on_attribute.has_dynamic_field("header"):
+        if chunk_on_attribute.has_dynamic_attribute("header"):
             start = chunk_on_attribute.header.timestamps.stamps[0]
             stop = chunk_on_attribute.header.timestamps.stamps[-1]
         else:
@@ -333,7 +331,7 @@ def _collect_properties_from_rosbag(
     bag_timestamp: int,
     shadow_data_container: ShadowDataContainer,
 ) -> ShadowDataContainer:
-    for each_property_name in data_container_type.get_dimension_names():
+    for each_property_name in data_container_type.get_cls_public_field_names(include_non_init_dim=False):
         try:
             if isinstance(shadow_data_container[each_property_name], list):
                 # Case list of nested container

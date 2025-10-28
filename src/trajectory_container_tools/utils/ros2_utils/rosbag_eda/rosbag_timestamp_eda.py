@@ -148,11 +148,11 @@ def run_rosbag_timestamp_eda(
 
         for each_topic_name in mf_container.topic_key_list:
             each_topic: tct.dataclasses.RosStampedFeature = (
-                mf_container.get_dynamic_field(each_topic_name)
+                mf_container.get_dynamic_attribute(each_topic_name)
             )
             window_info_final += f"\nTopic log: {each_topic.feature_name}\n"
 
-            if "header" in each_topic.get_dimension_names():
+            if "header" in each_topic.get_public_attribute_names():
                 timestamps_ = each_topic.header.timestamps
                 delta_stamps = timestamps_.delta_stamps[1:]
                 if len(timestamps_) > 0:
