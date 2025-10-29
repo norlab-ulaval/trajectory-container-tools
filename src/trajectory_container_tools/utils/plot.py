@@ -29,8 +29,8 @@ def plot_trajectory_2d(
         trajectory.
     """
 
-    x_pos = trajectory_data.get_dynamic_field(x_axis_topic)
-    y_pos = trajectory_data.get_dynamic_field(y_axis_topic)
+    x_pos = trajectory_data.get_dynamic_attribute(x_axis_topic)
+    y_pos = trajectory_data.get_dynamic_attribute(y_axis_topic)
 
     fig, ax = plt.subplots(figsize=(10, 10))
 

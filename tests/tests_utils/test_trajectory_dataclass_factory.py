@@ -55,7 +55,7 @@ class TestTrajectoryDataclassFactoryDataframeCase:
             timesteps_indices=mock_value,
         )
         assert isinstance(mock_cls_instance, atd.AbstractTrajectoryFeature)
-        assert mock_cls.get_dimension_names() == ("xx", "yy", "yaww")
+        assert mock_cls.get_cls_public_field_names() == ("xx", "yy", "yaww")
         assert hasattr(mock_cls_instance, "feature_name")
         assert hasattr(mock_cls_instance, "xx")
         assert hasattr(mock_cls_instance, "yy")
@@ -107,7 +107,7 @@ class TestTrajectoryDataclassFactoryROSbagCase:
             pose_zz=mock_value,
         )
         assert isinstance(mock_cls_instance, atd.AbstractTrajectoryFeature)
-        assert mock_cls.get_dimension_names() == (
+        assert mock_cls.get_cls_public_field_names() == (
             "bag_recorded_timestamps",
             "header",
             "pose_xx",

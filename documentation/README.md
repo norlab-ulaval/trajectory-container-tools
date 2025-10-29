@@ -15,6 +15,7 @@ Welcome to the comprehensive documentation for **Trajectory Container Tools (TCT
     * [📊 DataFrame To TCT Usage Guide](#-dataframe-to-tct-usage-guide)
     * [🤖 ROS Bag To TCT  Usage Guide](#-ros-bag-to-tct--usage-guide-)
     * [🔄 Post-Processing Callbacks Guide](#-post-processing-callbacks-guide)
+    * [🧩 Typing and Internal Fields Guide](#-typing-and-internal-fields-guide)
   * [Core Concepts](#core-concepts)
     * [Trajectory Containers](#trajectory-containers)
     * [Factory Pattern](#factory-pattern)
@@ -141,6 +142,13 @@ Detailed guide for customizing trajectory data processing at instantiation:
 - Advanced examples and common patterns
 - Integration with extractors (ROS bags, DataFrames)
 - Best practices and use cases
+
+### 🧩 [Typing and Internal Fields Guide](typing_and_internal_fields.md)
+Understand how to mark fields as non-trajectory or internal:
+- `tct.typing.NonTrajectoryField[...]` for metadata/static fields excluded from per‑timestep logic
+- `tct.typing.ContainerInternalField[...]` for internal implementation details hidden from public API
+- Effects on iteration, transpose `T`, ravel, and callbacks
+- Dynamic attribute access helpers for derived fields
 
 ### ⏱️ [Timestamp Utilities Guide](timestamp_utilities.md)
 Comprehensive guide for timestamp handling and utilities:

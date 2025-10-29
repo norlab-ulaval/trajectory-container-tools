@@ -9,6 +9,11 @@ from trajectory_container_tools import (
     AbstractTrajectoryUnboundedArray,
     AbstractTrajectoryFeature,
 )
+from trajectory_container_tools.utils.typing.tct_custom_field import (
+    NonTrajectoryField,
+    ContainerInternalField,
+)
+
 
 
 @dataclass()
@@ -18,7 +23,7 @@ class MockAbstractTrajectoryFeature(AbstractTrajectoryFeature):
 
 @dataclass()
 class MockNestedListAbstractTrajectoryUnboundedArray(AbstractTrajectoryUnboundedArray):
-    mock_non_trj_array: list[bool]
+    mock_non_trj_array: NonTrajectoryField[list[bool]]
     mock_trj_attribute: np.ndarray
     mock_trj_array_w_arbitrary_type: list[list[int]]
     mock_trj_feature_array: list[MockAbstractTrajectoryFeature]
@@ -63,7 +68,7 @@ class TestCaseArrayOfTrajectoryFeatureDataclasses:
         t_container = setup_mock_nested_list_subclass
 
         assert t_container.feature_name == "mock"
-        assert "feature_name" in t_container._dataclass_internal_field()
+        assert "feature_name" in t_container.container_internal_field()
         assert (
             None not in t_container.non_trajectory_field()
             and "None" not in t_container.non_trajectory_field()

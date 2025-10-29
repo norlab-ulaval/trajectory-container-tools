@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 
 from .general import extract_class_name_from_type, setup_progressbar
-from trajectory_container_tools.typing import ShadowDataContainer
+from .typing.new_types_and_aliases import ShadowDataContainer
 from ..dataclasses import RosFeature, RosFeatureArray, RosStampedFeature
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryFeatureUnboundedArray,
@@ -34,16 +34,16 @@ def instanciate_shadow_data_container(
     shadow_data_container: ShadowDataContainer
 
     shadow_data_container = {
-        each_field: None for each_field in data_container_type.get_dimension_names()
+        each_field: None for each_field in data_container_type.get_cls_public_field_names(include_non_init_dim=False)
     }
 
     # Internal logic
     shadow_data_container["type"] = data_container_type
     shadow_data_container["nested_lvl"] = nested_lvl
 
-    for each_property_name in data_container_type.get_dimension_names():
+    for each_property_name in data_container_type.get_cls_public_field_names(include_non_init_dim=False):
 
-        dimension_type, is_list_of_type = data_container_type.get_dimension_type(
+        dimension_type, is_list_of_type = data_container_type.get_cls_public_field_type(
             each_property_name
         )
 
@@ -100,7 +100,7 @@ def post_process_shadown_data_container(
     """
     # (NICE TO HAVE) ToDo: unit-test explicitly (ref task RLRP-83). Its indirectly tested for now.
 
-    for each in data_container_type._dataclass_internal_field():
+    for each in data_container_type.container_internal_field():
         if each == "feature_name":
             if (
                 issubclass(
@@ -146,8 +146,8 @@ def post_process_shadown_data_container(
                     del ppsdc["nested_lvl"]
                 shadow_data_container[k][idx] = target_type(**ppsdc)
         elif not issubclass(data_container_type, BaseTrajectoryFeatureUnboundedArray) and (
-            k in data_container_type.non_trajectory_field()
-            or k in data_container_type._dataclass_internal_field()
+            k in data_container_type.non_trajectory_field() or
+            k in data_container_type.container_internal_field()
         ):
             pass
         elif k == "type" or k == "nested_lvl":

@@ -49,7 +49,7 @@ trajectory = Simple2DTrajectory(
 
 print((
         f"Created trajectory with {trajectory.trajectory_len} timesteps\n"
-        f"Available dimensions: {trajectory.get_dimension_names()}\n"
+        f"Available dimensions: {trajectory.get_public_attribute_names()}\n"
 ), trajectory)
 ```
 ```text
@@ -499,3 +499,38 @@ documentation files in this directory.
     - [DataFrame Usage Examples](../notebooks/dataframe_usage_example.ipynb) - Convert pandas DataFrames to trajectory
       containers
 
+
+
+## 7. Typing: NonTrajectoryField and ContainerInternalField
+
+TCT provides typing markers to control which fields participate in per‑timestep logic and which are internal to the container implementation.
+
+- Use `tct.typing.NonTrajectoryField[T]` for metadata/static fields that should be excluded from indexing, slicing, iteration, transpose `T`, and ravel operations. These fields remain part of the public API and appear in `get_public_attribute_names()`.
+- Use `tct.typing.ContainerInternalField[T]` for internal fields that should not appear in `get_public_attribute_names()` and are ignored by post‑processing callbacks.
+
+Example:
+
+```python
+from dataclasses import dataclass, field
+import numpy as np
+import trajectory_container_tools as tct
+
+@dataclass
+class TrajectoryWithMeta(tct.BaseTrajectoryFeature):
+    x: np.ndarray
+    y: np.ndarray
+    timestamps: np.ndarray
+    # Non‑trajectory: excluded from per‑timestep logic
+    metadata: tct.typing.NonTrajectoryField[np.ndarray] = field(default_factory=lambda: np.array([1, 2, 3]))
+    # Internal: not exposed publicly
+    _timestep_indexes: tct.typing.ContainerInternalField[np.ndarray] = field(default=None, init=False)
+
+traj = TrajectoryWithMeta(feature_name="demo", x=np.arange(5), y=np.arange(5), timestamps=np.arange(5))
+print(traj.get_public_attribute_names())  # ('x','y','timestamps','metadata')
+
+# Dynamic attributes for derived fields
+traj.set_dynamic_attribute('x_cumsum', np.cumsum(traj.x))
+print(traj.has_dynamic_attribute('x_cumsum'))  # True
+```
+
+For more details, see the Typing guide: [Typing and Internal Fields](./typing_and_internal_fields.md).

@@ -38,19 +38,19 @@ class TrajectoryWithPreprocessing(tct.BaseTrajectoryFeature):
         # Center the trajectory around origin
         x_mean = np.mean(self.x)
         y_mean = np.mean(self.y)
-        self.set_dynamic_field('x', self.x - x_mean)
-        self.set_dynamic_field('y', self.y - y_mean)
+        self.set_dynamic_attribute('x', self.x - x_mean)
+        self.set_dynamic_attribute('y', self.y - y_mean)
 
         # Store the offset for later use
-        self.set_dynamic_field('offset_x', x_mean)
-        self.set_dynamic_field('offset_y', y_mean)
+        self.set_dynamic_attribute('offset_x', x_mean)
+        self.set_dynamic_attribute('offset_y', y_mean)
 ```
 
 ### 2. `post_init_feature_callback(feature_name: str)`
 
 **When it executes:** Once for each feature field in the dataclass.
 
-**Scope:** Only processes fields that are NOT marked in `_dataclass_internal_field()` or `non_trajectory_field()`.
+**Scope:** Runs once for each public field. It excludes only fields typed as `tct.typing.ContainerInternalField[...]`. Fields typed as `tct.typing.NonTrajectoryField[...]` are included (you can add guards in your callback if you want to skip them).
 
 **Parameters:**
 - `feature_name` (str): The name of the current feature being processed
@@ -77,18 +77,18 @@ class TrajectoryWithDerivedFeatures(tct.BaseTrajectoryFeature):
 
     def post_init_feature_callback(self, feature_name: str):
         """Create derivative and cumulative features."""
-        feature = self.get_dynamic_field(feature_name)
+        feature = self.get_dynamic_attribute(feature_name)
 
         if isinstance(feature, np.ndarray):
             # Create rate of change for each feature
             if feature_name in ['x', 'y', 'velocity']:
                 rate = np.diff(feature, prepend=feature[0])
-                self.set_dynamic_field(f"{feature_name}_rate", rate)
+                self.set_dynamic_attribute(f"{feature_name}_rate", rate)
 
             # Create cumulative sum for position features
             if feature_name in ['x', 'y']:
                 cumsum = np.cumsum(feature)
-                self.set_dynamic_field(f"{feature_name}_cumsum", cumsum)
+                self.set_dynamic_attribute(f"{feature_name}_cumsum", cumsum)
 ```
 
 ### 3. `on_exit_post_init_callback()`
@@ -123,14 +123,14 @@ class TrajectoryWithStatistics(tct.BaseTrajectoryFeature):
         dx = np.diff(self.x, prepend=self.x[0])
         dy = np.diff(self.y, prepend=self.y[0])
         distances = np.sqrt(dx ** 2 + dy ** 2)
-        self.set_dynamic_field('distance_per_step', distances)
-        self.set_dynamic_field('total_distance', np.sum(distances))
+        self.set_dynamic_attribute('distance_per_step', distances)
+        self.set_dynamic_attribute('total_distance', np.sum(distances))
 
         # Compute trajectory bounds
-        self.set_dynamic_field('x_min', np.min(self.x))
-        self.set_dynamic_field('x_max', np.max(self.x))
-        self.set_dynamic_field('y_min', np.min(self.y))
-        self.set_dynamic_field('y_max', np.max(self.y))
+        self.set_dynamic_attribute('x_min', np.min(self.x))
+        self.set_dynamic_attribute('x_max', np.max(self.x))
+        self.set_dynamic_attribute('y_min', np.min(self.y))
+        self.set_dynamic_attribute('y_max', np.max(self.y))
 
         # Validate trajectory length
         assert len(self.x) > 0, "Trajectory must have at least one point"
@@ -161,33 +161,33 @@ The callbacks are executed in the following order during instantiation:
 
 All callbacks have access to helper methods for dynamic field manipulation:
 
-### `get_dynamic_field(feature_name: str) -> Any`
+### `get_dynamic_attribute(feature_name: str) -> Any`
 
 Retrieve the value of any attribute from the dataclass.
 
 ```python
-value = self.pose.pose.position.get_dynamic_field("x")
+value = self.pose.pose.position.get_dynamic_attribute("x")
 ```
 
 Access nested attributes using dot notation (useful for ROS message structures).
 
 ```python
 # For nested structures like NavMsgsOdometry
-position_x = self.get_dynamic_field("pose.pose.position.x")
+position_x = self.get_dynamic_attribute("pose.pose.position.x")
 ```
 
-### `set_dynamic_field(feature_name: str, value: Any) -> None`
+### `set_dynamic_attribute(feature_name: str, value: Any) -> None`
 
 Create or update an attribute on the dataclass.
 
 ```python
-self.set_dynamic_field("x_squared", self.x ** 2)
+self.set_dynamic_attribute("x_squared", self.x ** 2)
 ```
 
 Create or update nested attributes using dot notation (useful for ROS message structures).
 
 ```python
-self.set_dynamic_field("pose.pose.position.x", 10)
+self.set_dynamic_attribute("pose.pose.position.x", 10)
 ```
 
 ## Advanced Example: Complete Trajectory Post-Processing
@@ -214,14 +214,14 @@ class AdvancedTrajectory(tct.BaseTrajectoryFeature):
         assert len(set(lengths)) == 1, f"Inconsistent array lengths: {lengths}"
 
         # Store trajectory metadata
-        self.set_dynamic_field('trajectory_length', len(self.x))
+        self.set_dynamic_attribute('trajectory_length', len(self.x))
 
         # Initialize a processing flag
-        self.set_dynamic_field('_callbacks_executed', True)
+        self.set_dynamic_attribute('_callbacks_executed', True)
 
     def post_init_feature_callback(self, feature_name: str):
         """Create statistical features for each trajectory dimension."""
-        feature = self.get_dynamic_field(feature_name)
+        feature = self.get_dynamic_attribute(feature_name)
 
         if isinstance(feature, np.ndarray) and len(feature) > 0:
             # Compute statistics
@@ -239,7 +239,7 @@ class AdvancedTrajectory(tct.BaseTrajectoryFeature):
 
             # Set all computed statistics
             for stat_name, stat_value in stats.items():
-                self.set_dynamic_field(stat_name, stat_value)
+                self.set_dynamic_attribute(stat_name, stat_value)
 
     def on_exit_post_init_callback(self):
         """Compute derived trajectory properties."""
@@ -249,21 +249,21 @@ class AdvancedTrajectory(tct.BaseTrajectoryFeature):
 
         # Distance traveled per step
         step_distances = np.sqrt(dx ** 2 + dy ** 2)
-        self.set_dynamic_field('step_distances', step_distances)
-        self.set_dynamic_field('total_distance', np.sum(step_distances))
+        self.set_dynamic_attribute('step_distances', step_distances)
+        self.set_dynamic_attribute('total_distance', np.sum(step_distances))
 
         # Heading angle (direction of travel)
         heading = np.arctan2(dy, dx)
-        self.set_dynamic_field('heading', heading)
+        self.set_dynamic_attribute('heading', heading)
 
         # Curvature (change in heading per unit distance)
         dheading = np.diff(heading, prepend=heading[0])
         curvature = dheading / (step_distances + 1e-6)  # Avoid division by zero
-        self.set_dynamic_field('curvature', curvature)
+        self.set_dynamic_attribute('curvature', curvature)
 
         # Create trajectory quality metrics
         smoothness = np.std(curvature)
-        self.set_dynamic_field('trajectory_smoothness', smoothness)
+        self.set_dynamic_attribute('trajectory_smoothness', smoothness)
 
         # Final validation
         assert np.all(np.isfinite(self.x)), "x contains non-finite values"
@@ -311,9 +311,10 @@ Callbacks execute during instantiation, which can slow down object creation. For
 ### 4. Handle Edge Cases
 
 Always validate your assumptions:
+
 ```python
 def post_init_feature_callback(self, feature_name: str):
-    feature = self.get_dynamic_field(feature_name)
+    feature = self.get_dynamic_attribute(feature_name)
     
     # Check type before processing
     if isinstance(feature, np.ndarray):
@@ -373,27 +374,31 @@ def on_exit_post_init_callback(self):
 Callbacks work seamlessly with TCT's data extraction methods:
 
 ### From ROS Bags
+
 ```python
 from trajectory_container_tools.dataclasses import NavMsgsOdometry
 
+
 @dataclass
 class ProcessedOdometry(NavMsgsOdometry):
+
     def on_exit_post_init_callback(self):
         """Extract and compute additional metrics from odometry."""
         # Access nested ROS message structure
-        pos_x = self.get_dynamic_field("pose.pose.position.x")
-        pos_y = self.get_dynamic_field("pose.pose.position.y")
-        
+        pos_x = self.get_dynamic_attribute("pose.pose.position.x")
+        pos_y = self.get_dynamic_attribute("pose.pose.position.y")
+
         # Compute 2D position magnitude
-        position_magnitude = np.sqrt(pos_x**2 + pos_y**2)
-        self.set_dynamic_field('position_magnitude', position_magnitude)
+        position_magnitude = np.sqrt(pos_x ** 2 + pos_y ** 2)
+        self.set_dynamic_attribute('position_magnitude', position_magnitude)
+
 
 # Use with rosbag extractor
 trajectory = tct.extractor.from_rosbag(
-    rosbag_path,
-    features_config={"/odom": ProcessedOdometry},
-    chunk_on="/odom"
-)
+        rosbag_path,
+        features_config={"/odom": ProcessedOdometry},
+        chunk_on="/odom"
+        )
 ```
 
 ### From DataFrames
@@ -409,11 +414,11 @@ class BatchTrajectory(tct.BaseTrajectoryFeature):
         if self.batch:
             # Shape: (batch_size, trajectory_length, ...)
             batch_size = self.x.shape[0]
-            self.set_dynamic_field("batch_size", batch_size)
+            self.set_dynamic_attribute("batch_size", batch_size)
 
             # Compute per-batch statistics
             batch_means = np.mean(self.x, axis=1)
-            self.set_dynamic_field("batch_x_means", batch_means)
+            self.set_dynamic_attribute("batch_x_means", batch_means)
 
 
 # Use with dataframe extractor
@@ -426,53 +431,56 @@ trajectory = tct.extractor.from_dataframe(
 ## Common Patterns
 
 ### Pattern 1: Feature Normalization
+
 ```python
 def post_init_feature_callback(self, feature_name: str):
     """Normalize all numeric features to [0, 1] range."""
-    feature = self.get_dynamic_field(feature_name)
-    
+    feature = self.get_dynamic_attribute(feature_name)
+
     if isinstance(feature, np.ndarray) and np.issubdtype(feature.dtype, np.number):
         min_val = np.min(feature)
         max_val = np.max(feature)
-        
+
         if max_val > min_val:
             normalized = (feature - min_val) / (max_val - min_val)
-            self.set_dynamic_field(f"{feature_name}_normalized", normalized)
+            self.set_dynamic_attribute(f"{feature_name}_normalized", normalized)
 ```
 
 ### Pattern 2: Temporal Derivatives
+
 ```python
 def post_init_feature_callback(self, feature_name: str):
     """Compute first and second derivatives for temporal features."""
-    feature = self.get_dynamic_field(feature_name)
-    
+    feature = self.get_dynamic_attribute(feature_name)
+
     if isinstance(feature, np.ndarray) and feature_name in ['x', 'y', 'velocity']:
         # First derivative (velocity or acceleration)
         first_deriv = np.diff(feature, prepend=feature[0])
-        self.set_dynamic_field(f"{feature_name}_dot", first_deriv)
-        
+        self.set_dynamic_attribute(f"{feature_name}_dot", first_deriv)
+
         # Second derivative (acceleration or jerk)
         second_deriv = np.diff(first_deriv, prepend=first_deriv[0])
-        self.set_dynamic_field(f"{feature_name}_ddot", second_deriv)
+        self.set_dynamic_attribute(f"{feature_name}_ddot", second_deriv)
 ```
 
 ### Pattern 3: Conditional Processing
+
 ```python
 def on_exit_post_init_callback(self):
     """Apply different processing based on trajectory characteristics."""
     trajectory_length = len(self.x)
-    
+
     if trajectory_length < 10:
         # Short trajectory: use simple smoothing
-        self.set_dynamic_field('processing_mode', 'simple')
+        self.set_dynamic_attribute('processing_mode', 'simple')
     else:
         # Long trajectory: apply advanced filtering
-        self.set_dynamic_field('processing_mode', 'advanced')
-        
+        self.set_dynamic_attribute('processing_mode', 'advanced')
+
         # Apply moving average
         window = 5
-        smoothed_x = np.convolve(self.x, np.ones(window)/window, mode='same')
-        self.set_dynamic_field('x_smoothed', smoothed_x)
+        smoothed_x = np.convolve(self.x, np.ones(window) / window, mode='same')
+        self.set_dynamic_attribute('x_smoothed', smoothed_x)
 ```
 
 ## Related Documentation

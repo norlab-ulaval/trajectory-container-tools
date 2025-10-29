@@ -6,7 +6,6 @@ properly expose their expected functionality and maintain the correct API struct
 import pytest
 
 
-
 @pytest.fixture(scope="function")
 def setup_namespace():
     import trajectory_container_tools as tct
@@ -99,9 +98,7 @@ class TestRosNamespaceModule:
         assert hasattr(tct.ros, "gather_rosbag_trajectory_window_informations")
         assert callable(tct.ros.gather_rosbag_trajectory_window_informations)
 
-    def test_show_rosbag_summary_info_function_exists(
-        self, setup_namespace
-    ):
+    def test_show_rosbag_summary_info_function_exists(self, setup_namespace):
         """Test that show_rosbag_summary_info function is available in ros namespace."""
         tct = setup_namespace
         assert hasattr(tct.ros, "show_rosbag_summary_info")
@@ -261,6 +258,16 @@ class TestTypingNamespaceModule:
         """Test that ShadowDataContainer type is available in typing namespace."""
         tct = setup_namespace
         assert hasattr(tct.typing, "ShadowDataContainer")
+
+    def test_non_trajectory_field_type_exists(self, setup_namespace):
+        """Test that NonTrajectoryField type is available in typing namespace."""
+        tct = setup_namespace
+        assert hasattr(tct.typing, "NonTrajectoryField")
+
+    def test_tctinternal_field_type_exists(self, setup_namespace):
+        """Test that ContainerInternalField type is available in typing namespace."""
+        tct = setup_namespace
+        assert hasattr(tct.typing, "ContainerInternalField")
 
 
 class TestMainNamespaceAPI:
