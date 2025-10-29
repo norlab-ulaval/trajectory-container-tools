@@ -18,6 +18,10 @@ from trajectory_container_tools.dataclasses.core.abstract_trajectory_array_datac
 )
 from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.utils import extract_class_name_from_instance
+from trajectory_container_tools.utils.typing.tct_custom_field import (
+    NonTrajectoryField,
+    ContainerInternalField,
+)
 
 
 @dataclass
@@ -39,15 +43,11 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
 
     dataset_info: str
     bag_timestamps: Optional[Timestamps] = field(default=None, kw_only=True)
-    _aggregated_date: datetime.datetime = field(init=False)
-
-    @classmethod
-    def _dataclass_internal_field(cls) -> List[str]:
-        return super()._dataclass_internal_field() + ["_aggregated_date"]
+    _aggregated_date: ContainerInternalField[datetime.datetime] = field(init=False)
 
     def __post_init__(self):
         # .... Pre-condition ......................................................................
-        if not self.get_dimension_names():
+        if not self.get_cls_public_field_names():
             raise TypeError(
                 f"[TCT error] {self.__class__.__name__} is an abstract baseclass, "
                 f"it must be subclassed in order to be instanciated."
@@ -60,7 +60,7 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
         # .... Callback and attribute customization logic .........................................
         self.on_begin_post_init_callback()
 
-        for each_name in self.get_dimension_names():
+        for each_name in self.get_cls_public_field_names(include_non_init_dim=True):
             self.post_init_feature_callback(feature_name=each_name)
 
         self.on_exit_post_init_callback()
@@ -85,7 +85,7 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
         nested_sp = " " * 3
         repr_str = f"\n{out_sp}TrajectoryFeaturesBag(\n"
         for k, v in self.__dict__.items():
-            if k in self._dataclass_internal_field():
+            if k in self.container_internal_field():
                 pass
             elif k == "dataset_info":
                 repr_str = self._metadata_field_str(in_sp, repr_str, k, v)
@@ -124,9 +124,7 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
         ]
 
     @property
-    @deprecated(
-        reason="Directly print the TrajectoryFeaturesBag object instead."
-    )
+    @deprecated(reason="Directly print the TrajectoryFeaturesBag object instead.")
     def summary(self) -> None:
         # inprogress: TCT-68 feat: deprecate AbstractTrajectoryFeaturesBag summary property
         print(self)

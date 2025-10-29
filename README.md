@@ -151,6 +151,8 @@ pip install trajectory-container-tools
 pip install trajectory-container-tools[ros]
 ```
 
+The `ros` install extra enable two specialized namespaces i.e., `extractor` and `ros` which provide functionalities for extracting data from rosbag and from dataframe as well as functionalities directly related to rosbag handling and ros time. 
+
 ### For developer, playing with the interactive example Jupyter notebook or using the `tests_data` 
 
 #### Option 1: Clone and Install with pip
@@ -164,7 +166,9 @@ cd trajectory-container-tools
 pip install -e .[ros,dev]
 ```
 
-#### Option 2: Using DNA (Dockerized-NorLab Application)
+The `dev` install extra install developement dependencies.
+
+#### Option 2: Using DNA ([Dockerized-NorLab Application](https://github.com/norlab-ulaval/dockerized-norlab-project))
 
 ```bash
 # Build and run the container
@@ -281,16 +285,16 @@ class CustomTrajectoryWithCallbacks(tct.BaseTrajectoryFeature):
     Use for initialization logic that affects all fields."""
     # Example: Ensure data is in correct format
     if self.x.dtype != np.float64:
-      self.set_dynamic_field('x', self.x.astype(np.float64))
+      self.set_dynamic_attribute('x', self.x.astype(np.float64))
   
   def post_init_feature_callback(self, feature_name: str):
     """Executed once per feature (excluding internal/non-trajectory fields).
     Use for feature-specific post-processing."""
     # Example: Create cumulative sum features
-    feature = self.get_dynamic_field(feature_name)
+    feature = self.get_dynamic_attribute(feature_name)
     if isinstance(feature, np.ndarray) and feature_name in ['x', 'y']:
       cumsum = np.cumsum(feature)
-      self.set_dynamic_field(f"{feature_name}_cumsum", cumsum)
+      self.set_dynamic_attribute(f"{feature_name}_cumsum", cumsum)
   
   def on_exit_post_init_callback(self):
     """Executed at the end of __post_init__, after all processing.
@@ -299,7 +303,7 @@ class CustomTrajectoryWithCallbacks(tct.BaseTrajectoryFeature):
     dx = np.diff(self.x, prepend=0)
     dy = np.diff(self.y, prepend=0)
     distance = np.sqrt(dx ** 2 + dy ** 2)
-    self.set_dynamic_field('distance', distance)
+    self.set_dynamic_attribute('distance', distance)
 
 
 # Instantiate with automatic callback execution
@@ -325,6 +329,43 @@ Total distance: 12.73
 3. `on_exit_post_init_callback()` - Once at end
 
 For more details, see the [Post-Processing Callbacks documentation](documentation/post_processing_callbacks.md).
+
+### Typing and Internal Fields
+
+TCT introduces typing markers to control how fields are treated by the container logic:
+- `tct.typing.NonTrajectoryField[T]` marks a field that is not per‑timestep (e.g., metadata arrays, labels).
+  Such fields are excluded from iteration, transpose `T`, and ravel operations.
+- `tct.typing.ContainerInternalField[T]` marks an internal field used by the container implementation. These fields are not exposed by `get_public_attribute_names()` and are ignored by feature processing callbacks.
+
+Example:
+
+```python
+from dataclasses import dataclass, field
+import numpy as np
+import trajectory_container_tools as tct
+
+
+@dataclass
+class TrajectoryWithMeta(tct.BaseTrajectoryFeature):
+  x: np.ndarray
+  y: np.ndarray
+  timestamps: np.ndarray
+  # Non‑trajectory: excluded from per‑timestep logic
+  metadata: tct.typing.NonTrajectoryField[np.ndarray] = field(default_factory=lambda: np.array([1, 2, 3]))
+  # Internal: not exposed to users, can be set programmatically
+  _timestep_indexes: tct.typing.ContainerInternalField[np.ndarray] = field(default=None, init=False)
+
+
+traj = TrajectoryWithMeta(feature_name="demo", x=np.arange(5), y=np.arange(5), timestamps=np.arange(5))
+print(traj.get_public_attribute_names())  # ('x','y','timestamps','metadata') — '_timestep_indexes' is hidden
+
+# Dynamic attribute utilities
+traj.set_dynamic_attribute('x_cumsum', np.cumsum(traj.x))
+print(traj.get_dynamic_attribute('x_cumsum'))
+print(traj.has_dynamic_attribute('x_cumsum'))  # True
+```
+
+See the detailed guide: documentation/typing_and_internal_fields.md
 
 ### From ROS bag
 

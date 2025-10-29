@@ -6,7 +6,7 @@ import pandas as pd
 from typing import Dict, Tuple, Union
 from dataclasses import make_dataclass
 
-from trajectory_container_tools.typing import TrajectoryFeaturesBag
+from trajectory_container_tools.utils.typing.new_types_and_aliases import TrajectoryFeaturesBag
 from trajectory_container_tools import AbstractTrajectoryFeaturesBag
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     BaseDataframeFeatureDataclass,
@@ -15,6 +15,7 @@ from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass im
 from trajectory_container_tools.temporal.timestep_indexing import (
     validate_dataframe_timesteps_indexing,
 )
+from trajectory_container_tools.utils import dn_sanitize_path
 from trajectory_container_tools.utils.factory import parse_feature_spec
 
 
@@ -33,25 +34,11 @@ def unpack_dataframe_and_show_topic(
     :return: A tuple containing the unpacked dataframe as a `pd.DataFrame` object
         and the resolved absolute `Path` of the dataframe file.
     """
-    # .... Construct absolute path to selected dataframe bag ......................................
-    # Handle cases: pycharm-born dna run and shell-born dna run
-    try:
-        assert os.path.exists(dataframe_path)
-    except AssertionError:
-        dn_project_path = os.getenv("DN_PROJECT_PATH")
-        if os.path.exists(dn_project_path):
-            # Case running in a Dockerized-NorLab docker container
-            dataframe_path = os.path.join(dn_project_path, dataframe_path)
 
-        assert os.path.exists(
-            dataframe_path
-        ), f"[TCT] dataframe path is unreachable at {dataframe_path}"
-
-    dataframe_path = Path(os.path.realpath(dataframe_path))
+    dataframe_path = dn_sanitize_path(dataframe_path)
 
     # .... Introspect dataframe header ............................................................
     print(f"Using dataframe bag: {dataframe_path}")
-    assert os.path.exists(dataframe_path)
 
     print("Available column label:")
     dataframe_ = pd.read_pickle(dataframe_path)
@@ -187,7 +174,7 @@ def extract_dataframe_feature(
         )
     else:
         try:
-            df_features = dataset.filter(like=feature_name)
+            df_features: pd.DataFrame = dataset.filter(like=feature_name)
             if df_features.empty:
                 raise ValueError(
                     f"[TCT error] The parameter `{feature_name}` does not exist in "
@@ -197,10 +184,10 @@ def extract_dataframe_feature(
             # (NICE TO HAVE) ToDo: refactor using "shadow_data_container" module
             tmp_container = {
                 each_field: None
-                for each_field in data_container_type.get_dimension_names()
+                for each_field in data_container_type.get_cls_public_field_names(include_non_init_dim=False)
             }
 
-            for each_property in data_container_type.get_dimension_names():
+            for each_property in data_container_type.get_cls_public_field_names(include_non_init_dim=False):
                 if each_property == "timestamps":
                     print(
                         "Be advised timestamps sanity check is not supported yet with "
@@ -216,9 +203,9 @@ def extract_dataframe_feature(
                     f"is a `{feature_name}` postfix in the dataset_frame"
                 )
 
-                df_property = df_features.filter(items=[df_header_field])
+                df_property: pd.DataFrame = df_features.filter(items=[df_header_field])
                 if df_property.empty and header_mix_label_and_timesteps:
-                    df_property = df_features.filter(regex=f"{df_header_field}_\\d+")
+                    df_property: pd.DataFrame = df_features.filter(regex=f"{df_header_field}_\\d+")
                     if df_property.empty:
                         raise ValueError(empty_property_error_msg)
 

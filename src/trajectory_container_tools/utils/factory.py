@@ -4,7 +4,7 @@ from typing import Tuple, Union
 
 import numpy as np
 
-from trajectory_container_tools.typing import TrajectoryFeature
+from trajectory_container_tools.utils.typing.new_types_and_aliases import TrajectoryFeature
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryFeature
 
 

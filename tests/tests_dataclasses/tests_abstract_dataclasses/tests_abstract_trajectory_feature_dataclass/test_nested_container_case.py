@@ -215,77 +215,77 @@ class TestAbstractTrajectoryFeatureCaseNested:
             # assert np.allclose(mfc_u.timesteps_indices,
             # setup_mock_feature_child_range.timesteps_indices + 9)
 
-    def test_get_dimension_names(
+    def test_get_cls_public_field_names(
         self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC, t_nested_case
     ):
         mfc = setup_mock_feature_parent_range(t_nested_case)
         for each in ("feature_name", "timesteps_indices"):
             assert hasattr(mfc, each)
-            assert each not in mfc.get_dimension_names()
+            assert each not in mfc.get_cls_public_field_names()
         if isinstance(mfc, MockTrajectoryComposedParent):
             assert mfc.feature_name is "Parent"
-            assert ("child_one", "child_two", "aa") == mfc.get_dimension_names()
+            assert ("child_one", "child_two", "aa") == mfc.get_cls_public_field_names()
         else:
             assert mfc.feature_name is "Parent nested only"
-            assert ("child_one", "child_two") == mfc.get_dimension_names()
+            assert ("child_one", "child_two") == mfc.get_cls_public_field_names()
 
-    def test_get_dimension_type(self, setup_mock_feature_parent_range, t_nested_case):
+    def test_get_cls_public_field_type(self, setup_mock_feature_parent_range, t_nested_case):
         mfc = setup_mock_feature_parent_range(t_nested_case)
         if t_nested_case == "nested-and-ndarray":
-            dimension_type, is_list_of_type = mfc.get_dimension_type("aa")
+            dimension_type, is_list_of_type = mfc.get_cls_public_field_type("aa")
             assert issubclass(dimension_type, np.ndarray)
-        dimension_type, is_list_of_type = mfc.get_dimension_type("child_one")
+        dimension_type, is_list_of_type = mfc.get_cls_public_field_type("child_one")
         assert issubclass(dimension_type, MockTrajectoryChildRosBagCase)
 
-    def test_set_dynamic_field_case_direct_access(self, setup_mock_feature_parent_range, t_nested_case):
+    def test_set_dynamic_attribute_case_direct_access(self, setup_mock_feature_parent_range, t_nested_case):
         mfc = setup_mock_feature_parent_range(t_nested_case)
 
         # Case override nested field
-        mfc.child_one.set_dynamic_field("aa", None)
+        mfc.child_one.set_dynamic_attribute("aa", None)
         assert mfc.child_one.aa is None
 
         # Case create new nested field
-        mfc.child_one.set_dynamic_field("new_field", "new-field-value")
+        mfc.child_one.set_dynamic_attribute("new_field", "new-field-value")
         assert mfc.child_one.new_field == "new-field-value"
 
         if t_nested_case == "nested-and-ndarray":
             # Case override top field
-            mfc.set_dynamic_field("aa", "mock-value")
+            mfc.set_dynamic_attribute("aa", "mock-value")
             assert mfc.aa == "mock-value"
 
             # Case create new top field
-            mfc.set_dynamic_field("new_field", "new-field-value")
+            mfc.set_dynamic_attribute("new_field", "new-field-value")
             assert mfc.new_field == "new-field-value"
 
-    def test_set_dynamic_field_case_nested_path(self, setup_mock_feature_parent_range, t_nested_case):
+    def test_set_dynamic_attribute_case_nested_path(self, setup_mock_feature_parent_range, t_nested_case):
         mfc = setup_mock_feature_parent_range(t_nested_case)
 
         # Case override nested field
         assert mfc.child_one.aa is not None
-        mfc.set_dynamic_field("child_one.aa", None)
+        mfc.set_dynamic_attribute("child_one.aa", None)
         assert mfc.child_one.aa is None
 
         # Case create new nested field
-        mfc.set_dynamic_field("child_one.new_field", "new-field-value")
+        mfc.set_dynamic_attribute("child_one.new_field", "new-field-value")
         assert mfc.child_one.new_field == "new-field-value"
 
-    def test_get_dynamic_field(
+    def test_get_dynamic_attribute(
         self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case
     ):
         mfc = setup_mock_feature_parent_range(t_nested_case)
 
         # .... Case: Direct access ................................................................
         assert np.allclose(
-            mfc.child_one.get_dynamic_field("aa"), mock_ROSbag_2_trj_DC_range.a
+            mfc.child_one.get_dynamic_attribute("aa"), mock_ROSbag_2_trj_DC_range.a
         )
         if t_nested_case == "nested-and-ndarray":
             assert np.allclose(
-                mfc.get_dynamic_field("aa"), mock_ROSbag_2_trj_DC_range.a
+                mfc.get_dynamic_attribute("aa"), mock_ROSbag_2_trj_DC_range.a
             )
 
         # .... Case: Nested path ..................................................................
         assert np.allclose(
-            mfc.get_dynamic_field("child_one.aa"), mock_ROSbag_2_trj_DC_range.a
+            mfc.get_dynamic_attribute("child_one.aa"), mock_ROSbag_2_trj_DC_range.a
         )
 
     @pytest.mark.deprecated("Method fetch_nested_attribute is marked as deprecated (ref task TCT-65)")
@@ -352,9 +352,24 @@ class TestAbstractTrajectoryFeatureCaseNested:
             mdc_at_t0.child_one.cc, np.arange(mfc.child_one.cc.shape[-1])
         )
         assert mdc_at_t0.timesteps_indices == mfc.child_one.timesteps_indices[0]
-        # mfc.get_dimension_names()
+        # mfc.get_cls_public_field_names()
         # print(mfc)
         # print(mdc_at_t0)
+
+    def test_is_trajectory_sequence(
+        self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case
+    ):
+        mfc = setup_mock_feature_parent_range(t_nested_case)
+        assert mfc.trajectory_len == 40
+        print(mfc)
+
+        assert mfc.child_one.is_trajectory_sequence(mfc.child_one.aa) is True
+        assert mfc.child_one.is_trajectory_sequence(mfc.child_one.bb) is True
+        assert mfc.child_one.is_trajectory_sequence(mfc.child_one.cc) is True
+        assert mfc.child_one.is_trajectory_sequence(mfc.child_one.timesteps_indices) is True
+        assert mfc.child_one.is_trajectory_sequence(mfc.child_one.dd_metadata) is False
+        assert mfc.child_one.is_trajectory_sequence([1, 2, 3]) is False
+
 
     def test_iterator(
         self, setup_mock_feature_parent_range, mock_ROSbag_2_trj_DC_range, t_nested_case
@@ -376,7 +391,7 @@ class TestAbstractTrajectoryFeatureCaseNested:
                 mdc_at_t.child_one.timesteps_indices
                 == mfc.child_one.timesteps_indices[t]
             )
-            # mfc.get_dimension_names()
+            # mfc.get_cls_public_field_names()
             # print(mdc_at_t)
 
     def test_transpose(
@@ -421,7 +436,7 @@ class TestAbstractTrajectoryFeatureCaseNested:
         assert np.array_equal(mfc.child_two.cc, t_ref.c)
         # print(
         #        f"{mfc}\n\n",
-        #        f"{mfc.get_dimension_names()}\n\n",
+        #        f"{mfc.get_cls_public_field_names()}\n\n",
         #        f"{mfc.child_one}\n\n",
         #        f"{mfc.child_two}\n\n",
         #        )
@@ -465,7 +480,7 @@ class TestAbstractTrajectoryFeatureCaseNested:
 
         # print(
         #        f"{t_mdc}\n\n",
-        #        f"{t_mdc.get_dimension_names()}\n\n",
+        #        f"{t_mdc.get_cls_public_field_names()}\n\n",
         #        f"{t_mdc.child_one}\n\n",
         #        f"{t_mdc.child_two}\n\n",
         #        )
@@ -509,7 +524,7 @@ class TestAbstractTrajectoryFeatureCaseNested:
 
         # print(
         #        f"{t_mdc2}\n\n",
-        #        f"{t_mdc2.get_dimension_names()}\n\n",
+        #        f"{t_mdc2.get_cls_public_field_names()}\n\n",
         #        f"{t_mdc2.child_one}\n\n",
         #        f"{t_mdc2.child_two}\n\n",
         #        )
@@ -536,5 +551,5 @@ class TestAbstractTrajectoryFeatureCaseNested:
         assert np.array_equal(mfc_empty.timesteps_indices, np.array([], dtype=np.int64))
         assert np.array_equal(mfc_empty.child_one.timesteps_indices, np.array([], dtype=np.int64))
 
-        # mfc.get_dimension_names()
+        # mfc.get_cls_public_field_names()
         print(mfc_empty)

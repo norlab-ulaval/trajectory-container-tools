@@ -5,10 +5,11 @@ import os
 import shutil
 from pathlib import Path
 
+from tests.testing_utils_general import is_run_on_a_teamcity_continuous_integration_server
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_stamped_features_bag_dataclass import (
     AbstractTrajectoryStampedFeaturesBag,
 )
-from trajectory_container_tools.utils.general import RosImportError
+from trajectory_container_tools.utils.general import RosImportError, dn_sanitize_path
 
 try:
     from rosbags.rosbag2 import Reader
@@ -35,6 +36,21 @@ def setup_teardown_artifact_dir():
     if os.path.exists(test_dir):
         shutil.rmtree(test_dir)
     os.chdir(original_dir)
+
+
+@pytest.mark.skipif(
+    not is_run_on_a_teamcity_continuous_integration_server(),
+    reason="Only execute on build server.",
+)
+@pytest.mark.slow
+def test_main():
+
+    out = os.system(
+        f"python3 -m trajectory_container_tools.utils.ros2_utils.rosbag_eda.rosbag_timestamp_eda"
+    )
+
+    # Note: exit(0) <==> clean exit without any errors/problems
+    assert 0 == out, f"Module invocated from command line exited with error {out}"
 
 
 def test_run_rosbag_timestamp_eda_default_exp_dir(
@@ -95,12 +111,12 @@ def test_run_rosbag_timestamp_eda_full_bag(
     print(tc)
     assert isinstance(tc, AbstractTrajectoryStampedFeaturesBag)
 
-    assert tc.topic_odom.trajectory_len == 864
-    assert tc.topic_tf.transforms[0].trajectory_len == 866
-    assert tc.topic_scan.trajectory_len == 691
+    assert tc.topic_odom.trajectory_len == 863
+    assert tc.topic_tf.transforms[0].trajectory_len == 863
+    assert tc.topic_scan.trajectory_len == 688
     assert tc.topic_teleop.trajectory_len == 783
-    assert tc.topic_sensors_imu_raw.trajectory_len == 859
-    assert tc.topic_sensors_imu.trajectory_len == 857
+    assert tc.topic_sensors_imu_raw.trajectory_len == 858
+    assert tc.topic_sensors_imu.trajectory_len == 856
 
 
 def test_run_rosbag_timestamp_eda_window(

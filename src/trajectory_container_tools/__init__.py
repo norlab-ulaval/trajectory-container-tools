@@ -73,11 +73,11 @@ __all__ = [
     "__version__",
     # Core classes
     "AbstractTrajectoryFeature",
-        "AbstractTrajectoryUnboundedArray",
+    "AbstractTrajectoryUnboundedArray",
     "AbstractTrajectoryFeaturesBag",
     "AbstractTrajectoryStampedFeaturesBag",
     "BaseTrajectoryFeature",
-        "BaseTrajectoryFeatureUnboundedArray",
+    "BaseTrajectoryFeatureUnboundedArray",
     # Namespaces
     "dataclasses",
     "factory",

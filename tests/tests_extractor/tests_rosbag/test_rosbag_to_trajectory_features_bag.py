@@ -4,7 +4,7 @@ from typing import Union
 import pytest
 import numpy as np
 
-from tests.rosbag_test_utils import get_rosbag_vaul_f110_grand_salon_path
+from tests.testing_utils_rosbag import get_rosbag_vaul_f110_grand_salon_path
 from trajectory_container_tools.extractor.rosbag_to_tct import (
     from_rosbag,
     extract_rosbag_feature,
@@ -177,7 +177,7 @@ class TestFromRosBag:
         assert (
                 mf_container.topic_sensors_imu_raw.feature_name == "/sensors/imu/raw"
         )
-        assert mf_container.topic_sensors_imu_raw.get_dimension_names() == (
+        assert mf_container.topic_sensors_imu_raw.get_cls_public_field_names() == (
             "bag_recorded_timestamps",
             "header",
             "orientation_x",

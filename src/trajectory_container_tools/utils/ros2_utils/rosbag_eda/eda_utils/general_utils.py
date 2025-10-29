@@ -10,6 +10,7 @@ from trajectory_container_tools.dataclasses import (
     RosFeatureArray,
     RosStampedFeature,
 )
+from trajectory_container_tools.utils.typing.new_types_and_aliases import TrajectoryFeaturesBag
 from trajectory_container_tools.utils.general import RosImportError
 
 try:
@@ -36,8 +37,8 @@ def rosbag_log_file_name(
 
 
 def compute_window_start_and_stop(
-    bag_start_time: int,
-    bag_end_time: int,
+    trajectory_start_time: int,
+    trajectory_end_time: int,
     each_idx: int,
     fast_forward_ns: Optional[int],
     window_ns: Optional[int],
@@ -48,8 +49,8 @@ def compute_window_start_and_stop(
     This function calculates the start and stop times considering the fast-forward and
     the window duration values, ensuring that the returned values are sanitized as integers.
 
-    :param bag_start_time: The start time of the bag recording.
-    :param bag_end_time: The end time of the bag recording.
+    :param trajectory_start_time: The start time of the bag recording.
+    :param trajectory_end_time: The end time of the bag recording.
     :param each_idx: The current step/index value.
     :param fast_forward_ns: Optional fast-forward duration in nanoseconds, used for
         adjusting the starting time.
@@ -58,12 +59,12 @@ def compute_window_start_and_stop(
     :return: A tuple containing the computed start and stop times as integers.
     """
     if fast_forward_ns is None:
-        start = bag_start_time
+        start = trajectory_start_time
     else:
-        start = bag_start_time + fast_forward_ns * each_idx
+        start = trajectory_start_time + fast_forward_ns * each_idx
 
     if window_ns is None:
-        stop = bag_end_time
+        stop = trajectory_end_time
     else:
         stop = start + window_ns
 
@@ -93,9 +94,7 @@ def compute_bag_target_window_nb(
     return num_iterations
 
 
-def find_max_timestamp_delta_over_all_topics(
-    bag_path_abs: Path, features_config: dict, typestore: Typestore
-) -> int:
+def find_max_timestamp_delta_over_all_topics(feature_bag_trajectory_container: TrajectoryFeaturesBag) -> int:
     """
     Finds the maximum timestamp delta across all topics in a ROS bag file.
 
@@ -104,26 +103,18 @@ def find_max_timestamp_delta_over_all_topics(
 
     Note: AbstractTrajectoryFeature subclasses are evaluated
 
-    :param bag_path_abs: Path to the ROS bag file.
-    :param features_config: Dictionary containing configuration for extracting features.
-    :param typestore: Typestore object for managing type-related information.
+    :param feature_bag_trajectory_container: A trajectory stamped features bag
     :return: The maximum timestamp delta across all qualifying topics.
     """
-    mf_container = tct.extractor.from_rosbag(
-        rosbag_path=bag_path_abs,
-        dataset_info=None,
-        features_config=features_config,
-        typestore=typestore,
-    )
 
     topics_max_delta_stamp = []
-    for each in mf_container.topic_key_list:
+    for each in feature_bag_trajectory_container.topic_key_list:
         if issubclass(
-            mf_container.get_dimension_type(each)[0],
+            feature_bag_trajectory_container.get_cls_public_field_type(each)[0],
             tct.AbstractTrajectoryFeature,
         ):
             each_field: Union[RosFeature, RosStampedFeature, RosFeatureArray] = (
-                mf_container.get_dynamic_field(each)
+                feature_bag_trajectory_container.get_dynamic_attribute(each)
             )
             if isinstance(each_field, tct.dataclasses.StdMsgsHeader):
                 delta_stamps = each_field.header.timestamps.delta_stamps
