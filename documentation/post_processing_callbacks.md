@@ -50,7 +50,7 @@ class TrajectoryWithPreprocessing(tct.BaseTrajectoryFeature):
 
 **When it executes:** Once for each feature field in the dataclass.
 
-**Scope:** Only processes fields that are NOT marked in `_dataclass_internal_field()` or `non_trajectory_field()`.
+**Scope:** Runs once for each public field. It excludes only fields typed as `tct.typing.ContainerInternalField[...]`. Fields typed as `tct.typing.NonTrajectoryField[...]` are included (you can add guards in your callback if you want to skip them).
 
 **Parameters:**
 - `feature_name` (str): The name of the current feature being processed

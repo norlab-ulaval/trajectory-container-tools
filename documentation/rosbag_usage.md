@@ -1,4 +1,3 @@
-from trajectory_container_tools.dataclasses import NavMsgsOdometryfrom trajectory_container_tools.dataclasses import NavMsgsOdometry
 
 # ROS Bag To TCT  Usage Guide
 
@@ -55,10 +54,10 @@ from trajectory_container_tools.dataclasses import NavMsgsOdometry, RosStampedFe
 
 ```python
 # Inspect available topics in the bag
-import trajectory_container_tools.utils as tct
+import trajectory_container_tools as tct
 
 rosbag_path = Path("path/to/your/rosbag")
-tct.ex.show_rosbag_summary_info(rosbag_path)
+rosbag_path = tct.extractor.show_rosbag_summary_info(rosbag_path)
 ```
 
 **Example Output:**

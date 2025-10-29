@@ -330,6 +330,43 @@ Total distance: 12.73
 
 For more details, see the [Post-Processing Callbacks documentation](documentation/post_processing_callbacks.md).
 
+### Typing and Internal Fields
+
+TCT introduces typing markers to control how fields are treated by the container logic:
+- `tct.typing.NonTrajectoryField[T]` marks a field that is not per‑timestep (e.g., metadata arrays, labels).
+  Such fields are excluded from iteration, transpose `T`, and ravel operations.
+- `tct.typing.ContainerInternalField[T]` marks an internal field used by the container implementation. These fields are not exposed by `get_public_attribute_names()` and are ignored by feature processing callbacks.
+
+Example:
+
+```python
+from dataclasses import dataclass, field
+import numpy as np
+import trajectory_container_tools as tct
+
+
+@dataclass
+class TrajectoryWithMeta(tct.BaseTrajectoryFeature):
+  x: np.ndarray
+  y: np.ndarray
+  timestamps: np.ndarray
+  # Non‑trajectory: excluded from per‑timestep logic
+  metadata: tct.typing.NonTrajectoryField[np.ndarray] = field(default_factory=lambda: np.array([1, 2, 3]))
+  # Internal: not exposed to users, can be set programmatically
+  _timestep_indexes: tct.typing.ContainerInternalField[np.ndarray] = field(default=None, init=False)
+
+
+traj = TrajectoryWithMeta(feature_name="demo", x=np.arange(5), y=np.arange(5), timestamps=np.arange(5))
+print(traj.get_public_attribute_names())  # ('x','y','timestamps','metadata') — '_timestep_indexes' is hidden
+
+# Dynamic attribute utilities
+traj.set_dynamic_attribute('x_cumsum', np.cumsum(traj.x))
+print(traj.get_dynamic_attribute('x_cumsum'))
+print(traj.has_dynamic_attribute('x_cumsum'))  # True
+```
+
+See the detailed guide: documentation/typing_and_internal_fields.md
+
 ### From ROS bag
 
 ```python
