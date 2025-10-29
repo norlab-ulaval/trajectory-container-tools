@@ -13,7 +13,7 @@ from trajectory_container_tools.dataclasses.core.abstract_trajectory_dataclass_c
 )
 from trajectory_container_tools.utils.typing.tct_custom_field import (
     NonTrajectoryField,
-    TCTInternalField,
+    ContainerInternalField,
 )
 import numpy as np
 
@@ -31,7 +31,7 @@ class MockTrajectory(AbstractTrajectoryCommon):
     mock_nested_attr: Union[MockNestedTrajectory, "MockTrajectory"]
     mock_attr: np.ndarray
     mock_non_trj_array: NonTrajectoryField[np.ndarray]
-    mock_internal: TCTInternalField[list[int]]
+    mock_internal: ContainerInternalField[list[int]]
 
     def __post_init__(self):
         # .... Pre-condition ......................................................................
@@ -80,7 +80,7 @@ class MockTrajectoryArray(MockTrajectory):
     mock_trj_array_w_arbitrary_type: list[list[int]]
     mock_attr: np.ndarray
     mock_non_trj_array = NonTrajectoryField[np.ndarray]
-    mock_internal: TCTInternalField[list[int]]
+    mock_internal: ContainerInternalField[list[int]]
 
 
 @dataclass()
@@ -140,8 +140,8 @@ class TestAbstractTrajectoryCommon:
         )
         assert isinstance(t_container.mock_non_trj_array, np.ndarray)
 
-        # .... Test field typed with TCTInternalField[Any] ........................................
-        assert typing.get_origin(typing.get_type_hints(MockTrajectory)['mock_internal']) is TCTInternalField
+        # .... Test field typed with ContainerInternalField[Any] ..................................
+        assert typing.get_origin(typing.get_type_hints(MockTrajectory)['mock_internal']) is ContainerInternalField
         assert isinstance(t_container.mock_internal, list)
 
         # .... Test field typed with Union ........................................................

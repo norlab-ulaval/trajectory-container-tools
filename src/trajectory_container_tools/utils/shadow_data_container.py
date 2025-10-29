@@ -100,7 +100,7 @@ def post_process_shadown_data_container(
     """
     # (NICE TO HAVE) ToDo: unit-test explicitly (ref task RLRP-83). Its indirectly tested for now.
 
-    for each in data_container_type._dataclass_internal_field():
+    for each in data_container_type.container_internal_field():
         if each == "feature_name":
             if (
                 issubclass(
@@ -147,7 +147,7 @@ def post_process_shadown_data_container(
                 shadow_data_container[k][idx] = target_type(**ppsdc)
         elif not issubclass(data_container_type, BaseTrajectoryFeatureUnboundedArray) and (
             k in data_container_type.non_trajectory_field() or
-            k in data_container_type._dataclass_internal_field()
+            k in data_container_type.container_internal_field()
         ):
             pass
         elif k == "type" or k == "nested_lvl":

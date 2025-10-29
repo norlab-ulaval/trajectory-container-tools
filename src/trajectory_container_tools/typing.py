@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from .utils.typing.tct_custom_field import NonTrajectoryField, TCTInternalField
+from .utils.typing.tct_custom_field import NonTrajectoryField, ContainerInternalField
 from .utils.typing.new_types_and_aliases import (
     TrajectoryContainer,
     TrajectoryFeature,
@@ -10,7 +10,7 @@ from .utils.typing.new_types_and_aliases import (
 
 __all__ = [
     "NonTrajectoryField",
-    "TCTInternalField",
+    "ContainerInternalField",
     "TrajectoryContainer",
     "TrajectoryFeature",
     "TrajectoryFeaturesBag",

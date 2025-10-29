@@ -20,7 +20,7 @@ from trajectory_container_tools.temporal import Timestamps
 from trajectory_container_tools.utils import extract_class_name_from_instance
 from trajectory_container_tools.utils.typing.tct_custom_field import (
     NonTrajectoryField,
-    TCTInternalField,
+    ContainerInternalField,
 )
 
 
@@ -43,7 +43,7 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
 
     dataset_info: str
     bag_timestamps: Optional[Timestamps] = field(default=None, kw_only=True)
-    _aggregated_date: TCTInternalField[datetime.datetime] = field(init=False)
+    _aggregated_date: ContainerInternalField[datetime.datetime] = field(init=False)
 
     def __post_init__(self):
         # .... Pre-condition ......................................................................
@@ -85,7 +85,7 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
         nested_sp = " " * 3
         repr_str = f"\n{out_sp}TrajectoryFeaturesBag(\n"
         for k, v in self.__dict__.items():
-            if k in self._dataclass_internal_field():
+            if k in self.container_internal_field():
                 pass
             elif k == "dataset_info":
                 repr_str = self._metadata_field_str(in_sp, repr_str, k, v)

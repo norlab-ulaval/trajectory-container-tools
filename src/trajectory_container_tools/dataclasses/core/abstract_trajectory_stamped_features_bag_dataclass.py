@@ -19,7 +19,7 @@ from trajectory_container_tools.temporal import Timestamps
 from ...temporal.trajectory_timestamps_metadata import TrajectoryTimestampsMetadata
 from trajectory_container_tools.utils.typing.tct_custom_field import (
     NonTrajectoryField,
-    TCTInternalField,
+    ContainerInternalField,
 )
 
 
@@ -47,7 +47,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
     """
 
     chunk_on: str = field(default="topic_teleop", kw_only=True)
-    _iter_index: TCTInternalField[int] = field(default=0, init=False)
+    _iter_index: ContainerInternalField[int] = field(default=0, init=False)
 
     def __post_init__(self):
         if self.chunk_on in self.topic_key_list:

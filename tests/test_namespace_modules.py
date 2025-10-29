@@ -265,9 +265,9 @@ class TestTypingNamespaceModule:
         assert hasattr(tct.typing, "NonTrajectoryField")
 
     def test_tctinternal_field_type_exists(self, setup_namespace):
-        """Test that TCTInternalField type is available in typing namespace."""
+        """Test that ContainerInternalField type is available in typing namespace."""
         tct = setup_namespace
-        assert hasattr(tct.typing, "TCTInternalField")
+        assert hasattr(tct.typing, "ContainerInternalField")
 
 
 class TestMainNamespaceAPI:

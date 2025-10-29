@@ -15,7 +15,7 @@ from trajectory_container_tools.utils.general import (
 )
 from trajectory_container_tools.utils.typing.tct_custom_field import (
     NonTrajectoryField,
-    TCTInternalField,
+    ContainerInternalField,
 )
 
 
@@ -44,12 +44,12 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
         single trajectory (False).
     """
 
-    _timestep_indexes: TCTInternalField[np.ndarray] = field(default=None, init=False)
-    _iter_index: TCTInternalField[int] = field(default=0, init=False)
-    _transposed: TCTInternalField[bool] = field(default=False, init=False)
-    feature_name: TCTInternalField[Optional[str]] = field(default=None, kw_only=True)
-    batch: TCTInternalField[bool] = field(default=False, compare=True, kw_only=True)
-    timesteps_indices: TCTInternalField[np.ndarray] = field(
+    _timestep_indexes: ContainerInternalField[np.ndarray] = field(default=None, init=False)
+    _iter_index: ContainerInternalField[int] = field(default=0, init=False)
+    _transposed: ContainerInternalField[bool] = field(default=False, init=False)
+    feature_name: ContainerInternalField[Optional[str]] = field(default=None, kw_only=True)
+    batch: ContainerInternalField[bool] = field(default=False, compare=True, kw_only=True)
+    timesteps_indices: ContainerInternalField[np.ndarray] = field(
         default=None, compare=True, kw_only=True
     )
 
@@ -181,7 +181,7 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
         in_sp, nested_sp, out_sp, repr_str = self._repr_pre()
 
         for k, v in self.__dict__.items():
-            if k in self._dataclass_internal_field():
+            if k in self.container_internal_field():
                 pass
             elif k == "timesteps_indices" and self.is_nested():
                 pass
@@ -275,7 +275,7 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
 
     def is_trajectory_sequence(
         self,
-        sequence: Union[TCTInternalField, NonTrajectoryField, np.ndarray, list, tuple],
+        sequence: Union[ContainerInternalField, NonTrajectoryField, np.ndarray, list, tuple],
     ) -> bool:
         """
         Determines whether a given sequence is a trajectory.
@@ -287,7 +287,7 @@ class AbstractTrajectoryFeature(AbstractTrajectoryCommon):
         dimensions or type, it is treated using a fallback comparison.
 
         :param sequence: The input sequence to check, which can be of types
-            `TCTInternalField`, `NonTrajectoryField`, `np.ndarray`, `list`, or `tuple`.
+            `ContainerInternalField`, `NonTrajectoryField`, `np.ndarray`, `list`, or `tuple`.
         :return: A boolean indicating if the input sequence qualifies as a trajectory.
         """
         is_trajectory = False

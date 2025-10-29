@@ -31,7 +31,7 @@ class NonTrajectoryField(Protocol[NonTrajectorySequence]):
     pass
 
 
-class TCTInternalField(Protocol[TCTInternalVar]):
+class ContainerInternalField(Protocol[TCTInternalVar]):
     """
     A generic class representing an TrajectoryContainer internal field that are not be exposed
     to user but can be potentialy used as a dataclass constructor argument or keyword argument.

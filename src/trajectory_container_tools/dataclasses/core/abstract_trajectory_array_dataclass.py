@@ -123,7 +123,7 @@ class AbstractTrajectoryUnboundedArray(AbstractTrajectoryFeature):
         in_sp, nested_sp, out_sp, repr_str = self._repr_pre()
 
         for k, v in self.__dict__.items():
-            if k in self._dataclass_internal_field():
+            if k in self.container_internal_field():
                 pass
             elif k == "timesteps_indices" and self.is_nested():
                 pass

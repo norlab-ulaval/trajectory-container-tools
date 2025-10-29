@@ -9,7 +9,7 @@ from deprecated import deprecated
 
 from trajectory_container_tools.utils.typing.tct_custom_field import (
     NonTrajectoryField,
-    TCTInternalField,
+    ContainerInternalField,
 )
 from trajectory_container_tools.utils.general import (
     check_typing_list_and_extract_list_type,
@@ -32,7 +32,7 @@ class AbstractTrajectoryCommon(abc.ABC):
 
     """
 
-    _parent: TCTInternalField[Optional["AbstractTrajectoryCommon"]] = field(
+    _parent: ContainerInternalField[Optional["AbstractTrajectoryCommon"]] = field(
         default=None, init=False
     )
 
@@ -156,7 +156,7 @@ class AbstractTrajectoryCommon(abc.ABC):
         pass
 
     @classmethod
-    def _dataclass_internal_field(cls) -> List[str]:
+    def container_internal_field(cls) -> List[str]:
         """
         List of field marked as internal. Those are field name that will be omited by
         `get_cls_public_field_names` class method and `get_public_attribute_names` method.
@@ -164,22 +164,21 @@ class AbstractTrajectoryCommon(abc.ABC):
         This method is intended to return a predefined list of attribute names that are
         specific to the internal logic of a data class. These fields often represent
         key information required for specialized operations or manipulations within
-        the class. The method should be used internally and not be exposed for
-        general use.
+        the class.
 
         >>> import trajectory_container_tools as tct
         >>>
         >>> @dataclass()
         >>> class TestMotionTrajectoryDataclass(tct.dataclasses.TestTrajectoryDataclass):
         >>>     trajectory_pose: np.ndarray
-        >>>     internal_field: tct.typing.TCTInternalField[np.ndarray]
+        >>>     internal_field: tct.typing.ContainerInternalField[np.ndarray]
 
         :return: A list containing the names of internal fields used in the data class.
         """
         internal_field = []
         for each in fields(cls):
             origin = get_origin(each.type)
-            if origin is TCTInternalField:
+            if origin is ContainerInternalField:
                 internal_field.append(each.name)
         return internal_field
 
@@ -302,7 +301,7 @@ class AbstractTrajectoryCommon(abc.ABC):
             # Strip private attributes and field marked as tct internal
             if (
                 not each.startswith("_")
-                and each not in self._dataclass_internal_field()
+                and each not in self.container_internal_field()
             ):
                 public_attribute_name.append(each)
 
@@ -351,7 +350,7 @@ class AbstractTrajectoryCommon(abc.ABC):
 
         field_name = []
         for each_field in container_fields:
-            if each_field.name not in cls._dataclass_internal_field():
+            if each_field.name not in cls.container_internal_field():
                 field_name.append(each_field.name)
         return tuple(field_name)
 
@@ -374,13 +373,14 @@ class AbstractTrajectoryCommon(abc.ABC):
         pass
 
     def post_init_feature_callback(self, feature_name: str) -> None:
-        """Overide this methode to execute feature aware custom computation.
-        Usefull for post-processing dynamicaly declare field.
+        """Overide this methode to execute feature-aware custom computation.
+        Useful for post-processing dynamically declared fields.
 
         Note:
-            - Will be executed once for each feature.
-            - The method scope does not include field marked by `_dataclass_internal_field`
-              and `non_trajectory_field`.
+            - Executed once for each PUBLIC field.
+            - Excludes only fields marked by `container_internal_field`.
+            - Fields marked as `non_trajectory_field` ARE included; add guards in your
+              implementation if you intend to skip them.
 
         Example:
 

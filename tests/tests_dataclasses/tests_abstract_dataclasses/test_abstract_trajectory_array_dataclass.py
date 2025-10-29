@@ -11,7 +11,7 @@ from trajectory_container_tools import (
 )
 from trajectory_container_tools.utils.typing.tct_custom_field import (
     NonTrajectoryField,
-    TCTInternalField,
+    ContainerInternalField,
 )
 
 
@@ -68,7 +68,7 @@ class TestCaseArrayOfTrajectoryFeatureDataclasses:
         t_container = setup_mock_nested_list_subclass
 
         assert t_container.feature_name == "mock"
-        assert "feature_name" in t_container._dataclass_internal_field()
+        assert "feature_name" in t_container.container_internal_field()
         assert (
             None not in t_container.non_trajectory_field()
             and "None" not in t_container.non_trajectory_field()
