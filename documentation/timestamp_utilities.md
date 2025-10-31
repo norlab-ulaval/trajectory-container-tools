@@ -159,27 +159,25 @@ import trajectory_container_tools as tct
 
 # Extract trajectory features data from ROS bag
 trajectory_features_bag = tct.extractor.from_rosbag(
-        rosbag_path=rosbag_path,
-        features_config={
-                '/odom': tct.dataclasses.NavMsgsOdometry,
-                '/cmd':  tct.dataclasses.AckermannMsgsAckermannDriveStamped,
-                },
-        chunk_on="/cmd",
-        )
+    rosbag_path=rosbag_path,
+    features_config={
+        "/odom": tct.dataclasses.NavMsgsOdometry,
+        "/cmd": tct.dataclasses.AckermannMsgsAckermannDriveStamped,
+    },
+    chunk_on="/cmd",
+)
 
 # Extract data within specific timestamp window
 start_time = 1695601812731601521
 stop_time = 1695601815000000000
 
 windowed_data = trajectory_features_bag.get_timestamps(
-        start=start_time,
-        stop=stop_time,
-        startpoint=True,  # Include start timestamp
-        endpoint=False  # Exclude end timestamp
-        )
+    start=start_time, stop=stop_time, startpoint=True, endpoint=False
+)
 
 print(f"Original chunks: {trajectory_features_bag.chunks_total}")
 print(f"Windowed chunks: {windowed_data.chunks_total}")
+
 ```
 
 **Parameters:**
@@ -278,12 +276,7 @@ event_start = 1695601815000000000
 event_stop = 1695601820000000000
 
 # Extract data during event
-event_data = robot_data.get_timestamps(
-    start=event_start,
-    stop=event_stop,
-    startpoint=True,
-    endpoint=True
-)
+event_data = robot_data.get_timestamps(start=event_start, stop=event_stop, startpoint=True, endpoint=True)
 
 # Analyze event-specific behavior
 print(f"Event timestamps limits: ", event_data.trajectory_timestamps_limits)

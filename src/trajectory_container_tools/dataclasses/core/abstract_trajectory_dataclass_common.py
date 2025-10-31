@@ -229,12 +229,14 @@ class AbstractTrajectoryCommon(abc.ABC):
           structure of the attribute to retrieve.
         :return: The value of the requested attribute.
         """
+        if not isinstance(feature_name, str):
+            raise ValueError("feature_name is not a string!")
         nested_attribute = self
         for each in feature_name.split("."):
             nested_attribute = nested_attribute.__getattribute__(each)
         return nested_attribute
 
-    def has_dynamic_attribute(self, feature_name) -> bool:
+    def has_dynamic_attribute(self, feature_name: str) -> bool:
         """
         Check if a dynamicaly declared attribute exists in the object.
 
@@ -258,6 +260,8 @@ class AbstractTrajectoryCommon(abc.ABC):
             return True
         except AttributeError:
             return False
+        except ValueError:
+            raise
 
     def set_dynamic_attribute(self, feature_name: str, value: Any) -> None:
         """Sets a dynamically resolved nested field or attribute within an object.

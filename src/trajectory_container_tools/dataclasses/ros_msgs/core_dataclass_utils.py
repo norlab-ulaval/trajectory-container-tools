@@ -27,7 +27,8 @@ def get_timestamps_slice(
     :param startpoint: Indicating whether to include the start boundary.
     :param endpoint: Indicating whether to include the stop boundary.
     :param resolve_out_of_bounds: (Default True) Disable out of bound check and resolve to the nearest
-        timestamps bound. (False) Raise TimestampOutOfBoundError on bound violation.
+        timestamps bound. (False) Raise TimestampOutOfBoundError on bound violation if 'startpoint'
+        and/or 'endpoint' are False.
     :return: A slice object representing the calculated index range.
     :raises TimestampOutOfBoundError: if start or stop is outside timestamps and their corresponing
      startpoint/endpoint parameter is set to False and resolve_out_of_bounds is set to False.

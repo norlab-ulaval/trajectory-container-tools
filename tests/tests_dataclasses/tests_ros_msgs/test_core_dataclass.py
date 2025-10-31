@@ -72,6 +72,26 @@ class TestRosFeature:
         assert np.array_equal(t_container.mock_attribute, t_mock_attribute)
         # print(t_container)
 
+    def test_get_first_timestamp(self, setup_mock_dataclass, setup_real_timestamps):
+        t_container, t_mock_attribute = setup_mock_dataclass
+
+        # Base case
+        assert t_container.get_first_timestamp() == int(setup_real_timestamps[0])
+
+        # Case bag recorded timestamps not initialized
+        t_container.bag_recorded_timestamps = None
+        assert t_container.get_first_timestamp() is None
+
+    def test_get_last_timestamp(self, setup_mock_dataclass, setup_real_timestamps):
+        t_container, t_mock_attribute = setup_mock_dataclass
+
+        # Base case
+        assert t_container.get_last_timestamp() == int(setup_real_timestamps[-1])
+
+        # Case bag recorded timestamps not initialized
+        t_container.bag_recorded_timestamps = None
+        assert t_container.get_first_timestamp() is None
+
     @pytest.mark.parametrize(
         argnames="t_startpoint",
         argvalues=[True, False],
@@ -329,6 +349,56 @@ class TestRosStampedFeature:
         assert np.array_equal(t_container.mock_attribute, t_mock_attribute)
         # print(t_container)
 
+    def test_get_first_timestamp(
+        self, setup_mock_dataclass, setup_real_timestamps, setup_mock_timestamps
+    ):
+        t_container, t_mock_attribute = setup_mock_dataclass
+
+        # Base case
+        assert t_container.get_first_timestamp() == int(setup_real_timestamps[0])
+        assert t_container.get_first_timestamp(
+            use_msg_publishing_timestamps=False
+        ) == int(setup_mock_timestamps[0])
+
+        # Case bag recorded timestamps not initialized
+        t_container.bag_recorded_timestamps = None
+        assert t_container.get_first_timestamp() == int(setup_real_timestamps[0])
+
+        with pytest.raises(AttributeError) as exc_info:
+            assert (
+                t_container.get_first_timestamp(use_msg_publishing_timestamps=False)
+                is None
+            )
+        print(f"{exc_info=}")
+        assert exc_info.value.args == (
+            "No 'bag_recorded_timestamps' attribute found in container, parent included.",
+        )
+
+    def test_get_last_timestamp(
+        self, setup_mock_dataclass, setup_real_timestamps, setup_mock_timestamps
+    ):
+        t_container, t_mock_attribute = setup_mock_dataclass
+
+        # Base case
+        assert t_container.get_last_timestamp() == int(setup_real_timestamps[-1])
+        assert t_container.get_last_timestamp(
+            use_msg_publishing_timestamps=False
+        ) == int(setup_mock_timestamps[-1])
+
+        # Case bag recorded timestamps not initialized
+        t_container.bag_recorded_timestamps = None
+        assert t_container.get_last_timestamp() == int(setup_real_timestamps[-1])
+
+        with pytest.raises(AttributeError) as exc_info:
+            assert (
+                t_container.get_last_timestamp(use_msg_publishing_timestamps=False)
+                is None
+            )
+        print(f"{exc_info=}")
+        assert exc_info.value.args == (
+            "No 'bag_recorded_timestamps' attribute found in container, parent included.",
+        )
+
     @pytest.mark.parametrize(
         argnames="t_startpoint",
         argvalues=[True, False],
@@ -540,6 +610,26 @@ class TestRosFeatureArray:
         with pytest.raises(AttributeError) as exc_info:
             # The 'timestamps' attribute should not exist
             assert t_container.__getattribute__("header")
+
+    def test_get_first_timestamp(self, setup_mock_dataclass, setup_mock_timestamps):
+        t_container, t_mock_attribute = setup_mock_dataclass
+
+        # Base case
+        assert t_container.get_first_timestamp() == int(setup_mock_timestamps[0])
+
+        # Case bag recorded timestamps not initialized
+        t_container.bag_recorded_timestamps = None
+        assert t_container.get_first_timestamp() is None
+
+    def test_get_last_timestamp(self, setup_mock_dataclass, setup_mock_timestamps):
+        t_container, t_mock_attribute = setup_mock_dataclass
+
+        # Base case
+        assert t_container.get_last_timestamp() == int(setup_mock_timestamps[-1])
+
+        # Case bag recorded timestamps not initialized
+        t_container.bag_recorded_timestamps = None
+        assert t_container.get_first_timestamp() is None
 
     @pytest.mark.parametrize(
         argnames="t_startpoint",

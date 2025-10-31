@@ -53,6 +53,28 @@ class RosFeature(BaseTrajectoryFeature):
                 show_offending_in_nanoseconds=True
             )
 
+    def get_first_timestamp(self) -> int | None:
+        """Retrieve the earliest timestamp from bag recorded timestamps.
+
+        :return: The earliest timestamp as an integer if available, otherwise None.
+        """
+        if self.bag_recorded_timestamps is not None:
+            return self.bag_recorded_timestamps.min()
+        else:
+            return None
+
+    def get_last_timestamp(self) -> int | None:
+        """
+        Retrieve the last recorded timestamp from bag recorded timestamps.
+
+        :return: The last recorded timestamp as an integer if timestamps are
+                 available, otherwise None.
+        """
+        if self.bag_recorded_timestamps is not None:
+            return self.bag_recorded_timestamps.max()
+        else:
+            return None
+
     def get_timestamps(
         self,
         start: int,
@@ -84,7 +106,9 @@ class RosFeature(BaseTrajectoryFeature):
         if self.bag_recorded_timestamps is not None:
             use_timestamps = self.bag_recorded_timestamps
         else:
-            use_timestamps = self.get_container_root(include_feature_bag=False).bag_recorded_timestamps
+            use_timestamps = self.get_container_root(
+                include_feature_bag=False
+            ).bag_recorded_timestamps
 
         if use_timestamps is None:
             return self
@@ -131,6 +155,29 @@ class RosStampedFeature(RosFeature):
 
     header: StdMsgsHeader
 
+    def get_first_timestamp(
+        self, use_msg_publishing_timestamps: bool = True
+    ) -> int | None:
+        """Retrieve the earliest timestamp from bag recorded timestamps.
+
+        :param use_msg_publishing_timestamps: Use the ros message publishing timestamps (True) or
+            the rosbag message recording timestamps (False).
+        :return: The earliest timestamp as an integer if available, otherwise None.
+        """
+        return self._use_timestamps(use_msg_publishing_timestamps).min()
+
+    def get_last_timestamp(
+        self, use_msg_publishing_timestamps: bool = True
+    ) -> int | None:
+        """
+        Retrieve the last recorded timestamp from bag recorded timestamps.
+
+        :param use_msg_publishing_timestamps: Use the ros message publishing timestamps (True) or
+            the rosbag message recording timestamps (False).
+        :return: The last recorded timestamp as an integer if timestamps are available, otherwise None.
+        """
+        return self._use_timestamps(use_msg_publishing_timestamps).max()
+
     def get_timestamps(
         self,
         start: int,
@@ -160,14 +207,7 @@ class RosStampedFeature(RosFeature):
         :raises TimestampOutOfBoundError: if start or stop is outside 'header.timestamps' and their corresponing
             startpoint/endpoint parameter is set to False and resolve_out_of_bounds is set to False.
         """
-        use_timestamps = self.header.timestamps
-        if not use_msg_publishing_timestamps:
-            if self.bag_recorded_timestamps is not None:
-                use_timestamps = self.bag_recorded_timestamps
-            else:
-                use_timestamps = self.get_container_root(
-                    include_feature_bag=False
-                ).bag_recorded_timestamps
+        use_timestamps = self._use_timestamps(use_msg_publishing_timestamps)
 
         timestamps_slice = get_timestamps_slice(
             use_timestamps,
@@ -178,6 +218,20 @@ class RosStampedFeature(RosFeature):
             resolve_out_of_bounds,
         )
         return self[timestamps_slice]
+
+    def _use_timestamps(self, use_msg_publishing_timestamps: bool) -> Timestamps:
+        use_timestamps = self.header.timestamps
+        if not use_msg_publishing_timestamps:
+            if self.bag_recorded_timestamps is not None:
+                use_timestamps = self.bag_recorded_timestamps
+            else:
+                use_timestamps = self.get_container_root(
+                    include_feature_bag=False
+                ).bag_recorded_timestamps
+
+        if use_timestamps is None:
+            raise AttributeError("No 'bag_recorded_timestamps' attribute found in container, parent included.")
+        return use_timestamps
 
 
 @dataclass()
@@ -196,6 +250,7 @@ class RosFeatureArray(BaseTrajectoryFeatureUnboundedArray):
                                     array (converted to Timestamps internally at instanciation).
     :type bag_recorded_timestamps: Timestamps | numpy ndarray
     """
+
     bag_recorded_timestamps: Union[Timestamps, np.ndarray] = field(
         default=None, kw_only=True
     )
@@ -207,6 +262,28 @@ class RosFeatureArray(BaseTrajectoryFeatureUnboundedArray):
         self.bag_recorded_timestamps.causal_ordering_sanity_check(
             show_offending_in_nanoseconds=True
         )
+
+    def get_first_timestamp(self) -> int | None:
+        """Retrieve the earliest timestamp from bag recorded timestamps.
+
+        :return: The earliest timestamp as an integer if available, otherwise None.
+        """
+        if self.bag_recorded_timestamps is not None:
+            return self.bag_recorded_timestamps.min()
+        else:
+            return None
+
+    def get_last_timestamp(self) -> int | None:
+        """
+        Retrieve the last recorded timestamp from bag recorded timestamps.
+
+        :return: The last recorded timestamp as an integer if timestamps are
+                 available, otherwise None.
+        """
+        if self.bag_recorded_timestamps is not None:
+            return self.bag_recorded_timestamps.max()
+        else:
+            return None
 
     def get_timestamps(
         self,
@@ -237,7 +314,9 @@ class RosFeatureArray(BaseTrajectoryFeatureUnboundedArray):
         if self.bag_recorded_timestamps is not None:
             use_timestamps = self.bag_recorded_timestamps
         else:
-            use_timestamps = self.get_container_root(include_feature_bag=False).bag_recorded_timestamps
+            use_timestamps = self.get_container_root(
+                include_feature_bag=False
+            ).bag_recorded_timestamps
 
         if use_timestamps is None:
             return self

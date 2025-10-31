@@ -30,9 +30,8 @@ pyclean
 #setuptools-scm
 
 # .................................................................................................
-# (☕minor) ToDo: on task NMO-802 end >> validate it's not required anymore ↓↓
 # Note: Set DNA to build for Numpy 2 but let the pyproject.toml dependencies open so that we keep
-# support for Numpy 1
+# support for Numpy 1 (ref task NMO-802)
 #matplotlib >= 3.8.0  # These versions support NumPy 2.x
 #numpy >= 2.0.0
 
