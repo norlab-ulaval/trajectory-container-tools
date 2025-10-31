@@ -331,7 +331,9 @@ class Timestamps:
             repr_str += f"shape {v.shape} {range_str}\n"
         if self._single_source:
             if len(self) > 1:
-                repr_str += f"{out_sp}{in_sp}frequency: {self.compute_frequency_metric()}\n"
+                repr_str += (
+                    f"{out_sp}{in_sp}frequency: {self.compute_frequency_metric()}\n"
+                )
         else:
             repr_str += f"{out_sp}{in_sp}frequency: n.a. (aggregate multiple sources)\n"
         repr_str += f"{out_sp})"
@@ -391,7 +393,25 @@ class Timestamps:
             )
 
         # Compute instantaneous rates in Hz
-        instantaneous_rates = 1.0 / to_seconds(self._delta_stamps[1:])
+        instantaneous_rates: np.ndarray = 1.0 / to_seconds(self._delta_stamps[1:])
+
+        if instantaneous_rates.size == 0:
+            return RateMetric(
+                mean_hz=None,
+                median_hz=None,
+                std_hz=None,
+                min_hz=None,
+                max_hz=None,
+            )
+
+        if instantaneous_rates.size == 1:
+            return RateMetric(
+                mean_hz=instantaneous_rates[0],
+                median_hz=instantaneous_rates[0],
+                std_hz=0,
+                min_hz=instantaneous_rates[0],
+                max_hz=instantaneous_rates[0],
+            )
 
         return RateMetric(
             mean_hz=np.mean(instantaneous_rates),

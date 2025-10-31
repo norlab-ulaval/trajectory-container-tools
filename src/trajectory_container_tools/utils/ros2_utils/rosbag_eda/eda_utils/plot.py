@@ -134,7 +134,7 @@ def plot_bag_timestamp_delta(
                     if recorded_timestamps is not None:
                         topic_record_ts_stamps = recorded_timestamps.stamps
                         topic_record_ts_delta = recorded_timestamps.delta_stamps
-                        rate_metric = recorded_timestamps.compute_frequency_metric()
+                        recorded_rate_metric = recorded_timestamps.compute_frequency_metric()
 
                 if each_topic.has_dynamic_attribute("header.timestamps"):
                     published_timestamps: Timestamps = each_topic.get_dynamic_attribute(
@@ -210,7 +210,11 @@ def plot_bag_timestamp_delta(
                         _m = "."
 
                     if _show_recorded_stamps and not use_bag_stamps:
-                        label_name = f"{each_topic_name.removeprefix('topic_')} mean: {rate_metric.mean_hz:.2f} (hz) std: {rate_metric.std_hz:.2f} (hz)"
+                        if recorded_rate_metric.mean_hz is not None:
+                            re_rate_label = f" mean: {recorded_rate_metric.mean_hz:.2f} (hz) std: {recorded_rate_metric.std_hz:.2f} (hz)"
+                        else:
+                            re_rate_label = ""
+                        label_name = f"{each_topic_name.removeprefix('topic_')}{re_rate_label}"
                         plt.plot(
                             x_recorded_in_second,
                             # y_recorded,
@@ -235,13 +239,21 @@ def plot_bag_timestamp_delta(
                         pass
                     elif _show_published_stamps:
                         if use_bag_stamps:
-                            label_name = f"{each_topic_name.removeprefix('topic_')} mean: {rate_metric.mean_hz:.2f} (hz) std: {rate_metric.std_hz:.2f} (hz)"
+                            if recorded_rate_metric.mean_hz is not None:
+                                re_rate_label = f" mean: {recorded_rate_metric.mean_hz:.2f} (hz) std: {recorded_rate_metric.std_hz:.2f} (hz)"
+                            else:
+                                re_rate_label = ""
+                            label_name = f"{each_topic_name.removeprefix('topic_')}{re_rate_label}"
                             topic_main_label = f"{label_name} (recorded)"
                         else:
-                            rate_metric = (
+                            published_rate_metric = (
                                 published_timestamps.compute_frequency_metric()
                             )
-                            label_name = f"{each_topic_name.removeprefix('topic_')} mean: {rate_metric.mean_hz:.2f} (hz) std: {rate_metric.std_hz:.2f} (hz)"
+                            if published_rate_metric.mean_hz is not None:
+                                pu_rate_label = f" mean: {published_rate_metric.mean_hz:.2f} (hz) std: {published_rate_metric.std_hz:.2f} (hz)"
+                            else:
+                                pu_rate_label = ""
+                            label_name = f"{each_topic_name.removeprefix('topic_')}{pu_rate_label}"
                             if _show_recorded_stamps:
                                 topic_main_label = (
                                     f"{label_name} (published + recorded (shaded))"

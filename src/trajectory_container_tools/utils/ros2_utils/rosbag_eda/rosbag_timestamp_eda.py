@@ -238,6 +238,9 @@ def run_rosbag_timestamp_eda(
             progressbar.update(1)
     except KeyboardInterrupt:
         pass
+    except Exception:
+        # Exception scope is large on purpose
+        raise
     finally:
         progressbar.close()
 

@@ -70,11 +70,11 @@ class RateMetric:
     :type max_hz: float
     """
 
-    mean_hz: float
-    median_hz: float
-    std_hz: float
-    min_hz: float
-    max_hz: float
+    mean_hz: Optional[float]
+    median_hz: Optional[float]
+    std_hz: Optional[float]
+    min_hz: Optional[float]
+    max_hz: Optional[float]
 
     def __str__(self) -> str:
         def _str_preprocess_callback(field_name: str, field_value: Any):
