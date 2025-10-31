@@ -165,7 +165,7 @@ def from_rosbag(
             stop = chunk_on_attribute.bag_recorded_timestamps.stamps[-1]
 
     for idx, each in enumerate(features):
-        features[idx] = features[idx].get_timestamps(
+        features[idx] = features[idx].get_timestamps_interval(
             start, stop, startpoint=True, endpoint=True, resolve_out_of_bounds=True
         )
 

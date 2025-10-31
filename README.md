@@ -87,8 +87,8 @@ TCT provides:
     - Aggregate multiple trajectory features (e.g., odometry + commands + IMU) in a single container
     - Support for both stamped and non-stamped trajectory dataclasses aggregation
     - Chunk-based iteration over timestamp windows for synchronized multi-feature data access
-    - Aggregate timestamps across features with `trajectory_timestamps` and `trajectory_timestamps_limits`
-    - Extract data within timestamp ranges using `get_timestamps()`
+    - Aggregate timestamps across features with `trajectory_published_timestamps` and `trajectory_timestamps_metadata`
+    - Extract data within timestamp ranges using `get_timestamps_interval()`
 - **Enhanced Timestamp Utilities**:
     - Timestamp boundary checking
     - Find nearest timestamps (past/future) for data synchronization

@@ -75,7 +75,7 @@ class RosFeature(BaseTrajectoryFeature):
         else:
             return None
 
-    def get_timestamps(
+    def get_timestamps_interval(
         self,
         start: int,
         stop: Optional[int] = None,
@@ -178,7 +178,7 @@ class RosStampedFeature(RosFeature):
         """
         return self._use_timestamps(use_msg_publishing_timestamps).max()
 
-    def get_timestamps(
+    def get_timestamps_interval(
         self,
         start: int,
         stop: Optional[int] = None,
@@ -230,7 +230,9 @@ class RosStampedFeature(RosFeature):
                 ).bag_recorded_timestamps
 
         if use_timestamps is None:
-            raise AttributeError("No 'bag_recorded_timestamps' attribute found in container, parent included.")
+            raise AttributeError(
+                "No 'bag_recorded_timestamps' attribute found in container, parent included."
+            )
         return use_timestamps
 
 
@@ -285,7 +287,7 @@ class RosFeatureArray(BaseTrajectoryFeatureUnboundedArray):
         else:
             return None
 
-    def get_timestamps(
+    def get_timestamps_interval(
         self,
         start: int,
         stop: Optional[int] = None,
@@ -357,7 +359,7 @@ class NestedRosStampedFeature(NestedBaseTrajectory):
 
     header: StdMsgsHeader
 
-    def get_timestamps(
+    def get_timestamps_interval(
         self,
         start: int,
         stop: Optional[int] = None,

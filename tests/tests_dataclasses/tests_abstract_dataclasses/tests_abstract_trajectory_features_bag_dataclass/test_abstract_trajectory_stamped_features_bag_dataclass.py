@@ -133,7 +133,7 @@ class TestAbstractTrajectoryStampedFeaturesBagAllCasses:
             "startpoint=False, endpoint=False",
         ],
     )
-    def test_get_timestamps(
+    def test_get_timestamps_interval(
         self, setup_mock_mf_container, t_timestamp_case, t_startpoint, t_endpoint
     ):
         # (☕minor) ToDo: update unit-test (ref task TCT-91)
@@ -151,7 +151,7 @@ class TestAbstractTrajectoryStampedFeaturesBagAllCasses:
         t_start_stamp = int(t_timestamp_case.t_trajectorie_stamps[t_start_idx])
         t_stop_stamp = int(t_timestamp_case.t_trajectorie_stamps[t_stop_idx])
 
-        mf_container_window = mf_container.get_timestamps(
+        mf_container_window = mf_container.get_timestamps_interval(
             start=t_start_stamp,
             stop=t_stop_stamp,
             startpoint=t_startpoint,
@@ -182,26 +182,43 @@ class TestAbstractTrajectoryStampedFeaturesBagAllCasses:
 
     def test_get_features_timestamps(self, setup_mock_mf_container, t_timestamp_case):
         mf_container = setup_mock_mf_container(t_timestamp_case)
-        print(mf_container.trajectory_timestamps)
+        print(mf_container.trajectory_published_timestamps)
         assert np.array_equal(
-            mf_container.trajectory_timestamps, t_timestamp_case.t_trajectorie_stamps
+            mf_container.trajectory_published_timestamps, t_timestamp_case.t_trajectorie_stamps
         )
 
     def test_get_features_timestamps_limits(
         self, setup_mock_mf_container, t_timestamp_case
     ):
         mf_container = setup_mock_mf_container(t_timestamp_case)
-        print(mf_container.trajectory_timestamps_limits)
+        print(mf_container.trajectory_timestamps_metadata)
+
+        # .... Test recorded field ................................................................
         assert (
-            mf_container.trajectory_timestamps_limits.start_time
+            mf_container.trajectory_timestamps_metadata.recorded.start_time
+            == t_timestamp_case.t_trajectorie_stamps[0] + 333
+        )
+        assert (
+            mf_container.trajectory_timestamps_metadata.recorded.end_time
+            == t_timestamp_case.t_trajectorie_stamps[-1] + 333
+        )
+        assert (
+            mf_container.trajectory_timestamps_metadata.recorded.duration
+            == t_timestamp_case.t_trajectorie_stamps[-1]
+            - t_timestamp_case.t_trajectorie_stamps[0]
+        )
+
+        # .... Test published field ...............................................................
+        assert (
+            mf_container.trajectory_timestamps_metadata.published.start_time
             == t_timestamp_case.t_trajectorie_stamps[0]
         )
         assert (
-            mf_container.trajectory_timestamps_limits.end_time
+            mf_container.trajectory_timestamps_metadata.published.end_time
             == t_timestamp_case.t_trajectorie_stamps[-1]
         )
         assert (
-            mf_container.trajectory_timestamps_limits.duration
+            mf_container.trajectory_timestamps_metadata.published.duration
             == t_timestamp_case.t_trajectorie_stamps[-1]
             - t_timestamp_case.t_trajectorie_stamps[0]
         )

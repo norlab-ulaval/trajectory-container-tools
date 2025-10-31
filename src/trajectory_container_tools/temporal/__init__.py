@@ -7,8 +7,8 @@ Includes timestamp handling, sequence ordering, and temporal indexing.
 Usage:
 
 >>> import trajectory_container_tools as tct
->>> trajectory_timestamps = tct.temporal.Timestamps(data)
->>> tct.temporal.validate_timestamps_ordering(trajectory_timestamps)
+>>> trajectory_published_timestamps = tct.temporal.Timestamps(data)
+>>> tct.temporal.validate_timestamps_ordering(trajectory_published_timestamps)
 
 """
 

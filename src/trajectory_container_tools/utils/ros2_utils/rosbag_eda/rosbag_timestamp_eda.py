@@ -209,7 +209,7 @@ def run_rosbag_timestamp_eda(
                 window_ns,
             )
 
-            mf_container_at_timestamps = mf_container.get_timestamps(
+            mf_container_at_timestamps = mf_container.get_timestamps_interval(
                 start=idx_window_start,
                 stop=idx_window_stop,
                 startpoint=True,

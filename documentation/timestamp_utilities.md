@@ -12,8 +12,8 @@ This guide covers the timestamp-related utilities and methods available in Traje
   - [Index Operations](#index-operations)
   - [Error Handling](#error-handling)
 - [TrajectoryFeaturesBag Timestamp Methods](#trajectoryfeaturesbag-timestamp-methods)
-  - [The `get_timestamps()` method](#the-get_timestamps-method)
-  - [The `trajectory_timestamps` and `trajectory_timestamps_limits` properties](#the-trajectory_timestamps-and-trajectory_timestamps_limits-properties)
+  - [The `get_timestamps_interval()` method](#the-get_timestamps-method)
+  - [The `trajectory_published_timestamps` and `trajectory_timestamps_metadata` properties](#the-trajectory_timestamps-and-trajectory_timestamps_limits-properties)
 - [Use Cases and Examples](#use-cases-and-examples)
 
 ## Overview
@@ -150,7 +150,7 @@ except TimestampCausalOrderingError as e:
 
 For `AbstractTrajectoryStampedFeaturesBag` containers (e.g., extracted from ROS bags with multiple topics), TCT provides methods to work with timestamps across all features.
 
-### The `get_timestamps()` method
+### The `get_timestamps_interval()` method
 
 Retrieve trajectory data within a specified timestamp range:
 
@@ -159,21 +159,21 @@ import trajectory_container_tools as tct
 
 # Extract trajectory features data from ROS bag
 trajectory_features_bag = tct.extractor.from_rosbag(
-    rosbag_path=rosbag_path,
-    features_config={
-        "/odom": tct.dataclasses.NavMsgsOdometry,
-        "/cmd": tct.dataclasses.AckermannMsgsAckermannDriveStamped,
-    },
-    chunk_on="/cmd",
-)
+        rosbag_path=rosbag_path,
+        features_config={
+                "/odom": tct.dataclasses.NavMsgsOdometry,
+                "/cmd":  tct.dataclasses.AckermannMsgsAckermannDriveStamped,
+                },
+        chunk_on="/cmd",
+        )
 
 # Extract data within specific timestamp window
 start_time = 1695601812731601521
 stop_time = 1695601815000000000
 
-windowed_data = trajectory_features_bag.get_timestamps(
-    start=start_time, stop=stop_time, startpoint=True, endpoint=False
-)
+windowed_data = trajectory_features_bag.get_timestamps_interval(
+        start=start_time, stop=stop_time, startpoint=True, endpoint=False
+        )
 
 print(f"Original chunks: {trajectory_features_bag.chunks_total}")
 print(f"Windowed chunks: {windowed_data.chunks_total}")
@@ -194,40 +194,40 @@ print(f"Windowed chunks: {windowed_data.chunks_total}")
 - Remove warm-up or cool-down periods from experiments
 - Synchronize with external event timestamps
 
-### The `trajectory_timestamps` and `trajectory_timestamps_limits` properties
+### The `trajectory_published_timestamps` and `trajectory_timestamps_metadata` properties
 
-#### `trajectory_timestamps`
+#### `trajectory_published_timestamps`
 Access all unique timestamps across all features (excluding bag_timestamps):
 
 ```python
 # Get sorted unique timestamps from all features
-all_timestamps = trajectory_features_bag.trajectory_timestamps
+all_timestamps = trajectory_features_bag.trajectory_published_timestamps
 
 print(f"Total unique timestamps: {len(all_timestamps)}")
 ```
-**Returns:** A sorted numpy array of unique timestamps across all features (excluding `bag_timestamps`).
+**Returns:** A sorted numpy array of unique **published** timestamps across all features (excluding `bag_timestamps`).
 
 **Use Cases:**
 - Analyze timestamp distribution across all sensors
 - Identify gaps in multi-sensor data
 - Create unified time axis for visualization
 
-#### `trajectory_timestamps_limits`
+#### `trajectory_timestamps_metadata`
 
-Get the first and last timestamps across all features:
+Get the `recorded` and `published` timestamps metadata such as `first`, `last` and `duration` across all features:
 
 ```python
-ts_limits = trajectory_features_bag.trajectory_timestamps_limits
-print(f"First timestamp: {ts_limits.first}")
-print(f"Last timestamp: {ts_limits.last}")
-print(f"Recording duration: {ts_limits.duration}")
+ts_limits = trajectory_features_bag.trajectory_timestamps_metadata
+print(f"First timestamp: {ts_limits.recorded.first}")
+print(f"Last timestamp: {ts_limits.recorded.last}")
+print(f"Recording duration: {ts_limits.recorded.duration}")
 
 # Use for validation
-if limits.first <= my_timestamp and my_timestamp <= limits.last:
-    print("Timestamp is within trajectory bounds")
+if limits.recorded.first <= my_timestamp and my_timestamp <= limits.recorded.last:
+  print("Timestamp is within trajectory bounds")
 ```
 
-**Returns:** A `TrajectoryTimestampsMetadata` named tuple with `first` and `last` timestamps.
+**Returns:** A `TrajectoryTimestampsMetadata` named tuple with `recorded` and `published` timestamps.
 
 **Use Cases:**
 - Quick boundary checks without computing all unique timestamps
@@ -276,10 +276,10 @@ event_start = 1695601815000000000
 event_stop = 1695601820000000000
 
 # Extract data during event
-event_data = robot_data.get_timestamps(start=event_start, stop=event_stop, startpoint=True, endpoint=True)
+event_data = robot_data.get_timestamps_interval(start=event_start, stop=event_stop, startpoint=True, endpoint=True)
 
 # Analyze event-specific behavior
-print(f"Event timestamps limits: ", event_data.trajectory_timestamps_limits)
+print(f"Event timestamps limits: ", event_data.trajectory_timestamps_metadata)
 print(f"Commands during event: {event_data.chunks_total}")
 
 # Access sensor data during event
@@ -294,14 +294,14 @@ event_imu = event_data.topic_imu
 required_start = 1695601812000000000
 required_stop = 1695601830000000000
 
-limits = robot_data.trajectory_timestamps_limits
+limits = robot_data.trajectory_timestamps_metadata
 
 if limits.first <= required_start and limits.last >= required_stop:
-    print("Trajectory covers required time range")
+  print("Trajectory covers required time range")
 else:
-    print(f"Coverage gap:")
-    print(f"  Required: {required_start} to {required_stop}")
-    print(f"  Available: {limits.first} to {limits.last}")
+  print(f"Coverage gap:")
+  print(f"  Required: {required_start} to {required_stop}")
+  print(f"  Available: {limits.first} to {limits.last}")
 ```
 
 ---

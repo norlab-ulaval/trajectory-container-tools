@@ -154,7 +154,7 @@ Understand how to mark fields as non-trajectory or internal:
 Comprehensive guide for timestamp handling and utilities:
 - Timestamps class methods: `min()`, `max()`, `is_timestamps_in_bounds()`
 - Enhanced error handling with `TimestampMissingError` and `TimestampOutOfBoundError`
-- TrajectoryFeaturesBag timestamp methods: `get_timestamps()`, `trajectory_timestamps`, `trajectory_timestamps_limits`
+- TrajectoryFeaturesBag timestamp methods: `get_timestamps_interval()`, `trajectory_published_timestamps`, `trajectory_timestamps_metadata`
 - Nearest timestamp search for data synchronization
 - Practical examples for multi-sensor data handling
 

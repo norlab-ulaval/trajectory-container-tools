@@ -284,7 +284,7 @@ first_three_chunks = trajectory_features_bag[0:3]
 - Extracting features from aligned time windows across different data sources
 - Implementing sliding window algorithms over multi-sensor trajectories
 
-**Note:** For advanced timestamp operations including `get_timestamps()`, `trajectory_timestamps`, and `trajectory_timestamps_limits`, see the [Timestamp Utilities Guide](timestamp_utilities.md).
+**Note:** For advanced timestamp operations including `get_timestamps_interval()`, `trajectory_published_timestamps`, and `trajectory_timestamps_metadata`, see the [Timestamp Utilities Guide](timestamp_utilities.md).
 
 ## Custom Message Types
 

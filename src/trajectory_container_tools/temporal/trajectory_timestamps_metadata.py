@@ -26,3 +26,8 @@ class TrajectoryTimestampsMetadata:
     def __post_init__(self):
         if self.duration is None:
             self.duration = self.end_time - self.start_time
+
+@dataclass
+class TrajectoryTimestampsMetadataBag:
+    recorded: TrajectoryTimestampsMetadata | None
+    published: TrajectoryTimestampsMetadata | None
