@@ -189,7 +189,7 @@ def from_rosbag(
     return trajectory_features_bag(
         dataset_info,
         *features,
-        bag_timestamps=Timestamps(bag_timestamps),
+        bag_timestamps=Timestamps(bag_timestamps, single_source=False),
         chunk_on=convert_rosbag_topic_key_to_tct_mf_topic_key(chunk_on),
     )
 

@@ -230,9 +230,7 @@ class RosStampedFeature(RosFeature):
                 ).bag_recorded_timestamps
 
         if use_timestamps is None:
-            raise AttributeError(
-                "No 'bag_recorded_timestamps' attribute found in container, parent included."
-            )
+            raise AttributeError("No 'bag_recorded_timestamps' attribute found in container, parent included.")
         return use_timestamps
 
 

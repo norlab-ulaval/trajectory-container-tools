@@ -6,6 +6,7 @@ from typing import Optional, Tuple, Union
 from matplotlib import pyplot as plt
 
 import trajectory_container_tools as tct
+from trajectory_container_tools.temporal import Timestamps
 
 from ...ros2_general import convert_rosbag_topic_key_to_tct_mf_topic_key
 from .plot_management import plot_manager
@@ -127,19 +128,20 @@ def plot_bag_timestamp_delta(
             ):
 
                 if each_topic.has_dynamic_attribute("bag_recorded_timestamps"):
-                    timestamps = each_topic.get_dynamic_attribute(
+                    recorded_timestamps: Timestamps = each_topic.get_dynamic_attribute(
                         "bag_recorded_timestamps"
                     )
-                    if timestamps is not None:
-                        topic_record_ts_stamps = timestamps.stamps
-                        topic_record_ts_delta = timestamps.delta_stamps
+                    if recorded_timestamps is not None:
+                        topic_record_ts_stamps = recorded_timestamps.stamps
+                        topic_record_ts_delta = recorded_timestamps.delta_stamps
+                        rate_metric = recorded_timestamps.compute_frequency_metric()
 
-                topic_ts_stamps = None
-                topic_ts_delta = None
                 if each_topic.has_dynamic_attribute("header.timestamps"):
-                    timestamps = each_topic.get_dynamic_attribute("header.timestamps")
-                    topic_ts_stamps = timestamps.stamps
-                    topic_ts_delta = timestamps.delta_stamps
+                    published_timestamps: Timestamps = each_topic.get_dynamic_attribute(
+                        "header.timestamps"
+                    )
+                    topic_ts_stamps = published_timestamps.stamps
+                    topic_ts_delta = published_timestamps.delta_stamps
                     use_bag_stamps = False
                 elif each_topic.has_dynamic_attribute("bag_recorded_timestamps"):
                     topic_ts_stamps = topic_record_ts_stamps
@@ -208,13 +210,14 @@ def plot_bag_timestamp_delta(
                         _m = "."
 
                     if _show_recorded_stamps and not use_bag_stamps:
+                        label_name = f"{each_topic_name.removeprefix('topic_')} mean: {rate_metric.mean_hz:.2f} (hz) std: {rate_metric.std_hz:.2f} (hz)"
                         plt.plot(
                             x_recorded_in_second,
                             # y_recorded,
                             y_recorded_in_second,
                             alpha=0.3,
                             label=(
-                                f"{each_topic_name} (recorded time)"
+                                f"{label_name} (recorded)"
                                 if not _show_published_stamps
                                 else ""
                             ),
@@ -232,12 +235,19 @@ def plot_bag_timestamp_delta(
                         pass
                     elif _show_published_stamps:
                         if use_bag_stamps:
-                            topic_main_label = f"{each_topic_name} (recorded time)"
+                            label_name = f"{each_topic_name.removeprefix('topic_')} mean: {rate_metric.mean_hz:.2f} (hz) std: {rate_metric.std_hz:.2f} (hz)"
+                            topic_main_label = f"{label_name} (recorded)"
                         else:
+                            rate_metric = (
+                                published_timestamps.compute_frequency_metric()
+                            )
+                            label_name = f"{each_topic_name.removeprefix('topic_')} mean: {rate_metric.mean_hz:.2f} (hz) std: {rate_metric.std_hz:.2f} (hz)"
                             if _show_recorded_stamps:
-                                topic_main_label = f"{each_topic_name} (published time + shaded recorded time)"
+                                topic_main_label = (
+                                    f"{label_name} (published + recorded (shaded))"
+                                )
                             else:
-                                topic_main_label = f"{each_topic_name} (published time)"
+                                topic_main_label = f"{label_name} (published)"
 
                         plt.plot(
                             x_main_in_second,

@@ -4,6 +4,10 @@ from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 
+from trajectory_container_tools.temporal.trajectory_timestamps_metadata import (
+    RateMetric,
+)
+
 
 class TimestampCausalOrderingError(Exception):
     """Exception raised when a causal order violation is detected."""
@@ -50,8 +54,11 @@ class Timestamps:
     _delta_stamps: np.ndarray[int, np.dtype[int]]
     _trajectory_len: int
     _iter_index: int = 0
+    _single_source: bool
 
-    def __init__(self, stamps: np.ndarray[int, np.dtype[int]]):
+    def __init__(
+        self, stamps: np.ndarray[int, np.dtype[int]], single_source: bool = True
+    ):
         """
         Represents a class initializer for managing and validating a sequence of timestamps.
 
@@ -72,6 +79,7 @@ class Timestamps:
 
         self._stamps = np.array(stamps, dtype=int)
         self._delta_stamps = compute_delta_timestamp(self._stamps)
+        self._single_source = single_source
 
     @property
     def stamps(self) -> np.ndarray[int, np.dtype[int]]:
@@ -321,6 +329,11 @@ class Timestamps:
             else:
                 range_str = "empty"
             repr_str += f"shape {v.shape} {range_str}\n"
+        if self._single_source:
+            if len(self) > 1:
+                repr_str += f"{out_sp}{in_sp}frequency: {self.compute_frequency_metric()}\n"
+        else:
+            repr_str += f"{out_sp}{in_sp}frequency: n.a. (aggregate multiple sources)\n"
         repr_str += f"{out_sp})"
         return repr_str
 
@@ -358,6 +371,35 @@ class Timestamps:
         :return: A list of integers representing IDs of events that violate causal ordering.
         """
         return validate_timestamps_ordering(self, show_offending_in_nanoseconds)
+
+    def compute_frequency_metric(self) -> RateMetric:
+        """
+        Computes a frequency metric based on instantaneous rates derived from timestamp delta.
+
+        The function calculates instantaneous rates in Hertz (Hz) by taking the inverse
+        of time differences between consecutive timestamps. Using these rates, it
+        computes a rate metric containing statistical properties such as the mean,
+        median, standard deviation, minimum, and maximum rates.
+
+        :return: An instance of `RateMetric` containing rates statistical properties.
+        """
+        if not self._single_source:
+            raise ValueError(
+                "This Timestamps object as been flagged as containing data originating from "
+                "multiple sources (e.g., recorded stamps from more than one topic) so it make "
+                "no sense to compute frequency metric."
+            )
+
+        # Compute instantaneous rates in Hz
+        instantaneous_rates = 1.0 / to_seconds(self._delta_stamps[1:])
+
+        return RateMetric(
+            mean_hz=np.mean(instantaneous_rates),
+            median_hz=np.median(instantaneous_rates),
+            std_hz=np.std(instantaneous_rates),
+            min_hz=np.min(instantaneous_rates),
+            max_hz=np.max(instantaneous_rates),
+        )
 
 
 def validate_timestamps_ordering(

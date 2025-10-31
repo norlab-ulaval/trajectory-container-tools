@@ -142,6 +142,8 @@ def run_rosbag_timestamp_eda(
         typestore=typestore,
     )
 
+    print(mf_container)
+
     # .... Collect rosbag information .............................................................
     with open(log_file_path, "w") as log_file:
 

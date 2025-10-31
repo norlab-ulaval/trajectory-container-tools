@@ -216,7 +216,7 @@ def setup_mock_mf_container():
             dataset_info="Mock",
             topic_mock_observation=topic_mock_obs,
             topic_mock_action=topic_mock_act,
-            bag_timestamps=Timestamps(unique_bag_timestamps),
+            bag_timestamps=Timestamps(unique_bag_timestamps, single_source=False),
             chunk_on="topic_mock_action",
         )
         return deepcopy(mf_container)
