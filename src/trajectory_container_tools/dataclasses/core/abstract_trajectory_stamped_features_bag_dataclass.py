@@ -258,7 +258,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
             #  'get_timestamps_interval(resolve_out_of_bounds=False)' method beaviour.
             # Note: Quick-hack to manage cases where feature trj intervall only have data before
             #   start point.
-            if each_feature.get_first_timestamp() < start or each_feature.get_last_timestamp() > stop:
+            if each_feature.get_last_timestamp() < start or stop < each_feature.get_first_timestamp():
                 each_feature = each_feature.empty()
 
             mf_dataclass_at_t.__setattr__(each_feature_name, each_feature)
