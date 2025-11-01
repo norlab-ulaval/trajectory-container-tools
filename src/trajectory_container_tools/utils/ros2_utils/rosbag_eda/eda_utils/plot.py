@@ -3,6 +3,7 @@ import os
 import pathlib
 from typing import Optional, Tuple, Union
 
+import numpy as np
 from matplotlib import pyplot as plt
 
 import trajectory_container_tools as tct
@@ -16,15 +17,17 @@ def plot_bag_timestamp_delta(
     bag_start_time: int,
     tct_container: tct.dataclasses.AbstractTrajectoryStampedFeaturesBag,
     bag_path_abs: pathlib.Path,
-    experiment_dir_path: pathlib.Path,
+    experiment_dir_path: Optional[pathlib.Path],
     chunk_on: Optional[str] = "/teleop",
-    show_stamps_type="both",
+    show_chunk_delimiter: bool = True,
+    show_recorded_delimiter: bool = True,
+    show_stamps_type: str = "both",
     append_to_title: Optional[str] = None,
     comment: Optional[str] = None,
     plot_ylim: float = 1e8,
     plot_postfix: Optional[Union[str, int]] = None,
     show_plot: bool = True,
-    save_plot=True,
+    save_plot: bool = True,
     headless: bool = False,
     figsize: Tuple[int, int] = (28, 10),
     save_dpi: int = 100,
@@ -33,18 +36,20 @@ def plot_bag_timestamp_delta(
     Generates and saves a plot illustrating the delta between consecutive message
     timestamps from a ROS bag, with options for customization and display.
 
-    :param save_plot:
     :param bag_start_time: The start time of the bag in nanoseconds.
     :param tct_container: Container holding topic information and data.
     :param bag_path_abs: Absolute path to the ROS bag file.
     :param experiment_dir_path: Path to the directory where results are saved.
     :param chunk_on: The topic name on which to add visual markers at timestamps.
-    :param show_stamps_type: either 'published', 'recorded' or 'both' (default).
+    :param show_chunk_delimiter: Show the 'chunk_on' vertical line delimiter on plot.
+    :param show_recorded_delimiter: Show the bag recorded timestamps vertical line delimiter on plot.
+    :param show_stamps_type: Type of timestamps to use. Options are 'published', 'recorded' or 'both' (default).
     :param append_to_title: Additional text appended to the plot title.
     :param comment: An optional text comment displayed on the plot.
     :param plot_ylim: Y-axis limit for the plot, if specified.
     :param plot_postfix: Optional string or integer to append to the plot filename to differentiate it.
     :param show_plot: Determines whether the plot should be displayed interactively.
+    :param save_plot: Save plot files to experiment directory.
     :param headless: If True, disables interactive plotting and saves the plot using a non-GUI backend.
     :param figsize: The target figure size. Default to (28, 10)
     :param save_dpi: Dpi of the saved figures. Default to matplotlib default i.e., dpi=100
@@ -75,42 +80,29 @@ def plot_bag_timestamp_delta(
         chunk_on = convert_rosbag_topic_key_to_tct_mf_topic_key(chunk_on)
 
         # .... Show bag timestamps ................................................................
-        bag_timestamps = tct_container.get_dynamic_attribute("bag_timestamps")
-        if isinstance(bag_timestamps, tct.temporal.Timestamps):
-            topic_ts_stamps = bag_timestamps.stamps
-            topic_ts_delta = bag_timestamps.delta_stamps
-            if topic_ts_delta is not None and len(topic_ts_delta) > 0:
-                x_main = topic_ts_stamps - bag_start_time
-                x_main_in_second = tct.temporal.timestamps.to_seconds(x_main)
+        if show_recorded_delimiter:
+            bag_timestamps = tct_container.get_dynamic_attribute("bag_timestamps")
+            if isinstance(bag_timestamps, tct.temporal.Timestamps):
+                bag_ts_stamps = bag_timestamps.stamps
+                bag_ts_delta = bag_timestamps.delta_stamps
+                if bag_ts_delta is not None and len(bag_ts_delta) > 0:
+                    x_bag = bag_ts_stamps - bag_start_time
+                    x_bag_in_second = tct.temporal.timestamps.to_seconds(x_bag)
 
-                plt.vlines(
-                    x=x_main_in_second,
-                    ymin=0,
-                    ymax=plot_ylim,
-                    # colors="lightgrey",
-                    # alpha=0.6,
-                    colors="whitesmoke",
-                    alpha=1,
-                    linewidth=1.2,
-                    # colors="gainsboro",
-                    # alpha=0.7,
-                    # linewidth=0.6,
-                    linestyles="-",
-                )
-
-        # .... Show first chunk start timestamp reference .........................................
-        window_start_stamp = (
-            tct_container.get_trajectory_first_timestamp(include_bag_record=True)
-            - bag_start_time
-        )
-        plt.vlines(
-            x=tct.temporal.timestamps.to_seconds(window_start_stamp),
-            ymin=0,
-            ymax=plot_ylim,
-            colors="Gray",
-            alpha=0.7,
-            linewidth=0.5,
-        )
+                    plt.vlines(
+                        x=x_bag_in_second,
+                        ymin=0,
+                        ymax=plot_ylim,
+                        # colors="lightgrey",
+                        # alpha=0.6,
+                        colors="whitesmoke",
+                        alpha=1,
+                        linewidth=1.2,
+                        # colors="gainsboro",
+                        # alpha=0.7,
+                        # linewidth=0.6,
+                        linestyles="-",
+                    )
 
         # ... Topics plots ........................................................................
         for each_topic_name in tct_container.topic_key_list:
@@ -134,7 +126,9 @@ def plot_bag_timestamp_delta(
                     if recorded_timestamps is not None:
                         topic_record_ts_stamps = recorded_timestamps.stamps
                         topic_record_ts_delta = recorded_timestamps.delta_stamps
-                        recorded_rate_metric = recorded_timestamps.compute_frequency_metric()
+                        recorded_rate_metric = (
+                            recorded_timestamps.compute_frequency_metric()
+                        )
 
                 if each_topic.has_dynamic_attribute("header.timestamps"):
                     published_timestamps: Timestamps = each_topic.get_dynamic_attribute(
@@ -167,16 +161,26 @@ def plot_bag_timestamp_delta(
                         x_recorded
                     )
 
-                    if chunk_on in each_topic_name:
+                    # .... Chunk delimiter ........................................................
+                    if show_chunk_delimiter and chunk_on in each_topic_name:
+                        window_chunk_start = tct.temporal.timestamps.to_seconds(
+                            tct_container.get_trajectory_first_timestamp(
+                                include_bag_record=True
+                            )
+                            - bag_start_time
+                        )
+
                         plt.vlines(
-                            x=x_main_in_second,
+                            x=np.concatenate([[window_chunk_start], x_main_in_second]),
                             ymin=0,
                             ymax=plot_ylim,
                             colors="Gray",
                             alpha=0.7,
-                            linewidth=0.5,
+                            linewidth=0.6,
                         )
 
+                    # .... Timestamps plot style ..................................................
+                    # Ref https://matplotlib.org/stable/api/markers_api.html
                     if (
                         "ackermann" in each_topic_name
                         or "teleop" in each_topic_name
@@ -209,15 +213,17 @@ def plot_bag_timestamp_delta(
                         _l = "-"
                         _m = "."
 
+                    # .... Shadow recorded timestamps .............................................
                     if _show_recorded_stamps and not use_bag_stamps:
                         if recorded_rate_metric.mean_hz is not None:
                             re_rate_label = f" mean: {recorded_rate_metric.mean_hz:.2f} (hz) std: {recorded_rate_metric.std_hz:.2f} (hz)"
                         else:
                             re_rate_label = ""
-                        label_name = f"{each_topic_name.removeprefix('topic_')}{re_rate_label}"
+                        label_name = (
+                            f"{each_topic_name.removeprefix('topic_')}{re_rate_label}"
+                        )
                         plt.plot(
                             x_recorded_in_second,
-                            # y_recorded,
                             y_recorded_in_second,
                             alpha=0.3,
                             label=(
@@ -225,7 +231,6 @@ def plot_bag_timestamp_delta(
                                 if not _show_published_stamps
                                 else ""
                             ),
-                            # label="",
                             linewidth=LINEWIDTH,
                             linestyle=_l,
                             marker=_m,
@@ -233,6 +238,7 @@ def plot_bag_timestamp_delta(
                             color="Gray",
                         )
 
+                    # .... Main timestamps ........................................................
                     if _is_case_show_published_stamps_types_only(
                         _show_published_stamps, _show_recorded_stamps, use_bag_stamps
                     ):
@@ -263,9 +269,8 @@ def plot_bag_timestamp_delta(
 
                         plt.plot(
                             x_main_in_second,
-                            # y_main,
                             y_main_in_second,
-                            alpha=0.4,
+                            alpha=0.6,
                             label=topic_main_label,
                             linewidth=LINEWIDTH,
                             linestyle=_l,
@@ -274,26 +279,29 @@ def plot_bag_timestamp_delta(
                         )
 
         # ....Plot general config..................................................................
-        # plt.ylabel(r"Timestamp $\Delta$ (ns)")
         plt.ylabel(r"Timestamp $\Delta$ (s)")
         plt.xlabel(f"Timestamp (s)")
 
-        comment_ = (
-            f"Vertical black lines: Chunk on {chunk_on} interval\n"
-            f"Vertical gray lines: Bag recording event"
-        )
+        comment_ = []
+        if show_chunk_delimiter:
+            comment_.append(f"Vertical black lines: Chunk on {chunk_on} interval")
+
+        if show_recorded_delimiter:
+            comment_.append(f"Vertical gray lines: Bag recording event")
+
         if comment:
-            comment_ = comment_.join(f"\n{comment}")
+            comment_.append(comment)
+
         fig.text(
-            0.035,
-            0.94,
-            comment_,
+            0.04,
+            0.935,
+            "\n".join(comment_),
             bbox=dict(edgecolor="lightgray", facecolor="white", alpha=0.9),
             verticalalignment="top",
         )
 
         footer_comment_v = 0.024
-        fig.text(0.018, footer_comment_v, "1e9 (ns) = 1 (s)")
+        fig.text(0.018, footer_comment_v, "1 (s) = 1e9 (ns)")
 
         _window_size = tct.temporal.to_seconds(
             tct_container.get_trajectory_last_timestamp(include_bag_record=True)
@@ -313,7 +321,7 @@ def plot_bag_timestamp_delta(
             plt.ylim(0, tct.temporal.to_seconds(int(plot_ylim)))
         plt.tight_layout(pad=2)
 
-        if save_plot:
+        if save_plot and experiment_dir_path is not None:
             if plot_postfix is not None:
                 plot_postfix = f"-window-{plot_postfix}"
             else:

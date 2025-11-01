@@ -49,16 +49,18 @@ def run_rosbag_timestamp_eda(
     chunk_on: str,
     fast_forward_ns: Optional[Union[int, float]] = 0.1e9,
     window_ns: Optional[Union[int, float]] = 0.5e9,
-    show_stamps_type="both",
+    window_start: Optional[int] = None,
+    window_stop: Optional[int] = None,
+    show_chunk_delimiter=True,
+    show_recorded_delimiter=True,
+    show_stamps_type: str = "both",
     plot_ylim: Optional[float] = None,
     experiment_dir: Optional[str] = None,
-    show_plot=True,
-    save_plot=True,
+    save_plot: bool = True,
+    show_plot: bool = True,
     figsize: Tuple[int, int] = (28, 10),
     save_dpi: int = 100,
     typestore: Optional[Typestore] = None,
-    window_start: Optional[int] = None,
-    window_stop: Optional[int] = None,
 ) -> AbstractTrajectoryStampedFeaturesBag:
     """
     Executes timestamp-based Exploratory Data Analysis (EDA) on a ROSbag file by analyzing
@@ -72,6 +74,8 @@ def run_rosbag_timestamp_eda(
         Defaults to 0.1e9 nanoseconds (1/10 of a second).
     :param window_ns: Duration of the time window in nanoseconds for analyzing data chunks.
         Defaults to 0.5e9 nanoseconds (half a second).
+    :param show_chunk_delimiter: Show the 'chunk_on' vertical line delimiter on plot.
+    :param show_recorded_delimiter: Show the bag recorded timestamps vertical line delimiter on plot.
     :param show_stamps_type: either 'published', 'recorded' or 'both' (default).
     :param plot_ylim: Optional vertical limits for the plots. Defaults to None.
     :param experiment_dir: Directory to group all outputs for the analysis. If None, the
@@ -110,6 +114,7 @@ def run_rosbag_timestamp_eda(
     # Sanitize input e.g., 1e9 -> float
     if fast_forward_ns is not None:
         fast_forward_ns = int(fast_forward_ns)
+
     if window_ns is not None:
         window_ns = int(window_ns)
 
@@ -225,6 +230,8 @@ def run_rosbag_timestamp_eda(
                 bag_path,
                 experiment_dir_path,
                 chunk_on=chunk_on,
+                show_chunk_delimiter=show_chunk_delimiter,
+                show_recorded_delimiter=show_recorded_delimiter,
                 show_stamps_type=show_stamps_type,
                 append_to_title=f"plot {each_idx + 1}/{num_iterations}",
                 comment=None,
@@ -235,14 +242,19 @@ def run_rosbag_timestamp_eda(
                 figsize=figsize,
                 save_dpi=save_dpi,
             )
+
             progressbar.update(1)
     except KeyboardInterrupt:
         pass
-    except Exception:
+    except Exception as e:
         # Exception scope is large on purpose
         raise
     finally:
-        progressbar.close()
+        try:
+            progressbar.close()
+        except KeyboardInterrupt:
+            # Handle case user is keyboard-interrupter happy trigger
+            pass
 
     return mf_container
 
@@ -280,7 +292,10 @@ if __name__ == "__main__":
         chunk_on="/teleop",
         fast_forward_ns=0.1e9,
         window_ns=0.5e9,
+        show_chunk_delimiter=True,
+        show_recorded_delimiter=True,
         show_stamps_type="both",
         plot_ylim=1.2e8,
+        save_plot=True,
         show_plot=True,
     )
