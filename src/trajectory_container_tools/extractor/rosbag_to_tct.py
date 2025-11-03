@@ -47,7 +47,9 @@ from trajectory_container_tools.temporal.timestamps import (
     TimestampCausalOrderingError,
     Timestamps,
 )
-from trajectory_container_tools.utils.typing.new_types_and_aliases import ShadowDataContainer
+from trajectory_container_tools.utils.typing.new_types_and_aliases import (
+    ShadowDataContainer,
+)
 
 try:
     from rosbags.rosbag2 import Reader
@@ -66,6 +68,7 @@ def from_rosbag(
     start: Optional[int] = None,
     stop: Optional[int] = None,
     typestore: Optional[Typestore] = None,
+    fail_causal_ordering_violation: bool = True,
 ) -> AbstractTrajectoryStampedFeaturesBag:
     """Extract multiple features (i.e. topics) from a rosbag_path based on a configuration
     dictionary.
@@ -103,6 +106,7 @@ def from_rosbag(
     :param start: The rosbag timestamp where to start in nanosecond.
     :param stop: The rosbag timestamp where to stop in nanosecond.
     :param typestore: Optional overrides the custom TCT rosbag typestore.
+    :param fail_causal_ordering_violation: Optiona to disable ordering sanity check (default enabled)
     :return: An instance of the `AbstractTrajectoryFeaturesBag` containing the processed data
         for all features.
     """
@@ -143,6 +147,7 @@ def from_rosbag(
             start=start,
             stop=stop,
             typestore=typestore,
+            fail_causal_ordering_violation=fail_causal_ordering_violation,
         )
 
         features_type.append(
@@ -191,6 +196,7 @@ def from_rosbag(
         *features,
         bag_timestamps=Timestamps(bag_timestamps, single_source=False),
         chunk_on=convert_rosbag_topic_key_to_tct_mf_topic_key(chunk_on),
+        fail_causal_ordering_violation=fail_causal_ordering_violation,
     )
 
 
@@ -203,6 +209,7 @@ def extract_rosbag_feature(
     start: Optional[int] = None,
     stop: Optional[int] = None,
     typestore: Optional[Typestore] = None,
+    fail_causal_ordering_violation: bool = True,
 ) -> Union[RosFeature, RosFeatureArray, RosStampedFeature]:
     """
     Extracts a specific feature from a ROS bag file and returns it in a structured data container.
@@ -216,10 +223,7 @@ def extract_rosbag_feature(
 
     >>> from trajectory_container_tools.dataclasses import NavMsgsOdometry
     >>>
-    >>> extract_rosbag_feature(
-    >>>     rosbag_path=Path("</path/to/rosbag>"),
-    >>>     feature_name="/odom",data_container_type=NavMsgsOdometry
-    >>> )
+    >>> extract_rosbag_feature(rosbag_path=Path("</path/to/rosbag>"),feature_name="/odom",data_container_type=NavMsgsOdometry)
 
     :param rosbag_path: Path to the input ROS bag file.
     :param feature_name: Name of the topic to extract data from.
@@ -228,6 +232,7 @@ def extract_rosbag_feature(
     :param start: Optional start time for filtering messages, measured in nanoseconds.
     :param stop: Optional stop time for filtering messages, measured in nanoseconds.
     :param typestore: Optional overrides the custom TCT rosbag typestore.
+    :param fail_causal_ordering_violation: Optiona to disable ordering sanity check (default enabled)
     :return: An instance of the `data_container_type` containing the processed feature data.
     """
     try:
@@ -304,7 +309,10 @@ def extract_rosbag_feature(
         # .... Post-process rosbag data and create data container .................................
         try:
             shadow_data_container = post_process_shadown_data_container(
-                shadow_data_container, data_container_type, feature_name
+                shadow_data_container,
+                data_container_type,
+                feature_name,
+                fail_causal_ordering_violation,
             )
 
             # noinspection PyArgumentList
@@ -331,7 +339,9 @@ def _collect_properties_from_rosbag(
     bag_timestamp: int,
     shadow_data_container: ShadowDataContainer,
 ) -> ShadowDataContainer:
-    for each_property_name in data_container_type.get_cls_public_field_names(include_non_init_dim=False):
+    for each_property_name in data_container_type.get_cls_public_field_names(
+        include_non_init_dim=False
+    ):
         try:
             if isinstance(shadow_data_container[each_property_name], list):
                 # Case list of nested container

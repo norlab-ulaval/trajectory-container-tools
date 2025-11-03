@@ -50,7 +50,8 @@ class RosFeature(BaseTrajectoryFeature):
                 self.bag_recorded_timestamps = Timestamps(self.bag_recorded_timestamps)
 
             self.bag_recorded_timestamps.causal_ordering_sanity_check(
-                show_offending_in_nanoseconds=True
+                show_offending_in_nanoseconds=True,
+                fail_causal_ordering_violation=self.fail_causal_ordering_violation,
             )
 
     def get_first_timestamp(self) -> int | None:
@@ -230,7 +231,9 @@ class RosStampedFeature(RosFeature):
                 ).bag_recorded_timestamps
 
         if use_timestamps is None:
-            raise AttributeError("No 'bag_recorded_timestamps' attribute found in container, parent included.")
+            raise AttributeError(
+                "No 'bag_recorded_timestamps' attribute found in container, parent included."
+            )
         return use_timestamps
 
 
@@ -256,12 +259,14 @@ class RosFeatureArray(BaseTrajectoryFeatureUnboundedArray):
     )
 
     def on_begin_post_init_callback(self) -> None:
-        if isinstance(self.bag_recorded_timestamps, np.ndarray):
-            self.bag_recorded_timestamps = Timestamps(self.bag_recorded_timestamps)
+        if self.bag_recorded_timestamps is not None:
+            if isinstance(self.bag_recorded_timestamps, np.ndarray):
+                self.bag_recorded_timestamps = Timestamps(self.bag_recorded_timestamps)
 
-        self.bag_recorded_timestamps.causal_ordering_sanity_check(
-            show_offending_in_nanoseconds=True
-        )
+            self.bag_recorded_timestamps.causal_ordering_sanity_check(
+                show_offending_in_nanoseconds=True,
+                fail_causal_ordering_violation=self.fail_causal_ordering_violation,
+            )
 
     def get_first_timestamp(self) -> int | None:
         """Retrieve the earliest timestamp from bag recorded timestamps.

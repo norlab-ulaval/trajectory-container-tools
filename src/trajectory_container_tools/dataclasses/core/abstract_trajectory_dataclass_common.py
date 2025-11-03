@@ -35,6 +35,7 @@ class AbstractTrajectoryCommon(abc.ABC):
     _parent: ContainerInternalField[Optional["AbstractTrajectoryCommon"]] = field(
         default=None, init=False
     )
+    fail_causal_ordering_violation: ContainerInternalField[bool] = field(default=True, kw_only=True)
 
     def set_parent_container_reference_tracking(self):
         """
@@ -73,7 +74,7 @@ class AbstractTrajectoryCommon(abc.ABC):
 
     def get_container_root(
         self, include_feature_bag=False
-    ) -> "AbstractTrajectoryCommon":
+    ) -> Union["AbstractTrajectoryCommon", "AbstractTrajectoryFeaturesBag"]:
         """
         Recursively retrieves the root container in a hierarchy.
 
@@ -100,8 +101,7 @@ class AbstractTrajectoryCommon(abc.ABC):
                 return parent_container
             elif not include_feature_bag and parent_is_feature_bag:
                 return self
-
-        if not self.is_nested():
+        else:
             return self
 
         # Recursively search up the parent chain

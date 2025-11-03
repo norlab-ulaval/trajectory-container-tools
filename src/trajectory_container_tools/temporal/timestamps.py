@@ -52,6 +52,7 @@ class Timestamps:
 
     _stamps: np.ndarray[int, np.dtype[int]]
     _delta_stamps: np.ndarray[int, np.dtype[int]]
+    _offending_indexs: list[int] = []
     _trajectory_len: int
     _iter_index: int = 0
     _single_source: bool
@@ -88,6 +89,10 @@ class Timestamps:
     @property
     def delta_stamps(self) -> np.ndarray[int, np.dtype[int]]:
         return self._delta_stamps
+
+    def get_offending_stamps_index(self) -> list[int]:
+        # (NICE TO HAVE) ToDo: add stability unit-test (ref task TCT-66)
+        return self._offending_indexs
 
     @property
     def shape(self) -> Tuple:
@@ -357,7 +362,9 @@ class Timestamps:
         return to_seconds_nanoseconds(self.stamps[key])
 
     def causal_ordering_sanity_check(
-        self, show_offending_in_nanoseconds: bool = True
+        self,
+        show_offending_in_nanoseconds: bool = True,
+        fail_causal_ordering_violation=True,
     ) -> List[int]:
         """
         Performs a sanity check for causal ordering based on timestamps of events.
@@ -370,9 +377,14 @@ class Timestamps:
 
         :param show_offending_in_nanoseconds: Whether to display offending timestamps in
           nanoseconds or (seconds, nanoseconds ), default is True.
+        :param fail_causal_ordering_violation:
         :return: A list of integers representing IDs of events that violate causal ordering.
         """
-        return validate_timestamps_ordering(self, show_offending_in_nanoseconds)
+        self._offending_indexs = validate_timestamps_ordering(
+            self, show_offending_in_nanoseconds, fail_causal_ordering_violation
+        )
+
+        return self._offending_indexs
 
     def compute_frequency_metric(self) -> RateMetric:
         """
@@ -423,7 +435,9 @@ class Timestamps:
 
 
 def validate_timestamps_ordering(
-    timestamp_object: Timestamps, show_offending_in_nanoseconds: bool = True
+    timestamp_object: Timestamps,
+    show_offending_in_nanoseconds: bool = True,
+    fail_causal_ordering_violation=True,
 ) -> List[int]:
     """Checks the causal order of timestamps in the given data container to ensure they are
     monoticaly increasing.
@@ -444,7 +458,7 @@ def validate_timestamps_ordering(
     >>> #                   nanoseconds [  T  ]                          nanoseconds [ T+1 ]
     >>> #     ——————————————————————————————————————————————————————————————————————————————
     >>> #           1711047163876963111 [  302]     !<                             0 [  303]
-    >>> #                             0 [  511]     !<                             0 [  512]
+    >>> #                             0 [  303]     !<                             0 [  304]
     >>> #           1711047175850442468 [  631]     !<                             0 [  632]
     >>> #           1711047237203461717 [ 3334]     !<                             0 [ 3335]
     >>> #
@@ -460,6 +474,7 @@ def validate_timestamps_ordering(
     :param timestamp_object: A Timestance object fill with trajectory stamp in nanosecond.
     :param show_offending_in_nanoseconds: Display in nanosecond or ( seconds nanoseconds ).
      Default nanoseconds
+    :param fail_causal_ordering_violation:
     :return: The list of offending timestamps indexes.
     :raises TimestampCausalOrderingError: Raises an TimestampCausalOrderingError if the
      "timestamps" array is empty or if any timestamp violates the causal ordering.
@@ -510,7 +525,9 @@ def validate_timestamps_ordering(
             f"{(timestamp_object[-1].stamps - timestamp_object[0].stamps):>22}  \n"
             f"    {'—' * 78}\n"
         )
-        raise TimestampCausalOrderingError(error_msg)
+
+        if fail_causal_ordering_violation:
+            raise TimestampCausalOrderingError(error_msg)
 
     return offending_idx
 

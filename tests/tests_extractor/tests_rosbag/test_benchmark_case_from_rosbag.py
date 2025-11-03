@@ -47,7 +47,7 @@ def benchmark_from_rosbag(
                                        "/teleop":          AckermannMsgsAckermannDriveStamped,
                                        "/sensors/imu/raw": SensorMsgsImu,
                                        "/sensors/imu":     VescMsgsVescImuStamped,
-                                       }, chunk_on='/teleop', start=None, stop=None, )
+                                       }, chunk_on='/teleop', start=None, stop=None)
 
     for each_chunk in mf_container:
         # Minimum logic to validate chunk

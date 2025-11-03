@@ -88,6 +88,10 @@ class TestTimestampsCore:
                 9,
             ]
 
+        assert Timestamps(stamps=mock_ts_array).causal_ordering_sanity_check(
+            fail_causal_ordering_violation=False
+        ) == [5, 9]
+
     def test_compute_frequency_metric(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
 

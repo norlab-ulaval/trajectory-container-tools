@@ -14,7 +14,6 @@ from pathlib import Path
 
 import trajectory_container_tools as tct
 from trajectory_container_tools.utils.general import dn_sanitize_path, setup_progressbar
-from trajectory_container_tools.temporal.timestamps import to_seconds
 from trajectory_container_tools.utils.ros2_utils.ros2_non_native_msg import (
     register_non_native_msgs,
 )
@@ -74,6 +73,8 @@ def run_rosbag_timestamp_eda(
         Defaults to 0.1e9 nanoseconds (1/10 of a second).
     :param window_ns: Duration of the time window in nanoseconds for analyzing data chunks.
         Defaults to 0.5e9 nanoseconds (half a second).
+    :param window_start: The start timestamp for the time window in nanoseconds. If None, the bag's start time is used.
+    :param window_stop: The stop timestamp for the time window in nanoseconds. If None, the bag's end time is used.
     :param show_chunk_delimiter: Show the 'chunk_on' vertical line delimiter on plot.
     :param show_recorded_delimiter: Show the bag recorded timestamps vertical line delimiter on plot.
     :param show_stamps_type: either 'published', 'recorded' or 'both' (default).
@@ -86,8 +87,6 @@ def run_rosbag_timestamp_eda(
     :param save_dpi: Dpi of the saved figures. Default to matplotlib default i.e., dpi=100
     :param typestore: Optional. The typestore instance to register the non-native
         messages. If not provided, a default typestore will be initialized.
-    :param window_start: The start timestamp for the time window in nanoseconds. If None, the bag's start time is used.
-    :param window_stop: The stop timestamp for the time window in nanoseconds. If None, the bag's end time is used.
     :return: None
     """
     # .... Setup path .............................................................................
@@ -145,6 +144,7 @@ def run_rosbag_timestamp_eda(
         start=window_start,
         stop=window_stop,
         typestore=typestore,
+        fail_causal_ordering_violation=True,
     )
 
     print(mf_container)

@@ -57,7 +57,7 @@ class AbstractTrajectoryFeaturesBag(AbstractTrajectoryCommon):
         self.set_parent_container_reference_tracking()
         self._aggregated_date = datetime.datetime.now()
         if self.bag_timestamps is not None:
-            self.bag_timestamps.causal_ordering_sanity_check()
+            self.bag_timestamps.causal_ordering_sanity_check(fail_causal_ordering_violation=self.fail_causal_ordering_violation,)
 
         # .... Callback and attribute customization logic .........................................
         self.on_begin_post_init_callback()

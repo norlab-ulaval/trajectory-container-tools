@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 
 import trajectory_container_tools as tct
 from trajectory_container_tools.temporal import Timestamps
+from trajectory_container_tools.temporal.trajectory_timestamps_metadata import RateMetric
 
 from ...ros2_general import convert_rosbag_topic_key_to_tct_mf_topic_key
 from .plot_management import plot_manager
@@ -56,7 +57,7 @@ def plot_bag_timestamp_delta(
     :return: None
     """
     LINEWIDTH = 1.5
-    MARKERSIZE = 6
+    MARKERSIZE = 7
 
     _show_recorded_stamps = True
     _show_published_stamps = True
@@ -174,9 +175,9 @@ def plot_bag_timestamp_delta(
                             x=np.concatenate([[window_chunk_start], x_main_in_second]),
                             ymin=0,
                             ymax=plot_ylim,
-                            colors="Gray",
-                            alpha=0.7,
-                            linewidth=0.6,
+                            colors="dimgray",
+                            alpha=0.6,
+                            linewidth=0.8,
                         )
 
                     # .... Timestamps plot style ..................................................
@@ -190,16 +191,16 @@ def plot_bag_timestamp_delta(
                         _m = ">"
                     elif "scan" in each_topic_name:
                         _l = ":"
-                        _m = "+"
+                        _m = "P"
                     elif "_tf" in each_topic_name:
                         _l = "-"
                         _m = "1"
                     elif "imu_raw" in each_topic_name:
                         _l = ":"
-                        _m = 6
+                        _m = "s"
                     elif "imu" in each_topic_name:
                         _l = "-"
-                        _m = 6
+                        _m = "s"
                     elif "sensors" in each_topic_name or "data" in each_topic_name:
                         _l = "-"
                         _m = 7
@@ -216,18 +217,18 @@ def plot_bag_timestamp_delta(
                     # .... Shadow recorded timestamps .............................................
                     if _show_recorded_stamps and not use_bag_stamps:
                         if recorded_rate_metric.mean_hz is not None:
-                            re_rate_label = f" mean: {recorded_rate_metric.mean_hz:.2f} (hz) std: {recorded_rate_metric.std_hz:.2f} (hz)"
+                            re_rate_label = _rate_str(recorded_rate_metric)
                         else:
                             re_rate_label = ""
                         label_name = (
-                            f"{each_topic_name.removeprefix('topic_')}{re_rate_label}"
+                            f"{each_topic_name.removeprefix('topic_')} | {re_rate_label}"
                         )
                         plt.plot(
                             x_recorded_in_second,
                             y_recorded_in_second,
                             alpha=0.3,
                             label=(
-                                f"{label_name} (recorded)"
+                                f"{label_name} (rec)"
                                 if not _show_published_stamps
                                 else ""
                             ),
@@ -246,26 +247,26 @@ def plot_bag_timestamp_delta(
                     elif _show_published_stamps:
                         if use_bag_stamps:
                             if recorded_rate_metric.mean_hz is not None:
-                                re_rate_label = f" mean: {recorded_rate_metric.mean_hz:.2f} (hz) std: {recorded_rate_metric.std_hz:.2f} (hz)"
+                                re_rate_label = _rate_str(recorded_rate_metric)
                             else:
                                 re_rate_label = ""
-                            label_name = f"{each_topic_name.removeprefix('topic_')}{re_rate_label}"
-                            topic_main_label = f"{label_name} (recorded)"
+                            label_name = f"{each_topic_name.removeprefix('topic_')} | {re_rate_label}"
+                            topic_main_label = f"{label_name} | Rec"
                         else:
                             published_rate_metric = (
                                 published_timestamps.compute_frequency_metric()
                             )
                             if published_rate_metric.mean_hz is not None:
-                                pu_rate_label = f" mean: {published_rate_metric.mean_hz:.2f} (hz) std: {published_rate_metric.std_hz:.2f} (hz)"
+                                pu_rate_label = _rate_str(published_rate_metric)
                             else:
                                 pu_rate_label = ""
-                            label_name = f"{each_topic_name.removeprefix('topic_')}{pu_rate_label}"
+                            label_name = f"{each_topic_name.removeprefix('topic_')} | {pu_rate_label}"
                             if _show_recorded_stamps:
                                 topic_main_label = (
-                                    f"{label_name} (published + recorded (shaded))"
+                                    f"{label_name} | Pub + Rec (shaded)"
                                 )
                             else:
-                                topic_main_label = f"{label_name} (published)"
+                                topic_main_label = f"{label_name} | Pub"
 
                         plt.plot(
                             x_main_in_second,
@@ -338,6 +339,10 @@ def plot_bag_timestamp_delta(
             )
 
         return None
+
+
+def _rate_str(rate_metric: RateMetric) -> str:
+    return r"Rate $\mu$ " + f"{rate_metric.mean_hz:.2f}" + r" $\sigma$" + f" {rate_metric.std_hz:.2f} (hz)"
 
 
 def _is_case_show_published_stamps_types_only(

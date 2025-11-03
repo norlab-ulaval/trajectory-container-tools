@@ -258,7 +258,10 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
             #  'get_timestamps_interval(resolve_out_of_bounds=False)' method beaviour.
             # Note: Quick-hack to manage cases where feature trj intervall only have data before
             #   start point.
-            if each_feature.get_last_timestamp() < start or stop < each_feature.get_first_timestamp():
+            if (
+                each_feature.get_last_timestamp() < start
+                or stop < each_feature.get_first_timestamp()
+            ):
                 each_feature = each_feature.empty()
 
             mf_dataclass_at_t.__setattr__(each_feature_name, each_feature)
@@ -381,15 +384,18 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
         """
         if self.bag_timestamps is not None:
             recorded_metadata = TrajectoryTimestampsMetadata(
-                start_time=self.bag_timestamps.min(),
-                end_time=self.bag_timestamps.max())
+                start_time=self.bag_timestamps.min(), end_time=self.bag_timestamps.max()
+            )
         else:
             recorded_metadata = None
 
         try:
             published_metadata = TrajectoryTimestampsMetadata(
-                start_time=self.get_trajectory_first_timestamp(include_bag_record=False),
-                end_time=self.get_trajectory_last_timestamp(include_bag_record=False), )
+                start_time=self.get_trajectory_first_timestamp(
+                    include_bag_record=False
+                ),
+                end_time=self.get_trajectory_last_timestamp(include_bag_record=False),
+            )
         except ValueError:
             published_metadata = None
 

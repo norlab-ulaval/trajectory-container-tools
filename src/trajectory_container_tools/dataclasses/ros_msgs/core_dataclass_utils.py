@@ -65,7 +65,7 @@ def get_timestamps_slice(
             if slice_start_idx >= slice_endpoint_idx:
                 slice_endpoint_idx = slice_start_idx + 1
 
-        except IndexError as e:
+        except (IndexError, TypeError):
             slice_endpoint_idx = None
 
     if slice_endpoint_idx is not None:
