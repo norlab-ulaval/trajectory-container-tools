@@ -10,7 +10,9 @@ from trajectory_container_tools.dataclasses import (
     RosFeatureArray,
     RosStampedFeature,
 )
-from trajectory_container_tools.utils.typing.new_types_and_aliases import TrajectoryFeaturesBag
+from trajectory_container_tools.utils.typing.new_types_and_aliases import (
+    TrajectoryFeaturesBag,
+)
 from trajectory_container_tools.utils.general import RosImportError
 
 try:
@@ -59,29 +61,30 @@ def compute_window_start_and_stop(
     :return: A tuple containing the computed start and stop times as integers.
     """
     if fast_forward_ns is None:
-        start = trajectory_start_time
+        start = int(trajectory_start_time)
     else:
-        start = trajectory_start_time + fast_forward_ns * each_idx
+        start = int(trajectory_start_time) + int(fast_forward_ns) * each_idx
 
     if window_ns is None:
-        stop = trajectory_end_time
+        stop = int(trajectory_end_time)
     else:
-        stop = start + window_ns
+        stop = start + int(window_ns)
 
-    # Sanitize output e.g., 1e9 -> float
-    start = int(start)
-    stop = int(stop)
     return start, stop
 
 
 def compute_bag_target_window_nb(
-    bag_duration: int, fast_forward_ns: Optional[Union[int, float]]
+    bag_duration: int,
+    fast_forward_ns: int | float | None,
+    window_ns: Optional[int | float] = None,
 ) -> int:
     """Compute the number of iterations to span the bag target window based on the provided bag
-    duration and fast-forward duration.
+    duration, fast-forward duration and individual target window size.
 
     :param bag_duration: The total duration of the bag in nanoseconds.
-    :param fast_forward_ns: The duration to fast-forward in nanoseconds. If None, the fast-forward step is considered as the full bag duration.
+    :param fast_forward_ns: The duration to fast-forward in nanoseconds. If None, the fast-forward
+        step is considered as the full bag duration.
+    :param window_ns: Duration of the time window in nanoseconds. Defaults None.
     :return: The number of iterations required to cover the target window.
     """
 
@@ -90,11 +93,23 @@ def compute_bag_target_window_nb(
     else:
         # Sanitize input e.g., 1e9 -> float
         fast_forward_ns = int(fast_forward_ns)
-        num_iterations = bag_duration // fast_forward_ns
+
+        num_iterations, remainder = divmod(bag_duration, fast_forward_ns)
+        num_iterations += int(remainder != 0)
+
+        if window_ns is not None:
+            window_ns = int(window_ns)
+            num_iterations -= (window_ns // fast_forward_ns) - 1
+
+        if num_iterations <= 0:
+            num_iterations = 1
+
     return num_iterations
 
 
-def find_max_timestamp_delta_over_all_topics(feature_bag_trajectory_container: TrajectoryFeaturesBag) -> int:
+def find_max_timestamp_delta_over_all_topics(
+    feature_bag_trajectory_container: TrajectoryFeaturesBag,
+) -> int:
     """
     Finds the maximum timestamp delta across all topics in a ROS bag file.
 

@@ -34,14 +34,19 @@ def instanciate_shadow_data_container(
     shadow_data_container: ShadowDataContainer
 
     shadow_data_container = {
-        each_field: None for each_field in data_container_type.get_cls_public_field_names(include_non_init_dim=False)
+        each_field: None
+        for each_field in data_container_type.get_cls_public_field_names(
+            include_non_init_dim=False
+        )
     }
 
     # Internal logic
     shadow_data_container["type"] = data_container_type
     shadow_data_container["nested_lvl"] = nested_lvl
 
-    for each_property_name in data_container_type.get_cls_public_field_names(include_non_init_dim=False):
+    for each_property_name in data_container_type.get_cls_public_field_names(
+        include_non_init_dim=False
+    ):
 
         dimension_type, is_list_of_type = data_container_type.get_cls_public_field_type(
             each_property_name
@@ -82,6 +87,7 @@ def post_process_shadown_data_container(
         type[RosStampedFeature],
     ],
     feature_name: Optional[str],
+    fail_causal_ordering_violation=True,
     progressbar_enabled=True,
 ) -> ShadowDataContainer:
     """
@@ -96,10 +102,10 @@ def post_process_shadown_data_container(
     :param data_container_type: The expected type of data container.
     :param feature_name: The name of the specific feature process by non-nested data container.
     :param progressbar_enabled:
+    :param fail_causal_ordering_violation:
     :return: The processed ShadowDataContainer with the updated structure and values.
     """
     # (NICE TO HAVE) ToDo: unit-test explicitly (ref task RLRP-83). Its indirectly tested for now.
-
     for each in data_container_type.container_internal_field():
         if each == "feature_name":
             if (
@@ -138,16 +144,21 @@ def post_process_shadown_data_container(
                     each,
                     data_container_type=target_type,
                     feature_name=None,
+                    fail_causal_ordering_violation=fail_causal_ordering_violation,
                     progressbar_enabled=False,
                 )
                 if "type" in ppsdc:
                     del ppsdc["type"]
                 if "nested_lvl" in ppsdc:
                     del ppsdc["nested_lvl"]
-                shadow_data_container[k][idx] = target_type(**ppsdc)
-        elif not issubclass(data_container_type, BaseTrajectoryFeatureUnboundedArray) and (
-            k in data_container_type.non_trajectory_field() or
-            k in data_container_type.container_internal_field()
+                shadow_data_container[k][idx] = target_type(
+                    **ppsdc, fail_causal_ordering_violation=fail_causal_ordering_violation
+                )
+        elif not issubclass(
+            data_container_type, BaseTrajectoryFeatureUnboundedArray
+        ) and (
+            k in data_container_type.non_trajectory_field()
+            or k in data_container_type.container_internal_field()
         ):
             pass
         elif k == "type" or k == "nested_lvl":
@@ -172,13 +183,16 @@ def post_process_shadown_data_container(
                     v,
                     data_container_type=target_type,
                     feature_name=None,
+                    fail_causal_ordering_violation=fail_causal_ordering_violation,
                     progressbar_enabled=False,
                 )
                 if "type" in ppsdc:
                     del ppsdc["type"]
                 if "nested_lvl" in ppsdc:
                     del ppsdc["nested_lvl"]
-                shadow_data_container[k] = target_type(**ppsdc)
+                shadow_data_container[k] = target_type(
+                    **ppsdc, fail_causal_ordering_violation=fail_causal_ordering_violation
+                )
             else:
                 shadow_data_container[k] = v["data"]
         else:

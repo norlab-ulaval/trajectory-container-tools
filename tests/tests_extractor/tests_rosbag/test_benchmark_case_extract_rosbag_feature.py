@@ -55,13 +55,9 @@ def benchmark_extract_single_feature_from_rosbag(
     bag_path: Path, rosbag_start: int, rosbag_stop: int
 ):
     """Standalone function for benchmarking - avoids pickling issues with Joblib"""
-    return extract_rosbag_feature(
-        rosbag_path=bag_path,
-        feature_name="/odom",
-        data_container_type=NavMsgsOdometry,
-        start=rosbag_start,
-        stop=rosbag_stop,
-    )
+    return extract_rosbag_feature(rosbag_path=bag_path, feature_name="/odom",
+                                  data_container_type=NavMsgsOdometry, start=rosbag_start,
+                                  stop=rosbag_stop)
 
 
 @pytest.mark.benchmark(

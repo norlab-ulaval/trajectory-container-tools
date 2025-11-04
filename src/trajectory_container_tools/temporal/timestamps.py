@@ -4,6 +4,10 @@ from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 
+from trajectory_container_tools.temporal.trajectory_timestamps_metadata import (
+    RateMetric,
+)
+
 
 class TimestampCausalOrderingError(Exception):
     """Exception raised when a causal order violation is detected."""
@@ -48,10 +52,14 @@ class Timestamps:
 
     _stamps: np.ndarray[int, np.dtype[int]]
     _delta_stamps: np.ndarray[int, np.dtype[int]]
+    _offending_indexs: list[int] = []
     _trajectory_len: int
     _iter_index: int = 0
+    _single_source: bool
 
-    def __init__(self, stamps: np.ndarray[int, np.dtype[int]]):
+    def __init__(
+        self, stamps: np.ndarray[int, np.dtype[int]], single_source: bool = True
+    ):
         """
         Represents a class initializer for managing and validating a sequence of timestamps.
 
@@ -72,6 +80,7 @@ class Timestamps:
 
         self._stamps = np.array(stamps, dtype=int)
         self._delta_stamps = compute_delta_timestamp(self._stamps)
+        self._single_source = single_source
 
     @property
     def stamps(self) -> np.ndarray[int, np.dtype[int]]:
@@ -80,6 +89,10 @@ class Timestamps:
     @property
     def delta_stamps(self) -> np.ndarray[int, np.dtype[int]]:
         return self._delta_stamps
+
+    def get_offending_stamps_index(self) -> list[int]:
+        # (NICE TO HAVE) ToDo: add stability unit-test (ref task TCT-66)
+        return self._offending_indexs
 
     @property
     def shape(self) -> Tuple:
@@ -321,6 +334,13 @@ class Timestamps:
             else:
                 range_str = "empty"
             repr_str += f"shape {v.shape} {range_str}\n"
+        if self._single_source:
+            if len(self) > 1:
+                repr_str += (
+                    f"{out_sp}{in_sp}frequency: {self.compute_frequency_metric()}\n"
+                )
+        else:
+            repr_str += f"{out_sp}{in_sp}frequency: n.a. (aggregate multiple sources)\n"
         repr_str += f"{out_sp})"
         return repr_str
 
@@ -342,7 +362,9 @@ class Timestamps:
         return to_seconds_nanoseconds(self.stamps[key])
 
     def causal_ordering_sanity_check(
-        self, show_offending_in_nanoseconds: bool = True
+        self,
+        show_offending_in_nanoseconds: bool = True,
+        fail_causal_ordering_violation=True,
     ) -> List[int]:
         """
         Performs a sanity check for causal ordering based on timestamps of events.
@@ -355,13 +377,67 @@ class Timestamps:
 
         :param show_offending_in_nanoseconds: Whether to display offending timestamps in
           nanoseconds or (seconds, nanoseconds ), default is True.
+        :param fail_causal_ordering_violation:
         :return: A list of integers representing IDs of events that violate causal ordering.
         """
-        return validate_timestamps_ordering(self, show_offending_in_nanoseconds)
+        self._offending_indexs = validate_timestamps_ordering(
+            self, show_offending_in_nanoseconds, fail_causal_ordering_violation
+        )
+
+        return self._offending_indexs
+
+    def compute_frequency_metric(self) -> RateMetric:
+        """
+        Computes a frequency metric based on instantaneous rates derived from timestamp delta.
+
+        The function calculates instantaneous rates in Hertz (Hz) by taking the inverse
+        of time differences between consecutive timestamps. Using these rates, it
+        computes a rate metric containing statistical properties such as the mean,
+        median, standard deviation, minimum, and maximum rates.
+
+        :return: An instance of `RateMetric` containing rates statistical properties.
+        """
+        if not self._single_source:
+            raise ValueError(
+                "This Timestamps object as been flagged as containing data originating from "
+                "multiple sources (e.g., recorded stamps from more than one topic) so it make "
+                "no sense to compute frequency metric."
+            )
+
+        # Compute instantaneous rates in Hz
+        instantaneous_rates: np.ndarray = 1.0 / to_seconds(self._delta_stamps[1:])
+
+        if instantaneous_rates.size == 0:
+            return RateMetric(
+                mean_hz=None,
+                median_hz=None,
+                std_hz=None,
+                min_hz=None,
+                max_hz=None,
+            )
+
+        if instantaneous_rates.size == 1:
+            return RateMetric(
+                mean_hz=instantaneous_rates[0],
+                median_hz=instantaneous_rates[0],
+                std_hz=0,
+                min_hz=instantaneous_rates[0],
+                max_hz=instantaneous_rates[0],
+            )
+
+        return RateMetric(
+            mean_hz=np.mean(instantaneous_rates),
+            median_hz=np.median(instantaneous_rates),
+            std_hz=np.std(instantaneous_rates),
+            min_hz=np.min(instantaneous_rates),
+            max_hz=np.max(instantaneous_rates),
+        )
 
 
 def validate_timestamps_ordering(
-    timestamp_object: Timestamps, show_offending_in_nanoseconds: bool = True
+    timestamp_object: Timestamps,
+    show_offending_in_nanoseconds: bool = True,
+    fail_causal_ordering_violation=True,
 ) -> List[int]:
     """Checks the causal order of timestamps in the given data container to ensure they are
     monoticaly increasing.
@@ -382,7 +458,7 @@ def validate_timestamps_ordering(
     >>> #                   nanoseconds [  T  ]                          nanoseconds [ T+1 ]
     >>> #     ——————————————————————————————————————————————————————————————————————————————
     >>> #           1711047163876963111 [  302]     !<                             0 [  303]
-    >>> #                             0 [  511]     !<                             0 [  512]
+    >>> #                             0 [  303]     !<                             0 [  304]
     >>> #           1711047175850442468 [  631]     !<                             0 [  632]
     >>> #           1711047237203461717 [ 3334]     !<                             0 [ 3335]
     >>> #
@@ -398,6 +474,7 @@ def validate_timestamps_ordering(
     :param timestamp_object: A Timestance object fill with trajectory stamp in nanosecond.
     :param show_offending_in_nanoseconds: Display in nanosecond or ( seconds nanoseconds ).
      Default nanoseconds
+    :param fail_causal_ordering_violation:
     :return: The list of offending timestamps indexes.
     :raises TimestampCausalOrderingError: Raises an TimestampCausalOrderingError if the
      "timestamps" array is empty or if any timestamp violates the causal ordering.
@@ -448,7 +525,9 @@ def validate_timestamps_ordering(
             f"{(timestamp_object[-1].stamps - timestamp_object[0].stamps):>22}  \n"
             f"    {'—' * 78}\n"
         )
-        raise TimestampCausalOrderingError(error_msg)
+
+        if fail_causal_ordering_violation:
+            raise TimestampCausalOrderingError(error_msg)
 
     return offending_idx
 

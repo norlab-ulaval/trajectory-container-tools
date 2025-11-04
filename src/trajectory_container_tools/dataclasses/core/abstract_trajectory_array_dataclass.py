@@ -94,7 +94,7 @@ class AbstractTrajectoryUnboundedArray(AbstractTrajectoryFeature):
 
         return trj_feature_array_at_t
 
-    def empty(self) -> "Timestamps":
+    def empty(self) -> "AbstractTrajectoryUnboundedArray":
         empty_trj_feature = super().empty()
 
         updated_list = []

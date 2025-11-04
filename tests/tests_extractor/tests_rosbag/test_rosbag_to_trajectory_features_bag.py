@@ -31,11 +31,9 @@ class TestExtractRosBagFeature:
     def test_extract_single_feature_from_rosbag(
         self, setup_rosbag_three_topics_filtered
     ):
-        container = extract_rosbag_feature(
-            rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
-            feature_name="/odom",
-            data_container_type=NavMsgsOdometry,
-        )
+        container = extract_rosbag_feature(rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
+                                           feature_name="/odom",
+                                           data_container_type=NavMsgsOdometry)
 
         print(container)
 
@@ -46,11 +44,9 @@ class TestExtractRosBagFeature:
         self, setup_rosbag_three_topics_filtered
     ):
         container: Union[NavMsgsOdometry, RosStampedFeature]
-        container = extract_rosbag_feature(
-            rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
-            feature_name="/odom",
-            data_container_type=NavMsgsOdometry,
-        )
+        container = extract_rosbag_feature(rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
+                                           feature_name="/odom",
+                                           data_container_type=NavMsgsOdometry)
 
         print(container)
 
@@ -81,37 +77,28 @@ class TestExtractRosBagFeature:
         with pytest.raises(AttributeError):
             # noinspection PyTypeChecker
             container = extract_rosbag_feature(
-                rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
-                feature_name=fn,
-                data_container_type=bad_argument,
-            )
+                rosbag_path=setup_rosbag_three_topics_filtered.bag_path, feature_name=fn,
+                data_container_type=bad_argument)
 
     def test_fail_no_existing_feature(self, setup_rosbag_three_topics_filtered):
         with pytest.raises(ValueError):
-            extract_rosbag_feature(
-                rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
-                feature_name="/aaaaaaackermann_cmddd",
-                data_container_type=AckermannMsgsAckermannDriveStamped,
-            )
+            extract_rosbag_feature(rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
+                                   feature_name="/aaaaaaackermann_cmddd",
+                                   data_container_type=AckermannMsgsAckermannDriveStamped)
 
     def test_no_existing_feature_dimension(self, setup_rosbag_three_topics_filtered):
         with pytest.raises(ValueError):
-            extract_rosbag_feature(
-                rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
-                feature_name="/aaaaaaackermann_cmddd",
-                data_container_type=NavMsgsOdometry,
-            )
+            extract_rosbag_feature(rosbag_path=setup_rosbag_three_topics_filtered.bag_path,
+                                   feature_name="/aaaaaaackermann_cmddd",
+                                   data_container_type=NavMsgsOdometry)
 
     def test_catch_timestamps_sanity_check_error(self):
         # 2024-03-21_14-52-35-offending-timestamps
         bag_path, bag_name = get_rosbag_vaul_f110_grand_salon_path(offending=True)
 
         with pytest.raises(TimestampCausalOrderingError) as exc_info:
-            extract_rosbag_feature(
-                rosbag_path=bag_path,
-                feature_name="/teleop",
-                data_container_type=AckermannMsgsAckermannDriveStamped,
-            )
+            extract_rosbag_feature(rosbag_path=bag_path, feature_name="/teleop",
+                                   data_container_type=AckermannMsgsAckermannDriveStamped)
         print(f"{exc_info=}")
         error_msg = (
             "Detected timestamps causal ordering violation in rosbag /teleop topic "

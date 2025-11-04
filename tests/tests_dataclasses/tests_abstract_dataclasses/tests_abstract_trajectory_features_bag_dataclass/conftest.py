@@ -7,7 +7,9 @@ import numpy as np
 import pytest
 
 from trajectory_container_tools.dataclasses import StdMsgsHeader, RosStampedFeature
-from trajectory_container_tools.dataclasses.core import AbstractTrajectoryStampedFeaturesBag
+from trajectory_container_tools.dataclasses.core import (
+    AbstractTrajectoryStampedFeaturesBag,
+)
 from trajectory_container_tools.temporal import Timestamps
 
 
@@ -142,6 +144,7 @@ def setup_mock_timestamps_case_last_stamp_on_obs() -> MockTopicsTimestamps:
         ],
         t_act_timestamps=[
             3,
+            5,
         ],
     )
 
@@ -179,12 +182,14 @@ def setup_mock_timestamps_case_mixing() -> MockTopicsTimestamps:
 def setup_mock_mf_container():
 
     def setup_fct(timestamp_case) -> MockFeatureBagTrajectoryStampedDataclass:
+        # mock_recorded_timestamps = np.unique(np.concatenate(timestamp_case.t_obs_timestamps + 333, timestamp_case.t_act_timestamps + 333,))
         topic_mock_obs = MockRosStampedFeature(
             feature_name="Mock observation topic",
             header=StdMsgsHeader(
                 frame_id="topic_obs",
                 timestamps=Timestamps(timestamp_case.t_obs_timestamps),
             ),
+            bag_recorded_timestamps=Timestamps(timestamp_case.t_obs_timestamps + 333),
             mock_feature=np.arange(timestamp_case.t_obs_timestamps.size),
         )
 
@@ -194,24 +199,24 @@ def setup_mock_mf_container():
                 frame_id="topic_act",
                 timestamps=Timestamps(timestamp_case.t_act_timestamps),
             ),
+            bag_recorded_timestamps=Timestamps(timestamp_case.t_act_timestamps + 333),
             mock_feature=np.arange(timestamp_case.t_act_timestamps.size),
+        )
+
+        unique_bag_timestamps = np.unique(
+            np.concatenate(
+                (
+                    timestamp_case.t_obs_timestamps + 333,
+                    timestamp_case.t_act_timestamps + 333
+                )
+            )
         )
 
         mf_container = MockFeatureBagTrajectoryStampedDataclass(
             dataset_info="Mock",
             topic_mock_observation=topic_mock_obs,
             topic_mock_action=topic_mock_act,
-            bag_timestamps=Timestamps(
-                np.unique(
-                    np.concatenate(
-                        (
-                            timestamp_case.t_obs_timestamps,
-                            timestamp_case.t_act_timestamps,
-                            timestamp_case.t_obs_timestamps[1:3] + 300,
-                        )
-                    )
-                )
-            ),
+            bag_timestamps=Timestamps(unique_bag_timestamps, single_source=False),
             chunk_on="topic_mock_action",
         )
         return deepcopy(mf_container)

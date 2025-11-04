@@ -63,7 +63,7 @@ class TestAbstractTrajectoryFeaturesBag:
         topic_mock_1, topic_mock_2 = setup_mock_topic_container
 
         if t_bag_timestamps:
-            mock_bag_timestamps = Timestamps(stamps=np.arange(20) * 1e9)
+            mock_bag_timestamps = Timestamps(stamps=np.arange(20) * 1e9, single_source=False)
         else:
             mock_bag_timestamps = None
 
@@ -91,7 +91,7 @@ class TestAbstractTrajectoryFeaturesBag:
     def test_case_bag_level_timestamps(self, setup_mock_topic_container):
         topic_mock_1, topic_mock_2 = setup_mock_topic_container
 
-        mock_bag_timestamps = Timestamps(stamps=np.arange(20) * 1e9)
+        mock_bag_timestamps = Timestamps(stamps=np.arange(20) * 1e9, single_source=False)
 
         mf_container = MockTrajectoryFeaturesBag(
             dataset_info="Mock",
@@ -105,7 +105,7 @@ class TestAbstractTrajectoryFeaturesBag:
     def test_topic_key_list(self, setup_mock_topic_container):
         topic_mock_1, topic_mock_2 = setup_mock_topic_container
 
-        mock_bag_timestamps = Timestamps(stamps=np.arange(20) * 1e9)
+        mock_bag_timestamps = Timestamps(stamps=np.arange(20) * 1e9, single_source=False)
 
         mf_container = MockTrajectoryFeaturesBag(
             dataset_info="Mock",

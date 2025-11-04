@@ -36,4 +36,7 @@ class StdMsgsHeader(BaseTrajectoryFeature):
         if isinstance(self.timestamps, np.ndarray):
             self.timestamps = Timestamps(self.timestamps)
 
-        self.timestamps.causal_ordering_sanity_check(show_offending_in_nanoseconds=True)
+        self.timestamps.causal_ordering_sanity_check(
+            show_offending_in_nanoseconds=True,
+            fail_causal_ordering_violation=self.fail_causal_ordering_violation,
+        )

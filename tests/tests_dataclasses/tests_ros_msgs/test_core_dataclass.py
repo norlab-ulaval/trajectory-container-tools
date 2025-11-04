@@ -72,12 +72,32 @@ class TestRosFeature:
         assert np.array_equal(t_container.mock_attribute, t_mock_attribute)
         # print(t_container)
 
+    def test_get_first_timestamp(self, setup_mock_dataclass, setup_real_timestamps):
+        t_container, t_mock_attribute = setup_mock_dataclass
+
+        # Base case
+        assert t_container.get_first_timestamp() == int(setup_real_timestamps[0])
+
+        # Case bag recorded timestamps not initialized
+        t_container.bag_recorded_timestamps = None
+        assert t_container.get_first_timestamp() is None
+
+    def test_get_last_timestamp(self, setup_mock_dataclass, setup_real_timestamps):
+        t_container, t_mock_attribute = setup_mock_dataclass
+
+        # Base case
+        assert t_container.get_last_timestamp() == int(setup_real_timestamps[-1])
+
+        # Case bag recorded timestamps not initialized
+        t_container.bag_recorded_timestamps = None
+        assert t_container.get_first_timestamp() is None
+
     @pytest.mark.parametrize(
         argnames="t_startpoint",
         argvalues=[True, False],
         ids=["startpoint=True", "startpoint=False"],
     )
-    def test_get_timestamp_case_single_stamp(
+    def test_get_timestamps_interval_case_single_stamp(
         self, setup_mock_dataclass, setup_real_timestamps, t_startpoint
     ):
         t_container, t_mock_attribute = setup_mock_dataclass
@@ -85,7 +105,7 @@ class TestRosFeature:
         t_start_idx = 1
         t_start = int(setup_real_timestamps[t_start_idx])
 
-        t_container_interval = t_container.get_timestamps(
+        t_container_interval = t_container.get_timestamps_interval(
             start=t_start, startpoint=t_startpoint
         )
         print(t_container_interval)
@@ -99,14 +119,14 @@ class TestRosFeature:
             == t_mock_attribute[t_start_idx + int(not t_startpoint)]
         )
 
-    def test_get_timestamp_case_interval(
+    def test_get_timestamps_interval_case_interval(
         self, setup_mock_dataclass, setup_real_timestamps
     ):
         t_container, t_mock_attribute = setup_mock_dataclass
 
         t_start_idx = 1
         t_stop_idx = 4
-        t_container_interval = t_container.get_timestamps(
+        t_container_interval = t_container.get_timestamps_interval(
             start=(int(setup_real_timestamps[t_start_idx])),
             stop=(int(setup_real_timestamps[t_stop_idx])),
         )
@@ -133,14 +153,14 @@ class TestRosFeature:
             "startpoint=False, endpoint=False",
         ],
     )
-    def test_get_timestamp_case_endpoint(
+    def test_get_timestamps_interval_case_endpoint(
         self, setup_mock_dataclass, setup_real_timestamps, t_startpoint, t_endpoint
     ):
         t_container, t_mock_attribute = setup_mock_dataclass
 
         t_start_idx = 0
         t_stop_idx = 4
-        t_container_interval = t_container.get_timestamps(
+        t_container_interval = t_container.get_timestamps_interval(
             start=int(setup_real_timestamps[t_start_idx]),
             stop=int(setup_real_timestamps[t_stop_idx]),
             startpoint=t_startpoint,
@@ -201,7 +221,7 @@ class TestRosFeatureCaseNoNestedBagStamps:
         argvalues=[True, False],
         ids=["startpoint=True", "startpoint=False"],
     )
-    def test_get_timestamp_case_single_stamp(
+    def test_get_timestamps_interval_case_single_stamp(
         self, setup_mock_nested_dataclass, setup_real_timestamps, t_startpoint
     ):
         t_container, t_mock_attribute = setup_mock_nested_dataclass
@@ -209,7 +229,7 @@ class TestRosFeatureCaseNoNestedBagStamps:
         t_start_idx = 1
         t_start = int(setup_real_timestamps[t_start_idx])
 
-        t_container_interval = t_container.get_timestamps(
+        t_container_interval = t_container.get_timestamps_interval(
             start=t_start, startpoint=t_startpoint
         )
         print(t_container_interval)
@@ -223,14 +243,14 @@ class TestRosFeatureCaseNoNestedBagStamps:
             == t_mock_attribute[t_start_idx + int(not t_startpoint)]
         )
 
-    def test_get_timestamp_case_interval(
+    def test_get_timestamps_interval_case_interval(
         self, setup_mock_nested_dataclass, setup_real_timestamps
     ):
         t_container, t_mock_attribute = setup_mock_nested_dataclass
 
         t_start_idx = 1
         t_stop_idx = 4
-        t_container_interval = t_container.get_timestamps(
+        t_container_interval = t_container.get_timestamps_interval(
             start=(int(setup_real_timestamps[t_start_idx])),
             stop=(int(setup_real_timestamps[t_stop_idx])),
         )
@@ -257,7 +277,7 @@ class TestRosFeatureCaseNoNestedBagStamps:
             "startpoint=False, endpoint=False",
         ],
     )
-    def test_get_timestamp_case_endpoint(
+    def test_get_timestamps_interval_case_endpoint(
         self,
         setup_mock_nested_dataclass,
         setup_real_timestamps,
@@ -268,7 +288,7 @@ class TestRosFeatureCaseNoNestedBagStamps:
 
         t_start_idx = 0
         t_stop_idx = 4
-        t_container_interval = t_container.get_timestamps(
+        t_container_interval = t_container.get_timestamps_interval(
             start=int(setup_real_timestamps[t_start_idx]),
             stop=int(setup_real_timestamps[t_stop_idx]),
             startpoint=t_startpoint,
@@ -329,6 +349,56 @@ class TestRosStampedFeature:
         assert np.array_equal(t_container.mock_attribute, t_mock_attribute)
         # print(t_container)
 
+    def test_get_first_timestamp(
+        self, setup_mock_dataclass, setup_real_timestamps, setup_mock_timestamps
+    ):
+        t_container, t_mock_attribute = setup_mock_dataclass
+
+        # Base case
+        assert t_container.get_first_timestamp() == int(setup_real_timestamps[0])
+        assert t_container.get_first_timestamp(
+            use_msg_publishing_timestamps=False
+        ) == int(setup_mock_timestamps[0])
+
+        # Case bag recorded timestamps not initialized
+        t_container.bag_recorded_timestamps = None
+        assert t_container.get_first_timestamp() == int(setup_real_timestamps[0])
+
+        with pytest.raises(AttributeError) as exc_info:
+            assert (
+                t_container.get_first_timestamp(use_msg_publishing_timestamps=False)
+                is None
+            )
+        print(f"{exc_info=}")
+        assert exc_info.value.args == (
+            "No 'bag_recorded_timestamps' attribute found in container, parent included.",
+        )
+
+    def test_get_last_timestamp(
+        self, setup_mock_dataclass, setup_real_timestamps, setup_mock_timestamps
+    ):
+        t_container, t_mock_attribute = setup_mock_dataclass
+
+        # Base case
+        assert t_container.get_last_timestamp() == int(setup_real_timestamps[-1])
+        assert t_container.get_last_timestamp(
+            use_msg_publishing_timestamps=False
+        ) == int(setup_mock_timestamps[-1])
+
+        # Case bag recorded timestamps not initialized
+        t_container.bag_recorded_timestamps = None
+        assert t_container.get_last_timestamp() == int(setup_real_timestamps[-1])
+
+        with pytest.raises(AttributeError) as exc_info:
+            assert (
+                t_container.get_last_timestamp(use_msg_publishing_timestamps=False)
+                is None
+            )
+        print(f"{exc_info=}")
+        assert exc_info.value.args == (
+            "No 'bag_recorded_timestamps' attribute found in container, parent included.",
+        )
+
     @pytest.mark.parametrize(
         argnames="t_startpoint",
         argvalues=[True, False],
@@ -342,7 +412,7 @@ class TestRosStampedFeature:
             "t_use_msg_publishing_timestamps=False",
         ],
     )
-    def test_get_timestamp_case_single_stamp(
+    def test_get_timestamps_interval_case_single_stamp(
         self,
         setup_mock_dataclass,
         setup_real_timestamps,
@@ -359,7 +429,7 @@ class TestRosStampedFeature:
         t_start_idx = 1
         t_start = int(t_stamps[t_start_idx])
 
-        t_container_interval = t_container.get_timestamps(
+        t_container_interval = t_container.get_timestamps_interval(
             start=t_start,
             startpoint=t_startpoint,
             use_msg_publishing_timestamps=t_use_msg_publishing_timestamps,
@@ -389,7 +459,7 @@ class TestRosStampedFeature:
             "t_use_msg_publishing_timestamps=False",
         ],
     )
-    def test_get_timestamp_case_interval(
+    def test_get_timestamps_interval_case_interval(
         self,
         setup_mock_dataclass,
         setup_real_timestamps,
@@ -404,7 +474,7 @@ class TestRosStampedFeature:
 
         t_start_idx = 1
         t_stop_idx = 4
-        t_container_interval = t_container.get_timestamps(
+        t_container_interval = t_container.get_timestamps_interval(
             start=(int(t_stamps[t_start_idx])),
             stop=(int(t_stamps[t_stop_idx])),
             use_msg_publishing_timestamps=t_use_msg_publishing_timestamps,
@@ -440,7 +510,7 @@ class TestRosStampedFeature:
             "startpoint=False, endpoint=False",
         ],
     )
-    def test_get_timestamp_case_endpoint(
+    def test_get_timestamps_interval_case_endpoint(
         self, setup_mock_dataclass, setup_real_timestamps, t_startpoint, t_endpoint
     ):
         t_container, t_mock_attribute = setup_mock_dataclass
@@ -449,7 +519,7 @@ class TestRosStampedFeature:
         t_stop_idx = 4
 
         # Note: Use 'use_msg_publishing_timestamps' param default.
-        t_container_interval = t_container.get_timestamps(
+        t_container_interval = t_container.get_timestamps_interval(
             start=int(setup_real_timestamps[t_start_idx]),
             stop=int(setup_real_timestamps[t_stop_idx]),
             startpoint=t_startpoint,
@@ -541,12 +611,32 @@ class TestRosFeatureArray:
             # The 'timestamps' attribute should not exist
             assert t_container.__getattribute__("header")
 
+    def test_get_first_timestamp(self, setup_mock_dataclass, setup_mock_timestamps):
+        t_container, t_mock_attribute = setup_mock_dataclass
+
+        # Base case
+        assert t_container.get_first_timestamp() == int(setup_mock_timestamps[0])
+
+        # Case bag recorded timestamps not initialized
+        t_container.bag_recorded_timestamps = None
+        assert t_container.get_first_timestamp() is None
+
+    def test_get_last_timestamp(self, setup_mock_dataclass, setup_mock_timestamps):
+        t_container, t_mock_attribute = setup_mock_dataclass
+
+        # Base case
+        assert t_container.get_last_timestamp() == int(setup_mock_timestamps[-1])
+
+        # Case bag recorded timestamps not initialized
+        t_container.bag_recorded_timestamps = None
+        assert t_container.get_first_timestamp() is None
+
     @pytest.mark.parametrize(
         argnames="t_startpoint",
         argvalues=[True, False],
         ids=["startpoint=True", "startpoint=False"],
     )
-    def test_get_timestamp_case_single_stamp(
+    def test_get_timestamps_interval_case_single_stamp(
         self,
         setup_mock_dataclass,
         setup_real_timestamps,
@@ -558,7 +648,7 @@ class TestRosFeatureArray:
         t_start_idx = 1
         t_start = int(setup_mock_timestamps[t_start_idx])
 
-        t_container_interval = t_container.get_timestamps(
+        t_container_interval = t_container.get_timestamps_interval(
             start=t_start, startpoint=t_startpoint
         )
         print(t_container)
@@ -588,14 +678,14 @@ class TestRosFeatureArray:
             0
         ] == int(setup_mock_timestamps[t_start_idx + int(not t_startpoint)] + 999)
 
-    def test_get_timestamp_case_interval(
+    def test_get_timestamps_interval_case_interval(
         self, setup_mock_dataclass, setup_real_timestamps, setup_mock_timestamps
     ):
         t_container, t_mock_attribute = setup_mock_dataclass
 
         t_start_idx = 1
         t_stop_idx = 4
-        t_container_interval = t_container.get_timestamps(
+        t_container_interval = t_container.get_timestamps_interval(
             start=(int(setup_mock_timestamps[t_start_idx])),
             stop=(int(setup_mock_timestamps[t_stop_idx])),
         )
@@ -644,7 +734,7 @@ class TestRosFeatureArray:
             "startpoint=False, endpoint=False",
         ],
     )
-    def test_get_timestamp_case_endpoint(
+    def test_get_timestamps_interval_case_endpoint(
         self,
         setup_mock_dataclass,
         setup_real_timestamps,
@@ -656,7 +746,7 @@ class TestRosFeatureArray:
 
         t_start_idx = 0
         t_stop_idx = 4
-        t_container_interval = t_container.get_timestamps(
+        t_container_interval = t_container.get_timestamps_interval(
             start=int(setup_mock_timestamps[t_start_idx]),
             stop=int(setup_mock_timestamps[t_stop_idx]),
             startpoint=t_startpoint,

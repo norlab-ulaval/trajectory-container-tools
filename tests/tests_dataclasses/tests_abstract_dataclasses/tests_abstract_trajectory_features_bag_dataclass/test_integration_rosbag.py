@@ -21,11 +21,9 @@ class TestIntegrationAbstractTrajectoryStampedFeaturesBag:
         setup_rosbag_six_topics_filtered,
     ):
 
-        mf_container = from_rosbag(
-            setup_rosbag_six_topics_filtered.bag_path,
-            dataset_info=setup_rosbag_six_topics_filtered.bag_name,
-            features_config=setup_rosbag_six_topics_filtered.feature_config,
-        )
+        mf_container = from_rosbag(setup_rosbag_six_topics_filtered.bag_path,
+                                   dataset_info=setup_rosbag_six_topics_filtered.bag_name,
+                                   features_config=setup_rosbag_six_topics_filtered.feature_config)
 
         # Minimum logic to validate run success
         print(mf_container)
@@ -36,12 +34,10 @@ class TestIntegrationAbstractTrajectoryStampedFeaturesBag:
         self, setup_rosbag_three_topics_filtered
     ):
 
-        mf_container = from_rosbag(
-            setup_rosbag_three_topics_filtered.bag_path,
-            dataset_info=setup_rosbag_three_topics_filtered.bag_name,
-            features_config=setup_rosbag_three_topics_filtered.feature_config,
-            chunk_on="/teleop",
-        )
+        mf_container = from_rosbag(setup_rosbag_three_topics_filtered.bag_path,
+                                   dataset_info=setup_rosbag_three_topics_filtered.bag_name,
+                                   features_config=setup_rosbag_three_topics_filtered.feature_config,
+                                   chunk_on="/teleop")
 
         print("==== FULL VIEW", "=" * 80, "\n", mf_container, "\n")
 
@@ -59,12 +55,10 @@ class TestIntegrationAbstractTrajectoryStampedFeaturesBag:
         self, setup_rosbag_six_topics_filtered
     ):
 
-        mf_container = from_rosbag(
-            setup_rosbag_six_topics_filtered.bag_path,
-            dataset_info=setup_rosbag_six_topics_filtered.bag_name,
-            features_config=setup_rosbag_six_topics_filtered.feature_config,
-            chunk_on="/teleop",
-        )
+        mf_container = from_rosbag(setup_rosbag_six_topics_filtered.bag_path,
+                                   dataset_info=setup_rosbag_six_topics_filtered.bag_name,
+                                   features_config=setup_rosbag_six_topics_filtered.feature_config,
+                                   chunk_on="/teleop")
 
         print(
             f"\n==== FULL VIEW {'=' * 80}\n",
@@ -79,12 +73,10 @@ class TestIntegrationAbstractTrajectoryStampedFeaturesBag:
         self, setup_rosbag_three_topics_filtered
     ):
 
-        mf_container = from_rosbag(
-            setup_rosbag_three_topics_filtered.bag_path,
-            dataset_info=setup_rosbag_three_topics_filtered.bag_name,
-            features_config=setup_rosbag_three_topics_filtered.feature_config,
-            chunk_on="/teleop",
-        )
+        mf_container = from_rosbag(setup_rosbag_three_topics_filtered.bag_path,
+                                   dataset_info=setup_rosbag_three_topics_filtered.bag_name,
+                                   features_config=setup_rosbag_three_topics_filtered.feature_config,
+                                   chunk_on="/teleop")
 
         for each in mf_container:
             print(each)
@@ -102,3 +94,20 @@ class TestIntegrationAbstractTrajectoryStampedFeaturesBag:
 
         for each in mf_container:
             print(each)
+
+    def test_integration_chunk_iterable_six_topics_offending_timestamps(
+        self, setup_rosbag_six_topics_offending_timestamps
+    ):
+
+        mf_container = from_rosbag(
+            setup_rosbag_six_topics_offending_timestamps.bag_path,
+            dataset_info=setup_rosbag_six_topics_offending_timestamps.bag_name,
+            features_config=setup_rosbag_six_topics_offending_timestamps.feature_config,
+            chunk_on="/teleop",
+            fail_causal_ordering_violation=False,
+        )
+
+        print(mf_container)
+
+        # for each in mf_container:
+        #     print(each)

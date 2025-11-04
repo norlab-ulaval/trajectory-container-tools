@@ -35,6 +35,7 @@ class AbstractTrajectoryCommon(abc.ABC):
     _parent: ContainerInternalField[Optional["AbstractTrajectoryCommon"]] = field(
         default=None, init=False
     )
+    fail_causal_ordering_violation: ContainerInternalField[bool] = field(default=True, kw_only=True)
 
     def set_parent_container_reference_tracking(self):
         """
@@ -73,7 +74,7 @@ class AbstractTrajectoryCommon(abc.ABC):
 
     def get_container_root(
         self, include_feature_bag=False
-    ) -> "AbstractTrajectoryCommon":
+    ) -> Union["AbstractTrajectoryCommon", "AbstractTrajectoryFeaturesBag"]:
         """
         Recursively retrieves the root container in a hierarchy.
 
@@ -100,8 +101,7 @@ class AbstractTrajectoryCommon(abc.ABC):
                 return parent_container
             elif not include_feature_bag and parent_is_feature_bag:
                 return self
-
-        if not self.is_nested():
+        else:
             return self
 
         # Recursively search up the parent chain
@@ -229,12 +229,14 @@ class AbstractTrajectoryCommon(abc.ABC):
           structure of the attribute to retrieve.
         :return: The value of the requested attribute.
         """
+        if not isinstance(feature_name, str):
+            raise ValueError("feature_name is not a string!")
         nested_attribute = self
         for each in feature_name.split("."):
             nested_attribute = nested_attribute.__getattribute__(each)
         return nested_attribute
 
-    def has_dynamic_attribute(self, feature_name) -> bool:
+    def has_dynamic_attribute(self, feature_name: str) -> bool:
         """
         Check if a dynamicaly declared attribute exists in the object.
 
@@ -258,6 +260,8 @@ class AbstractTrajectoryCommon(abc.ABC):
             return True
         except AttributeError:
             return False
+        except ValueError:
+            raise
 
     def set_dynamic_attribute(self, feature_name: str, value: Any) -> None:
         """Sets a dynamically resolved nested field or attribute within an object.

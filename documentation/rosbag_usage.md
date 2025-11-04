@@ -83,11 +83,14 @@ features_config = {
 
 ```python
 # Extract multiple features from rosbag
-trajectory_container = tct.extractor.from_rosbag(rosbag_path=rosbag_path,
-                                                 dataset_info="Robot experiment - Outdoor navigation",
-                                                 features_config=features_config)
+trajectory_container = tct.extractor.from_rosbag(
+    rosbag_path=rosbag_path,
+    dataset_info="Robot experiment - Outdoor navigation",
+    features_config=features_config,
+)
 
 print(trajectory_container)
+
 ```
 
 ## Supported Message Types
@@ -188,11 +191,8 @@ plt.show()
 import trajectory_container_tools as tct
 
 # Extract only odometry data
-tc_odom = tct.extractor.extract_rosbag_feature(
-        rosbag_path=rosbag_path,
-        feature_name="odom",  # ROS topic name
-        data_container_type=NavMsgsOdometry
-        )
+tc_odom = tct.extractor.extract_rosbag_feature(rosbag_path=rosbag_path, feature_name="odom",
+                                               data_container_type=NavMsgsOdometry)
 
 print(f"Odometry timestamps: {len(tc_odom.header.timestamps)}")
 print(f"Position data shape: {tc_odom.topic_odom.pose.pose.position.x.shape}")
@@ -284,7 +284,7 @@ first_three_chunks = trajectory_features_bag[0:3]
 - Extracting features from aligned time windows across different data sources
 - Implementing sliding window algorithms over multi-sensor trajectories
 
-**Note:** For advanced timestamp operations including `get_timestamps()`, `trajectory_timestamps`, and `trajectory_timestamps_limits`, see the [Timestamp Utilities Guide](timestamp_utilities.md).
+**Note:** For advanced timestamp operations including `get_timestamps_interval()`, `trajectory_published_timestamps`, and `trajectory_timestamps_metadata`, see the [Timestamp Utilities Guide](timestamp_utilities.md).
 
 ## Custom Message Types
 
@@ -387,9 +387,7 @@ common_odom_topics = ['/odom', '/odometry', '/robot/odom', '/base_link/odom']
 # Try different topic names
 for topic in common_odom_topics:
     try:
-        container = tct.extractor.extract_rosbag_feature(rosbag_path,
-                                                         topic,
-                                                         tct.dataclasses.NavMsgsOdometry)
+        container = tct.extractor.extract_rosbag_feature(rosbag_path, topic, tct.dataclasses.NavMsgsOdometry)
         print(f"Success with topic: {topic}")
         break
     except:

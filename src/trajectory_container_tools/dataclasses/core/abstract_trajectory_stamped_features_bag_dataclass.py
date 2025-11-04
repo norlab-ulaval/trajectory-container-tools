@@ -16,7 +16,11 @@ from trajectory_container_tools.dataclasses.ros_msgs.core_dataclass_utils import
     get_timestamps_slice,
 )
 from trajectory_container_tools.temporal import Timestamps
-from ...temporal.trajectory_timestamps_metadata import TrajectoryTimestampsMetadata
+from ...temporal.timestamps import TimestampOutOfBoundError
+from ...temporal.trajectory_timestamps_metadata import (
+    TrajectoryTimestampsMetadata,
+    TrajectoryTimestampsMetadataBag,
+)
 from trajectory_container_tools.utils.typing.tct_custom_field import (
     NonTrajectoryField,
     ContainerInternalField,
@@ -94,7 +98,7 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
         :return: The total number of chunks.
         """
         # return len(self.get_dynamic_attribute(self.chunk_on)) - 1
-        return len(self.get_chunk_on_timestamps()) - 1
+        return len(self.get_chunk_on_timestamps())
 
     def __len__(self) -> int:
         return self.chunks_total
@@ -169,20 +173,22 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
         self._iter_index = 0
         return self
 
+    # noinspection PyTypeChecker
     def __next__(self) -> "AbstractTrajectoryStampedFeaturesBag":
-        if self._iter_index <= self.chunks_total:
+        if self._iter_index < self.chunks_total:
             item = self[self._iter_index]
             self._iter_index += 1
             return item
         else:
             raise StopIteration
 
-    def get_timestamps(
+    def get_timestamps_interval(
         self,
         start: int,
         stop: Optional[int] = None,
         startpoint: bool = True,
-        endpoint: bool = False,
+        endpoint: bool = True,
+        resolve_out_of_bounds=True,
     ) -> "AbstractTrajectoryStampedFeaturesBag":
         """
         Retrieve a trajectory interval within a specified timestamps range.
@@ -195,9 +201,15 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
         :param stop: The optional stopping timestamp value of the slice. If not specified,
             the slice will retrive a trajectory of length 1.
         :param startpoint: A boolean indicating whether to include the starting point in the slice.
-        :param endpoint: A boolean indicating whether to include the stopping point in the slice.
+            This affect all features except the 'chunk_on' one.
+        :param endpoint: A boolean indicating whether to include the 'chunk_on' feature stopping
+            point in the slice.
+        :param resolve_out_of_bounds: (Default True) Disable out of bound check and resolve to the
+            nearest timestamps bound. (False) Raise TimestampOutOfBoundError on bound violation
+            if 'startpoint' and/or 'endpoint' are False.
         :return: A data slice corresponding to the timestamps within the specified range.
         """
+
         mf_dataclass_at_t = deepcopy(self)
 
         if self.bag_timestamps is not None:
@@ -205,40 +217,139 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
                 self.bag_timestamps,
                 start=start,
                 stop=stop,
-                startpoint=startpoint,
-                endpoint=endpoint,
-                resolve_out_of_bounds=True,
+                startpoint=True and startpoint,
+                endpoint=True and endpoint,
+                resolve_out_of_bounds=resolve_out_of_bounds,
             )
             bag_timestamps_subset = mf_dataclass_at_t.bag_timestamps[timestamps_slice]
             mf_dataclass_at_t.__setattr__("bag_timestamps", bag_timestamps_subset)
 
-        for each_topic in self.topic_key_list:
-            each_attribute: Union[RosStampedFeature, RosFeatureArray] = (
-                self.get_dynamic_attribute(each_topic)
-            )
-            # (☕minor) ToDo: update unit-test (ref task TCT-91)
+        chunk_on_attribute: Union[RosStampedFeature, RosFeatureArray, RosFeature] = (
+            self.get_dynamic_attribute(self.chunk_on)
+        )
+        chunk_on_attribute_window = chunk_on_attribute.get_timestamps_interval(
+            start=start,
+            stop=stop,
+            startpoint=False,
+            endpoint=True and endpoint,
+            resolve_out_of_bounds=resolve_out_of_bounds,
+        )
+        mf_dataclass_at_t.__setattr__(self.chunk_on, chunk_on_attribute_window)
 
-            each_attribute = each_attribute.get_timestamps(
+        chunk_stop = chunk_on_attribute_window.get_last_timestamp()
+
+        for each_feature_name in self.topic_key_list:
+            if each_feature_name == self.chunk_on:
+                continue
+
+            each_feature: Union[RosStampedFeature, RosFeatureArray, RosFeature] = (
+                self.get_dynamic_attribute(each_feature_name)
+            )
+
+            each_feature = each_feature.get_timestamps_interval(
                 start=start,
-                stop=stop,
-                startpoint=startpoint,
-                endpoint=endpoint,
-                resolve_out_of_bounds=True,
+                stop=chunk_stop,
+                startpoint=True and startpoint,
+                endpoint=False,
+                resolve_out_of_bounds=False or resolve_out_of_bounds,
             )
 
-            mf_dataclass_at_t.__setattr__(each_topic, each_attribute)
+            try:
+                # (NICE TO HAVE) Todo: improve ros_msgs/core_dataclass.py module 'Ros*Feature`
+                #  classes 'get_timestamps_interval(resolve_out_of_bounds=False)' method beaviour.
+                # Note: Quick-hack to manage cases where feature trj intervall only have data
+                #       before start point.
+                if each_feature.get_last_timestamp() < start or (
+                    stop is not None and stop < each_feature.get_first_timestamp()
+                ):
+                    each_feature = each_feature.empty()
+            except ValueError as e:
+                if (
+                    "zero-size array to reduction operation maximum which has no identity"
+                    in e.args
+                    or "zero-size array to reduction operation minimum which has no identity"
+                    in e.args
+                ):
+                    each_feature = each_feature.empty()
+                else:
+                    raise
+
+            mf_dataclass_at_t.__setattr__(each_feature_name, each_feature)
 
         return mf_dataclass_at_t
 
-    @property
-    def trajectory_timestamps(self) -> np.ndarray[int, np.dtype[int]]:
+    def get_trajectory_first_timestamp(self, include_bag_record: bool = True) -> int:
         """
-        Returns all timestamps for all features. The returned numpy array is sorted and contains unique timestamps.
+        Retrieve the first timestamp across all features including bag record, feature record, and
+        feature publish timestamps.
+
+        :param include_bag_record: A boolean flag indicating whether to include
+            the minimum timestamp from the bag file record in the computation.
+        :return: The first timestamp among the evaluated trajectory sources.
+        """
+        all_min_timestamps = []
+        if include_bag_record and self.bag_timestamps is not None:
+            try:
+                all_min_timestamps.append(self.bag_timestamps.min())
+            except ValueError:
+                pass
+
+        for each_name in self.topic_key_list:
+            if self.has_dynamic_attribute(f"{each_name}.header"):
+                each_attribute = self.get_dynamic_attribute(each_name)
+                try:
+                    all_min_timestamps.append(each_attribute.header.timestamps.min())
+                except ValueError:
+                    pass
+
+        if len(all_min_timestamps) == 0:
+            raise ValueError(
+                f"get_trajectory_first_timestamp({include_bag_record=}) found no trajectory timestamps."
+            )
+
+        return np.array(all_min_timestamps).min()
+
+    def get_trajectory_last_timestamp(self, include_bag_record: bool = True) -> int:
+        """
+        Retrieve the latest timestamp from the trajectory data, optionally including bag records.
+
+        :param include_bag_record: Flag indicating whether bag record timestamps
+           should be included in the search.
+        :return: The last timestamp among the evaluated trajectory sources.
+        """
+        all_max_timestamps = []
+        if include_bag_record and self.bag_timestamps is not None:
+            try:
+                all_max_timestamps.append(self.bag_timestamps.max())
+            except ValueError:
+                pass
+
+        for each_name in self.topic_key_list:
+            if self.has_dynamic_attribute(f"{each_name}.header"):
+                each_attribute = self.get_dynamic_attribute(each_name)
+                try:
+                    all_max_timestamps.append(each_attribute.header.timestamps.max())
+                except ValueError:
+                    pass
+
+        if len(all_max_timestamps) == 0:
+            raise ValueError(
+                f"get_trajectory_last_timestamp({include_bag_record=}) found no trajectory timestamps."
+            )
+
+        return np.array(all_max_timestamps).max()
+
+    @property
+    def trajectory_published_timestamps(self) -> np.ndarray[int, np.dtype[int]]:
+        """
+        Returns all published timestamps for all features i.e., imply stamped feature.
+
+        The returned numpy array is sorted and contains unique timestamps.
         Note: Those does not include the `bag_timestamps` ones.
 
         Usage:
 
-        >>> print(container.trajectory_timestamps)
+        >>> print(container.trajectory_published_timestamps)
         [1711038330346603696, 1711038330351773872, 1711038330411627056, 1711038330436485488]
 
         :returns: A numpy array of unique timestamps.
@@ -257,7 +368,9 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
                 for each_trj_array_name in each_attribute.trajectory_array_field_names(
                     trajectory_containers_array_only=True
                 ):
-                    for each in each_attribute.get_dynamic_attribute(each_trj_array_name):
+                    for each in each_attribute.get_dynamic_attribute(
+                        each_trj_array_name
+                    ):
                         if each.has_dynamic_attribute("header.timestamps"):
                             each: RosStampedFeature
                             all_features_stamps.append(each.header.timestamps.stamps)
@@ -265,26 +378,40 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
         return np.unique(np.concatenate(all_features_stamps))
 
     @property
-    def trajectory_timestamps_limits(self) -> TrajectoryTimestampsMetadata:
+    def trajectory_timestamps_metadata(self) -> TrajectoryTimestampsMetadataBag:
         """
         Retrieve the first and last timestamps from all features timestamps.
         Note: Those does not include the `bag_timestamps` ones.
 
         Usage:
 
-        >>> print(container.trajectory_timestamps_limits)
-        TrajectoryTimestampsMetadata(first=1711038330346603696, last=1711038330436485488)
-        >>> print(container.trajectory_timestamps_limits.first)
+        >>> print(container.trajectory_timestamps_metadata.recorded.first)
         1711038330346603696
-        >>> print(container.trajectory_timestamps_limits.last)
+        >>> print(container.trajectory_timestamps_metadata.published.last)
         1711038330436485488
 
         :return: A tuple containing the first and the last timestamps from all features timestamps.
         """
+        if self.bag_timestamps is not None:
+            recorded_metadata = TrajectoryTimestampsMetadata(
+                start_time=self.bag_timestamps.min(), end_time=self.bag_timestamps.max()
+            )
+        else:
+            recorded_metadata = None
 
-        return TrajectoryTimestampsMetadata(
-            start_time=self.trajectory_timestamps[0],
-            end_time=self.trajectory_timestamps[-1],
+        try:
+            published_metadata = TrajectoryTimestampsMetadata(
+                start_time=self.get_trajectory_first_timestamp(
+                    include_bag_record=False
+                ),
+                end_time=self.get_trajectory_last_timestamp(include_bag_record=False),
+            )
+        except ValueError:
+            published_metadata = None
+
+        return TrajectoryTimestampsMetadataBag(
+            recorded=recorded_metadata,
+            published=published_metadata,
         )
 
 
@@ -293,7 +420,21 @@ def _get_attribute_at_timestamps(
     chunk_idx: Union[int, slice],
     each_attribute: RosStampedFeature | Timestamps,
 ) -> RosStampedFeature | RosFeatureArray | Timestamps:
+    """
+    Retrieve a specific attribute (NON-chunk-on) at the defined timestamps, either as a slice
+    or single index, while handling possible edge cases such as boundaries and
+    data type variations.
 
+    :param chunck_on_timestamps: The base timestamps sequence to segment or
+        retrieve from.
+    :param chunk_idx: Indicates which segment of the provided timestamps to
+        process. Can be a single index or a slice.
+    :param each_attribute: Attribute or sequence to be retrieved or segmented
+        based on the timestamps. This can be either Timestamps or RosStampedFeature.
+    :return: A subset of the given attribute extracted and aligned with the
+        appropriate timestamp intervals. The return type can vary between
+        RosStampedFeature, RosFeatureArray, or Timestamps.
+    """
     startpoint = True
     endpoint = False
     if isinstance(chunk_idx, slice):
@@ -318,7 +459,7 @@ def _get_attribute_at_timestamps(
         )
         each_attribute = each_attribute[timestamps_slice]
     else:
-        each_attribute = each_attribute.get_timestamps(
+        each_attribute = each_attribute.get_timestamps_interval(
             start=chunck_start_stamp,
             stop=chunck_stop_stamp,
             startpoint=startpoint,

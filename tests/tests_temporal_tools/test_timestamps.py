@@ -9,14 +9,15 @@ from trajectory_container_tools.temporal.timestamps import (
     Timestamps,
 )
 from trajectory_container_tools.temporal import to_seconds_nanoseconds
+from trajectory_container_tools.temporal.trajectory_timestamps_metadata import (
+    RateMetric,
+)
 
 
 class TestTimestampsCore:
     def test_instanciation(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
         ts = Timestamps(stamps=mock_ts_array)
-
-        print(ts)
 
         assert isinstance(ts.stamps, np.ndarray)
         assert isinstance(ts.delta_stamps, np.ndarray)
@@ -68,6 +69,9 @@ class TestTimestampsCore:
         ts = Timestamps(stamps=mock_ts_array)
         print(ts)
 
+        ts = Timestamps(stamps=mock_ts_array, single_source=False)
+        print(ts)
+
     def test_causal_ordering_sanity_check(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
 
@@ -83,6 +87,30 @@ class TestTimestampsCore:
                 5,
                 9,
             ]
+
+        assert Timestamps(stamps=mock_ts_array).causal_ordering_sanity_check(
+            fail_causal_ordering_violation=False
+        ) == [5, 9]
+
+    def test_compute_frequency_metric(self, setup_mock_timestamps):
+        mock_ts_array = setup_mock_timestamps
+
+        t_rate_metric = Timestamps(stamps=mock_ts_array).compute_frequency_metric()
+
+        assert t_rate_metric.min_hz <= t_rate_metric.max_hz
+        assert t_rate_metric.min_hz <= t_rate_metric.mean_hz <= t_rate_metric.max_hz
+
+        # Case pass
+        assert isinstance(t_rate_metric, RateMetric)
+        print(t_rate_metric)
+
+        with pytest.raises(ValueError) as exc_info:
+            Timestamps(
+                stamps=mock_ts_array, single_source=False
+            ).compute_frequency_metric()
+
+        print(f"{exc_info=}")
+        # assert exc_info.value.args == ('<The error message>',)
 
     def test_is_timestamps_in_bounds(self, setup_mock_timestamps):
         mock_ts_array = setup_mock_timestamps
@@ -354,7 +382,12 @@ class TestTimestampsGetNearestMethods:
         else:
             t_expected = mock_ts_array[2]
 
-        assert (ts.get_nearest_stamp(int(mock_ts_array[1]), future=t_future, include=t_include) == t_expected)
+        assert (
+            ts.get_nearest_stamp(
+                int(mock_ts_array[1]), future=t_future, include=t_include
+            )
+            == t_expected
+        )
 
     def test_get_nearest_stamp_case_stamp_at_bound_limit(
         self, setup_mock_timestamps, t_future
@@ -368,8 +401,12 @@ class TestTimestampsGetNearestMethods:
             t_idx_bound = 0
 
         assert (
-            ts.get_nearest_stamp(int(mock_ts_array[t_idx_bound]), future=t_future, include=True)
+            ts.get_nearest_stamp(
+                int(mock_ts_array[t_idx_bound]), future=t_future, include=True
+            )
             == mock_ts_array[t_idx_bound]
         )
         with pytest.raises(IndexError) as exc_info:
-            ts.get_nearest_stamp(int(mock_ts_array[t_idx_bound]), future=t_future, include=False)
+            ts.get_nearest_stamp(
+                int(mock_ts_array[t_idx_bound]), future=t_future, include=False
+            )
