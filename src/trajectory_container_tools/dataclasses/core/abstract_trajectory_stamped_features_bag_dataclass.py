@@ -254,15 +254,25 @@ class AbstractTrajectoryStampedFeaturesBag(AbstractTrajectoryFeaturesBag):
                 resolve_out_of_bounds=False or resolve_out_of_bounds,
             )
 
-            # (NICE TO HAVE) Todo: improve ros_msgs/core_dataclass.py module 'Ros*Feature` classes
-            #  'get_timestamps_interval(resolve_out_of_bounds=False)' method beaviour.
-            # Note: Quick-hack to manage cases where feature trj intervall only have data before
-            #   start point.
-            if (
-                each_feature.get_last_timestamp() < start
-                or stop < each_feature.get_first_timestamp()
-            ):
-                each_feature = each_feature.empty()
+            try:
+                # (NICE TO HAVE) Todo: improve ros_msgs/core_dataclass.py module 'Ros*Feature`
+                #  classes 'get_timestamps_interval(resolve_out_of_bounds=False)' method beaviour.
+                # Note: Quick-hack to manage cases where feature trj intervall only have data
+                #       before start point.
+                if each_feature.get_last_timestamp() < start or (
+                    stop is not None and stop < each_feature.get_first_timestamp()
+                ):
+                    each_feature = each_feature.empty()
+            except ValueError as e:
+                if (
+                    "zero-size array to reduction operation maximum which has no identity"
+                    in e.args
+                    or "zero-size array to reduction operation minimum which has no identity"
+                    in e.args
+                ):
+                    each_feature = each_feature.empty()
+                else:
+                    raise
 
             mf_dataclass_at_t.__setattr__(each_feature_name, each_feature)
 
@@ -410,7 +420,21 @@ def _get_attribute_at_timestamps(
     chunk_idx: Union[int, slice],
     each_attribute: RosStampedFeature | Timestamps,
 ) -> RosStampedFeature | RosFeatureArray | Timestamps:
+    """
+    Retrieve a specific attribute (NON-chunk-on) at the defined timestamps, either as a slice
+    or single index, while handling possible edge cases such as boundaries and
+    data type variations.
 
+    :param chunck_on_timestamps: The base timestamps sequence to segment or
+        retrieve from.
+    :param chunk_idx: Indicates which segment of the provided timestamps to
+        process. Can be a single index or a slice.
+    :param each_attribute: Attribute or sequence to be retrieved or segmented
+        based on the timestamps. This can be either Timestamps or RosStampedFeature.
+    :return: A subset of the given attribute extracted and aligned with the
+        appropriate timestamp intervals. The return type can vary between
+        RosStampedFeature, RosFeatureArray, or Timestamps.
+    """
     startpoint = True
     endpoint = False
     if isinstance(chunk_idx, slice):

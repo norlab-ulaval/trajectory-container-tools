@@ -53,6 +53,7 @@ def run_rosbag_timestamp_eda(
     show_chunk_delimiter=True,
     show_recorded_delimiter=True,
     show_stamps_type: str = "both",
+    show_io_induce_causal_order_violation=True,
     plot_ylim: Optional[float] = None,
     experiment_dir: Optional[str] = None,
     save_plot: bool = True,
@@ -78,6 +79,7 @@ def run_rosbag_timestamp_eda(
     :param show_chunk_delimiter: Show the 'chunk_on' vertical line delimiter on plot.
     :param show_recorded_delimiter: Show the bag recorded timestamps vertical line delimiter on plot.
     :param show_stamps_type: either 'published', 'recorded' or 'both' (default).
+    :param show_io_induce_causal_order_violation:
     :param plot_ylim: Optional vertical limits for the plots. Defaults to None.
     :param experiment_dir: Directory to group all outputs for the analysis. If None, the
         bag name will be used. Defaults to None.
@@ -233,6 +235,7 @@ def run_rosbag_timestamp_eda(
                 show_chunk_delimiter=show_chunk_delimiter,
                 show_recorded_delimiter=show_recorded_delimiter,
                 show_stamps_type=show_stamps_type,
+                show_io_induce_causal_order_violation=show_io_induce_causal_order_violation,
                 append_to_title=f"plot {each_idx + 1}/{num_iterations}",
                 comment=None,
                 plot_ylim=plot_ylim,

@@ -7,8 +7,15 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 import trajectory_container_tools as tct
+from trajectory_container_tools import (
+    AbstractTrajectoryFeature,
+    TimestampCausalOrderingError,
+)
+from trajectory_container_tools.dataclasses import RosStampedFeature
 from trajectory_container_tools.temporal import Timestamps
-from trajectory_container_tools.temporal.trajectory_timestamps_metadata import RateMetric
+from trajectory_container_tools.temporal.trajectory_timestamps_metadata import (
+    RateMetric,
+)
 
 from ...ros2_general import convert_rosbag_topic_key_to_tct_mf_topic_key
 from .plot_management import plot_manager
@@ -23,6 +30,7 @@ def plot_bag_timestamp_delta(
     show_chunk_delimiter: bool = True,
     show_recorded_delimiter: bool = True,
     show_stamps_type: str = "both",
+    show_io_induce_causal_order_violation=True,
     append_to_title: Optional[str] = None,
     comment: Optional[str] = None,
     plot_ylim: float = 1e8,
@@ -45,6 +53,7 @@ def plot_bag_timestamp_delta(
     :param show_chunk_delimiter: Show the 'chunk_on' vertical line delimiter on plot.
     :param show_recorded_delimiter: Show the bag recorded timestamps vertical line delimiter on plot.
     :param show_stamps_type: Type of timestamps to use. Options are 'published', 'recorded' or 'both' (default).
+    :param show_io_induce_causal_order_violation:
     :param append_to_title: Additional text appended to the plot title.
     :param comment: An optional text comment displayed on the plot.
     :param plot_ylim: Y-axis limit for the plot, if specified.
@@ -79,6 +88,51 @@ def plot_bag_timestamp_delta(
         )
 
         chunk_on = convert_rosbag_topic_key_to_tct_mf_topic_key(chunk_on)
+
+        # .... Show I/O induce causal ordering violation ..........................................
+        if (
+            show_io_induce_causal_order_violation
+            and show_chunk_delimiter
+            and _show_recorded_stamps
+            and _show_published_stamps
+        ):
+            chunk_on_attr: RosStampedFeature = tct_container.get_dynamic_attribute(
+                tct_container.chunk_on
+            )
+            causal_offending_stamps_ = []
+            chunk_stamps = tct_container.get_chunk_on_timestamps().stamps
+            for idx in range(len(chunk_stamps)):
+                if idx == len(chunk_stamps) - 1:
+                    break
+
+                if not chunk_on_attr.has_dynamic_attribute("header"):
+                    chunk_on_rec_stamp = chunk_stamps[idx]
+                else:
+                    chunk_on_rec_stamp = chunk_on_attr.get_timestamps_interval(
+                        chunk_stamps[idx]
+                    ).bag_recorded_timestamps.stamps
+
+                record_stamps = tct_container.get_timestamps_interval(
+                    chunk_stamps[idx], chunk_stamps[idx + 1]
+                ).bag_timestamps.stamps
+                no_chunk_rec_stamps = record_stamps[record_stamps != chunk_on_rec_stamp]
+                each_offending_stamps = no_chunk_rec_stamps[
+                    no_chunk_rec_stamps < chunk_on_rec_stamp
+                ]
+
+                causal_offending_stamps_.append(each_offending_stamps)
+
+            unique = np.unique(np.concatenate(causal_offending_stamps_))
+            if unique.size > 0:
+                plt.vlines(
+                    x=tct.temporal.to_seconds(unique - bag_start_time),
+                    ymin=0,
+                    ymax=plot_ylim,
+                    colors="red",
+                    alpha=0.65,
+                    linewidth=13.9,
+                    label="I/O induce causal ordering violation",
+                )
 
         # .... Show bag timestamps ................................................................
         if show_recorded_delimiter:
@@ -220,9 +274,7 @@ def plot_bag_timestamp_delta(
                             re_rate_label = _rate_str(recorded_rate_metric)
                         else:
                             re_rate_label = ""
-                        label_name = (
-                            f"{each_topic_name.removeprefix('topic_')} | {re_rate_label}"
-                        )
+                        label_name = f"{each_topic_name.removeprefix('topic_')} | {re_rate_label}"
                         plt.plot(
                             x_recorded_in_second,
                             y_recorded_in_second,
@@ -262,9 +314,7 @@ def plot_bag_timestamp_delta(
                                 pu_rate_label = ""
                             label_name = f"{each_topic_name.removeprefix('topic_')} | {pu_rate_label}"
                             if _show_recorded_stamps:
-                                topic_main_label = (
-                                    f"{label_name} | Pub + Rec (shaded)"
-                                )
+                                topic_main_label = f"{label_name} | Pub + Rec (shaded)"
                             else:
                                 topic_main_label = f"{label_name} | Pub"
 
@@ -342,7 +392,12 @@ def plot_bag_timestamp_delta(
 
 
 def _rate_str(rate_metric: RateMetric) -> str:
-    return r"Rate $\mu$ " + f"{rate_metric.mean_hz:.2f}" + r" $\sigma$" + f" {rate_metric.std_hz:.2f} (hz)"
+    return (
+        r"Rate $\mu$ "
+        + f"{rate_metric.mean_hz:.2f}"
+        + r" $\sigma$"
+        + f" {rate_metric.std_hz:.2f} (hz)"
+    )
 
 
 def _is_case_show_published_stamps_types_only(
