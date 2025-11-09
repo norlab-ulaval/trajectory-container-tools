@@ -44,7 +44,7 @@ rosbag extractor, pandas dataframe extractor and various utilities.**
 
 [//]: # (NorLab teamcity)
 
-[![Coverage Status](./reports/coverage/coverage-badge.svg?dummy=8484744)](./reports/coverage/htmlcov/index.html)
+![Coverage Status](./reports/coverage/coverage-badge.svg?dummy=8484744)
 <a href="http://132.203.26.125:8111"><img alt="Static Badge" src="https://img.shields.io/badge/JetBrains%20TeamCity-CI-green?style=plastic&logo=teamcity"></a>
 
 [//]: # (Dockerhub image badge)
