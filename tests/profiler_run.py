@@ -13,7 +13,7 @@ from trajectory_container_tools.dataclasses import AckermannMsgsAckermannDriveSt
     NavMsgsOdometry, RosStampedFeature, SensorMsgsLaserScan, SensorMsgsImu
 
 
-def profiler_run():
+def profiler_run(): # pragma: no cover
     # .... Path to ROS bag in 'shared_data' directory ...........................................
     # For EDA and benchmark purposes only
 

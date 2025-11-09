@@ -16,7 +16,7 @@ def process_large_arrays_parallel(
     chunk_size=1000,
     debug: bool = False,
     array_func: Callable = np.array,
-):
+): # pragma: no cover
     """
     Processes a large list of data into a numpy array, with optional parallelization and chunking.
 
@@ -66,7 +66,7 @@ def process_large_arrays_parallel(
         return np.array(data_list)
 
 
-def detect_docker_cpu_limits():
+def detect_docker_cpu_limits(): # pragma: no cover
     """
     Detect actual CPU resources available in Docker container.
     """

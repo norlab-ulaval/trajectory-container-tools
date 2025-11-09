@@ -50,6 +50,7 @@ dev = [
     "pytest-deprecate",
     "black",
     "flake8",
+    "coverage",
 ]
 
 [tool.setuptools.packages.find]
@@ -66,3 +67,50 @@ exclude = [
     "*/install",
     "*/log"
 ]
+
+[tool.coverage.run]
+# Note: run using
+#   $ coverage run -m pytest \
+#       --config-file=/ros2_ws/src/trajectory-container-tools/tests/pytest.no_xdist.ini \
+#       && coverage report
+source = ["src/trajectory_container_tools"]
+data_file = "reports/coverage/.coverage"
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/*plot*.py",
+    "*/optimization.py",
+]
+branch = true
+
+
+[tool.coverage.report]
+fail_under = 80
+ignore_errors = true
+
+# Regexes for lines to exclude from consideration
+exclude_also = [
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self\\.debug",
+    "if debuging:",
+    "if debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # Don't complain if non-runnable code isn't run:
+    "if __name__ == .__main__.:",
+
+    # Don't complain about abstract methods, they aren't run:
+    "@(abc\\.)?abstractmethod",
+    ]
+
+
+[tool.coverage.xml]
+output = "reports/coverage/coverage.xml"
+
+[tool.coverage.html]
+directory = "reports/coverage/htmlcov"
+

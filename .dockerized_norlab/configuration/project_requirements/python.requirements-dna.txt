@@ -57,3 +57,6 @@ pytest-env
 
 # https://pypi.org/project/pytest-deprecate/
 pytest-deprecate
+
+# ....visual related...............................................................................
+genbadge[all]
