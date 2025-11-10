@@ -148,11 +148,12 @@ def plot_bag_timestamp_delta(
                         x=x_bag_in_second,
                         ymin=0,
                         ymax=plot_ylim,
-                        # colors="lightgrey",
-                        # alpha=0.6,
-                        colors="whitesmoke",
-                        alpha=1,
+                        colors="lightgrey",
+                        alpha=0.6,
                         linewidth=1.2,
+                        # colors="whitesmoke",
+                        # alpha=1,
+                        # linewidth=1.2,
                         # colors="gainsboro",
                         # alpha=0.7,
                         # linewidth=0.6,
@@ -230,8 +231,8 @@ def plot_bag_timestamp_delta(
                             ymin=0,
                             ymax=plot_ylim,
                             colors="dimgray",
-                            alpha=0.6,
-                            linewidth=0.8,
+                            alpha=0.8,
+                            linewidth=1.2,
                         )
 
                     # .... Timestamps plot style ..................................................
@@ -278,7 +279,7 @@ def plot_bag_timestamp_delta(
                         plt.plot(
                             x_recorded_in_second,
                             y_recorded_in_second,
-                            alpha=0.3,
+                            alpha=0.8 if not _show_published_stamps else 0.3,
                             label=(
                                 f"{label_name} (rec)"
                                 if not _show_published_stamps
@@ -288,7 +289,7 @@ def plot_bag_timestamp_delta(
                             linestyle=_l,
                             marker=_m,
                             markersize=MARKERSIZE,
-                            color="Gray",
+                            color=None if not _show_published_stamps else "Gray",
                         )
 
                     # .... Main timestamps ........................................................
@@ -321,7 +322,7 @@ def plot_bag_timestamp_delta(
                         plt.plot(
                             x_main_in_second,
                             y_main_in_second,
-                            alpha=0.6,
+                            alpha=0.7,
                             label=topic_main_label,
                             linewidth=LINEWIDTH,
                             linestyle=_l,
