@@ -79,12 +79,14 @@ def test_dn_sanitize_path():
     assert isinstance(t_path, Path)
     assert os.path.basename(t_path) == "slip_dataset_all.pkl"
 
-    # Case: no dna by bypassing dna env var related logic using an absolute path
-    t_path = dn_sanitize_path(
-        os.path.join("/", "ros2_ws", "src", "trajectory-container-tools", existing_path)
-    )
-    assert isinstance(t_path, Path)
-    assert os.path.basename(t_path) == "slip_dataset_all.pkl"
+    # Note: skip test if TCT is a sub-project e.g., run from RLRC or MG
+    if os.path.exists(os.path.join("/", "ros2_ws", "src", "trajectory-container-tools")):
+        # Case: no dna by bypassing dna env var related logic using an absolute path
+        t_path = dn_sanitize_path(
+            os.path.join("/", "ros2_ws", "src", "trajectory-container-tools", existing_path)
+        )
+        assert isinstance(t_path, Path)
+        assert os.path.basename(t_path) == "slip_dataset_all.pkl"
 
     # Case: path does'nt exist
     with pytest.raises(AssertionError) as exc_info:
