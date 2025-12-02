@@ -164,7 +164,7 @@ git clone https://github.com/norlab-ulaval/trajectory-container-tools.git
 cd trajectory-container-tools
 
 # Install in development mode
-pip install -e .[ros,dev]
+pip install -e '.[ros,dev]'
 ```
 
 The `dev` install extra install developement dependencies.
@@ -199,7 +199,7 @@ Common use cases:
 
 ### From direct instantiation
 
-#### Use one of the many predifined trajectory dataclass from the `tct.dataclasses` module 
+#### Use one of the many predefined trajectory dataclass from the `tct.dataclasses` module 
 
 ```python
 import trajectory_container_tools as tct
