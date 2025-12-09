@@ -1,11 +1,11 @@
 # coding=utf-8
 from dataclasses import dataclass, field
+from typing import Union
 
 import numpy as np
 
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_feature_dataclass import (
-    AbstractTrajectoryFeature,
-)
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryFeature
+from trajectory_container_tools.temporal.timestamps import Timestamps
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -15,7 +15,7 @@ from trajectory_container_tools.dataclasses.core.abstract_trajectory_feature_dat
 
 
 @dataclass()
-class BaseDataframeFeatureDataclass(AbstractTrajectoryFeature):
+class BaseDataframeFeatureDataclass(BaseTrajectoryFeature):
     """
     Represents a dataclass for handling trajectory data fetched from a Panda dataframe.
 
@@ -25,6 +25,21 @@ class BaseDataframeFeatureDataclass(AbstractTrajectoryFeature):
 
     pass
 
+@dataclass()
+class BaseDataframeStampedFeatureDataclass(BaseDataframeFeatureDataclass):
+    timestamps: Union[Timestamps, np.ndarray] = field(
+        default=None, kw_only=True
+    )
+
+    def on_begin_post_init_callback(self) -> None:
+        if self.timestamps is not None:
+            if isinstance(self.timestamps, np.ndarray):
+                self.timestamps = Timestamps(self.timestamps)
+
+            self.timestamps.causal_ordering_sanity_check(
+                show_offending_in_nanoseconds=True,
+                fail_causal_ordering_violation=self.fail_causal_ordering_violation,
+            )
 
 @dataclass()
 class NestedBaseDataframeFeatureDataclass(BaseDataframeFeatureDataclass):
@@ -74,6 +89,28 @@ class StatePose2D(BaseDataframeFeatureDataclass):
     y: np.ndarray
     yaw: np.ndarray
 
+@dataclass()
+class StatePose2DStamped(BaseDataframeStampedFeatureDataclass):
+    """
+    Represents the pose state in a 2D coordinate system.
+
+    This dataclass encapsulates the positional ('x', 'y') and angular ('yaw')
+    components of pose data in a 2-dimensional space along with timestamps. It serves as a flexible
+    and compact container for storing and processing 2D pose-related data,
+    typically used in robotics, computer vision, or simulation environments.
+
+    :ivar x: The x-coordinate of the pose in the 2D coordinate frame.
+    :type x: np.ndarray
+    :ivar y: The y-coordinate of the pose in the 2D coordinate frame.
+    :type y: np.ndarray
+    :ivar yaw: The rotational angle (in radians) of the pose in the 2D coordinate
+        frame.
+    :type yaw: np.ndarray
+    """
+
+    x: np.ndarray
+    y: np.ndarray
+    yaw: np.ndarray
 
 @dataclass()
 class CmdStandard(BaseDataframeFeatureDataclass):
