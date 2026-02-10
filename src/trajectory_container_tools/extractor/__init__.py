@@ -5,6 +5,7 @@ Extractor namespace for trajectory container tools.
 This module provides functions for extracting trajectory data from various sources:
 - ROS bag files
 - Pandas DataFrames
+- CSV files with timestamps
 - Feature extraction and validation utilities
 """
 
@@ -19,6 +20,10 @@ from trajectory_container_tools.extractor.dataframe_to_tct import (
     extract_dataframe_feature,
     unpack_dataframe_and_show_topic,
 )
+from trajectory_container_tools.extractor.csv_to_tct import (
+    from_csv,
+    extract_csv_feature,
+)
 
 __all__ = [
     # ROS bag extraction functions
@@ -29,4 +34,7 @@ __all__ = [
     "from_dataframe",
     "extract_dataframe_feature",
     "unpack_dataframe_and_show_topic",
+    # CSV extraction functions
+    "from_csv",
+    "extract_csv_feature",
 ]
