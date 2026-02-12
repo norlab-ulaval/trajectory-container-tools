@@ -130,7 +130,7 @@ def post_process_shadown_data_container(
     progressbar: Optional[tqdm] = None
     if progressbar_enabled:
         print(
-            f"[TCT] Post-process rosbag data and configure "
+            f"[TCT] Post-process data and configure "
             f"{extract_class_name_from_type(data_container_type)} container"
         )
         progressbar = setup_progressbar(len(list(shadow_data_container.items())))
@@ -203,4 +203,5 @@ def post_process_shadown_data_container(
 
     if progressbar_enabled:
         progressbar.close()
+        print()
     return shadow_data_container
