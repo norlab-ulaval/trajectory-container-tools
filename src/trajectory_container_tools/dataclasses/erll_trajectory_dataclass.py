@@ -1,9 +1,12 @@
 # coding=utf-8
 from dataclasses import dataclass
+from typing import Optional
 
 import numpy as np
 
-from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryFeature
+from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
+    BaseTrajectoryFeature,
+)
 
 
 @dataclass()
@@ -18,10 +21,13 @@ class TestTrajectoryDataclass(BaseTrajectoryFeature):
     :type observations: numpy.ndarray
     :ivar actions: The sequence of actions corresponding to the observations.
     :type actions: numpy.ndarray
+    :ivar timestamps: Timestamp associated to the data for further processing, analysis, or manipulation.
+    :type timestamps: numpy.ndarray
     """
 
     observations: np.ndarray
     actions: np.ndarray
+    timestamps: np.ndarray
 
 
 @dataclass()
@@ -39,5 +45,6 @@ class TestMotionTrajectoryDataclass(TestTrajectoryDataclass):
     :ivar pose_gt: The ground truth pose data represented as a numpy array.
     :type pose_gt: np.ndarray
     """
+
     pose: np.ndarray
     pose_gt: np.ndarray

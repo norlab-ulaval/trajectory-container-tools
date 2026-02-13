@@ -55,6 +55,5 @@ class MathEnvTrajectoryDataclass(BaseTrajectoryFeature):
     """
     Math gymnasium environment trajectory dataclass
     """
-
     state_axes: StateAxDataclass
     time_axis: TimeAxDataclass
