@@ -51,6 +51,7 @@ def from_csv(
     stop: Optional[float] = None,
     fail_causal_ordering_violation: bool = True,
     pre_extraction_callback: Callable = None,
+    verbose: bool = False
 ) -> AbstractTrajectoryFeaturesBag:
     """Extract multiple features (i.e. columns) from a CSV file based on a configuration
     dictionary.
@@ -83,6 +84,7 @@ def from_csv(
     :param stop: The timestamp where to stop (in seconds if float, otherwise same unit as CSV).
     :param fail_causal_ordering_violation: Option to disable ordering sanity check (default enabled)
     :param pre_extraction_callback: function respecting signature callback(df: Dataframe) -> df
+    :param verbose:
     :return: An instance of the `AbstractTrajectoryStampedFeaturesBag` containing the processed data
         for all features.
     """
@@ -92,7 +94,8 @@ def from_csv(
 
     # .... Load CSV data ..........................................................................
     csv_path = dn_sanitize_path(csv_path)
-    print(f"[TCT] Loading CSV file: {csv_path}")
+    if verbose:
+        print(f"[TCT] Loading CSV file: {csv_path}")
     df = pd.read_csv(csv_path)
 
     if pre_extraction_callback is not None:
@@ -123,13 +126,15 @@ def from_csv(
             start=start,
             stop=stop,
             fail_causal_ordering_violation=fail_causal_ordering_violation,
+            verbose=verbose
         )
 
         features_type.append((feature_name, type(feature)))
         features.append(feature)
 
     # .... Collect all unique timestamps from all features ........................................
-    print(f"[TCT] Collect all unique timestamps from features")
+    if verbose:
+        print(f"[TCT] Collect all unique timestamps from features")
     progressbar = setup_progressbar(len(features))
     all_timestamps = []
     for each in features:
@@ -163,6 +168,7 @@ def extract_csv_feature(
     start: Optional[float] = None,
     stop: Optional[float] = None,
     fail_causal_ordering_violation: bool = True,
+    verbose: bool = False,
 ) -> BaseTrajectoryFeature:
     """
     Extracts a specific feature from a CSV DataFrame and returns it in a structured data container.
@@ -191,6 +197,7 @@ def extract_csv_feature(
     :param start: Optional start time for filtering data (in same units as timestamp column).
     :param stop: Optional stop time for filtering data (in same units as timestamp column).
     :param fail_causal_ordering_violation: Option to disable ordering sanity check (default enabled)
+    :param verbose:
     :return: An instance of the `data_container_type` containing the processed feature data.
     """
     try:
@@ -223,12 +230,14 @@ def extract_csv_feature(
         )
 
         # .... Crawl CSV rows .........................................................................
-        print(f"[TCT] Extract single feature from CSV › processing '{feature_name}'")
+        if verbose:
+            print(f"[TCT] Extract single feature from CSV › processing '{feature_name}'\n")
         progressbar = setup_progressbar(len(df))
 
+        # for row in df.itertuples(index=False):
         for idx, row in df.iterrows():
             # Extract timestamp
-            timestamp = row[timestamp_column]
+            timestamp = df[timestamp_column][idx]
 
             # ... Fetch properties from CSV row ...........................................................
             shadow_data_container = _collect_properties_from_csv(
@@ -241,7 +250,6 @@ def extract_csv_feature(
             progressbar.update(1)
 
         progressbar.close()
-        print("")
 
         # .... Post-process CSV data and create data container ........................................
         try:
@@ -270,7 +278,7 @@ def _collect_properties_from_csv(
     data_container_type: type[BaseTrajectoryFeature],
     feature_name: str,
     row: pd.Series,
-    timestamp: float,
+    timestamp: Union[int,float],
     shadow_data_container: ShadowDataContainer,
 ) -> ShadowDataContainer:
     """

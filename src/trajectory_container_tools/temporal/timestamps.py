@@ -58,7 +58,7 @@ class Timestamps:
     _single_source: bool
 
     def __init__(
-        self, stamps: np.ndarray[int, np.dtype[int]], single_source: bool = True
+        self, stamps: Union[list[Union[int, float]], np.ndarray[int, np.dtype[int]]], single_source: bool = True
     ):
         """
         Represents a class initializer for managing and validating a sequence of timestamps.
@@ -78,6 +78,7 @@ class Timestamps:
         if np.min(stamps) < 0:
             raise ValueError("[TCT error] stamps must be positive values")
 
+        assert isinstance(stamps, (list, np.ndarray)), f"[TCT error] stamps must be integers, got {type(stamps)}"
         self._stamps = np.array(stamps, dtype=int)
         self._delta_stamps = compute_delta_timestamp(self._stamps)
         self._single_source = single_source
