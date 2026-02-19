@@ -23,11 +23,15 @@ class TestTrajectoryDataclass(BaseTrajectoryFeature):
     :type actions: numpy.ndarray
     :ivar timestamps: Timestamp associated to the data for further processing, analysis, or manipulation.
     :type timestamps: numpy.ndarray
+    :ivar velocity_frame: The frame of reference for velocity measurements. Defaults to None.
+    :type velocity_frame: Optional[str]
     """
 
     observations: np.ndarray
     actions: np.ndarray
     timestamps: np.ndarray
+    obs_are_velocity: Optional[bool]
+    velocity_frame: Optional[str]
 
 
 @dataclass()

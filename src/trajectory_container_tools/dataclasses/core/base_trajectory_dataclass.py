@@ -36,7 +36,7 @@ class BaseTrajectoryFeature(AbstractTrajectoryFeature):
     >>>     position_z: np.ndarray
 
     :ivar feature_name: Name of the feature associated with the trajectory.
-    :type feature_name: str
+    :type feature_name: ContainerInternalField[Optional[str]]
     :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
         to a subset of a larger trajectory (Automaticaly generated if set to None).
     :type timesteps_indices: numpy ndarray

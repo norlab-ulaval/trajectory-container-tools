@@ -53,6 +53,7 @@ class TestMathEnvTrajectoryDataclass:
                 delta=time_obs_trj,
                 obs=time_obs_trj,
             ),
+            obs_are_velocity=True
         )
 
         assert t_trajectory_container.trajectory_len == trj_len
