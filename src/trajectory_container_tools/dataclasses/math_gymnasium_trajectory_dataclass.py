@@ -6,6 +6,7 @@ import numpy as np
 
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryFeature
 from ..utils.general import check_is_finite
+from ..utils.typing.tct_custom_field import ContainerInternalField
 
 
 @dataclass()
@@ -30,7 +31,7 @@ class AxBaseDataclass(BaseTrajectoryFeature):
 class StateAxDataclass(AxBaseDataclass):
     poses: np.ndarray
     vels: np.ndarray
-    feature_name: str = field(default="State axes", init=False)
+    feature_name: ContainerInternalField[Optional[str]] = field(default="State axes", init=False)
 
     @property
     def poses_with_noise(self) -> np.ndarray:
@@ -42,7 +43,7 @@ class StateAxDataclass(AxBaseDataclass):
 class TimeAxDataclass(AxBaseDataclass):
     wall: np.ndarray
     delta: np.ndarray
-    feature_name: str = field(default="Time axis", init=False)
+    feature_name: ContainerInternalField[Optional[str]] = field(default="Time axis", init=False)
 
     @property
     def wall_with_noise(self) -> np.ndarray:
@@ -55,6 +56,6 @@ class MathEnvTrajectoryDataclass(BaseTrajectoryFeature):
     """
     Math gymnasium environment trajectory dataclass
     """
-
     state_axes: StateAxDataclass
     time_axis: TimeAxDataclass
+    obs_are_velocity: bool

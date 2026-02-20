@@ -1,11 +1,12 @@
 # coding=utf-8
 from dataclasses import dataclass, field
-from typing import Union
+from typing import Optional, Union
 
 import numpy as np
 
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import BaseTrajectoryFeature
 from trajectory_container_tools.temporal.timestamps import Timestamps
+from trajectory_container_tools.utils.typing.tct_custom_field import ContainerInternalField
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -21,12 +22,35 @@ class BaseDataframeFeatureDataclass(BaseTrajectoryFeature):
 
     It can be extended or utilized wherever structured data for dataframe processing or
     trajectory computation is necessary.
+
+    :ivar feature_name: Name of the feature associated with the trajectory.
+    :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
+        to a subset of a larger trajectory (Automaticaly generated if set to None).
+    :ivar batch: Boolean indicating if the data is batched (True) or pertaining to a
+        single trajectory (False).
     """
 
     pass
 
 @dataclass()
 class BaseDataframeStampedFeatureDataclass(BaseDataframeFeatureDataclass):
+    """
+    Summary of what the class does.
+
+    The `BaseDataframeStampedFeatureDataclass` is a specialized dataclass that
+    extends the functionality of the `BaseDataframeFeatureDataclass`. Its purpose is
+    to include and validate time-stamped features within the dataclass. This is done
+    through seamless integration of timestamp management and causal ordering checks.
+
+    :ivar feature_name: Name of the feature associated with the trajectory.
+    :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
+        to a subset of a larger trajectory (Automaticaly generated if set to None).
+    :ivar batch: Boolean indicating if the data is batched (True) or pertaining to a
+        single trajectory (False).
+    :ivar timestamps: The timestamps associated with the dataframe features. If
+        provided as a numpy array, it will be converted to a `Timestamps` object.
+    :type timestamps: Union[Timestamps, np.ndarray]
+    """
     timestamps: Union[Timestamps, np.ndarray] = field(
         default=None, kw_only=True
     )
@@ -52,13 +76,17 @@ class NestedBaseDataframeFeatureDataclass(BaseDataframeFeatureDataclass):
     feature instance. The `on_begin_post_init_callback` method remains unimplemented and raises
     a `NotImplementedError` when invoked.
 
+    :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
+        to a subset of a larger trajectory (Automaticaly generated if set to None).
+    :ivar batch: Boolean indicating if the data is batched (True) or pertaining to a
+        single trajectory (False).
     :ivar feature_name: The name of the feature, automatically assigned during initialization.
-    :type feature_name: str
+    :type feature_name: ContainerInternalField[Optional[str]]
     """
 
     # (NICE TO HAVE) ToDo: implement nested trajectory-dataclass support for dataframe extraction
 
-    feature_name: str = field(default=None, init=False)
+    feature_name: ContainerInternalField[Optional[str]] = field(default=None, init=False)
 
     def on_begin_post_init_callback(self):
         raise NotImplementedError(

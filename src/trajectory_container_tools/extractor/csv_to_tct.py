@@ -2,19 +2,24 @@
 import os
 from pathlib import Path
 from dataclasses import make_dataclass
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
 
-from trajectory_container_tools.dataclasses.core.abstract_trajectory_features_bag_dataclass import AbstractTrajectoryFeaturesBag
+from trajectory_container_tools.dataclasses.core.abstract_trajectory_features_bag_dataclass import (
+    AbstractTrajectoryFeaturesBag,
+)
 from trajectory_container_tools.dataclasses.core.abstract_trajectory_stamped_features_bag_dataclass import (
     AbstractTrajectoryStampedFeaturesBag,
 )
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryFeature,
 )
-from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import BaseDataframeStampedFeatureDataclass, StatePose2D
+from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
+    BaseDataframeStampedFeatureDataclass,
+    StatePose2D,
+)
 from trajectory_container_tools.utils.factory import (
     parse_feature_spec,
 )
@@ -45,6 +50,8 @@ def from_csv(
     start: Optional[float] = None,
     stop: Optional[float] = None,
     fail_causal_ordering_violation: bool = True,
+    pre_extraction_callback: Callable = None,
+    verbose: bool = False
 ) -> AbstractTrajectoryFeaturesBag:
     """Extract multiple features (i.e. columns) from a CSV file based on a configuration
     dictionary.
@@ -76,6 +83,8 @@ def from_csv(
     :param start: The timestamp where to start (in seconds if float, otherwise same unit as CSV).
     :param stop: The timestamp where to stop (in seconds if float, otherwise same unit as CSV).
     :param fail_causal_ordering_violation: Option to disable ordering sanity check (default enabled)
+    :param pre_extraction_callback: function respecting signature callback(df: Dataframe) -> df
+    :param verbose:
     :return: An instance of the `AbstractTrajectoryStampedFeaturesBag` containing the processed data
         for all features.
     """
@@ -85,8 +94,12 @@ def from_csv(
 
     # .... Load CSV data ..........................................................................
     csv_path = dn_sanitize_path(csv_path)
-    print(f"[TCT] Loading CSV file: {csv_path}")
+    if verbose:
+        print(f"[TCT] Loading CSV file: {csv_path}")
     df = pd.read_csv(csv_path)
+
+    if pre_extraction_callback is not None:
+        df = pre_extraction_callback(df)
 
     # Validate timestamp column exists
     if timestamp_column not in df.columns:
@@ -113,21 +126,23 @@ def from_csv(
             start=start,
             stop=stop,
             fail_causal_ordering_violation=fail_causal_ordering_violation,
+            verbose=verbose
         )
 
         features_type.append((feature_name, type(feature)))
         features.append(feature)
 
     # .... Collect all unique timestamps from all features ........................................
-    print(f"[TCT] Collect all unique timestamps from features")
+    if verbose:
+        print(f"[TCT] Collect all unique timestamps from features")
     progressbar = setup_progressbar(len(features))
     all_timestamps = []
     for each in features:
         if each.timestamps is not None:
             all_timestamps.append(each.timestamps.stamps)
-            
+
         progressbar.update(1)
-    
+
     all_timestamps = np.unique(np.concatenate(all_timestamps))
     progressbar.close()
 
@@ -153,6 +168,7 @@ def extract_csv_feature(
     start: Optional[float] = None,
     stop: Optional[float] = None,
     fail_causal_ordering_violation: bool = True,
+    verbose: bool = False,
 ) -> BaseTrajectoryFeature:
     """
     Extracts a specific feature from a CSV DataFrame and returns it in a structured data container.
@@ -181,6 +197,7 @@ def extract_csv_feature(
     :param start: Optional start time for filtering data (in same units as timestamp column).
     :param stop: Optional stop time for filtering data (in same units as timestamp column).
     :param fail_causal_ordering_violation: Option to disable ordering sanity check (default enabled)
+    :param verbose:
     :return: An instance of the `data_container_type` containing the processed feature data.
     """
     try:
@@ -213,12 +230,14 @@ def extract_csv_feature(
         )
 
         # .... Crawl CSV rows .........................................................................
-        print(f"[TCT] Extract single feature from CSV › processing '{feature_name}'")
+        if verbose:
+            print(f"[TCT] Extract single feature from CSV › processing '{feature_name}'\n")
         progressbar = setup_progressbar(len(df))
 
+        # for row in df.itertuples(index=False):
         for idx, row in df.iterrows():
             # Extract timestamp
-            timestamp = row[timestamp_column]
+            timestamp = df[timestamp_column][idx]
 
             # ... Fetch properties from CSV row ...........................................................
             shadow_data_container = _collect_properties_from_csv(
@@ -239,6 +258,7 @@ def extract_csv_feature(
                 data_container_type,
                 feature_name,
                 fail_causal_ordering_violation,
+                progressbar_enabled=False
             )
 
             # noinspection PyArgumentList
@@ -258,7 +278,7 @@ def _collect_properties_from_csv(
     data_container_type: type[BaseTrajectoryFeature],
     feature_name: str,
     row: pd.Series,
-    timestamp: float,
+    timestamp: Union[int,float],
     shadow_data_container: ShadowDataContainer,
 ) -> ShadowDataContainer:
     """
@@ -281,27 +301,31 @@ def _collect_properties_from_csv(
             if each_property_name == "timestamps":
                 # Handle timestamps specially
                 shadow_data_container["timestamps"]["data"].append(timestamp)
-            elif isinstance(shadow_data_container[each_property_name], dict) and \
-                    "type" in shadow_data_container[each_property_name]:
+            elif (
+                isinstance(shadow_data_container[each_property_name], dict)
+                and "type" in shadow_data_container[each_property_name]
+            ):
                 # Case: Simple property (scalar value from CSV column)
                 target_type = shadow_data_container[each_property_name]["type"]
 
                 if issubclass(target_type, (np.ndarray,)):
                     # This is a data field - get value from CSV column
                     column_name = each_property_name
-                    
+
                     if column_name not in row.index:
                         raise KeyError(
                             f"[TCT error] Column '{column_name}' not found in CSV. "
                             f"Available columns: {list(row.index)}"
                         )
-                    
+
                     value = row[column_name]
                     shadow_data_container[each_property_name]["data"].append(value)
                 else:
                     # Other types (like strings, ints, etc.)
                     if each_property_name in row.index:
-                        shadow_data_container[each_property_name]["data"] = row[each_property_name]
+                        shadow_data_container[each_property_name]["data"] = row[
+                            each_property_name
+                        ]
 
         except KeyError as e:
             raise KeyError(

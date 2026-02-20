@@ -28,7 +28,7 @@ class RosFeature(BaseTrajectoryFeature):
     representations.
 
     :ivar feature_name: Name of the feature associated with the trajectory.
-    :type feature_name: str
+    :type feature_name: ContainerInternalField[Optional[str]]
     :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
         to a subset of a larger trajectory (Automaticaly generated if set to None).
     :type timesteps_indices: numpy ndarray
@@ -139,7 +139,7 @@ class RosStampedFeature(RosFeature):
     trajectory-specific attributes and behaviors.
 
     :ivar feature_name: Name of the feature associated with the trajectory.
-    :type feature_name: str
+    :type feature_name: ContainerInternalField[Optional[str]]
     :ivar timesteps_indices: Represent the indices of timesteps in the trajectory which can pertain
         to a subset of a larger trajectory (Automaticaly generated if set to None).
     :type timesteps_indices: numpy ndarray
@@ -248,7 +248,7 @@ class RosFeatureArray(BaseTrajectoryFeatureUnboundedArray):
     `BaseTrajectoryFeature` to provide trajectory-specific attributes and behaviors.
 
     :ivar feature_name: Name of the feature associated with the trajectory.
-    :type feature_name: str
+    :type feature_name: ContainerInternalField[Optional[str]]
     :ivar bag_recorded_timestamps: Time-related information, either a Timestamps object or a numpy
                                     array (converted to Timestamps internally at instanciation).
     :type bag_recorded_timestamps: Timestamps | numpy ndarray
