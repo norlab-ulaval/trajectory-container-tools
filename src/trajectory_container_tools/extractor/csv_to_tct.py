@@ -17,6 +17,7 @@ from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass impor
     BaseTrajectoryFeature,
 )
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
+    BaseDataframeFeatureDataclass,
     BaseDataframeStampedFeatureDataclass,
     StatePose2D,
 )
@@ -44,7 +45,7 @@ def from_csv(
     csv_path: Union[Path, str],
     dataset_info: Optional[str],
     features_config: Dict[
-        str, Union[type[BaseDataframeStampedFeatureDataclass], Tuple[str, ...]]
+        str, Union[type[BaseDataframeStampedFeatureDataclass, BaseDataframeFeatureDataclass], Tuple[str, ...]]
     ],
     timestamp_column: str = "t",
     start: Optional[float] = None,
@@ -133,18 +134,20 @@ def from_csv(
         features.append(feature)
 
     # .... Collect all unique timestamps from all features ........................................
-    if verbose:
-        print(f"[TCT] Collect all unique timestamps from features")
-    progressbar = setup_progressbar(len(features))
-    all_timestamps = []
-    for each in features:
-        if each.timestamps is not None:
-            all_timestamps.append(each.timestamps.stamps)
+    # (CRITICAL) ToDo: fixme!! float timestamps logic (ref task RLRP-503)
 
-        progressbar.update(1)
-
-    all_timestamps = np.unique(np.concatenate(all_timestamps))
-    progressbar.close()
+    # if verbose:
+    #     print(f"[TCT] Collect all unique timestamps from features")
+    # progressbar = setup_progressbar(len(features))
+    # all_timestamps = []
+    # for each in features:
+    #     if each.timestamps is not None:
+    #         all_timestamps.append(each.timestamps.stamps)
+    #
+    #     progressbar.update(1)
+    #
+    # all_timestamps = np.unique(np.concatenate(all_timestamps))
+    # progressbar.close()
 
     # .... TrajectoryFeatureBag declaration and instantiation .....................................
     trajectory_features_bag = make_dataclass(
@@ -155,7 +158,8 @@ def from_csv(
     return trajectory_features_bag(
         dataset_info,
         *features,
-        bag_timestamps=Timestamps(all_timestamps, single_source=False),
+        # bag_timestamps=Timestamps(all_timestamps, single_source=False),
+        bag_timestamps=None, # (CRITICAL) ToDo: fixme!! float timestamps logic (ref task RLRP-503)
         fail_causal_ordering_violation=fail_causal_ordering_violation,
     )
 
