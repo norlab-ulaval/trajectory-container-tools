@@ -11,8 +11,8 @@ import pandas as pd
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     StatePose2DStamped,
 )
-from trajectory_container_tools.extractor.csv_to_tct import (
-    from_csv,
+from trajectory_container_tools.extractor.stamped_csv_to_tct import (
+    from_stamped_csv,
     extract_csv_feature,
 )
 from trajectory_container_tools.dataclasses.primitive_dataclass import (
@@ -256,12 +256,12 @@ class TestExtractCsvFeature:
 
 
 # =============================================================================
-# Tests for from_csv
+# Tests for from_stamped_csv
 # =============================================================================
 
 
 class TestFromCsv:
-    """Test suite for from_csv function"""
+    """Test suite for from_stamped_csv function"""
 
     def test_from_csv_with_multiple_features(self, tmp_path, multi_feature_csv_data):
         """Test extracting multiple features from CSV into a feature bag"""
@@ -276,7 +276,7 @@ class TestFromCsv:
         }
 
         # Extract features
-        bag = from_csv(
+        bag = from_stamped_csv(
             csv_path=csv_path,
             dataset_info="Test dataset",
             features_config=features_config,
@@ -304,7 +304,7 @@ class TestFromCsv:
 
         # Should raise ValueError for missing timestamp column
         with pytest.raises(ValueError):
-            from_csv(
+            from_stamped_csv(
                 csv_path=csv_path,
                 dataset_info="Test",
                 features_config={"pos": StatePose2DStamped},
@@ -318,7 +318,7 @@ class TestFromCsv:
         basic_csv_data.to_csv(csv_path, index=False)
 
         # Extract single feature
-        bag = from_csv(
+        bag = from_stamped_csv(
             csv_path=csv_path,
             dataset_info="Single feature test",
             features_config={"pose": StatePose2DStamped},
@@ -345,7 +345,7 @@ class TestFromCsv:
         }
 
         # Extract features
-        bag = from_csv(
+        bag = from_stamped_csv(
             csv_path=csv_path,
             dataset_info="Tuple spec test",
             features_config=features_config,
@@ -361,7 +361,7 @@ class TestFromCsv:
         assert len(bag.position.x) == expected_length
 
     def test_from_csv_with_time_filtering(self, tmp_path, basic_csv_data):
-        """Test from_csv with time range filtering"""
+        """Test from_stamped_csv with time range filtering"""
         # Create CSV file
         csv_path = tmp_path / "test_time_filter.csv"
         basic_csv_data.to_csv(csv_path, index=False)
@@ -370,7 +370,7 @@ class TestFromCsv:
         stop_time = 5  # nanoseconds
 
         # Extract with time filtering
-        bag = from_csv(
+        bag = from_stamped_csv(
             csv_path=csv_path,
             dataset_info="Time filter test",
             features_config={"pose": StatePose2DStamped},
@@ -399,7 +399,7 @@ class TestFromCsv:
         dataset_info = "Test dataset with metadata"
 
         # Extract features
-        bag = from_csv(
+        bag = from_stamped_csv(
             csv_path=csv_path,
             dataset_info=dataset_info,
             features_config={"pose": StatePose2DStamped},
@@ -422,7 +422,7 @@ class TestFromCsv:
         }
 
         # Extract features
-        bag = from_csv(
+        bag = from_stamped_csv(
             csv_path=csv_path,
             dataset_info="Mixed spec test",
             features_config=features_config,

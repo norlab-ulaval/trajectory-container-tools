@@ -41,7 +41,7 @@ from trajectory_container_tools.utils.typing.new_types_and_aliases import (
 from trajectory_container_tools.utils import dn_sanitize_path
 
 
-def from_csv(
+def from_stamped_csv(
     csv_path: Union[Path, str],
     dataset_info: Optional[str],
     features_config: Dict[
@@ -54,8 +54,13 @@ def from_csv(
     pre_extraction_callback: Callable = None,
     verbose: bool = False
 ) -> AbstractTrajectoryFeaturesBag:
-    """Extract multiple features (i.e. columns) from a CSV file based on a configuration
+    """Extract multiple features (i.e. columns) from a stamped CSV file based on a configuration
     dictionary.
+
+    This function expects the CSV file to contain timestamp-aligned data, where the first column
+    (or the column specified by ``timestamp_column``) holds monotonically increasing timestamps.
+    Unlike :func:`from_dataframe`, which accepts non-stamped data on either axis,
+    ``from_stamped_csv`` requires that every row is associated with a timestamp.
 
     Notes:
 
@@ -77,7 +82,7 @@ def from_csv(
     >>>     'motors': ('MotorCommands', 'mot 1', 'mot 2', 'mot 3', 'mot 4')
     >>> }
 
-    :param csv_path: Path to CSV file.
+    :param csv_path: Path to the stamped CSV file.
     :param dataset_info: Any relevant information on the CSV file (location, robot, condition).
     :param features_config: The features to aggregate from the CSV as a configuration dictionary.
     :param timestamp_column: The name of the column containing timestamps. Defaults to "t".
