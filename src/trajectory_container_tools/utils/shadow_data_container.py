@@ -11,7 +11,7 @@ from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass impor
     BaseTrajectoryFeatureUnboundedArray,
     BaseTrajectoryFeature,
 )
-from trajectory_container_tools.temporal import Timestamps
+from trajectory_container_tools.temporal import Timestamps, create_timestamps
 
 
 def instanciate_shadow_data_container(
@@ -172,7 +172,7 @@ def post_process_shadown_data_container(
                 if k == "bag_recorded_timestamps" and len(v["data"]) == 0:
                     shadow_data_container[k] = None
                 else:
-                    shadow_data_container[k] = Timestamps(v["data"])
+                    shadow_data_container[k] = create_timestamps(v["data"])
             elif (
                 issubclass(
                     target_type, (RosFeature, RosStampedFeature, BaseTrajectoryFeature)

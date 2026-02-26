@@ -1,4 +1,5 @@
 # coding=utf-8
+from abc import ABC, abstractmethod
 from copy import copy, deepcopy
 from typing import Any, List, Optional, Tuple, Union
 
@@ -18,8 +19,8 @@ class TimestampCausalOrderingError(Exception):
 class TimestampMissingError(Exception):
     """Exception raised when a timestamp is not in stamps but in stamps bound."""
 
-    def __init__(self, timestamps: Optional[Union[int, np.integer, list]] = None):
-        if timestamps is not None and isinstance(timestamps, (int, np.integer)):
+    def __init__(self, timestamps: Optional[Union[int, np.integer, float, np.floating, list]] = None):
+        if timestamps is not None and isinstance(timestamps, (int, np.integer, float, np.floating)):
             self.messages = f"{timestamps=} is not in stamps"
         else:
             self.messages = f"At least one value in timestamps is not in stamps"
@@ -29,46 +30,54 @@ class TimestampMissingError(Exception):
 class TimestampOutOfBoundError(Exception):
     """Exception raised when a timestamp is outside the stamps bounds."""
 
-    def __init__(self, timestamps: Optional[Union[int, np.integer, list]] = None):
-        if timestamps is not None and isinstance(timestamps, (int, np.integer)):
+    def __init__(self, timestamps: Optional[Union[int, np.integer, float, np.floating, list]] = None):
+        if timestamps is not None and isinstance(timestamps, (int, np.integer, float, np.floating)):
             self.messages = f"{timestamps=} is out of stamps bounds"
         else:
             self.messages = f"At least one value in timestamps is out of stamps bounds"
         super().__init__(self.messages)
 
 
-class Timestamps:
+class Timestamps(ABC):
     """
-    Handles timestamp management and provides iteration and validation methods
+    Abstract base class for timestamp management providing iteration and validation methods
     for processing timestamp arrays.
 
-    Align with ROS time format whitout requiring rclpy
+    The `Timestamps` class defines common logic for working with a one-dimensional NumPy array
+    of positive timestamps. It supports iteration, indexing, and validation to ensure the
+    timestamps are in logical and causal order. This class enforces basic constraints on the
+    timestamps and provides methods for further processing.
 
-    The `Timestamps` class is designed to work with a one-dimensional NumPy array of positive
-    integer timestamps. It supports iteration, indexing, and validation to ensure the timestamps
-    are in logical and causal order. This class enforces basic constraints on the timestamps and
-    provides methods for further processing.
+    Concrete subclasses `TimestampsInt` and `TimestampsFloat` handle integer and
+    floating-point timestamp data respectively.
     """
 
-    _stamps: np.ndarray[int, np.dtype[int]]
-    _delta_stamps: np.ndarray[int, np.dtype[int]]
+    _stamps: np.ndarray
+    _delta_stamps: np.ndarray
     _offending_indexs: list[int] = []
     _trajectory_len: int
     _iter_index: int = 0
     _single_source: bool
 
+    @property
+    @abstractmethod
+    def _DTYPE(self) -> np.dtype:
+        """Return the numpy dtype for this Timestamps variant."""
+        ...
+
+    @property
+    @abstractmethod
+    def _SCALAR_TYPES(self) -> tuple:
+        """Return the acceptable scalar types for containment checks."""
+        ...
+
     def __init__(
-        self, stamps: Union[list[Union[int, float]], np.ndarray[int, np.dtype[int]]], single_source: bool = True
+        self, stamps: Union[list, np.ndarray], single_source: bool = True
     ):
         """
-        Represents a class initializer for managing and validating a sequence of timestamps.
+        Initializes the Timestamps object with validation.
 
-        The initializer takes a NumPy array of integer timestamps and performs validation to
-        ensure the data's integrity. Specifically, it ensures that the array is not empty and
-        that all timestamps are non-negative. If either validation check fails, an exception
-        is raised.
-
-        :param stamps: A NumPy array containing integer timestamps in nanosecond ros time format.
+        :param stamps: A list or NumPy array containing timestamps.
         :raises ValueError: If the stamp array is empty or if any value is negative.
         """
         self._trajectory_len = len(stamps)
@@ -78,17 +87,19 @@ class Timestamps:
         if np.min(stamps) < 0:
             raise ValueError("[TCT error] stamps must be positive values")
 
-        assert isinstance(stamps, (list, np.ndarray)), f"[TCT error] stamps must be integers, got {type(stamps)}"
-        self._stamps = np.array(stamps, dtype=int)
+        assert isinstance(stamps, (list, np.ndarray)), (
+            f"[TCT error] stamps must be a list or numpy array, got {type(stamps)}"
+        )
+        self._stamps = np.array(stamps, dtype=self._DTYPE)
         self._delta_stamps = compute_delta_timestamp(self._stamps)
         self._single_source = single_source
 
     @property
-    def stamps(self) -> np.ndarray[int, np.dtype[int]]:
+    def stamps(self) -> np.ndarray:
         return self._stamps
 
     @property
-    def delta_stamps(self) -> np.ndarray[int, np.dtype[int]]:
+    def delta_stamps(self) -> np.ndarray:
         return self._delta_stamps
 
     def get_offending_stamps_index(self) -> list[int]:
@@ -133,62 +144,49 @@ class Timestamps:
         """
         timestamps_empty = deepcopy(self)
         for each_name in ["_stamps", "_delta_stamps"]:
-            timestamps_empty.__setattr__(each_name, np.array([], dtype=np.int64))
+            timestamps_empty.__setattr__(each_name, np.array([], dtype=self._DTYPE))
 
         return timestamps_empty
 
     def __contains__(
         self,
-        timestamp: Union[int, np.integer, List[int], np.ndarray[int, np.dtype[int]]],
+        timestamp: Union[int, np.integer, float, np.floating, List, np.ndarray],
     ) -> bool:
         """
         Check whether a timestamp or collection of timestamps exists within the stored stamps.
 
-        This method validates if the provided `timestamp`, which can be a single integer,
-        a list of integers, or a numpy array of integers, is present in the internally
-        stored `stamps`. It performs membership testing using numpy's efficient array operations.
-
         :param timestamp: A single timestamp, a list of timestamps, or a numpy array of
-            integers to check against the internal collection of stamps.
+            timestamps to check against the internal collection of stamps.
         :return: A boolean indicating whether any of the given timestamps exist within
             the stored set of stamps.
         """
-        assert isinstance(timestamp, (int, np.integer)) or (
+        assert isinstance(timestamp, self._SCALAR_TYPES) or (
             isinstance(timestamp, (list, np.ndarray))
-            and isinstance(timestamp[0], (int, np.integer))
+            and isinstance(timestamp[0], self._SCALAR_TYPES)
         )
         mask = np.isin(timestamp, self._stamps, assume_unique=True)
-        if isinstance(timestamp, (int, np.integer)):
+        if isinstance(timestamp, self._SCALAR_TYPES):
             return np.any(mask)
         else:
             return mask[mask == True].size == len(timestamp)
 
     def get_indexes(
-        self, timestamps: Union[int, List[int], np.ndarray[int, np.dtype[int]]]
+        self, timestamps: Union[int, float, np.integer, np.floating, List, np.ndarray]
     ) -> Union[int, List[int]]:
         """
         Determines the indexes of given timestamps in the internal storage.
 
-        This function checks for the existence of given timestamps in the internal
-        storage and retrieves their respective indexes if found. It supports single
-        timestamps or lists/arrays of timestamps as input. For lists or arrays, it
-        returns a list of corresponding indexes. If the timestamps are not found, it
-        raise a TimestampMissingError or a TimestampOutOfBoundError error.
-        Timestamps must be in nanoseconds format as integers.
-
-        :param timestamps: A single timestamp as an integer, a list of integers, or a
-            numpy array of integers representing the timestamps to look up.
-        :return: If `timestamps` is a single integer and found, returns its index as
-            an integer. If `timestamps` is a list or numpy array of integers, returns
-            a list of indexes.
-        :raises TypeError: If the input is not an integer or a numpy array of integers.
+        :param timestamps: A single timestamp or a list/array of timestamps to look up.
+        :return: If `timestamps` is a single value and found, returns its index as
+            an integer. If `timestamps` is a list or numpy array, returns a list of indexes.
+        :raises TypeError: If the input type is not compatible.
         :raises TimestampMissingError: If the input is in bound but not in stamps.
         :raises TimestampOutOfBoundError: If the input is out of stamps bound.
         """
         if isinstance(timestamps, list):
-            timestamps = np.array(timestamps, dtype=int)
+            timestamps = np.array(timestamps, dtype=self._DTYPE)
 
-        _check_precondition_nanoseconds_are_integers(timestamps)
+        self._check_scalar_or_array(timestamps)
 
         if timestamps not in self:
             if self.is_timestamps_in_bounds(timestamps):
@@ -211,25 +209,17 @@ class Timestamps:
         return self.stamps.max()
 
     def is_timestamps_in_bounds(
-        self, timestamps: Union[int, List[int], np.ndarray[int, np.dtype[int]]]
+        self, timestamps: Union[int, float, np.integer, np.floating, List, np.ndarray]
     ) -> bool:
         """
         Determines whether the provided timestamps are within the bounds of the stamps attribute.
 
-        This function checks if the given timestamps, which can be an integer, a
-        list of integers, or a NumPy array of integers, fall within the minimum and
-        maximum bounds of an internally defined range. If any of the provided
-        timestamps are out of bounds, the function returns `False`. Otherwise, it
-        returns `True`.
-
-        :param timestamps: The timestamps to be checked against the predefined
-            bounds. Can be an integer, a list of integers, or a NumPy array of
-            integers. The type and shape of the timestamps are handled dynamically.
+        :param timestamps: The timestamps to be checked against the predefined bounds.
         :return: `True` if all the timestamps are within the predefined bounds,
             otherwise `False`.
         """
         if isinstance(timestamps, list):
-            timestamps = np.array(timestamps, dtype=int)
+            timestamps = np.array(timestamps, dtype=self._DTYPE)
 
         if isinstance(timestamps, np.ndarray):
             if timestamps.min() < self.min() or self.max() < timestamps.max():
@@ -242,20 +232,15 @@ class Timestamps:
             return True
 
     def get_nearest_stamp(
-        self, timestamp: int, future: bool = True, include: bool = True
-    ) -> int | None:
+        self, timestamp, future: bool = True, include: bool = True
+    ):
         """
         Finds the nearest available timestamp in the dataset based on the given criteria.
-
-        This method determines the nearest timestamp either in the future or in the past
-        relative to the specified timestamp. The search criteria can also include whether
-        to consider the given timestamp as part of the valid result, depending on the
-        value of the `include` parameter.
 
         :param timestamp: The reference timestamp to find the nearest match.
         :param future: Whether to find the nearest timestamp in the future (default) or the past.
         :param include: Whether to include the given timestamp itself as a valid match if
-            it exists in 'Timestamps.stamps'. Defaults to False.
+            it exists in 'Timestamps.stamps'. Defaults to True.
         :return: The nearest timestamp matching the criteria or None if no match is found.
         """
         if include and timestamp in self:
@@ -266,16 +251,16 @@ class Timestamps:
         else:
             return self.get_nearest_past_stamp(timestamp)
 
-    def get_nearest_futur_stamp(self, timestamp: int) -> int:
+    def get_nearest_futur_stamp(self, timestamp):
         """
         Finds the nearest next timestamp greater than the given input timestamp.
 
         :param timestamp: The input timestamp to compare against.
         :return: The nearest next timestamp greater than the input, or None if no such
                  timestamp exists.
-        :raises IndexError: If timestamp as no next futur stamp candidate in stamps
+        :raises IndexError: If timestamp has no next future stamp candidate in stamps.
         """
-        assert isinstance(timestamp, (int, np.integer))
+        assert isinstance(timestamp, self._SCALAR_TYPES)
         try:
             mask = timestamp < self._stamps
             nearest_futur_stamp = self._nearest_stamp(mask)
@@ -285,16 +270,15 @@ class Timestamps:
             )
         return nearest_futur_stamp
 
-    def get_nearest_past_stamp(self, timestamp: int) -> int:
+    def get_nearest_past_stamp(self, timestamp):
         """
-        Finds the nearest previous timestamp i.e., the one that is strictly less than the given one
+        Finds the nearest previous timestamp i.e., the one that is strictly less than the given one.
 
-        :param timestamp: The timestamp to compare against, given as an integer.
-        :return: The nearest previous timestamp as an integer, or None if no such timestamp
-            exists.
-        :raises IndexError: If timestamp as no next past stamp candidate in stamps
+        :param timestamp: The timestamp to compare against.
+        :return: The nearest previous timestamp, or None if no such timestamp exists.
+        :raises IndexError: If timestamp has no next past stamp candidate in stamps.
         """
-        assert isinstance(timestamp, (int, np.integer))
+        assert isinstance(timestamp, self._SCALAR_TYPES)
         try:
             mask = timestamp > self._stamps
             nearest_past_stamp = self._nearest_stamp(mask, future=False)
@@ -306,7 +290,7 @@ class Timestamps:
 
     def _nearest_stamp(
         self, mask: bool | np.ndarray[Any, np.dtype[bool]], future=True
-    ) -> int:
+    ):
         nearest_index = np.squeeze(np.nonzero(mask))
 
         # Only pick the first
@@ -317,21 +301,31 @@ class Timestamps:
                 nearest_index = nearest_index[-1]
 
         if nearest_index.size == 1 and self._stamps.size > 0:
-            return int(np.squeeze(self._stamps[nearest_index]))
+            return self._convert_stamp_scalar(np.squeeze(self._stamps[nearest_index]))
         else:
             raise IndexError
+
+    @abstractmethod
+    def _convert_stamp_scalar(self, value):
+        """Convert a numpy scalar stamp value to the appropriate Python scalar type."""
+        ...
+
+    @abstractmethod
+    def _check_scalar_or_array(self, value):
+        """Validate that a value is a compatible scalar or array type."""
+        ...
 
     def __str__(self):
         out_sp = " " * 0
         in_sp = " " * 3
-        repr_str = "\nTimestamps(\n"
+        repr_str = f"\n{self.__class__.__name__}(\n"
         for k in ["stamps", "delta_stamps"]:
             repr_str += f"{out_sp}{in_sp}{k}: "
             v = self.__getattribute__(k)
             if k == "delta_stamps" and v.size > 1:
-                range_str = f"range {np.min(v[1:])} ←→ {np.max(v[1:])} (nanosec)"
+                range_str = f"range {np.min(v[1:])} ←→ {np.max(v[1:])}"
             elif v.size > 0:
-                range_str = f"range {np.min(v)} ←→ {np.max(v)} (nanosec)"
+                range_str = f"range {np.min(v)} ←→ {np.max(v)}"
             else:
                 range_str = "empty"
             repr_str += f"shape {v.shape} {range_str}\n"
@@ -345,23 +339,6 @@ class Timestamps:
         repr_str += f"{out_sp})"
         return repr_str
 
-    def seconds_nanoseconds(self, key) -> Tuple[int, int]:
-        """
-        Converts the value associated with the given key into seconds and nanoseconds.
-
-        Usage:
-
-        >>> ts = Timestamps(np.array([1711047156311350031, 1711047156397750031]))
-        >>> ts.seconds_nanoseconds(0)
-        >>> # (1711047156, 311350031)
-
-        :param key: The key whose associated value will be converted to seconds and
-            nanoseconds. The key is used to access the data structure holding the value.
-        :return: A tuple containing two integers, where the first integer represents
-            seconds and the second represents nanoseconds.
-        """
-        return to_seconds_nanoseconds(self.stamps[key])
-
     def causal_ordering_sanity_check(
         self,
         show_offending_in_nanoseconds: bool = True,
@@ -369,12 +346,6 @@ class Timestamps:
     ) -> List[int]:
         """
         Performs a sanity check for causal ordering based on timestamps of events.
-
-        This function verifies the causal ordering of events tied to a specific feature
-        within a dataset. It ensures that the temporal sequence adheres to the expected
-        causality rules and returns a list of IDs where violations occur, if any. The
-        option to display the offending timestamps in nanoseconds is provided for finer
-        granularity during debugging and analysis.
 
         :param show_offending_in_nanoseconds: Whether to display offending timestamps in
           nanoseconds or (seconds, nanoseconds ), default is True.
@@ -387,15 +358,20 @@ class Timestamps:
 
         return self._offending_indexs
 
+    @abstractmethod
     def compute_frequency_metric(self) -> RateMetric:
         """
         Computes a frequency metric based on instantaneous rates derived from timestamp delta.
 
-        The function calculates instantaneous rates in Hertz (Hz) by taking the inverse
-        of time differences between consecutive timestamps. Using these rates, it
-        computes a rate metric containing statistical properties such as the mean,
-        median, standard deviation, minimum, and maximum rates.
+        :return: An instance of `RateMetric` containing rates statistical properties.
+        """
+        ...
 
+    def _compute_frequency_metric_from_rates(self, instantaneous_rates: np.ndarray) -> RateMetric:
+        """
+        Computes a RateMetric from pre-computed instantaneous rates.
+
+        :param instantaneous_rates: Array of instantaneous rate values in Hz.
         :return: An instance of `RateMetric` containing rates statistical properties.
         """
         if not self._single_source:
@@ -404,9 +380,6 @@ class Timestamps:
                 "multiple sources (e.g., recorded stamps from more than one topic) so it make "
                 "no sense to compute frequency metric."
             )
-
-        # Compute instantaneous rates in Hz
-        instantaneous_rates: np.ndarray = 1.0 / to_seconds(self._delta_stamps[1:])
 
         if instantaneous_rates.size == 0:
             return RateMetric(
@@ -433,6 +406,128 @@ class Timestamps:
             min_hz=np.min(instantaneous_rates),
             max_hz=np.max(instantaneous_rates),
         )
+
+
+class TimestampsInt(Timestamps):
+    """
+    Handles integer timestamp management aligned with ROS time format (nanoseconds)
+    without requiring rclpy.
+
+    The `TimestampsInt` class is designed to work with a one-dimensional NumPy array of positive
+    integer timestamps in nanosecond format.
+    """
+
+    @property
+    def _DTYPE(self) -> np.dtype:
+        return np.dtype(int)
+
+    @property
+    def _SCALAR_TYPES(self) -> tuple:
+        return (int, np.integer)
+
+    def _convert_stamp_scalar(self, value):
+        return int(value)
+
+    def _check_scalar_or_array(self, value):
+        _check_precondition_nanoseconds_are_integers(value)
+
+    def seconds_nanoseconds(self, key) -> Tuple[int, int]:
+        """
+        Converts the value associated with the given key into seconds and nanoseconds.
+
+        :param key: The key whose associated value will be converted to seconds and
+            nanoseconds.
+        :return: A tuple containing two integers, where the first integer represents
+            seconds and the second represents nanoseconds.
+        """
+        return to_seconds_nanoseconds(self.stamps[key])
+
+    def compute_frequency_metric(self) -> RateMetric:
+        """
+        Computes a frequency metric based on instantaneous rates derived from timestamp delta.
+
+        :return: An instance of `RateMetric` containing rates statistical properties.
+        """
+        if not self._single_source:
+            raise ValueError(
+                "This Timestamps object as been flagged as containing data originating from "
+                "multiple sources (e.g., recorded stamps from more than one topic) so it make "
+                "no sense to compute frequency metric."
+            )
+
+        # Compute instantaneous rates in Hz
+        instantaneous_rates: np.ndarray = 1.0 / to_seconds(self._delta_stamps[1:])
+        return self._compute_frequency_metric_from_rates(instantaneous_rates)
+
+
+class TimestampsFloat(Timestamps):
+    """
+    Handles floating-point timestamp management for trajectory data from sources
+    such as CSV files where timestamps are in seconds as float32 or float64.
+
+    The `TimestampsFloat` class is designed to work with a one-dimensional NumPy array of
+    positive floating-point timestamps.
+    """
+
+    @property
+    def _DTYPE(self) -> np.dtype:
+        return np.dtype(np.float64)
+
+    @property
+    def _SCALAR_TYPES(self) -> tuple:
+        return (int, np.integer, float, np.floating)
+
+    def _convert_stamp_scalar(self, value):
+        return float(value)
+
+    def _check_scalar_or_array(self, value):
+        if isinstance(value, np.ndarray):
+            assert np.issubdtype(value.dtype, np.floating) or np.issubdtype(value.dtype, np.integer)
+        else:
+            assert isinstance(value, (int, np.integer, float, np.floating))
+
+    def compute_frequency_metric(self) -> RateMetric:
+        """
+        Computes a frequency metric based on instantaneous rates derived from timestamp delta.
+
+        :return: An instance of `RateMetric` containing rates statistical properties.
+        """
+        if not self._single_source:
+            raise ValueError(
+                "This Timestamps object as been flagged as containing data originating from "
+                "multiple sources (e.g., recorded stamps from more than one topic) so it make "
+                "no sense to compute frequency metric."
+            )
+
+        # Compute instantaneous rates in Hz (delta_stamps are already in seconds for float)
+        instantaneous_rates: np.ndarray = 1.0 / self._delta_stamps[1:]
+        return self._compute_frequency_metric_from_rates(instantaneous_rates)
+
+
+def create_timestamps(
+    stamps: Union[list, np.ndarray], single_source: bool = True
+) -> Timestamps:
+    """Factory function to create the appropriate Timestamps subclass based on data type.
+
+    If the input contains floating-point data, a `TimestampsFloat` is returned.
+    If the input contains integer data, a `TimestampsInt` is returned.
+
+    :param stamps: A list or NumPy array containing timestamps.
+    :param single_source: Whether timestamps originate from a single source.
+    :return: An instance of `TimestampsInt` or `TimestampsFloat`.
+    """
+    if isinstance(stamps, np.ndarray):
+        if np.issubdtype(stamps.dtype, np.floating):
+            return TimestampsFloat(stamps, single_source=single_source)
+        else:
+            return TimestampsInt(stamps, single_source=single_source)
+    elif isinstance(stamps, list) and len(stamps) > 0:
+        if isinstance(stamps[0], (float, np.floating)):
+            return TimestampsFloat(stamps, single_source=single_source)
+        else:
+            return TimestampsInt(stamps, single_source=single_source)
+    else:
+        return TimestampsInt(stamps, single_source=single_source)
 
 
 def validate_timestamps_ordering(
@@ -472,7 +567,7 @@ def validate_timestamps_ordering(
     >>> #     ——————————————————————————————————————————————————————————————————————————————
     >>> assert len(offending_index) == 4
 
-    :param timestamp_object: A Timestance object fill with trajectory stamp in nanosecond.
+    :param timestamp_object: A Timestamps object fill with trajectory stamps.
     :param show_offending_in_nanoseconds: Display in nanosecond or ( seconds nanoseconds ).
      Default nanoseconds
     :param fail_causal_ordering_violation:
@@ -489,7 +584,7 @@ def validate_timestamps_ordering(
         try:
             assert previous_timestamp < current_timestamp
         except AssertionError:
-            if not show_offending_in_nanoseconds:
+            if not show_offending_in_nanoseconds and isinstance(timestamp_object, TimestampsInt):
                 previous_timestamp = to_seconds_nanoseconds(previous_timestamp)
                 current_timestamp = to_seconds_nanoseconds(current_timestamp)
             offending_idx.append(ts_idx)
@@ -508,6 +603,31 @@ def validate_timestamps_ordering(
             f"    {timestamp_display:>25} [  T  ]            {timestamp_display:>25} [ T+1 ]\n"
             f"    {'—' * 78}"
         )
+
+        if isinstance(timestamp_object, TimestampsInt):
+            metadata_str = (
+                f"    Rosbag timestamps metadate:\n"
+                f"    {'—' * 78}\n"
+                f"                            nanoseconds    ( seconds nanoseconds )\n"
+                f"          start: {timestamp_object[0].stamps:>22}  "
+                f"{str(timestamp_object.seconds_nanoseconds(0)):>25} \n"
+                f"          stop:  {timestamp_object[-1].stamps:>22}  "
+                f"{str(timestamp_object.seconds_nanoseconds(-1)):>25} \n"
+                f"      duration:  "
+                f"{(timestamp_object[-1].stamps - timestamp_object[0].stamps):>22}  \n"
+                f"    {'—' * 78}\n"
+            )
+        else:
+            metadata_str = (
+                f"    Timestamps metadata:\n"
+                f"    {'—' * 78}\n"
+                f"          start: {timestamp_object[0].stamps:>22}\n"
+                f"          stop:  {timestamp_object[-1].stamps:>22}\n"
+                f"      duration:  "
+                f"{(timestamp_object[-1].stamps - timestamp_object[0].stamps):>22}\n"
+                f"    {'—' * 78}\n"
+            )
+
         error_msg = (
             f"Timestamp causal ordering violations:\n"
             f"    Number of offending timestamps {len(offending_idx)}/"
@@ -515,16 +635,7 @@ def validate_timestamps_ordering(
             f"    Offending timestamps:\n"
             f"{offending_ts_header}\n"
             f"{offending_ts}\n"
-            f"    Rosbag timestamps metadate:\n"
-            f"    {'—' * 78}\n"
-            f"                            nanoseconds    ( seconds nanoseconds )\n"
-            f"          start: {timestamp_object[0].stamps:>22}  "
-            f"{str(timestamp_object.seconds_nanoseconds(0)):>25} \n"
-            f"          stop:  {timestamp_object[-1].stamps:>22}  "
-            f"{str(timestamp_object.seconds_nanoseconds(-1)):>25} \n"
-            f"      duration:  "
-            f"{(timestamp_object[-1].stamps - timestamp_object[0].stamps):>22}  \n"
-            f"    {'—' * 78}\n"
+            f"{metadata_str}"
         )
 
         if fail_causal_ordering_violation:

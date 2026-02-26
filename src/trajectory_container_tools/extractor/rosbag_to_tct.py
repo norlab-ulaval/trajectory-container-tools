@@ -46,6 +46,7 @@ from trajectory_container_tools.utils.shadow_data_container import (
 from trajectory_container_tools.temporal.timestamps import (
     TimestampCausalOrderingError,
     Timestamps,
+    TimestampsInt,
 )
 from trajectory_container_tools.utils.typing.new_types_and_aliases import (
     ShadowDataContainer,
@@ -194,7 +195,7 @@ def from_rosbag(
     return trajectory_features_bag(
         dataset_info,
         *features,
-        bag_timestamps=Timestamps(bag_timestamps, single_source=False),
+        bag_timestamps=TimestampsInt(bag_timestamps, single_source=False),
         chunk_on=convert_rosbag_topic_key_to_tct_mf_topic_key(chunk_on),
         fail_causal_ordering_violation=fail_causal_ordering_violation,
     )

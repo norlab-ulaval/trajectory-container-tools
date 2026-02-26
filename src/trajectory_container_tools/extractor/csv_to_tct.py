@@ -33,6 +33,7 @@ from trajectory_container_tools.utils.shadow_data_container import (
 from trajectory_container_tools.temporal.timestamps import (
     TimestampCausalOrderingError,
     Timestamps,
+    TimestampsFloat,
 )
 from trajectory_container_tools.utils.typing.new_types_and_aliases import (
     ShadowDataContainer,
@@ -155,7 +156,7 @@ def from_csv(
     return trajectory_features_bag(
         dataset_info,
         *features,
-        bag_timestamps=Timestamps(all_timestamps, single_source=False),
+        bag_timestamps=TimestampsFloat(all_timestamps, single_source=False),
         fail_causal_ordering_violation=fail_causal_ordering_violation,
     )
 

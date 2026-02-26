@@ -13,7 +13,7 @@ from ..core.base_trajectory_dataclass import (
 from .std_msgs_dataclass import StdMsgsHeader
 import numpy as np
 
-from ...temporal import Timestamps
+from ...temporal import Timestamps, TimestampsInt
 
 
 @dataclass()
@@ -47,7 +47,7 @@ class RosFeature(BaseTrajectoryFeature):
     def on_begin_post_init_callback(self) -> None:
         if self.bag_recorded_timestamps is not None:
             if isinstance(self.bag_recorded_timestamps, np.ndarray):
-                self.bag_recorded_timestamps = Timestamps(self.bag_recorded_timestamps)
+                self.bag_recorded_timestamps = TimestampsInt(self.bag_recorded_timestamps)
 
             self.bag_recorded_timestamps.causal_ordering_sanity_check(
                 show_offending_in_nanoseconds=True,
@@ -261,7 +261,7 @@ class RosFeatureArray(BaseTrajectoryFeatureUnboundedArray):
     def on_begin_post_init_callback(self) -> None:
         if self.bag_recorded_timestamps is not None:
             if isinstance(self.bag_recorded_timestamps, np.ndarray):
-                self.bag_recorded_timestamps = Timestamps(self.bag_recorded_timestamps)
+                self.bag_recorded_timestamps = TimestampsInt(self.bag_recorded_timestamps)
 
             self.bag_recorded_timestamps.causal_ordering_sanity_check(
                 show_offending_in_nanoseconds=True,

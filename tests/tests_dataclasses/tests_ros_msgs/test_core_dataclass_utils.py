@@ -7,7 +7,7 @@ import pytest
 from trajectory_container_tools.dataclasses.ros_msgs.core_dataclass_utils import (
     get_timestamps_slice,
 )
-from trajectory_container_tools.temporal import Timestamps
+from trajectory_container_tools.temporal import Timestamps, TimestampsInt
 from trajectory_container_tools.temporal.timestamps import TimestampOutOfBoundError
 
 
@@ -49,7 +49,7 @@ class TestGetTimestampsSlice:
         t_resolve_out_of_bounds,
         t_expected,
     ):
-        t_timestamps = Timestamps(setup_simple_stamps)
+        t_timestamps = TimestampsInt(setup_simple_stamps)
 
         if t_resolve_out_of_bounds:
             t_slice = get_timestamps_slice(
@@ -93,7 +93,7 @@ class TestGetTimestampsSlice:
         t_start = int(setup_mock_timestamps[t_start_idx])
 
         t_slice = get_timestamps_slice(
-            timestamps=Timestamps(setup_mock_timestamps), start=t_start
+            timestamps=TimestampsInt(setup_mock_timestamps), start=t_start
         )
 
         assert t_slice.start == t_start_idx
@@ -106,7 +106,7 @@ class TestGetTimestampsSlice:
         t_start_idx = 1
         t_stop_idx = 4
         t_slice = get_timestamps_slice(
-            timestamps=Timestamps(setup_mock_timestamps),
+            timestamps=TimestampsInt(setup_mock_timestamps),
             start=int(setup_mock_timestamps[t_start_idx]),
             stop=int(setup_mock_timestamps[t_stop_idx]),
         )
@@ -126,7 +126,7 @@ class TestGetTimestampsSlice:
 
         t_start_idx = len(setup_mock_timestamps) - 1
         t_slice = get_timestamps_slice(
-            timestamps=Timestamps(setup_mock_timestamps),
+            timestamps=TimestampsInt(setup_mock_timestamps),
             start=int(setup_mock_timestamps[t_start_idx]),
             stop=int(setup_mock_timestamps[t_start_idx] + 300),
             startpoint=True,
@@ -149,7 +149,7 @@ class TestGetTimestampsSlice:
 
         t_start_idx = 0
         t_slice = get_timestamps_slice(
-            timestamps=Timestamps(setup_mock_timestamps),
+            timestamps=TimestampsInt(setup_mock_timestamps),
             start=int(setup_mock_timestamps[t_start_idx] - 300),
             stop=int(setup_mock_timestamps[t_start_idx]),
             startpoint=True,
@@ -180,7 +180,7 @@ class TestGetTimestampsSlice:
         assert t_start < t_stop < t_next_stamp, "failed test setup sanity check"
 
         t_slice = get_timestamps_slice(
-            timestamps=Timestamps(setup_mock_timestamps),
+            timestamps=TimestampsInt(setup_mock_timestamps),
             start=t_start,
             stop=t_stop,
             startpoint=True,
@@ -215,7 +215,7 @@ class TestGetTimestampsSlice:
         t_start_idx = 0
         t_stop_idx = 4
         t_slice = get_timestamps_slice(
-            timestamps=Timestamps(setup_mock_timestamps),
+            timestamps=TimestampsInt(setup_mock_timestamps),
             start=int(setup_mock_timestamps[t_start_idx]),
             stop=int(setup_mock_timestamps[t_stop_idx]),
             startpoint=t_startpoint,

@@ -9,7 +9,7 @@ from trajectory_container_tools import (
     AbstractTrajectoryFeaturesBag,
 )
 from trajectory_container_tools.dataclasses import RosStampedFeature, StdMsgsHeader
-from trajectory_container_tools.temporal.timestamps import Timestamps
+from trajectory_container_tools.temporal.timestamps import Timestamps, TimestampsInt
 
 
 @dataclass
@@ -26,14 +26,14 @@ class TestAbstractTrajectoryFeaturesBag:
     ) -> Tuple[RosStampedFeature, RosStampedFeature]:
         topic_mock_1 = RosStampedFeature(
             feature_name="Mock topic 1",
-            bag_recorded_timestamps=np.arange(20) * 1e9,
-            header=StdMsgsHeader(frame_id="topic_1", timestamps=np.arange(20) * 1e9),
+            bag_recorded_timestamps=np.arange(20, dtype=int) * int(1e9),
+            header=StdMsgsHeader(frame_id="topic_1", timestamps=np.arange(20, dtype=int) * int(1e9)),
         )
 
         topic_mock_2 = RosStampedFeature(
             feature_name="Mock topic 2",
-            bag_recorded_timestamps=np.arange(20) * 1e9,
-            header=StdMsgsHeader(frame_id="topic_2", timestamps=np.arange(20) * 1e9),
+            bag_recorded_timestamps=np.arange(20, dtype=int) * int(1e9),
+            header=StdMsgsHeader(frame_id="topic_2", timestamps=np.arange(20, dtype=int) * int(1e9)),
         )
         return topic_mock_1, topic_mock_2
 
@@ -63,7 +63,7 @@ class TestAbstractTrajectoryFeaturesBag:
         topic_mock_1, topic_mock_2 = setup_mock_topic_container
 
         if t_bag_timestamps:
-            mock_bag_timestamps = Timestamps(stamps=np.arange(20) * 1e9, single_source=False)
+            mock_bag_timestamps = TimestampsInt(stamps=np.arange(20, dtype=int) * int(1e9), single_source=False)
         else:
             mock_bag_timestamps = None
 
@@ -91,7 +91,7 @@ class TestAbstractTrajectoryFeaturesBag:
     def test_case_bag_level_timestamps(self, setup_mock_topic_container):
         topic_mock_1, topic_mock_2 = setup_mock_topic_container
 
-        mock_bag_timestamps = Timestamps(stamps=np.arange(20) * 1e9, single_source=False)
+        mock_bag_timestamps = TimestampsInt(stamps=np.arange(20, dtype=int) * int(1e9), single_source=False)
 
         mf_container = MockTrajectoryFeaturesBag(
             dataset_info="Mock",
@@ -105,7 +105,7 @@ class TestAbstractTrajectoryFeaturesBag:
     def test_topic_key_list(self, setup_mock_topic_container):
         topic_mock_1, topic_mock_2 = setup_mock_topic_container
 
-        mock_bag_timestamps = Timestamps(stamps=np.arange(20) * 1e9, single_source=False)
+        mock_bag_timestamps = TimestampsInt(stamps=np.arange(20, dtype=int) * int(1e9), single_source=False)
 
         mf_container = MockTrajectoryFeaturesBag(
             dataset_info="Mock",
