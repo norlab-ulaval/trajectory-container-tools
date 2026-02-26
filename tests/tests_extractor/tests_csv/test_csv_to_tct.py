@@ -436,3 +436,79 @@ class TestFromCsv:
         assert hasattr(bag, "velocity")
         assert len(bag.pose.x) == expected_length
         assert len(bag.velocity.vx) == expected_length
+
+
+# =============================================================================
+# Tests for column dtype preservation
+# =============================================================================
+
+
+class TestExtractCsvFeatureColumnDtypePreservation:
+    """Test suite verifying that extract_csv_feature preserves per-column source dtype."""
+
+    @pytest.mark.parametrize(
+        "source_dtype, expected_numpy_dtype",
+        [
+            (np.float64, np.dtype(np.float64)),
+            (np.float32, np.dtype(np.float32)),
+            (np.int_, np.dtype(np.int_)),
+            (np.int64, np.dtype(np.int64)),
+            (None, np.dtype(np.int64)),    # python int → pandas int64
+            (None, np.dtype(np.float64)),  # python float → pandas float64
+        ],
+        ids=[
+            "numpy_float64",
+            "numpy_float32",
+            "numpy_int",
+            "numpy_int64",
+            "python_int",
+            "python_float",
+        ],
+    )
+    def test_column_dtype_is_preserved(self, source_dtype, expected_numpy_dtype):
+        """Validate that the array dtype of extracted features matches the
+        DataFrame column source dtype for: numpy float64, float32, int, int64,
+        python int, and python float."""
+
+        if source_dtype is not None:
+            # Numpy-typed columns
+            x_values = np.array([1.0, 2.0, 3.0], dtype=source_dtype)
+            y_values = np.array([4.0, 5.0, 6.0], dtype=source_dtype)
+            yaw_values = np.array([0.1, 0.2, 0.3], dtype=source_dtype)
+        else:
+            # Pure-python typed columns
+            if expected_numpy_dtype == np.dtype(np.int64):
+                x_values = [1, 2, 3]
+                y_values = [4, 5, 6]
+                yaw_values = [7, 8, 9]
+            else:
+                x_values = [1.0, 2.0, 3.0]
+                y_values = [4.0, 5.0, 6.0]
+                yaw_values = [0.1, 0.2, 0.3]
+
+        df = pd.DataFrame(
+            {
+                "t": [1.0, 2.0, 3.0],
+                "x": x_values,
+                "y": y_values,
+                "yaw": yaw_values,
+            }
+        )
+
+        feature = extract_csv_feature(
+            csv_dataframe=df,
+            feature_name="pose",
+            data_container_type=StatePose2DStamped,
+            timestamp_column="t",
+        )
+
+        # Verify that each extracted array preserves the source column dtype
+        for field_name in ("x", "y", "yaw"):
+            arr = getattr(feature, field_name)
+            assert isinstance(arr, np.ndarray), (
+                f"Expected np.ndarray for '{field_name}', got {type(arr)}"
+            )
+            assert arr.dtype == expected_numpy_dtype, (
+                f"Column '{field_name}': expected dtype "
+                f"{expected_numpy_dtype}, got {arr.dtype}"
+            )
