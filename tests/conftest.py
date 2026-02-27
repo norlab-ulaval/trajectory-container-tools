@@ -1,5 +1,5 @@
 # coding=utf-8
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from typing import Dict, Union
 
 import numpy as np
@@ -95,16 +95,20 @@ class MockROSbagDataContainer:
     b: np.ndarray
     c: np.ndarray
     batch: bool
-    bag_recorded_timestamps: np.ndarray = np.arange(
-        TS_START, TS_STOP, (TS_STOP - TS_START) / TRJ_LEN, dtype=int
-    )
-    header: StdMsgsHeader = StdMsgsHeader(
-        frame_id="map",
-        timestamps=np.arange(
+    bag_recorded_timestamps: np.ndarray = field(
+        default_factory=lambda: np.arange(
             TS_START, TS_STOP, (TS_STOP - TS_START) / TRJ_LEN, dtype=int
-        ),
+        )
     )
-    ts_idx: np.ndarray = np.arange(0, TRJ_LEN)
+    header: StdMsgsHeader = field(
+        default_factory=lambda: StdMsgsHeader(
+            frame_id="map",
+            timestamps=np.arange(
+                TS_START, TS_STOP, (TS_STOP - TS_START) / TRJ_LEN, dtype=int
+            ),
+        )
+    )
+    ts_idx: np.ndarray = field(default_factory=lambda: np.arange(0, TRJ_LEN))
 
 
 @pytest.fixture(scope="function")

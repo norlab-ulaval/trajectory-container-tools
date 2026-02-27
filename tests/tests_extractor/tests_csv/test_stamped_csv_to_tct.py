@@ -11,8 +11,8 @@ import pandas as pd
 from trajectory_container_tools.dataclasses.panda_dataframe_feature_dataclass import (
     StatePose2DStamped,
 )
-from trajectory_container_tools.extractor.csv_to_tct import (
-    from_csv,
+from trajectory_container_tools.extractor.stamped_csv_to_tct import (
+    from_stamped_csv,
     extract_csv_feature,
 )
 from trajectory_container_tools.dataclasses.primitive_dataclass import (
@@ -256,12 +256,12 @@ class TestExtractCsvFeature:
 
 
 # =============================================================================
-# Tests for from_csv
+# Tests for from_stamped_csv
 # =============================================================================
 
 
 class TestFromCsv:
-    """Test suite for from_csv function"""
+    """Test suite for from_stamped_csv function"""
 
     def test_from_csv_with_multiple_features(self, tmp_path, multi_feature_csv_data):
         """Test extracting multiple features from CSV into a feature bag"""
@@ -276,7 +276,7 @@ class TestFromCsv:
         }
 
         # Extract features
-        bag = from_csv(
+        bag = from_stamped_csv(
             csv_path=csv_path,
             dataset_info="Test dataset",
             features_config=features_config,
@@ -304,7 +304,7 @@ class TestFromCsv:
 
         # Should raise ValueError for missing timestamp column
         with pytest.raises(ValueError):
-            from_csv(
+            from_stamped_csv(
                 csv_path=csv_path,
                 dataset_info="Test",
                 features_config={"pos": StatePose2DStamped},
@@ -318,7 +318,7 @@ class TestFromCsv:
         basic_csv_data.to_csv(csv_path, index=False)
 
         # Extract single feature
-        bag = from_csv(
+        bag = from_stamped_csv(
             csv_path=csv_path,
             dataset_info="Single feature test",
             features_config={"pose": StatePose2DStamped},
@@ -345,7 +345,7 @@ class TestFromCsv:
         }
 
         # Extract features
-        bag = from_csv(
+        bag = from_stamped_csv(
             csv_path=csv_path,
             dataset_info="Tuple spec test",
             features_config=features_config,
@@ -361,7 +361,7 @@ class TestFromCsv:
         assert len(bag.position.x) == expected_length
 
     def test_from_csv_with_time_filtering(self, tmp_path, basic_csv_data):
-        """Test from_csv with time range filtering"""
+        """Test from_stamped_csv with time range filtering"""
         # Create CSV file
         csv_path = tmp_path / "test_time_filter.csv"
         basic_csv_data.to_csv(csv_path, index=False)
@@ -370,7 +370,7 @@ class TestFromCsv:
         stop_time = 5  # nanoseconds
 
         # Extract with time filtering
-        bag = from_csv(
+        bag = from_stamped_csv(
             csv_path=csv_path,
             dataset_info="Time filter test",
             features_config={"pose": StatePose2DStamped},
@@ -399,7 +399,7 @@ class TestFromCsv:
         dataset_info = "Test dataset with metadata"
 
         # Extract features
-        bag = from_csv(
+        bag = from_stamped_csv(
             csv_path=csv_path,
             dataset_info=dataset_info,
             features_config={"pose": StatePose2DStamped},
@@ -422,7 +422,7 @@ class TestFromCsv:
         }
 
         # Extract features
-        bag = from_csv(
+        bag = from_stamped_csv(
             csv_path=csv_path,
             dataset_info="Mixed spec test",
             features_config=features_config,
@@ -436,3 +436,79 @@ class TestFromCsv:
         assert hasattr(bag, "velocity")
         assert len(bag.pose.x) == expected_length
         assert len(bag.velocity.vx) == expected_length
+
+
+# =============================================================================
+# Tests for column dtype preservation
+# =============================================================================
+
+
+class TestExtractCsvFeatureColumnDtypePreservation:
+    """Test suite verifying that extract_csv_feature preserves per-column source dtype."""
+
+    @pytest.mark.parametrize(
+        "source_dtype, expected_numpy_dtype",
+        [
+            (np.float64, np.dtype(np.float64)),
+            (np.float32, np.dtype(np.float32)),
+            (np.int_, np.dtype(np.int_)),
+            (np.int64, np.dtype(np.int64)),
+            (None, np.dtype(np.int64)),    # python int → pandas int64
+            (None, np.dtype(np.float64)),  # python float → pandas float64
+        ],
+        ids=[
+            "numpy_float64",
+            "numpy_float32",
+            "numpy_int",
+            "numpy_int64",
+            "python_int",
+            "python_float",
+        ],
+    )
+    def test_column_dtype_is_preserved(self, source_dtype, expected_numpy_dtype):
+        """Validate that the array dtype of extracted features matches the
+        DataFrame column source dtype for: numpy float64, float32, int, int64,
+        python int, and python float."""
+
+        if source_dtype is not None:
+            # Numpy-typed columns
+            x_values = np.array([1.0, 2.0, 3.0], dtype=source_dtype)
+            y_values = np.array([4.0, 5.0, 6.0], dtype=source_dtype)
+            yaw_values = np.array([0.1, 0.2, 0.3], dtype=source_dtype)
+        else:
+            # Pure-python typed columns
+            if expected_numpy_dtype == np.dtype(np.int64):
+                x_values = [1, 2, 3]
+                y_values = [4, 5, 6]
+                yaw_values = [7, 8, 9]
+            else:
+                x_values = [1.0, 2.0, 3.0]
+                y_values = [4.0, 5.0, 6.0]
+                yaw_values = [0.1, 0.2, 0.3]
+
+        df = pd.DataFrame(
+            {
+                "t": [1.0, 2.0, 3.0],
+                "x": x_values,
+                "y": y_values,
+                "yaw": yaw_values,
+            }
+        )
+
+        feature = extract_csv_feature(
+            csv_dataframe=df,
+            feature_name="pose",
+            data_container_type=StatePose2DStamped,
+            timestamp_column="t",
+        )
+
+        # Verify that each extracted array preserves the source column dtype
+        for field_name in ("x", "y", "yaw"):
+            arr = getattr(feature, field_name)
+            assert isinstance(arr, np.ndarray), (
+                f"Expected np.ndarray for '{field_name}', got {type(arr)}"
+            )
+            assert arr.dtype == expected_numpy_dtype, (
+                f"Column '{field_name}': expected dtype "
+                f"{expected_numpy_dtype}, got {arr.dtype}"
+            )

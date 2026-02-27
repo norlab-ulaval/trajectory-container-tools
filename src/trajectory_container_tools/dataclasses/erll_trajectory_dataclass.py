@@ -52,3 +52,4 @@ class TestMotionTrajectoryDataclass(TestTrajectoryDataclass):
 
     pose: np.ndarray
     pose_gt: np.ndarray
+    orientation_gt: Optional[np.ndarray] = None
