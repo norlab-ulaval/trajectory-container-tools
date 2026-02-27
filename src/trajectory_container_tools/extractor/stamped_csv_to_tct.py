@@ -33,6 +33,7 @@ from trajectory_container_tools.utils.shadow_data_container import (
 from trajectory_container_tools.temporal.timestamps import (
     TimestampCausalOrderingError,
     Timestamps,
+    TimestampsFloat,
 )
 from trajectory_container_tools.utils.typing.new_types_and_aliases import (
     ShadowDataContainer,
@@ -40,7 +41,7 @@ from trajectory_container_tools.utils.typing.new_types_and_aliases import (
 from trajectory_container_tools.utils import dn_sanitize_path
 
 
-def from_csv(
+def from_stamped_csv(
     csv_path: Union[Path, str],
     dataset_info: Optional[str],
     features_config: Dict[
@@ -53,8 +54,13 @@ def from_csv(
     pre_extraction_callback: Callable = None,
     verbose: bool = False
 ) -> AbstractTrajectoryFeaturesBag:
-    """Extract multiple features (i.e. columns) from a CSV file based on a configuration
+    """Extract multiple features (i.e. columns) from a stamped CSV file based on a configuration
     dictionary.
+
+    This function expects the CSV file to contain timestamp-aligned data, where the first column
+    (or the column specified by ``timestamp_column``) holds monotonically increasing timestamps.
+    Unlike :func:`from_dataframe`, which accepts non-stamped data on either axis,
+    ``from_stamped_csv`` requires that every row is associated with a timestamp.
 
     Notes:
 
@@ -76,7 +82,7 @@ def from_csv(
     >>>     'motors': ('MotorCommands', 'mot 1', 'mot 2', 'mot 3', 'mot 4')
     >>> }
 
-    :param csv_path: Path to CSV file.
+    :param csv_path: Path to the stamped CSV file.
     :param dataset_info: Any relevant information on the CSV file (location, robot, condition).
     :param features_config: The features to aggregate from the CSV as a configuration dictionary.
     :param timestamp_column: The name of the column containing timestamps. Defaults to "t".
@@ -155,7 +161,7 @@ def from_csv(
     return trajectory_features_bag(
         dataset_info,
         *features,
-        bag_timestamps=Timestamps(all_timestamps, single_source=False),
+        bag_timestamps=TimestampsFloat(all_timestamps, single_source=False),
         fail_causal_ordering_violation=fail_causal_ordering_violation,
     )
 
@@ -229,27 +235,17 @@ def extract_csv_feature(
             data_container_type, 0
         )
 
-        # .... Crawl CSV rows .........................................................................
+        # .... Crawl CSV columns ......................................................................
         if verbose:
             print(f"[TCT] Extract single feature from CSV › processing '{feature_name}'\n")
-        progressbar = setup_progressbar(len(df))
 
-        # for row in df.itertuples(index=False):
-        for idx, row in df.iterrows():
-            # Extract timestamp
-            timestamp = df[timestamp_column][idx]
-
-            # ... Fetch properties from CSV row ...........................................................
-            shadow_data_container = _collect_properties_from_csv(
-                data_container_type,
-                feature_name,
-                row,
-                timestamp,
-                shadow_data_container,
-            )
-            progressbar.update(1)
-
-        progressbar.close()
+        shadow_data_container = _collect_columns_from_csv(
+            data_container_type,
+            feature_name,
+            df,
+            timestamp_column,
+            shadow_data_container,
+        )
 
         # .... Post-process CSV data and create data container ........................................
         try:
@@ -274,23 +270,23 @@ def extract_csv_feature(
     return feature_instance
 
 
-def _collect_properties_from_csv(
+def _collect_columns_from_csv(
     data_container_type: type[BaseTrajectoryFeature],
     feature_name: str,
-    row: pd.Series,
-    timestamp: Union[int,float],
+    df: pd.DataFrame,
+    timestamp_column: str,
     shadow_data_container: ShadowDataContainer,
 ) -> ShadowDataContainer:
     """
-    Recursively collects properties from a CSV row and populates the shadow data container.
+    Collects properties column-wise from a CSV DataFrame and populates the shadow data container.
 
-    This function handles both flat and nested trajectory dataclasses by recursively
-    processing each property defined in the data container type.
+    This function iterates over columns instead of rows, preserving the per-column source dtype
+    (unlike ``df.iterrows`` which casts all values in a row to a common type).
 
     :param data_container_type: The dataclass type defining the structure to extract.
     :param feature_name: Name of the feature being extracted.
-    :param row: A pandas Series representing a single row from the CSV.
-    :param timestamp: The timestamp value for this row.
+    :param df: The pandas DataFrame containing CSV data.
+    :param timestamp_column: Name of the column containing timestamps.
     :param shadow_data_container: The shadow container being populated.
     :return: Updated shadow data container.
     """
@@ -299,8 +295,10 @@ def _collect_properties_from_csv(
     ):
         try:
             if each_property_name == "timestamps":
-                # Handle timestamps specially
-                shadow_data_container["timestamps"]["data"].append(timestamp)
+                # Handle timestamps: extract entire column preserving source dtype
+                shadow_data_container["timestamps"]["data"] = list(
+                    df[timestamp_column].to_numpy()
+                )
             elif (
                 isinstance(shadow_data_container[each_property_name], dict)
                 and "type" in shadow_data_container[each_property_name]
@@ -309,23 +307,24 @@ def _collect_properties_from_csv(
                 target_type = shadow_data_container[each_property_name]["type"]
 
                 if issubclass(target_type, (np.ndarray,)):
-                    # This is a data field - get value from CSV column
+                    # This is a data field - extract entire column preserving source dtype
                     column_name = each_property_name
 
-                    if column_name not in row.index:
+                    if column_name not in df.columns:
                         raise KeyError(
                             f"[TCT error] Column '{column_name}' not found in CSV. "
-                            f"Available columns: {list(row.index)}"
+                            f"Available columns: {list(df.columns)}"
                         )
 
-                    value = row[column_name]
-                    shadow_data_container[each_property_name]["data"].append(value)
+                    shadow_data_container[each_property_name]["data"] = list(
+                        df[column_name].to_numpy()
+                    )
                 else:
                     # Other types (like strings, ints, etc.)
-                    if each_property_name in row.index:
-                        shadow_data_container[each_property_name]["data"] = row[
+                    if each_property_name in df.columns:
+                        shadow_data_container[each_property_name]["data"] = df[
                             each_property_name
-                        ]
+                        ].iloc[0]
 
         except KeyError as e:
             raise KeyError(

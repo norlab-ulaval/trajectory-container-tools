@@ -5,6 +5,7 @@ import pytest
 from trajectory_container_tools.temporal import (
     TimestampCausalOrderingError,
     Timestamps,
+    TimestampsInt,
     compute_delta_timestamp,
     to_seconds,
     to_seconds_nanoseconds,
@@ -21,7 +22,7 @@ class TestTimestampCausalOrderingSanityCheck:
         setup_mock_timestamps[9] = 1711038330177285488
 
         with pytest.raises(TimestampCausalOrderingError) as exc_info:
-            assert validate_timestamps_ordering(Timestamps(setup_mock_timestamps)) == [
+            assert validate_timestamps_ordering(TimestampsInt(setup_mock_timestamps)) == [
                 5,
                 9,
             ]

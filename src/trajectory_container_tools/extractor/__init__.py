@@ -20,8 +20,8 @@ from trajectory_container_tools.extractor.dataframe_to_tct import (
     extract_dataframe_feature,
     unpack_dataframe_and_show_topic,
 )
-from trajectory_container_tools.extractor.csv_to_tct import (
-    from_csv,
+from trajectory_container_tools.extractor.stamped_csv_to_tct import (
+    from_stamped_csv,
     extract_csv_feature,
 )
 
@@ -35,6 +35,6 @@ __all__ = [
     "extract_dataframe_feature",
     "unpack_dataframe_and_show_topic",
     # CSV extraction functions
-    "from_csv",
+    "from_stamped_csv",
     "extract_csv_feature",
 ]

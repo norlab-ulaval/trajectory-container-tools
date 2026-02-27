@@ -10,7 +10,7 @@ from trajectory_container_tools.dataclasses import StdMsgsHeader, RosStampedFeat
 from trajectory_container_tools.dataclasses.core import (
     AbstractTrajectoryStampedFeaturesBag,
 )
-from trajectory_container_tools.temporal import Timestamps
+from trajectory_container_tools.temporal import Timestamps, TimestampsInt
 
 
 # ==== Mock dataclasses ===========================================================================
@@ -187,9 +187,9 @@ def setup_mock_mf_container():
             feature_name="Mock observation topic",
             header=StdMsgsHeader(
                 frame_id="topic_obs",
-                timestamps=Timestamps(timestamp_case.t_obs_timestamps),
+                timestamps=TimestampsInt(timestamp_case.t_obs_timestamps),
             ),
-            bag_recorded_timestamps=Timestamps(timestamp_case.t_obs_timestamps + 333),
+            bag_recorded_timestamps=TimestampsInt(timestamp_case.t_obs_timestamps + 333),
             mock_feature=np.arange(timestamp_case.t_obs_timestamps.size),
         )
 
@@ -197,9 +197,9 @@ def setup_mock_mf_container():
             feature_name="Mock action topic",
             header=StdMsgsHeader(
                 frame_id="topic_act",
-                timestamps=Timestamps(timestamp_case.t_act_timestamps),
+                timestamps=TimestampsInt(timestamp_case.t_act_timestamps),
             ),
-            bag_recorded_timestamps=Timestamps(timestamp_case.t_act_timestamps + 333),
+            bag_recorded_timestamps=TimestampsInt(timestamp_case.t_act_timestamps + 333),
             mock_feature=np.arange(timestamp_case.t_act_timestamps.size),
         )
 
@@ -216,7 +216,7 @@ def setup_mock_mf_container():
             dataset_info="Mock",
             topic_mock_observation=topic_mock_obs,
             topic_mock_action=topic_mock_act,
-            bag_timestamps=Timestamps(unique_bag_timestamps, single_source=False),
+            bag_timestamps=TimestampsInt(unique_bag_timestamps, single_source=False),
             chunk_on="topic_mock_action",
         )
         return deepcopy(mf_container)

@@ -7,7 +7,7 @@ import numpy as np
 from trajectory_container_tools.dataclasses.core.base_trajectory_dataclass import (
     BaseTrajectoryFeature,
 )
-from trajectory_container_tools.temporal import Timestamps
+from trajectory_container_tools.temporal import Timestamps, TimestampsInt
 
 
 @dataclass()
@@ -34,7 +34,7 @@ class StdMsgsHeader(BaseTrajectoryFeature):
 
     def on_begin_post_init_callback(self) -> None:
         if isinstance(self.timestamps, np.ndarray):
-            self.timestamps = Timestamps(self.timestamps)
+            self.timestamps = TimestampsInt(self.timestamps)
 
         self.timestamps.causal_ordering_sanity_check(
             show_offending_in_nanoseconds=True,
