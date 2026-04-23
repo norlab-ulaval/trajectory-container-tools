@@ -50,8 +50,7 @@ pytest-sugar
 pytest-randomly
 
 # https://pypi.org/project/pytest-env/
-#pytest-env>=1.1.0,<1.6.0
-pytest-env
+pytest-env>=1.1.0,<1.6.0
 
 # https://pypi.org/project/pytest-deprecate/
 pytest-deprecate
