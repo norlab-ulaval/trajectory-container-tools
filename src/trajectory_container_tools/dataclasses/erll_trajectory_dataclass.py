@@ -44,6 +44,14 @@ class TestMotionTrajectoryDataclass(TestTrajectoryDataclass):
     this class is to store and organize pose-related data for use in motion trajectory
     analysis and comparison.
 
+    :ivar observations: The sequence of observations in the trajectory.
+    :type observations: numpy.ndarray
+    :ivar actions: The sequence of actions corresponding to the observations.
+    :type actions: numpy.ndarray
+    :ivar timestamps: Timestamp associated to the data for further processing, analysis, or manipulation.
+    :type timestamps: numpy.ndarray
+    :ivar velocity_frame: The frame of reference for velocity measurements. Defaults to None.
+    :type velocity_frame: Optional[str]
     :ivar pose: The estimated pose data represented as a numpy array.
     :type pose: np.ndarray
     :ivar pose_gt: The ground truth pose data represented as a numpy array.
