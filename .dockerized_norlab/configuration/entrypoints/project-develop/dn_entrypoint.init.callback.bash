@@ -22,7 +22,7 @@ n2st::print_msg "Sourcing dn_expose_container_env_variables.bash silently..."
 source /dockerized-norlab/project/project-develop/dn_expose_container_env_variables.bash >/dev/null
 
 # ....Example......................................................................................
-if [[ $( n2st::which_architecture_and_os ) == "l4t\arm64" ]]; then
+if [[ $( n2st::which_architecture_and_os ) == "l4t/arm64" ]]; then
   n2st::print_msg "Is running on a Jetson..."
   # Add Jetson logic e.g., cat /proc/device-tree/model
 fi
