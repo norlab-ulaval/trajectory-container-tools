@@ -41,7 +41,7 @@ ros = [
     "rosbags",
 ]
 dev = [
-    "pytest",
+    "pytest<8", # <-- Note on why its pinned: `launch_testing` ROS2 pytest plugin uses the legacy `pytest_pycollect_makemodule(path, parent)` hook signature, which pytest 8.x no longer supports (backward-compat shim removed). Ref https://github.com/ros2/launch/issues/979
     "pytest-mock",
     "pytest-xdist",
     "pytest-benchmark",
